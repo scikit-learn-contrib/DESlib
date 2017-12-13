@@ -61,12 +61,12 @@ class DESClustering(DES):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers, k=5, version='selection', N=0.3, J=0.3, more_diverse=True, metric='DF',
+    def __init__(self, pool_classifiers, k=5, mode='selection', N=0.3, J=0.3, more_diverse=True, metric='DF',
                  DFP=False, with_IH=False, safe_k=None, IH_rate=0.30):
 
         metric.upper()
         super(DESClustering, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                            version=version)
+                                            mode=mode)
 
         self.N = int(self.n_classifiers * N)
         self.J = int(self.n_classifiers * J)

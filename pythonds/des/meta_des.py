@@ -71,17 +71,17 @@ class METADES(DES):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers, selector=MultinomialNB(), k=7, kp=5, Hc=0.8, gamma=0.5, version='hybrid',
+    def __init__(self, pool_classifiers, selector=MultinomialNB(), k=7, kp=5, Hc=0.8, gamma=0.5, mode='hybrid',
                  DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False):
 
         super(METADES, self).__init__(pool_classifiers, k, DFP=DFP,
                                       with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate, aknn=aknn)
-        version.lower()
+        mode.lower()
         assert Hc > 0.5
         assert gamma > 0
-        assert version in ['selection', 'hybrid', 'weighting']
+        assert mode in ['selection', 'hybrid', 'weighting']
         self.name = 'META-des'
-        self.version = version
+        self.version = mode
         self.kp = kp
         self.Hc = Hc
         self.gamma = gamma

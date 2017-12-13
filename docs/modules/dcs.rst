@@ -4,9 +4,9 @@ Dynamic Classifier Selection
 .. automodule:: pythonds.dcs
 
 .. toctree::
+    dcs/base
     dcs/a_posteriori
     dcs/a_priori
-    dcs/base
     dcs/lca
     dcs/mcb
     dcs/mla

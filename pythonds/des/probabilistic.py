@@ -36,12 +36,12 @@ class Probabilistic(DES):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
-                 version='selection', selection_threshold=0):
+                 mode='selection', selection_threshold=0):
 
         super(Probabilistic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
                                             IH_rate=IH_rate,
                                             aknn=aknn,
-                                            version=version)
+                                            mode=mode)
         self.C_src = None
         self.selection_threshold = selection_threshold
 
@@ -209,10 +209,10 @@ class Logarithmic(Probabilistic):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
     def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
-                 version='selection'):
+                 mode='selection'):
 
         super(Logarithmic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                          aknn=aknn, version=version)
+                                          aknn=aknn, mode=mode)
         self.name = "des-Log"
 
     def source_competence(self):
@@ -271,10 +271,10 @@ class Entropy(Probabilistic):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
     def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
-                 version='selection'):
+                 mode='selection'):
 
         super(Entropy, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                      aknn=aknn, version=version)
+                                      aknn=aknn, mode=mode)
         self.selection_threshold = 0.0
         self.name = "des-Entropy"
 
@@ -343,10 +343,10 @@ class Exponential(Probabilistic):
 
     """
     def __init__(self, pool_classifiers, k=None, aknn=False, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
-                 version='selection'):
+                 mode='selection'):
 
         super(Exponential, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                          aknn=aknn, version=version)
+                                          aknn=aknn, mode=mode)
         self.name = "des-Exp"
 
     def source_competence(self):
@@ -411,10 +411,10 @@ class RRC(Probabilistic):
 
     """
     def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
-                 version='selection'):
+                 mode='selection'):
 
         super(RRC, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                  aknn=aknn, version=version)
+                                  aknn=aknn, mode=mode)
         self.name = "des-RRC"
         self.selection_threshold = None
 
@@ -486,10 +486,10 @@ class DESKL(Probabilistic):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
     def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
-                 version='selection'):
+                 mode='selection'):
 
         super(DESKL, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                    aknn=aknn, version=version)
+                                    aknn=aknn, mode=mode)
         self.selection_threshold = 0.0
         self.name = 'des-Kullback-Leibler (des-KL)'
 
@@ -563,9 +563,9 @@ class MinimumDifference(Probabilistic):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
     def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
-                 version='selection'):
+                 mode='selection'):
         super(MinimumDifference, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
-                                                IH_rate=IH_rate, aknn=aknn, version=version)
+                                                IH_rate=IH_rate, aknn=aknn, mode=mode)
         self.selection_threshold = 0.0
         self.name = "des-Minimum Difference (des-MD)"
 

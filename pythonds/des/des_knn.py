@@ -65,7 +65,7 @@ class DESKNN(DES):
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
                  IH_rate=0.30,
                  aknn=False,
-                 version='selection',
+                 mode='selection',
                  N=0.3,
                  J=0.3,
                  more_diverse=False,
@@ -73,7 +73,7 @@ class DESKNN(DES):
 
         metric = metric.upper()
         super(DESKNN, self).__init__(pool_classifiers, k, DFP= DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                     aknn=aknn, version=version)
+                                     aknn=aknn, mode=mode)
 
         self.N = int(self.n_classifiers * N)
         self.J = int(self.n_classifiers * J)
