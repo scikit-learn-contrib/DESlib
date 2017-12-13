@@ -1,4 +1,4 @@
-:mod:`PythonDS.DES`
+Dynamic Ensemble Selection
 ====================================
 
 .. automodule:: pythonds.des

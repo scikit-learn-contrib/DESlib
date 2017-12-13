@@ -4,9 +4,12 @@ Welcome to Dynamic Selection Lib's documentation!
 API Reference:
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
-   modules/des
+    modules/des
+    modules/dcs
+
+
 
 
 Indices and tables
