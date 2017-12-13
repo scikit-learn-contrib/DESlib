@@ -11,7 +11,7 @@ from pythonds.util.diversity import double_fault, Q_statistic, ratio_errors
 
 
 class DESKNN(DES):
-    """Dynamic ensemble selection-Performance(DSKNN).
+    """Dynamic ensemble Selection KNN (DES-KNN).
     This method selects an ensemble of classifiers taking into account the
     accuracy and more_diverse of the base classifiers. First the most accurate classifiers
     are selected. Next, the most diverse classifiers, in relation to the selected classifiers,
@@ -22,33 +22,42 @@ class DESKNN(DES):
     pool_classifiers : type, the generated_pool of classifiers trained for the corresponding
     classification problem.
 
-    k : int (Default = 7), Number of neighbors used to estimate the competence of the base classifiers.
+    k : int (Default = 5)
+        Number of neighbors used to estimate the competence of the base classifiers.
 
-    DFP : Boolean (Default = False), Determines if the dynamic frienemy prunning is applied.
+    DFP : Boolean (Default = False)
+          Determines if the dynamic frienemy pruning is applied.
 
-    with_IH : Boolean (Default = False), Whether the hardness level of the region of competence is used to decide
-    between using the DS algorithm or the KNN for classification of a given query sample.
+    with_IH : Boolean (Default = False)
+              Whether the hardness level of the region of competence is used to decide between
+              using the DS algorithm or the KNN for classification of a given query sample.
 
-    safe_k : int (default = None), the size of the indecision region.
+    safe_k : int (default = None)
+             The size of the indecision region.
 
-    IH_rate : float (default = 0.3), Hardness threshold. If the hardness level of the competence region is lower than
-    the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
+    IH_rate : float (default = 0.3)
+              Hardness threshold. If the hardness level of the competence region is lower than
+              the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False), Determines the type of KNN algorithm that is used. set
-    to true for the A-KNN method.
+    aknn : Boolean (Default = False)
+           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
 
-    version : String (Default = selection), Wether the technique will perform
-    dynamic selection, dynamic weighting or an hybrid approach for classification
+    mode : String (Default = "selection")
+              whether the technique will perform dynamic selection, dynamic weighting
+              or an hybrid approach for classification
 
-    N : float (Default = 0.3), Percentage of base classifiers selected based on accuracy
+    N : float (Default = 0.3)
+        Percentage of base classifiers selected based on accuracy
 
-    J : float (Default = 0.3), Percentage of base classifiers selected based n diversity
+    J : float (Default = 0.3)
+        Percentage of base classifiers selected based n diversity
 
-    more_diverse : Boolean (Default = True), Whether we select the most or the least diverse classifiers
-    to add to the pre-selected ensemble
+    more_diverse : Boolean (Default = True)
+        Whether we select the most or the least diverse classifiers to add to the pre-selected ensemble
 
-    metric : String (Default = 'df'), Diversity diversity_func used to estimate the diversity of the base classifiers. Can
-    be either the double fault (df), Q-statistics (Q), or error correlation (corr)
+    metric : String (Default = 'df')
+            Diversity diversity_func used to estimate the diversity of the base classifiers. Can
+            be either the double fault (df), Q-statistics (Q), or error correlation (corr)
 
     References
     ----------
@@ -72,13 +81,13 @@ class DESKNN(DES):
                  metric='DF'):
 
         metric = metric.upper()
-        super(DESKNN, self).__init__(pool_classifiers, k, DFP= DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
+        super(DESKNN, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                      aknn=aknn, mode=mode)
 
         self.N = int(self.n_classifiers * N)
         self.J = int(self.n_classifiers * J)
         self.more_diverse = more_diverse
-        self.name = 'DSKNN (DSKNN)'
+        self.name = 'Dynamic Ensemble Selection-KNN (DES-KNN)'
         self.metric = metric
         if metric == 'DF':
             self.diversity_func = double_fault

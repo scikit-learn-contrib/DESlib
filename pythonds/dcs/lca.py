@@ -22,42 +22,50 @@ class LCA(DCS):
 
     Parameters
     ----------
-    pool_classifiers : type, the generated_pool of classifiers trained for the corresponding
-    classification problem.
+    pool_classifiers : list of classifiers
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       The classifiers should support methods "predict" and "predict_proba".
 
-    k : int (Default = 7), Number of neighbors used to estimate the competence of the base classifiers.
+    k : int (Default = 7)
+        Number of neighbors used to estimate the competence of the base classifiers.
 
-    DFP : Boolean (Default = False), Determines if the dynamic frienemy prunning is applied.
+    DFP : Boolean (Default = False)
+          Determines if the dynamic frienemy pruning is applied.
 
-    with_IH : Boolean (Default = False), Whether the hardness level of the region of competence is used to decide
-    between using the DS algorithm or the KNN for classification of a given query sample.
+    with_IH : Boolean (Default = False)
+              Whether the hardness level of the region of competence is used to decide
+              between using the DS algorithm or the KNN for classification of a given query sample.
 
-    safe_k : int (default = None), the size of the indecision region.
+    safe_k : int (default = None)
+             The size of the indecision region.
 
-    IH_rate : float (default = 0.3), Hardness threshold. If the hardness level of the competence region is lower than
-    the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
+    IH_rate : float (default = 0.3)
+              Hardness threshold. If the hardness level of the competence region is lower than
+              the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False), Determines the type of KNN algorithm that is used. set
-    to true for the A-KNN method.
+    aknn : Boolean (Default = False)
+           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
 
-    selection_method : String (Default = best), determines which method is used to select the base classifier
-    after the competences are estimated.
+    selection_method : String (Default = "best")
+                       Determines which method is used to select the base classifier
+                       after the competences are estimated.
 
-    diff_thresh : float (Default = 0.1), Threshold to measure the difference between the competence level
-    of the base classifiers for the random and diff selection schemes. If the difference is lower than the
-    threshold, their performance are considered equivalent.
+    diff_thresh : float (Default = 0.1)
+                  Threshold to measure the difference between the competence level of the base
+                  classifiers for the random and diff selection schemes. If the difference is lower than the
+                  threshold, their performance are considered equivalent.
 
-    version : String (Default = 'woods') Defines which implementation of the LCA method is used. original for woods
-    implementation and 'britto' for the LCA implementation presented in Britto et al. [2]
+    version : String (Default = "woods")
+              Change the implementation of the LCA according to Woods or Britto definition.
 
     References
     ----------
-    [1] Woods, Kevin, W. Philip Kegelmeyer, and Kevin Bowyer. "Combination of multiple classifiers
+    Woods, Kevin, W. Philip Kegelmeyer, and Kevin Bowyer. "Combination of multiple classifiers
     using local accuracy estimates." IEEE transactions on pattern analysis and machine intelligence
     19.4 (1997): 405-410.
 
-    [2] Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection of classifiers—a comprehensive
-     review." Pattern Recognition 47.11 (2014): 3665-3680.
+    Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection of classifiers—a comprehensive
+    review." Pattern Recognition 47.11 (2014): 3665-3680.
 
     R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
@@ -65,14 +73,18 @@ class LCA(DCS):
     """
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
                  aknn=False, selection_method='best', diff_thresh=None, version='woods'):
-        version = version.lower()
-        assert version in ['woods', 'britto']
-        super(LCA, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                  aknn=aknn,
-                                  selection_method=selection_method,
-                                  diff_thresh=diff_thresh)
-        self.version = version
-        self.name = 'Local Classifier Accuracy (LCA)'
+
+            super(LCA, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
+                                      aknn=aknn,
+                                      selection_method=selection_method,
+                                      diff_thresh=diff_thresh)
+
+            version = version.lower()
+            if version not in ['selection', 'hybrid', 'weighting']:
+                raise ValueError('Invalid value for parameter "version"')
+
+            self.version = version
+            self.name = 'Local Classifier Accuracy (LCA)'
 
     def estimate_competence(self, query):
         """estimate the competence of each base classifier ci
@@ -82,11 +94,11 @@ class LCA(DCS):
 
         Woods : In this algorithm the K-Nearest Neighbors of the test sample are estimated. Then, the
         local accuracy of the base classifiers is estimated by its classification accuracy taking into account
-        only the samples beloging to the class wl in this neighborhood. In this case, wl is the predict class
+        only the samples belonging to the class wl in this neighborhood. In this case, wl is the predict class
         of the base classifier ci for the query sample.
 
         Britto : Is the algorithm presented in Britto et al. [2]. In this method, the neighborhood is composed
-        of the K-Nearest Neighbors instances that belongs to a especific class wl.
+        of the K-Nearest Neighbors instances that belongs to a specific class wl.
 
         Returns an array containing the level of competence estimated using the LCA method
         for each base classifier. The size of the array is equals to the size of the pool of classifiers.

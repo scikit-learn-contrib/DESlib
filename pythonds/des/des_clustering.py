@@ -13,41 +13,51 @@ from pythonds.util.diversity import double_fault, Q_statistic, ratio_errors
 
 
 class DESClustering(DES):
-    """Dynamic ensemble selection-Performance(DSKNN).
+    """Dynamic ensemble selection-Clustering (DES-Clustering).
     This method selects an ensemble of classifiers taking into account the
-    accuracy and more_diverse of the base classifiers. First the most accurate classifiers
-    are selected. Next, the most diverse classifiers, in relation to the selected classifiers,
-    are added to the ensemble
+    accuracy and more_diverse of the base classifiers. The K-means algorithm is used to define the region of competence
+    First the most accurate classifiers are selected. Next, the most diverse classifiers, in relation to the selected
+    classifiers, are added to the ensemble
 
     Parameters
     ----------
-    pool_classifiers : type, the generated_pool of classifiers trained for the corresponding
-    classification problem.
+    pool_classifiers : list of classifiers
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       The classifiers should support methods "predict" and "predict_proba".
 
-    k : int (Default = 7), Number of clusters for the KMeans clustering method.
+    k : int (Default = 5)
+        Number of neighbors used to estimate the competence of the base classifiers.
 
-    version : String (Default = selection), Wether the technique will perform
-    dynamic selection, dynamic weighting or an hybrid approach for classification
+    DFP : Boolean (Default = False)
+          Determines if the dynamic frienemy pruning is applied.
 
-    N : float (Default = 0.3), Percentage of base classifiers selected based on accuracy
+    with_IH : Boolean (Default = False)
+              Whether the hardness level of the region of competence is used to decide between
+              using the DS algorithm or the KNN for classification of a given query sample.
 
-    J : float (Default = 0.3), Percentage of base classifiers selected based n diversity
+    safe_k : int (default = None)
+             The size of the indecision region.
 
-    more_diverse : Boolean (Default = True), Whether we select the most or the least diverse classifiers
-    to add to the pre-selected ensemble
+    IH_rate : float (default = 0.3)
+              Hardness threshold. If the hardness level of the competence region is lower than
+              the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    metric : String (Default = 'df'), Diversity diversity_func used to estimate the diversity of the base classifiers. Can
-    be either the double fault (df), Q-statistics (Q), or error correlation (corr)
+    mode : String (Default = "selection")
+              whether the technique will perform dynamic selection, dynamic weighting
+              or an hybrid approach for classification
 
-    DFP : Boolean (Default = False), Determines if the dynamic frienemy prunning is applied.
+    N : float (Default = 0.3)
+        Percentage of base classifiers selected based on accuracy
 
-    with_IH : Boolean (Default = False), Whether the hardness level of the region of competence is used to decide
-    between using the DS algorithm or the KNN for classification of a given query sample.
+    J : float (Default = 0.3)
+        Percentage of base classifiers selected based n diversity
 
-    safe_k : int (default = None), the size of the indecision region.
+    more_diverse : Boolean (Default = True)
+        Whether we select the most or the least diverse classifiers to add to the pre-selected ensemble
 
-    IH_rate : float (default = 0.3), Hardness threshold. If the hardness level of the competence region is lower than
-    the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
+    metric : String (Default = 'df')
+            Diversity diversity_func used to estimate the diversity of the base classifiers. Can
+            be either the double fault (df), Q-statistics (Q), or error correlation (corr)
 
     References
     ----------
@@ -65,8 +75,8 @@ class DESClustering(DES):
                  DFP=False, with_IH=False, safe_k=None, IH_rate=0.30):
 
         metric.upper()
-        super(DESClustering, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                            mode=mode)
+        super(DESClustering, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
+                                            safe_k=safe_k, IH_rate=IH_rate, mode=mode)
 
         self.N = int(self.n_classifiers * N)
         self.J = int(self.n_classifiers * J)
@@ -92,8 +102,8 @@ class DESClustering(DES):
     def fit(self, X, y):
         """Train the DS model by setting the Clustering algorithm and
         pre-processing the information required to apply the DS
-        methods. In this case, after applyng the clustering method, the esemble containing
-        most competente classifiers taking into account accuracy and diversity are
+        methods. In this case, after applying the clustering method, the ensemble containing
+        most competent classifiers taking into account accuracy and diversity are
         estimated for each cluster.
 
         Parameters

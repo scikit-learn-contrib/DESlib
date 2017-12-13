@@ -23,21 +23,26 @@ class DESP(DES):
 
     k : int (Default = 7), Number of neighbors used to estimate the competence of the base classifiers.
 
-    DFP : Boolean (Default = False), Determines if the dynamic frienemy prunning is applied.
+    DFP : Boolean (Default = False)
+          Determines if the dynamic frienemy pruning is applied.
 
-    with_IH : Boolean (Default = False), Whether the hardness level of the region of competence is used to decide
-    between using the DS algorithm or the KNN for classification of a given query sample.
+    with_IH : Boolean (Default = False)
+              Whether the hardness level of the region of competence is used to decide between
+              using the DS algorithm or the KNN for classification of a given query sample.
 
-    safe_k : int (default = None), the size of the indecision region.
+    safe_k : int (default = None)
+             The size of the indecision region.
 
-    IH_rate : float (default = 0.3), Hardness threshold. If the hardness level of the competence region is lower than
-    the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
+    IH_rate : float (default = 0.3)
+              Hardness threshold. If the hardness level of the competence region is lower than
+              the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False), Determines the type of KNN algorithm that is used. set
-    to true for the A-KNN method.
+    aknn : Boolean (Default = False)
+           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
 
-    version : String (Default = selection), Wether the technique will perform
-    dynamic selection, dynamic weighting or an hybrid approach for classification
+    mode : String (Default = "selection")
+              whether the technique will perform dynamic selection, dynamic weighting
+              or an hybrid approach for classification
 
     References
     ----------

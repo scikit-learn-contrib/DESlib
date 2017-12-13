@@ -22,7 +22,7 @@ class DCS(DS):
         Number of neighbors used to estimate the competence of the base classifiers.
 
     DFP : Boolean (Default = False)
-          Determines if the dynamic frienemy prunning is applied.
+          Determines if the dynamic frienemy pruning is applied.
 
     with_IH : Boolean (Default = False)
               Whether the hardness level of the region of competence is used to decide
@@ -133,7 +133,7 @@ class DCS(DS):
 
         elif self.selection_method == 'diff':
             """Select a base classifier if its competence level is significant better than the rest. 
-            If there is no such clssifier, select randomly a base model.
+            If there is no such classifier, select randomly a base model.
 
 
              the best classifier will always have diff < diff_thresh. In a case it is

@@ -20,6 +20,38 @@ class Probabilistic(DES):
     Warning: This class should not be used directly.
     Use derived classes instead.
 
+    Parameters
+    ----------
+    pool_classifiers : list of classifiers
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       The classifiers should support methods "predict" and "predict_proba".
+
+    k : int (Default = None)
+        Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
+        selection dataset is used, and the influence of each sample is based on its distance to the query.
+
+    DFP : Boolean (Default = False)
+          Determines if the dynamic frienemy pruning is applied.
+
+    with_IH : Boolean (Default = False)
+              Whether the hardness level of the region of competence is used to decide between
+              using the DS algorithm or the KNN for classification of a given query sample.
+
+    safe_k : int (default = None)
+             The size of the indecision region.
+
+    IH_rate : float (default = 0.3)
+              Hardness threshold. If the hardness level of the competence region is lower than
+              the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
+
+    aknn : Boolean (Default = False)
+           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
+
+    mode : String (Default = "selection")
+           Whether the technique will perform dynamic selection,
+           dynamic weighting or an hybrid approach for classification.
+
+
     References
     ----------
     T.Woloszynski, M. Kurzynski, A probabilistic model of classifier competence for dynamic ensemble selection,
@@ -174,28 +206,34 @@ class Logarithmic(Probabilistic):
 
     Parameters
     ----------
-    pool_classifiers : type, the generated_pool of classifiers trained for the corresponding
-    classification problem.
+    pool_classifiers : list of classifiers
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       The classifiers should support methods "predict" and "predict_proba".
 
-    k : int (Default = None), Number of neighbors used to estimate the competence of the base classifiers.
-    None means that the whole DSEL is used to estimate the competence of the base classifiers. The influence
-    of each sample is reduced based on its Euclidean distance to the query
+    k : int (Default = None)
+        Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
+        selection dataset is used, and the influence of each sample is based on its distance to the query.
 
-    DFP : Boolean (Default = False), Determines if the dynamic frienemy prunning is applied.
+    DFP : Boolean (Default = False)
+          Determines if the dynamic frienemy pruning is applied.
 
-    with_IH : Boolean (Default = False), Whether the hardness level of the region of competence is used to decide
-    between using the DS algorithm or the KNN for classification of a given query sample.
+    with_IH : Boolean (Default = False)
+              Whether the hardness level of the region of competence is used to decide between
+              using the DS algorithm or the KNN for classification of a given query sample.
 
-    safe_k : int (default = None), the size of the indecision region.
+    safe_k : int (default = None)
+             The size of the indecision region.
 
-    IH_rate : float (default = 0.3), Hardness threshold. If the hardness level of the competence region is lower than
-    the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
+    IH_rate : float (default = 0.3)
+              Hardness threshold. If the hardness level of the competence region is lower than
+              the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False), Determines the type of KNN algorithm that is used. set
-    to true for the A-KNN method.
+    aknn : Boolean (Default = False)
+           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
 
-    version : String (Default = selection), Wether the technique will perform
-    dynamic selection, dynamic weighting or an hybrid approach for classification
+    mode : String (Default = "selection")
+           Whether the technique will perform dynamic selection,
+           dynamic weighting or an hybrid approach for classification.
 
     References
     ----------
@@ -236,28 +274,34 @@ class Entropy(Probabilistic):
 
     Parameters
     ----------
-    pool_classifiers : type, the generated_pool of classifiers trained for the corresponding
-    classification problem.
+    pool_classifiers : list of classifiers
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       The classifiers should support methods "predict" and "predict_proba".
 
-    k : int (Default = None), Number of neighbors used to estimate the competence of the base classifiers.
-    None means that the whole DSEL is used to estimate the competence of the base classifiers. The influence
-    of each sample is reduced based on its Euclidean distance to the query
+    k : int (Default = None)
+        Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
+        selection dataset is used, and the influence of each sample is based on its distance to the query.
 
-    DFP : Boolean (Default = False), Determines if the dynamic frienemy prunning is applied.
+    DFP : Boolean (Default = False)
+          Determines if the dynamic frienemy pruning is applied.
 
-    with_IH : Boolean (Default = False), Whether the hardness level of the region of competence is used to decide
-    between using the DS algorithm or the KNN for classification of a given query sample.
+    with_IH : Boolean (Default = False)
+              Whether the hardness level of the region of competence is used to decide between
+              using the DS algorithm or the KNN for classification of a given query sample.
 
-    safe_k : int (default = None), the size of the indecision region.
+    safe_k : int (default = None)
+             The size of the indecision region.
 
-    IH_rate : float (default = 0.3), Hardness threshold. If the hardness level of the competence region is lower than
-    the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
+    IH_rate : float (default = 0.3)
+              Hardness threshold. If the hardness level of the competence region is lower than
+              the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False), Determines the type of KNN algorithm that is used. set
-    to true for the A-KNN method.
+    aknn : Boolean (Default = False)
+           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
 
-    version : String (Default = selection), Wether the technique will perform
-    dynamic selection, dynamic weighting or an hybrid approach for classification
+    mode : String (Default = "selection")
+           Whether the technique will perform dynamic selection,
+           dynamic weighting or an hybrid approach for classification.
 
     References
     ----------
@@ -307,28 +351,34 @@ class Exponential(Probabilistic):
 
     Parameters
     ----------
-    pool_classifiers : type, the generated_pool of classifiers trained for the corresponding
-    classification problem.
+    pool_classifiers : list of classifiers
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       The classifiers should support methods "predict" and "predict_proba".
 
-    k : int (Default = None), Number of neighbors used to estimate the competence of the base classifiers.
-    None means that the whole DSEL is used to estimate the competence of the base classifiers. The influence
-    of each sample is reduced based on its Euclidean distance to the query
+    k : int (Default = None)
+        Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
+        selection dataset is used, and the influence of each sample is based on its distance to the query.
 
-    DFP : Boolean (Default = False), Determines if the dynamic frienemy prunning is applied.
+    DFP : Boolean (Default = False)
+          Determines if the dynamic frienemy pruning is applied.
 
-    with_IH : Boolean (Default = False), Whether the hardness level of the region of competence is used to decide
-    between using the DS algorithm or the KNN for classification of a given query sample.
+    with_IH : Boolean (Default = False)
+              Whether the hardness level of the region of competence is used to decide between
+              using the DS algorithm or the KNN for classification of a given query sample.
 
-    safe_k : int (default = None), the size of the indecision region.
+    safe_k : int (default = None)
+             The size of the indecision region.
 
-    IH_rate : float (default = 0.3), Hardness threshold. If the hardness level of the competence region is lower than
-    the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
+    IH_rate : float (default = 0.3)
+              Hardness threshold. If the hardness level of the competence region is lower than
+              the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False), Determines the type of KNN algorithm that is used. set
-    to true for the A-KNN method.
+    aknn : Boolean (Default = False)
+           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
 
-    version : String (Default = selection), Wether the technique will perform
-    dynamic selection, dynamic weighting or an hybrid approach for classification
+    mode : String (Default = "selection")
+           Whether the technique will perform dynamic selection,
+           dynamic weighting or an hybrid approach for classification.
 
     References
     ----------
@@ -347,6 +397,8 @@ class Exponential(Probabilistic):
 
         super(Exponential, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                           aknn=aknn, mode=mode)
+
+        self.selection_threshold = 0
         self.name = "des-Exp"
 
     def source_competence(self):
@@ -376,27 +428,34 @@ class RRC(Probabilistic):
     pool_classifiers : type, the generated_pool of classifiers trained for the corresponding
     classification problem.
 
-    k : int (Default = None), Number of neighbors used to estimate the competence of the base classifiers.
-    None means that the whole DSEL is used to estimate the competence of the base classifiers. The influence
-    of each sample is reduced based on its Euclidean distance to the query
+    pool_classifiers : list of classifiers
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       The classifiers should support methods "predict" and "predict_proba".
 
-    DFP : Boolean (Default = False), Determines if the dynamic frienemy prunning is applied.
+    k : int (Default = None)
+        Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
+        selection dataset is used, and the influence of each sample is based on its distance to the query.
 
-    with_IH : Boolean (Default = False), Whether the hardness level of the region of competence is used to decide
-    between using the DS algorithm or the KNN for classification of a given query sample.
+    DFP : Boolean (Default = False)
+          Determines if the dynamic frienemy pruning is applied.
 
-    safe_k : int (default = None), the size of the indecision region.
+    with_IH : Boolean (Default = False)
+              Whether the hardness level of the region of competence is used to decide between
+              using the DS algorithm or the KNN for classification of a given query sample.
 
-    IH_rate : float (default = 0.3), Hardness threshold. If the hardness level of the competence region is lower than
-    the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
+    safe_k : int (default = None)
+             The size of the indecision region.
 
-    aknn : Boolean (Default = False), Determines the type of KNN algorithm that is used. set
-    to true for the A-KNN method.
+    IH_rate : float (default = 0.3)
+              Hardness threshold. If the hardness level of the competence region is lower than
+              the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    version : String (Default = selection), Wether the technique will perform
-    dynamic selection, dynamic weighting or an hybrid approach for classification
+    aknn : Boolean (Default = False)
+           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
 
-    -----
+    mode : String (Default = "selection")
+           Whether the technique will perform dynamic selection,
+           dynamic weighting or an hybrid approach for classification.
 
     References
     ----------
@@ -451,28 +510,34 @@ class DESKL(Probabilistic):
 
     Parameters
     ----------
-    pool_classifiers : type, the generated_pool of classifiers trained for the corresponding
-    classification problem.
+    pool_classifiers : list of classifiers
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       The classifiers should support methods "predict" and "predict_proba".
 
-    k : int (Default = None), Number of neighbors used to estimate the competence of the base classifiers.
-    None means that the whole DSEL is used to estimate the competence of the base classifiers. The influence
-    of each sample is reduced based on its Euclidean distance to the query
+    k : int (Default = None)
+        Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
+        selection dataset is used, and the influence of each sample is based on its distance to the query.
 
-    DFP : Boolean (Default = False), Determines if the dynamic frienemy prunning is applied.
+    DFP : Boolean (Default = False)
+          Determines if the dynamic frienemy pruning is applied.
 
-    with_IH : Boolean (Default = False), Whether the hardness level of the region of competence is used to decide
-    between using the DS algorithm or the KNN for classification of a given query sample.
+    with_IH : Boolean (Default = False)
+              Whether the hardness level of the region of competence is used to decide between
+              using the DS algorithm or the KNN for classification of a given query sample.
 
-    safe_k : int (default = None), the size of the indecision region.
+    safe_k : int (default = None)
+             The size of the indecision region.
 
-    IH_rate : float (default = 0.3), Hardness threshold. If the hardness level of the competence region is lower than
-    the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
+    IH_rate : float (default = 0.3)
+              Hardness threshold. If the hardness level of the competence region is lower than
+              the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False), Determines the type of KNN algorithm that is used. set
-    to true for the A-KNN method.
+    aknn : Boolean (Default = False)
+           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
 
-    version : String (Default = selection), Wether the technique will perform
-    dynamic selection, dynamic weighting or an hybrid approach for classification
+    mode : String (Default = "selection")
+           Whether the technique will perform dynamic selection,
+           dynamic weighting or an hybrid approach for classification.
 
     References
     ----------
@@ -528,28 +593,34 @@ class MinimumDifference(Probabilistic):
 
     Parameters
     ----------
-    pool_classifiers : type, the generated_pool of classifiers trained for the corresponding
-    classification problem.
+    pool_classifiers : list of classifiers
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       The classifiers should support methods "predict" and "predict_proba".
 
-    k : int (Default = None), Number of neighbors used to estimate the competence of the base classifiers.
-    None means that the whole DSEL is used to estimate the competence of the base classifiers. The influence
-    of each sample is reduced based on its Euclidean distance to the query.
+    k : int (Default = None)
+        Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
+        selection dataset is used, and the influence of each sample is based on its distance to the query.
 
-    DFP : Boolean (Default = False), Determines if the dynamic frienemy prunning is applied.
+    DFP : Boolean (Default = False)
+          Determines if the dynamic frienemy pruning is applied.
 
-    with_IH : Boolean (Default = False), Whether the hardness level of the region of competence is used to decide
-    between using the DS algorithm or the KNN for classification of a given query sample.
+    with_IH : Boolean (Default = False)
+              Whether the hardness level of the region of competence is used to decide between
+              using the DS algorithm or the KNN for classification of a given query sample.
 
-    safe_k : int (default = None), the size of the indecision region.
+    safe_k : int (default = None)
+             The size of the indecision region.
 
-    IH_rate : float (default = 0.3), Hardness threshold. If the hardness level of the competence region is lower than
-    the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
+    IH_rate : float (default = 0.3)
+              Hardness threshold. If the hardness level of the competence region is lower than
+              the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False), Determines the type of KNN algorithm that is used. set
-    to true for the A-KNN method.
+    aknn : Boolean (Default = False)
+           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
 
-    version : String (Default = selection), Wether the technique will perform
-    dynamic selection, dynamic weighting or an hybrid approach for classification
+    mode : String (Default = "selection")
+           Whether the technique will perform dynamic selection,
+           dynamic weighting or an hybrid approach for classification.
 
     References
     ----------

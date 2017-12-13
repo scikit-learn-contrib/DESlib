@@ -38,11 +38,11 @@ class METADES(DES):
     aknn : Boolean (Default = False)
            Determines the type of KNN algorithm that is used. set to true for the A-KNN method.
 
-    version : String (Default = selection)
+    mode : String (Default = "selection")
               Determines the version of META-des that is used (selection, weighting or hybrid).
 
     DFP : Boolean (Default = False)
-          Determines if the dynamic frienemy prunning is applied.
+          Determines if the dynamic frienemy pruning is applied.
 
     with_IH : Boolean (Default = False)
               Whether the hardness level of the region of competence is used to decide between using the DS
@@ -54,9 +54,6 @@ class METADES(DES):
     IH_rate : float (default = 0.3)
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
-
-    Notes
-    -----
 
     References
     ----------
