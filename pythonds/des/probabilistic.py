@@ -6,7 +6,7 @@
 
 from abc import abstractmethod, ABCMeta
 
-from DES.base import DES
+from pythonds.des.base import DES
 from scipy.stats import entropy
 from sklearn.preprocessing import minmax_scale
 

@@ -5,7 +5,7 @@
 # License: BSD 3 clause
 
 import numpy as np
-from DES.base import DES
+from pythonds.des.base import DES
 
 from pythonds.util.diversity import double_fault, Q_statistic, ratio_errors
 

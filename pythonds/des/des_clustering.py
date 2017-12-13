@@ -5,7 +5,7 @@
 # License: BSD 3 clause
 
 import numpy as np
-from DES.base import DES
+from pythonds.des.base import DES
 from sklearn.cluster import KMeans
 from sklearn.metrics import accuracy_score
 
