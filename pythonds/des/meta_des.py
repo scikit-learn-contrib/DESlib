@@ -25,38 +25,45 @@ class METADES(DES):
 
     Parameters
     ----------
-    pool_classifiers : type, the generated_pool of classifiers trained for the corresponding
-    classification problem.
+    pool_classifiers : list of classifiers
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       The classifiers should support methods "predict" and "predict_proba".
 
-    k : int (Default = 7), Number of neighbors used to estimate the competence of the base classifiers.
+    k : int (Default = 7)
+        Number of neighbors used to estimate the competence of the base classifiers.
     
-    kp : int (Default = 5), Number of output profiles used to estimate the competence of the base classifiers.
+    kp : int (Default = 5)
+         Number of output profiles used to estimate the competence of the base classifiers.
 
-    aknn : Boolean (Default = False), Determines the type of KNN algorithm that is used. set
-    to true for the A-KNN method.
+    aknn : Boolean (Default = False)
+           Determines the type of KNN algorithm that is used. set to true for the A-KNN method.
 
-    version : String (Default = selection), Determines the version of META-des that is used (Selection, weighting
-    or hybrid
+    version : String (Default = selection)
+              Determines the version of META-des that is used (selection, weighting or hybrid).
 
-    DFP : Boolean (Default = False), Determines if the dynamic frienemy prunning is applied.
+    DFP : Boolean (Default = False)
+          Determines if the dynamic frienemy prunning is applied.
 
-    with_IH : Boolean (Default = False), Whether the hardness level of the region of competence is used to decide
-    between using the DS algorithm or the KNN for classification of a given query sample.
+    with_IH : Boolean (Default = False)
+              Whether the hardness level of the region of competence is used to decide between using the DS
+              algorithm or the KNN for classification of a given query sample.
 
-    safe_k : int (default = None), the size of the indecision region.
+    safe_k : int (default = None)
+             The size of the indecision region.
 
-    IH_rate : float (default = 0.3), Hardness threshold. If the hardness level of the competence region is lower than
-    the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
+    IH_rate : float (default = 0.3)
+              Hardness threshold. If the hardness level of the competence region is lower than
+              the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
     Notes
     -----
 
     References
     ----------
-    [1] Cruz, R.M., Sabourin, R., Cavalcanti, G.D. and Ren, T.I., 2015. META-des: A dynamic ensemble selection framework
+    Cruz, R.M., Sabourin, R., Cavalcanti, G.D. and Ren, T.I., 2015. META-des: A dynamic ensemble selection framework
     using meta-learning. Pattern Recognition, 48(5), pp.1925-1935.
 
-    [2] Cruz, R.M., Sabourin, R. and Cavalcanti, G.D., 2015, July. META-des. H: a dynamic ensemble selection technique
+    Cruz, R.M., Sabourin, R. and Cavalcanti, G.D., 2015, July. META-des. H: a dynamic ensemble selection technique
     using meta-learning and a dynamic weighting approach. In Neural Networks (IJCNN), 2015 International Joint
     Conference on (pp. 1-8).
 
@@ -94,7 +101,7 @@ class METADES(DES):
         pre-processing the information required to apply the DS
         methods
 
-         Parameters
+        Parameters
         ----------
         X : matrix of shape = [n_samples, n_features] with the data.
 
@@ -135,7 +142,7 @@ class METADES(DES):
     def _sample_selection(self, query_idx):
         """Check the number of base classifier that predict the correct label for the query sample.
         Parameters
-        -------
+        ----------
         query_idx : int containing the index of the query sample in DSEL
 
         Returns
@@ -151,7 +158,7 @@ class METADES(DES):
         the meta-features vector V_i,j.
 
         Parameters
-        -------
+        ----------
         query : array containing the test sample = [n_features]
 
         idx_neighbors : list containing the index of K-nearest neighbors of the query
