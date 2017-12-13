@@ -1,0 +1,6 @@
+sklearn
+numpy
+scipy
+sphinx
+sphinx_rtd_theme
+numpydoc
