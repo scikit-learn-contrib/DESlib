@@ -1,6 +1,7 @@
-sklearn
+scikit-learn
 numpy
 scipy
 sphinx
 sphinx_rtd_theme
 numpydoc
+pytest
