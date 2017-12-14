@@ -593,6 +593,8 @@ class DS(ClassifierMixin):
         raises an error if k < 1 or generated_pool is not fitted.
         """
         if self.k is not None:
+            if not isinstance(self.k, numbers.Integral):
+                raise TypeError("parameter k should be an integer")
             if self.k <= 1:
                 raise ValueError("parameter k must be higher than 1."
                                  "input k is %s " % self.k)
