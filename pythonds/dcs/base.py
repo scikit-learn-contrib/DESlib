@@ -1,4 +1,3 @@
-import random
 from abc import ABCMeta
 
 import numpy as np
@@ -67,7 +66,7 @@ class DCS(DS):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers, k=7, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
-                 aknn=False, selection_method='best', diff_thresh=0.1):
+                 aknn=False, selection_method='best', diff_thresh=0.1, rng=np.random.RandomState()):
 
         selection_method = selection_method.lower()
 
@@ -78,6 +77,7 @@ class DCS(DS):
                                   safe_k=safe_k, IH_rate=IH_rate, aknn=aknn)
         self.selection_method = selection_method
         self.diff_thresh = diff_thresh
+        self.rng = rng
 
     def estimate_competence(self, query):
         """estimate the competence of each base classifier ci
@@ -146,12 +146,12 @@ class DCS(DS):
             if len(indices) == 0:
                 indices = range(self.n_classifiers)
 
-            selected_clf = random.choice(indices)
+            selected_clf = self.rng.choice(indices)
 
         elif self.selection_method == 'random':
             # Select a random classifier among all with same competence level
             indices = [idx for idx, competence in enumerate(competences) if competence == competences[best_index]]
-            selected_clf = random.choice(indices)
+            selected_clf = self.rng.choice(indices)
 
         elif self.selection_method == 'all':
             # select all base classifiers with max competence estimates.

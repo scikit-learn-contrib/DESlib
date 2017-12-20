@@ -67,12 +67,13 @@ class APriori(DCS):
 
     """
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 aknn=False, selection_method='diff', diff_thresh=0.1):
+                 aknn=False, selection_method='diff', diff_thresh=0.1, rng=np.random.RandomState()):
 
         super(APriori, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                       aknn=aknn,
                                       selection_method=selection_method,
-                                      diff_thresh=diff_thresh)
+                                      diff_thresh=diff_thresh,
+                                      rng=rng)
         self.name = 'A Priori'
 
     def fit(self, X, y):

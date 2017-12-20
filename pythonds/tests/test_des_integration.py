@@ -70,18 +70,20 @@ def test_ola():
 
 def test_mcb():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+    rng = np.random.RandomState(123456)
 
-    mcb = MCB(pool_classifiers)
+    mcb = MCB(pool_classifiers, rng=rng)
     mcb.fit(X_dsel, y_dsel)
-    assert np.isclose(mcb.score(X_test, y_test), 0.88829787234)
+    assert np.isclose(mcb.score(X_test, y_test), 0.8936170212765957)
 
 
 def test_apriori():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+    rng = np.random.RandomState(123456)
 
-    apriori = APriori(pool_classifiers)
+    apriori = APriori(pool_classifiers, rng=rng)
     apriori.fit(X_dsel, y_dsel)
-    assert np.isclose(apriori.score(X_test, y_test), 0.877659574468)
+    assert np.isclose(apriori.score(X_test, y_test), 0.87234042553191493)
 
 
 def test_baseline():
