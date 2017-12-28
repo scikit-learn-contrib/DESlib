@@ -68,10 +68,21 @@ class DCS(DS):
     def __init__(self, pool_classifiers, k=7, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
                  aknn=False, selection_method='best', diff_thresh=0.1, rng=np.random.RandomState()):
 
+        if not isinstance(selection_method, str):
+            raise TypeError('The parameter selection_method should be a string.'
+                            ' selection_method = ', type(selection_method))
+
         selection_method = selection_method.lower()
 
         if selection_method not in ['best', 'all', 'random', 'diff']:
-            raise ValueError('Invalid value for parameter "selection"')
+            raise ValueError('Invalid value for parameter "selection_method." The possible values are: '
+                             '"best", "all", "random", "diff"')
+
+        if not isinstance(diff_thresh, float):
+            raise TypeError('The parameter diff_thresh should be a float. diff_thresh = ', diff_thresh)
+
+        if diff_thresh >= 0.5 or diff_thresh < 0.0 or np.isnan(diff_thresh):
+            raise ValueError('diff_thresh should be lower than 0.5. diff_thresh = ', diff_thresh)
 
         super(DCS, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
                                   safe_k=safe_k, IH_rate=IH_rate, aknn=aknn)
@@ -107,8 +118,8 @@ class DCS(DS):
 
         Diff : Select the base classifier that is significantly better than the others in the pool (when the difference
         between its competence level and the competence level of the other base classifiers is higher than a predefined
-        threshold). If no base classifier is significantly better, the base classifier is selected randomly.
-        This selection scheme is the standard used in the A Priori, A Posteriori and MCB techniques.
+        threshold). If no base classifier is significantly better, the base classifier is selected randomly among the
+        member with equivalent competence level.
 
         Random: Selects a random base classifier among all base classifiers that achieved the same competence level.
 
@@ -175,15 +186,14 @@ class DCS(DS):
         -------
         The predicted label of the query
         """
-
+        competences = self.estimate_competence(query)
         if self.selection_method != 'all':
             # only one classifier is selected
-            competences = self.estimate_competence(query)
             clf_index = self.select(competences)
             predicted_label = self.pool_classifiers[clf_index].predict(query)[0]
         else:
             # Selected ensemble of classifiers is combined using Majority Voting
-            indices, _ = self.select(query)
+            indices = self.select(competences)
             predicted_label = self.majority_voting(indices, query)
 
         return predicted_label
@@ -203,13 +213,14 @@ class DCS(DS):
         -------
         predicted_proba : array = [n_classes] with the probability estimates for all classes
         """
+        competences = self.estimate_competence(query)
         if self.selection_method != 'all':
             # only one classifier is selected
-            clf_index = self.select(query)
+            clf_index = self.select(competences)
             predicted_proba = self.pool_classifiers[clf_index].predict_proba(query)
         else:
             # Selected ensemble of classifiers is combined using Majority Voting
-            indices = self.select(query)
-            predicted_proba = self.predict_proba_ensemble(indices, query)
+            indices = self.select(competences)
+            predicted_proba = self.predict_proba_ensemble(query, indices)
 
         return predicted_proba

@@ -1,19 +1,18 @@
-from pythonds.dcs.a_priori import APriori
-from pythonds.dcs.mcb import MCB
-# Example of a dcs techniques
-from pythonds.dcs.ola import OLA
-from pythonds.des.des_p import DESP
-from pythonds.des.knora_u import KNORAU
+import numpy as np
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.datasets import load_breast_cancer
 from sklearn.ensemble import BaggingClassifier
 from sklearn.linear_model import Perceptron
 from sklearn.model_selection import train_test_split
-import numpy as np
-import pytest
 
+from pythonds.dcs.a_priori import APriori
+from pythonds.dcs.mcb import MCB
+# Example of a dcs techniques
+from pythonds.dcs.ola import OLA
+from pythonds.des.des_p import DESP
 # Example of a des techniques
 from pythonds.des.knora_e import KNORAE
+from pythonds.des.knora_u import KNORAU
 
 
 def setup_classifiers():
@@ -83,7 +82,7 @@ def test_apriori():
 
     apriori = APriori(pool_classifiers, rng=rng)
     apriori.fit(X_dsel, y_dsel)
-    assert np.isclose(apriori.score(X_test, y_test), 0.87234042553191493)
+    assert np.isclose(apriori.score(X_test, y_test), 0.88829787234042556)
 
 
 def test_baseline():

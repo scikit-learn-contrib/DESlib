@@ -67,12 +67,14 @@ class MLA(DCS):
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
                  aknn=False,
                  selection_method='best',
-                 diff_thresh=None):
+                 diff_thresh=0.1,
+                 rng=np.random.RandomState()):
 
         super(MLA, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                   aknn=aknn,
                                   selection_method=selection_method,
-                                  diff_thresh=diff_thresh)
+                                  diff_thresh=diff_thresh,
+                                  rng=rng)
         self.name = 'Modified Local Accuracy (MLA)'
 
     def estimate_competence(self, query):
@@ -82,7 +84,7 @@ class MLA(DCS):
         Two versions of the LCA are considered for the competence estimates:
 
         The Modified local accuracy of the base classifiers is estimated by its classification accuracy taking
-        into account only the samples beloging to the class wl in the region of competence. In this case, wl is
+        into account only the samples belonging to the class wl in the region of competence. In this case, wl is
         the predict class of the base classifier ci for the query sample. This method also weights the influence
         of each training sample according to its Euclidean distance to the query instance. The closest samples have
         a higher influence in the computation of the competence level.
@@ -97,27 +99,26 @@ class MLA(DCS):
         competences : array = [n_classifiers] containing the competence level estimated
         for each base classifier
         """
-
-        dists, idx_neighbors = self._get_region_competence(query, k=self.n_samples)
+        dists, idx_neighbors = self._get_region_competence(query)
+        dists_normalized = 1.0/dists
         competences = np.zeros(self.n_classifiers)
 
         for clf_index, clf in enumerate(self.pool_classifiers):
             # Check if the dynamic frienemy pruning (DFP) should be used used
             if self.mask[clf_index]:
-                result = np.zeros(self.k)
-                predicted_label = clf.predict(query)
-                counter = 0
-                # TODO check list comprehension here
-                for index in idx_neighbors:
+
+                result = []
+                dists_temp = []
+                predicted_label = clf.predict(query)[0]
+
+                for counter, index in enumerate(idx_neighbors):
                     # Get only neighbors from the same class as predicted by the
                     # classifier (clf) to form the region of competence
-                    if self.DSEL_target[index] == predicted_label[0]:
+                    if self.DSEL_target[index] == predicted_label:
                         # weight by distance
-                        result[counter] = (float(self.processed_dsel[index][
-                                      clf_index]) / dists[index])
-                        counter += 1
-                    if counter >= self.k:
-                        break
-                competences[clf_index] = np.mean(result)
+                        result.append(float(self.processed_dsel[index][clf_index]) * dists_normalized[counter])
+                        dists_temp.append(dists_normalized[counter])
+
+                competences[clf_index] = sum(result) / sum(dists_temp)
 
         return competences

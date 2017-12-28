@@ -105,8 +105,9 @@ class APriori(DCS):
         for each base classifier
         """
         dists, idx_neighbors = self._get_region_competence(query)
-        competences = np.zeros(self.n_classifiers)
+        dists_normalized = 1.0/dists
 
+        competences = np.zeros(self.n_classifiers)
         for clf_index in range(self.n_classifiers):
 
             # Check if the dynamic frienemy pruning (DFP) should be used used
@@ -116,7 +117,7 @@ class APriori(DCS):
                     target = self.DSEL_target[index]
                     # get the post_prob for the correct class
                     post_prob = self._get_scores_dsel(clf_index, index)[target]
-                    result[counter] = (post_prob * dists[counter])
+                    result[counter] = (post_prob * dists_normalized[counter])
 
-                competences[clf_index] = sum(result)/sum(dists)
+                competences[clf_index] = sum(result)/sum(dists_normalized)
         return competences

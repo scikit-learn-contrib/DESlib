@@ -67,12 +67,13 @@ class APosteriori(DCS):
 
     """
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 aknn=False, selection_method='diff', diff_thresh=0.1):
+                 aknn=False, selection_method='diff', diff_thresh=0.1, rng=np.random.RandomState()):
 
         super(APosteriori, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                           aknn=aknn,
                                           selection_method=selection_method,
-                                          diff_thresh=diff_thresh)
+                                          diff_thresh=diff_thresh,
+                                          rng=rng)
         self.name = 'A Posteriori'
 
     def fit(self, X, y):
@@ -106,29 +107,33 @@ class APosteriori(DCS):
         competences : array = [n_classifiers] containing the competence level estimated
         for each base classifier
         """
-        dists, idx_neighbors = self._get_region_competence(query, k=self.n_samples)
+        dists, idx_neighbors = self._get_region_competence(query)
+        dists_normalized = 1.0/dists
         competences = np.zeros(self.n_classifiers)
 
         for clf_index, clf in enumerate(self.pool_classifiers):
 
             # Check if the dynamic frienemy pruning (DFP) should be used used
             if self.mask[clf_index]:
+
                 result = []
-                predicted_label = clf.predict(query)
-                counter = 0
-                dists_temp = np.zeros(self.k)
-                for index_neighbor in idx_neighbors:
+                dists_temp = []
+                predicted_label = clf.predict(query)[0]
+
+                for counter, neighbor in enumerate(idx_neighbors):
                     # Get only neighbors from the same class as predicted by the
                     # classifier (clf) to form the region of competence
-                    target = self.DSEL_target[index_neighbor]
-                    if target == predicted_label[0]:
+                    target = self.DSEL_target[neighbor]
+                    if target == predicted_label:
+                        # get the posterior probability for the target class
+                        post_prob = self._get_scores_dsel(clf_index, neighbor)[target]
                         # weight by distance
-                        post_prob = self._get_scores_dsel(clf_index, index_neighbor)[target]
-                        result.append(post_prob * dists[index_neighbor])
-                        dists_temp[counter] = dists[index_neighbor]
-                        counter += 1
-                    if counter >= self.k:
-                        break
-                competences[clf_index] = sum(result)/sum(dists_temp)
+                        result.append(post_prob * dists_normalized[counter])
+                        # keep the distance for normalization
+                        dists_temp.append(dists_normalized[counter])
+                if len(result) > 0 and len(dists_temp) > 0:
+                    competences[clf_index] = sum(result)/sum(dists_temp)
+                else:
+                    competences[clf_index] = 0
 
         return competences

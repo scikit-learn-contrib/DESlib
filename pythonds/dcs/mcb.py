@@ -77,6 +77,14 @@ class MCB(DCS):
                                   diff_thresh=diff_thresh,
                                   rng=rng)
 
+        if not isinstance(similarity_threshold, float):
+            raise TypeError('The parameter similarity_threshold must be a float.'
+                            ' similarity_threshold = ', type(similarity_threshold))
+
+        if similarity_threshold > 1 or similarity_threshold < 0:
+            raise ValueError('The parameter similarity_threshold should be between [0 and 1]. '
+                             'similarity_threshold = ', similarity_threshold)
+
         self.similarity_threshold = similarity_threshold
         self.name = 'Multiple Classifier Behaviour (MCB)'
 
@@ -108,6 +116,7 @@ class MCB(DCS):
         """
         dists, idx_neighbors = self._get_region_competence(query)
         competences = np.zeros(self.n_classifiers)
+
         BKS_query = self._BKS_transform(query)
 
         # Use the BKS to filter the competence region
@@ -121,7 +130,6 @@ class MCB(DCS):
         # Use the whole neighborhood if no sample is selected to form the region of competence
         if len(selected_idx) == 0:
             selected_idx = idx_neighbors
-
         # Estimate the classifier competence for the filtered region of competence
         for clf_index in range(self.n_classifiers):
 
@@ -135,8 +143,8 @@ class MCB(DCS):
     def _BKS_transform(self, query):
         """Transform the query sample to the decision space using the Behaviour Knowledge Space (BKS) method [4].
 
-        The BKS space is a vector = [n_classifiers], in which each position is equals to 1 if the corresponding
-        base classifier predicted the correct label for the query sample or 0 otherwise.
+        The BKS space is a vector = [n_classifiers], in which each position i is equals to the class label predicted
+        by the base classifier ci for the query sample.
 
         Parameters
         ----------
@@ -144,10 +152,10 @@ class MCB(DCS):
 
         Returns
         -------
-        bks_query : array = [n_classifiers] containing the transformation of the qeuery sample to the decision space
+        bks_query : array = [n_classifiers] containing the transformation of the query sample to the decision space
         """
         BKS_query = np.zeros(self.n_classifiers)
         for clf_index, clf in enumerate(self.pool_classifiers):
-            BKS_query[clf_index] = clf.predict(query.reshape(1, -1))
+            BKS_query[clf_index] = clf.predict(query.reshape(1, -1))[0]
 
         return BKS_query
