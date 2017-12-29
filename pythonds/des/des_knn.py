@@ -7,7 +7,7 @@
 import numpy as np
 from pythonds.des.base import DES
 
-from pythonds.util.diversity import double_fault, Q_statistic, ratio_errors
+from pythonds.util.diversity import negative_double_fault, Q_statistic, ratio_errors
 
 
 class DESKNN(DES):
@@ -46,10 +46,10 @@ class DESKNN(DES):
               whether the technique will perform dynamic selection, dynamic weighting
               or an hybrid approach for classification
 
-    N : float (Default = 0.3)
+    pct_accuracy : float (Default = 0.3)
         Percentage of base classifiers selected based on accuracy
 
-    J : float (Default = 0.3)
+    pct_diversity : float (Default = 0.3)
         Percentage of base classifiers selected based n diversity
 
     more_diverse : Boolean (Default = True)
@@ -75,22 +75,22 @@ class DESKNN(DES):
                  IH_rate=0.30,
                  aknn=False,
                  mode='selection',
-                 N=0.3,
-                 J=0.3,
-                 more_diverse=False,
+                 pct_accuracy=0.3,
+                 pct_diversity=0.3,
+                 more_diverse=True,
                  metric='DF'):
 
         metric = metric.upper()
         super(DESKNN, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                      aknn=aknn, mode=mode)
 
-        self.N = int(self.n_classifiers * N)
-        self.J = int(self.n_classifiers * J)
+        self.N = int(self.n_classifiers * pct_accuracy)
+        self.J = int(self.n_classifiers * pct_diversity)
         self.more_diverse = more_diverse
         self.name = 'Dynamic Ensemble Selection-KNN (DES-KNN)'
         self.metric = metric
         if metric == 'DF':
-            self.diversity_func = double_fault
+            self.diversity_func = negative_double_fault
         elif metric == 'Q':
             self.diversity_func = Q_statistic
         else:
@@ -123,22 +123,23 @@ class DESKNN(DES):
         competences = np.zeros(self.n_classifiers)
         predicted_matrix = np.zeros((self.k, self.n_classifiers))
         for clf_index in range(self.n_classifiers):
-            result = [self.processed_dsel[index][clf_index] for index in idx_neighbors]
-            predicted_matrix[:, clf_index] = result
-            competences[clf_index] = np.mean(result)
+            hit_result = [self.processed_dsel[index][clf_index] for index in idx_neighbors]
+            predictions = [self.BKS_dsel[index][clf_index] for index in idx_neighbors]
+            predicted_matrix[:, clf_index] = predictions
+            competences[clf_index] = np.mean(hit_result)
 
         # Calculate the more_diverse matrix. It becomes computationally expensive
         # When the region of competence is high
         targets = [self.DSEL_target[index] for index in idx_neighbors]
         diversity = np.zeros(self.n_classifiers)
 
-        # TODO change the for loop to calculate half of the matrix (symmetric)
         for clf_index in range(self.n_classifiers):
-            for clf_index2 in range(self.n_classifiers):
-                if clf_index != clf_index2:
-
-                    diversity[clf_index] += \
-                        double_fault(targets, predicted_matrix[:, clf_index], predicted_matrix[:, clf_index2])
+            for clf_index2 in range(clf_index + 1, self.n_classifiers):
+                this_diversity = self.diversity_func(targets,
+                                                     predicted_matrix[:, clf_index],
+                                                     predicted_matrix[:, clf_index2])
+                diversity[clf_index] += this_diversity
+                diversity[clf_index2] += this_diversity
 
         return competences, diversity
 
@@ -159,19 +160,18 @@ class DESKNN(DES):
         """
         # sort the array to remove the most accurate classifiers
         competences, diversity = self.estimate_competence(query)
-        accuracy_indices = np.argsort(competences)[::-1][0:self.N]
+        competent_indices = np.argsort(competences)[::-1][0:self.N]
 
-        # delete the classifiers that were already selected
-        diversity = np.delete(diversity, accuracy_indices)
+        diversity_of_selected = diversity[competent_indices]
 
         # sort the remaining classifiers to select the most diverse ones
         # Since DF is used, the more_diverse is minimized
         if self.more_diverse:
-            diversity_indices = np.argsort(diversity)[::-1][0:self.J]
+            diversity_indices = np.argsort(diversity_of_selected)[::-1][0:self.J]
         else:
-            diversity_indices = np.argsort(diversity)[0:self.J]
+            diversity_indices = np.argsort(diversity_of_selected)[0:self.J]
 
-        indices = np.hstack((accuracy_indices, diversity_indices))
+        indices = competent_indices[diversity_indices]
         return indices
 
     def classify_instance(self, query):
