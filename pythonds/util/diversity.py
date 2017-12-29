@@ -22,6 +22,10 @@ def _process_predictions(y, y_pred1, y_pred2):
     return N00, N10, N01, N11
 
 
+def negative_double_fault(y, y_pred1, y_pred2):
+    return -double_fault(y, y_pred1, y_pred2)
+
+
 def double_fault(y, y_pred1, y_pred2):
     N00, N10, N01, N11 = _process_predictions(y, y_pred1, y_pred2)
     return N00/(N00 + N10 + N01 + N11)
