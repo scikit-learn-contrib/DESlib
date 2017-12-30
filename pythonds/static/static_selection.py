@@ -6,35 +6,97 @@
 
 import numpy as np
 from sklearn.base import ClassifierMixin
+from sklearn.exceptions import NotFittedError
+
+from pythonds.util.aggregation import majority_voting
 
 
-class StaticSelection(object, ClassifierMixin):
-    """description of class"""
+class StaticSelection(ClassifierMixin):
+    """Ensemble model that selects N classifiers with the best performance in a dataset
 
-    def __init__(self, pool_classifiers, N, scheme='MV'):
-        self.scheme = scheme.upper()
-        assert scheme in ['MV', 'GA']
-        assert 1 > N > 0
-        self.perc_select = N
-        self.pool = pool_classifiers
-        self.n_classifiers = len(pool_classifiers) * N
+    Parameters
+    ----------
+    pool_classifiers : list of classifiers
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       The classifiers should support methods "predict".
+
+    pct_classifiers : float
+                      percentage of base classifier that should be selected
+
+
+    References
+    ----------
+    Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection of classifiers—a comprehensive review."
+    Pattern Recognition 47.11 (2014): 3665-3680.
+
+    Kuncheva, Ludmila I. Combining pattern classifiers: methods and algorithms. John Wiley & Sons, 2004.
+
+    R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
+    Information Fusion, vol. 41, pp. 195 – 216, 2018.
+
+    """
+
+    def __init__(self, pool_classifiers, pct_classifiers):
+
+        if not isinstance(pct_classifiers, float):
+            raise TypeError('pct_classifiers should be a float.')
+
+        if pct_classifiers > 1 or pct_classifiers < 0:
+            raise ValueError('The parameter pct_classifiers should be a number between 0 and 1.')
+
+        self.perc_select = pct_classifiers
+        self.pool_classifiers = pool_classifiers
+        self.n_classifiers_pool = len(pool_classifiers)
+        self.n_classifiers_ensemble = int(len(pool_classifiers) * pct_classifiers)
         self.clf_indices = None
 
-    def fit(self, X, y):
-        performances = np.array(self.pool.n_estimators)
+        self.n_features = None
+        self.n_classes = None
+        self.classes = None
+        self.ensemble = None
 
-        for clf_idx, clf in enumerate(self.pool):
+    def fit(self, X, y):
+        """Fit the static selection model by select an ensemble of classifier containing the base classifiers with
+         highest accuracy in the given dataset.
+
+         Parameters
+        ----------
+        X : ndarray of shape = [n_samples, n_features] containing the data.
+
+        y : class labels of each sample in X.
+
+        """
+        self.classes = np.unique(y)
+        self.n_classes = self.classes.size
+        self.n_features = X.shape[1]
+
+        performances = np.zeros(len(self.pool_classifiers))
+
+        for clf_idx, clf in enumerate(self.pool_classifiers):
             performances[clf_idx] = clf.score(X, y)
 
-        self.clf_indices = np.argsort(performances)[::-1][0:self.n_classifiers]
-
-        return self
+        self.clf_indices = np.argsort(performances)[::-1][0:self.n_classifiers_ensemble]
+        self.ensemble = [self.pool_classifiers[clf_idx] for clf_idx in self.clf_indices]
 
     def predict(self, X):
-        return
+        """Predict the label of each sample in X and returns the predicted label.
 
-    def predict_proba(self, X):
-        return
+        Parameters
+        ----------
+        X : ndarray of shape = [n_samples, n_features] containing the data.
 
+        Returns
+        -------
+        predicted_labels : array of shape = [n_samples] with the predicted class for each sample..
+        """
+        self._check_is_fitted()
+        predicted_labels = majority_voting(self.ensemble, X)
 
+        return predicted_labels
 
+    def _check_is_fitted(self):
+        """Verify if the estimator algorithm was fitted.
+        Raises an error if it is not fitted.
+        """
+        if self.ensemble is None:
+            raise NotFittedError('Estimator not fitted. Call "fit" before exploiting the model.')

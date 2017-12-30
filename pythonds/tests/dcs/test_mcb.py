@@ -36,7 +36,7 @@ def test_bks_transform():
     expected = np.array([0, 1, 0])
     assert np.equal(value, expected).all()
 
-    pool_classifiers2 = [create_pool_all_agree(1)] * 10
+    pool_classifiers2 = create_pool_all_agree(1, 10)
     mcb_test2 = MCB(pool_classifiers2)
     bks_result = mcb_test2._BKS_transform(query)
     expected = np.array([1] * 10)

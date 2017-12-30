@@ -6,11 +6,12 @@
 
 from abc import abstractmethod, ABCMeta
 
-from pythonds.des.base import DES
+import numpy as np
 from scipy.stats import entropy
 from sklearn.preprocessing import minmax_scale
 
-from pythonds.util.prob_functions import *
+from pythonds.des.base import DES
+from pythonds.util.prob_functions import entropy_func, ccprmod, log_func, exponential_func, min_difference
 
 
 class Probabilistic(DES):
@@ -251,7 +252,7 @@ class Logarithmic(Probabilistic):
 
         super(Logarithmic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                           aknn=aknn, mode=mode)
-        self.name = "des-Log"
+        self.name = "DES-Logarithmic"
 
     def source_competence(self):
         C_src = np.zeros((self.n_samples, self.n_classifiers))
@@ -308,9 +309,6 @@ class Entropy(Probabilistic):
     B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
     multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197–206.
 
-    Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
-    for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
-
     R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
@@ -320,7 +318,7 @@ class Entropy(Probabilistic):
         super(Entropy, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                       aknn=aknn, mode=mode)
         self.selection_threshold = 0.0
-        self.name = "des-Entropy"
+        self.name = "DES-Entropy"
 
     def source_competence(self):
         """The source of competence C_src at the validation point xk is a product of two factors: The absolute value of
@@ -399,7 +397,7 @@ class Exponential(Probabilistic):
                                           aknn=aknn, mode=mode)
 
         self.selection_threshold = 0
-        self.name = "des-Exp"
+        self.name = "DES-Exponential"
 
     def source_competence(self):
         """The source of competence C_src at the validation point xk is a product of two factors: The absolute value of
@@ -627,9 +625,6 @@ class MinimumDifference(Probabilistic):
     B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
     multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197–206.
 
-    Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
-    for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
-
     R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
@@ -637,8 +632,10 @@ class MinimumDifference(Probabilistic):
                  mode='selection'):
         super(MinimumDifference, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
                                                 IH_rate=IH_rate, aknn=aknn, mode=mode)
+
+        # Threshold is 0 since incompetent classifiers should have a negative competence level
         self.selection_threshold = 0.0
-        self.name = "des-Minimum Difference (des-MD)"
+        self.name = "DES-Minimum Difference (DES-MD)"
 
     def source_competence(self):
         """Calculates the source of competence using the Minimum Difference method.
@@ -651,5 +648,8 @@ class MinimumDifference(Probabilistic):
         C_src : ndarray = [n_samples, n_classifiers] the competence source for each base classifier at each data point.
         """
         C_src = np.zeros((self.n_samples, self.n_classifiers))
-        # TODO write the function here.
+        for clf_index in range(self.n_classifiers):
+            supports = self._get_scores_dsel(clf_index)
+            C_src[:, clf_index] = min_difference(supports, self.DSEL_target)
+
         return C_src

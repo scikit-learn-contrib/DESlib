@@ -5,15 +5,25 @@
 # License: BSD 3 clause
 
 import numpy as np
-from sklearn.base import ClassifierMixin
 
 
-class Oracle(ClassifierMixin):
-    """ Classification method that selects the classifier in the pool with highest
-    score to be used for classification. Usually, the performance of the single best classifier
-    is estimated based on the validation data.
+class Oracle:
+    """ Abstract method that always selects the base classifier that predicts the correct label if such classifier
+    exists. This method is often used to measure the upper-limit performance that can be achieved by a dynamic
+    classifier selection technique. It is used as a benchmark by several dynamic selection algorithms
 
+    Parameters
+    ----------
+    pool_classifiers : list of classifiers
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       The classifiers should support methods "predict".
 
+    References
+    ----------
+    Kuncheva, Ludmila I. Combining pattern classifiers: methods and algorithms. John Wiley & Sons, 2004.
+
+    R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
+    Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
 
@@ -21,25 +31,47 @@ class Oracle(ClassifierMixin):
         self.pool_classifiers = pool_classifiers
         self.n_classifiers = len(self.pool_classifiers)
 
-    def performance(self, X, y):
-        predictions = np.zeros(y.size)
+    def predict(self, X, y):
+        """Prepare the labels using the Oracle model.
+
+         Parameters
+        ----------
+        X : ndarray of shape = [n_samples, n_features] containing the data.
+
+        y : class labels of each sample in X.
+
+        Returns
+        -------
+        predicted_labels : array of shape = [n_samples] with the predicted class for each sample.
+        """
+        predicted_labels = -np.ones(y.size, dtype=int)
+
         for sample_index, x in enumerate(X):
+
             for clf in self.pool_classifiers:
-                if clf.predict(x.reshape(1, -1))[0] == y[sample_index]:
-                    predictions[sample_index] = 1
+                # If one base classifier predicts the correct answer, consider as a correct prediction
+                predicted = clf.predict(x.reshape(1, -1))[0]
+                if predicted == y[sample_index]:
+                    predicted_labels[sample_index] = predicted
+                    break
 
-        return np.mean(predictions)
+        return predicted_labels
 
-if __name__ == "__main__":
+    def score(self, X, y):
+        """Prepare the labels using the Oracle model.
 
-    from sklearn.datasets import load_iris
-    from sklearn.tree import DecisionTreeClassifier
-    from sklearn.linear_model import Perceptron
-    from pythonds.util.generate_pool import generate_pool
-    iris = load_iris()
-    model = DecisionTreeClassifier()
-    model = Perceptron()
-    pool = generate_pool(iris, model, 2)
+         Parameters
+        ----------
+        X : ndarray of shape = [n_samples, n_features] containing the data.
 
-    ranking = Oracle(pool)
-    print(ranking.performance(iris.data, iris.target))
+        y : class labels of each sample in X.
+
+        Returns
+        -------
+        accuracy : Classification accuracy of the Oracle model.
+        """
+        from sklearn.metrics import accuracy_score
+        accuracy = accuracy_score(y, self.predict(X, y))
+        return accuracy
+
+

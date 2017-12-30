@@ -127,5 +127,5 @@ def create_pool_classifiers():
     return pool_classifiers
 
 
-def create_pool_all_agree(return_value):
-    return create_base_classifier(return_value=return_value)
+def create_pool_all_agree(return_value, size):
+    return [create_base_classifier(return_value=return_value)] * size
