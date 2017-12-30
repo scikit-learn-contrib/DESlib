@@ -1,10 +1,28 @@
 # coding=utf-8
-
-import numpy as np
 # Author: Rafael Menelau Oliveira e Cruz <rafaelmenelau@gmail.com>
 #
 # License: BSD 3 clause
+
+import numpy as np
+
 from scipy.stats import mode
+
+"""
+This file contains the implementation of different aggregation functions to combine the outputs of the base
+classifiers to give the final decision. 
+
+
+References
+----------
+Kuncheva, Ludmila I. Combining pattern classifiers: methods and algorithms. John Wiley & Sons, 2004.
+
+Shipp, Catherine A., and Ludmila I. Kuncheva. "Relationships between combination methods and measures of diversity
+in combining classifiers." Information fusion 3.2 (2002): 135-148.
+
+Giacinto, Giorgio, and Fabio Roli. "Design of effective neural network ensembles for image classification purposes.
+" Image and Vision Computing 19.9 (2001): 699-707.
+
+"""
 
 
 def majority_voting(classifier_ensemble, query):
@@ -14,13 +32,13 @@ def majority_voting(classifier_ensemble, query):
 
     Parameters
     ----------
-    classifier_ensemble : The ensemble of classifiers to be used in the aggregation scheme
+    classifier_ensemble : List of classifiers used in the aggregation scheme.
 
-    query : Sample to be classified
+    query : np.array = [n_samples, n_features] containing the samples to be classified
 
     Returns
     -------
-    predicted_label : The label of the query sample, predicted by the majority voting rule
+    predicted_label : The label of each query sample predicted using the majority voting rule
     """
     # Check if a single sample was passed down to the function. In this case the sample must be converted to a 2D array.
     if query.ndim == 1:
@@ -42,15 +60,15 @@ def weighted_majority_voting(classifier_ensemble, weights, query):
 
     Parameters
     ----------
-    classifier_ensemble : index of the base classifier to be used in the combination scheme
+    classifier_ensemble : List of classifiers used in the aggregation scheme.
 
-    weights : the weights associated to each classifier for the combination scheme
+    weights : np.array = [n_samples, n_classifiers] with the weights associated to each base classifier for each sample
 
-    query : Sample to be classified
+    query : np.array = [n_samples, n_features] containing the samples to be classified
 
     Returns
     -------
-    predicted_label : The label of the query sample, predicted by the majority voting rule
+    predicted_label : The label of each query sample predicted using the weighted majority voting rule
     """
     # Check if a single sample was passed down to the function. In this case the sample must be converted to a 2D array.
     if query.ndim == 1:
@@ -70,27 +88,27 @@ def majority_voting_rule(votes):
 
     Parameters
     ----------
-    votes : The ensemble of classifiers to be used in the aggregation scheme
+    votes : np.array = [n_samples, n_classifiers], The votes obtained by each classifier for each sample.
 
     Returns
     -------
-    predicted_label : The label of the query sample, predicted by the majority voting rule
+    predicted_label : np.array = [n_samples] The label associated to each query sample.
     """
     return mode(votes, axis=1)[0]
 
 
 def weighted_majority_voting_rule(votes, weights):
-    """Applies the majority voting rule.
+    """Applies the weighted majority voting rule based on the votes obtained.
 
     Parameters
     ----------
-    votes : predictions of the base classifiers
+    votes : np.array = [n_samples, n_classifiers] with the votes of the base classifiers
 
-    weights : The weights associated to each classifier in the combination scheme
+    weights : np.array = [n_samples, n_classifiers] The weights associated to each classifier for each sample
 
     Returns
     -------
-    predicted_label : The label of the query sample, predicted by the majority voting rule
+    predicted_label : The label of the query sample predicted using the weighted majority voting rule
     """
     if weights.shape != votes.shape:
         raise ValueError('The size of the arrays votes and weights should be the same. weights = {0} '
