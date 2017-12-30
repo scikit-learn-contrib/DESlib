@@ -27,16 +27,19 @@ multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197
 def exponential_func(n_classes, support_correct):
     """Calculate the exponential function based on the support obtained by
     the base classifier for the correct class label.
+
     Parameters
     ----------
-    n_classes : int, Number of classes in the problem
+    n_classes : int
+                The number of classes in the problem
 
-    support_correct: np.array(dtype=Float), supports obtained by the base
-    classifier for the correct class
+    support_correct: array of shape = [n_samples]
+                    containing the supports obtained by the base classifier for the correct class
 
     Returns
     -------
-    C_src : Result of the exponential function calculated over all training samples
+    C_src : array of shape = [n_samples]
+            representing the classifier competences at each data point
     """
     support_correct[support_correct > 1.0] = 1.0
     support_correct[support_correct < 0.0] = 0.0
@@ -55,17 +58,19 @@ def log_func(n_classes, support_correct):
 
     Parameters
     ----------
-    n_classes : int, Number of classes in the problem
+    n_classes : int
+                The number of classes in the problem
 
-    support_correct: np.array(dtype=Float), supports obtained by the base
-    classifier for the correct class
+    support_correct: array of shape = [n_samples]
+                    containing the supports obtained by the base classifier for the correct class
 
     Returns
     -------
-    C_src : Result of the logarithmic function calculated over all training samples
+    C_src : array of shape = [n_samples]
+            representing the classifier competences at each data point
 
     References
-    -------
+    ----------
     T.Woloszynski, M. Kurzynski, A measure of competence based on randomized reference classifier for dynamic
     ensemble selection, in: International Conference on Pattern Recognition (ICPR), 2010, pp. 4194–4197.
     """
@@ -84,27 +89,28 @@ def log_func(n_classes, support_correct):
 
 def entropy_func(n_classes, supports, is_correct):
     """Calculate the entropy in the support obtained by
-    the base classifier.
-
-    The value of the source competence is inverse proportional to
+    the base classifier. The value of the source competence is inverse proportional to
     the normalized entropy of its supports vector and the sign of competence is simply
     determined  by the correct/incorrect classification.
+
     Parameters
     ----------
-    n_classes : int, Number of classes in the problem
+    n_classes : int
+                The number of classes in the problem
 
-    supports: np.array(dtype=Float), supports obtained by the base
-    classifier for each class
+    supports: array of shape = [n_samples, n_classes]
+              containing the supports obtained by the base classifier for each class.
 
-    is_correct: np.array(dtype=int), array with 1 whether the base
-    classifier predicted the correct label, -1 otherwise
+    is_correct: array of shape = [n_samples]
+                array with 1 whether the base classifier predicted the correct label and -1 otherwise
 
     Returns
     -------
-    C_src : Result of the entropy function calculated over all input samples
+    C_src : array of shape = [n_samples]
+            representing the classifier competences at each data point
 
     References
-    -------
+    ----------
     B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
     multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197–206.
     """
@@ -124,23 +130,26 @@ def entropy_func(n_classes, supports, is_correct):
 
 
 def ccprmod(supports, idx_correct_label, B=20):
-    """
-    Python implementation of the ccprmod.m (Classifier competence based on probabilistic modelling)
+    """Python implementation of the ccprmod.m (Classifier competence based on probabilistic modelling)
     function. Matlab code is available at:
-http://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/28391/versions/6/previews/ccprmod.m/index.html
+    http://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/28391/versions/6/previews/ccprmod.m/index.html
 
     Parameters
     ----------
-    supports - NxC matrix of normalised C class supports produced by the classifier for N objects
+    supports: array of shape = [n_samples, n_classes]
+              containing the supports obtained by the base classifier for each class.
 
-    idx_correct_label - Nx1 vector of indices of the correct classes for N objects
+    idx_correct_label: array of shape = [n_samples]
+                       containing the index of the correct class.
 
-    B - number of points used in the calculation of the competence, higher values result
-         in a more accurate estimation (optional, default B=20)
+    B : int (Default = 20)
+        number of points used in the calculation of the competence, higher values result
+        in a more accurate estimation.
 
     Returns
     -------
-    C_src - Nx1 vector of the classifier competences for each data point
+    C_src : array of shape = [n_samples]
+            representing the classifier competences at each data point
 
     Example
     -------
@@ -152,7 +161,7 @@ http://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/28391
           0.332872292262951
 
     References
-    -------
+    ----------
     T.Woloszynski, M. Kurzynski, A probabilistic model of classifier competence for dynamic ensemble selection,
     Pattern Recognition 44 (2011) 2656–2668.
     """
@@ -201,18 +210,19 @@ def min_difference(supports, idx_correct_label):
 
     Parameters
     ----------
-    supports: np.array(dtype=Float), supports obtained by the base
-    classifier for each class
+    supports: array of shape = [n_samples, n_classes]
+              containing the supports obtained by the base classifier for each class
 
-    idx_correct_label: np.array(dtype=int), array with 1 whether the base
-    classifier predicted the correct label, -1 otherwise
+    idx_correct_label: array of shape = [n_samples]
+                       containing the index of the correct class
 
     Returns
     -------
-    C_src - Nx1 vector of the classifier competences for each data point
+    C_src : array of shape = [n_samples]
+            representing the classifier competences at each data point
 
     References
-    -------
+    ----------
     B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
     multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197–206.
     """
@@ -228,20 +238,22 @@ def min_difference(supports, idx_correct_label):
 
 
 def softmax(w, theta=1.0):
-    """"
-    takes an vector w of S N-element and returns a vectors where each column of the
+    """Takes an vector w of S N-element and returns a vectors where each column of the
     vector sums to 1, with elements exponentially proportional to the
     respective elements in N.
+
     Parameters
     ----------
-    w : ndarray with N elements
+    w : array of shape = [N,  M]
 
-    theta : float parameter, used as a multiplier  prior to exponentiation. Default = 1.
+    theta : float (default = 1.0)
+            used as a multiplier  prior to exponentiation.
 
     Returns
-    ----------
-    dist: np.array which the sum of each column sums to 1 and the elements are exponentially proportional to the
-    respective elements in N
+    -------
+    dist : array of shape = [N, M]
+           which the sum of each row sums to 1 and the elements are exponentially proportional to the
+           respective elements in N
 
     """
     e = np.exp(np.array(w) / theta)
