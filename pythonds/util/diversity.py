@@ -132,8 +132,8 @@ def negative_double_fault(y, y_pred1, y_pred2):
 
 def Q_statistic(y, y_pred1, y_pred2):
     """Calculates the Q-statistics diversity measure between a pair of classifiers. The Q value is in a range [-1, 1].
-     Classifiers that tend to classify the same object correctly will have positive values of Q, and
-     Q = 0 for two independent classifiers.
+    Classifiers that tend to classify the same object correctly will have positive values of Q, and
+    Q = 0 for two independent classifiers.
 
     Parameters
     ----------
