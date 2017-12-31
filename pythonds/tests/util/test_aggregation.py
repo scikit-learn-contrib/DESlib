@@ -1,8 +1,8 @@
 import numpy as np
 
 from pythonds.tests.examples_test import create_pool_all_agree, create_base_classifier
-from pythonds.util.aggregation import majority_voting, weighted_majority_voting
-
+from pythonds.util.aggregation import majority_voting, weighted_majority_voting, weighted_majority_voting_rule
+import pytest
 
 def tests_majority_voting():
     query = np.array([[1, -1], [0, 0], [3, -1]])
@@ -39,3 +39,8 @@ def tests_weighted_majority_voting_single_sample():
     weights = np.atleast_2d([0.2, 0.5, 1.0])
     predicted = weighted_majority_voting(ensemble_classifiers, weights, query)
     assert predicted == 2
+
+
+def tests_weighted_majority_voting_parameter_shape():
+    with pytest.raises(ValueError):
+        weighted_majority_voting_rule(np.array([0, 1]), np.array([0]))
