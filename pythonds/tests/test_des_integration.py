@@ -15,6 +15,29 @@ from pythonds.des.knora_e import KNORAE
 from pythonds.des.knora_u import KNORAU
 
 
+def test_perceptroncv():
+    rng = np.random.RandomState(123456)
+    data = load_breast_cancer()
+    X = data.data
+    y = data.target
+
+    basemodel = Perceptron(max_iter=5)
+    model = CalibratedClassifierCV(basemodel, cv='prefit') # using 'prefit' so the perceptron is not re-trained
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=rng)
+    X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train, test_size=0.5, random_state=rng)
+
+    basemodel.fit(X_train, y_train)
+    model.fit(X_dsel, y_dsel)
+
+    base_preds = basemodel.predict(X_test)
+    model_preds = model.predict(X_test)
+
+    print('Model predictions: 0 predicted %.2f%% of times; 1 predicted %.2f%% of times' % (np.mean(model_preds == 0) * 100, np.mean(model_preds == 1) * 100))
+
+    assert np.allclose(base_preds, model_preds)
+
+
 def setup_classifiers():
     rng = np.random.RandomState(123456)
 
