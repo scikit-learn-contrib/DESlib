@@ -9,6 +9,7 @@ from sklearn.datasets import load_breast_cancer
 from sklearn.ensemble import BaggingClassifier
 from sklearn.linear_model import Perceptron
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 # Example of a des techniques
 from pythonds.des.knora_e import KNORAE
@@ -21,11 +22,17 @@ if __name__ == "__main__":
     y = data.target
     # split the data into training and test data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)
+
+    # Scale the variables to have 0 mean and unit variance
+    scalar = StandardScaler()
+    X_train = scalar.fit_transform(X_train)
+    X_test = scalar.transform(X_test)
+
     # Split the data into training and DSEL for DS techniques
     X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train, test_size=0.5)
     # Considering a pool composed of 10 base classifiers
     # Calibrating Perceptrons to estimate probabilities
-    model = CalibratedClassifierCV(Perceptron())
+    model = CalibratedClassifierCV(Perceptron(max_iter=5))
     # Train a pool of 100 classifiers
     pool_classifiers = BaggingClassifier(model, n_estimators=10)
     pool_classifiers.fit(X_train, y_train)

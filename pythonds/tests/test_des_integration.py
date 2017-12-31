@@ -4,6 +4,7 @@ from sklearn.datasets import load_breast_cancer
 from sklearn.ensemble import BaggingClassifier
 from sklearn.linear_model import Perceptron
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 from pythonds.dcs.a_priori import APriori
 from pythonds.dcs.mcb import MCB
@@ -15,29 +16,6 @@ from pythonds.des.knora_e import KNORAE
 from pythonds.des.knora_u import KNORAU
 
 
-def test_perceptroncv():
-    rng = np.random.RandomState(123456)
-    data = load_breast_cancer()
-    X = data.data
-    y = data.target
-
-    basemodel = Perceptron(max_iter=5)
-    model = CalibratedClassifierCV(basemodel, cv='prefit') # using 'prefit' so the perceptron is not re-trained
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=rng)
-    X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train, test_size=0.5, random_state=rng)
-
-    basemodel.fit(X_train, y_train)
-    model.fit(X_dsel, y_dsel)
-
-    base_preds = basemodel.predict(X_test)
-    model_preds = model.predict(X_test)
-
-    print('Model predictions: 0 predicted %.2f%% of times; 1 predicted %.2f%% of times' % (np.mean(model_preds == 0) * 100, np.mean(model_preds == 1) * 100))
-
-    assert np.allclose(base_preds, model_preds)
-
-
 def setup_classifiers():
     rng = np.random.RandomState(123456)
 
@@ -47,11 +25,17 @@ def setup_classifiers():
     y = data.target
     # split the data into training and test data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=rng)
+
+    # Scale the variables to have 0 mean and unit variance
+    scalar = StandardScaler()
+    X_train = scalar.fit_transform(X_train)
+    X_test = scalar.transform(X_test)
+
     # Split the data into training and DSEL for DS techniques
     X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train, test_size=0.5, random_state=rng)
     # Considering a pool composed of 10 base classifiers
     # Calibrating Perceptrons to estimate probabilities
-    model = CalibratedClassifierCV(Perceptron())
+    model = CalibratedClassifierCV(Perceptron(max_iter=5))
     # Train a pool of 100 classifiers
     pool_classifiers = BaggingClassifier(model, n_estimators=10, random_state=rng)
     pool_classifiers.fit(X_train, y_train)
