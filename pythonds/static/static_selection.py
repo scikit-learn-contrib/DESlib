@@ -38,7 +38,7 @@ class StaticSelection(ClassifierMixin):
 
     def __init__(self, pool_classifiers, pct_classifiers=0.5):
 
-        if not isinstance(pct_classifiers, pct_classifiers):
+        if not isinstance(pct_classifiers, float):
             raise TypeError('pct_classifiers should be a float.')
 
         if pct_classifiers > 1 or pct_classifiers < 0:
