@@ -20,8 +20,8 @@ class StaticSelection(ClassifierMixin):
                        The generated_pool of classifiers trained for the corresponding classification problem.
                        The classifiers should support methods "predict".
 
-    pct_classifiers : float
-                      percentage of base classifier that should be selected
+    pct_classifiers : float (Default = 0.5)
+                      percentage of base classifier that should be selected by the selection scheme.
 
 
     References
@@ -36,9 +36,9 @@ class StaticSelection(ClassifierMixin):
 
     """
 
-    def __init__(self, pool_classifiers, pct_classifiers):
+    def __init__(self, pool_classifiers, pct_classifiers=0.5):
 
-        if not isinstance(pct_classifiers, float):
+        if not isinstance(pct_classifiers, pct_classifiers):
             raise TypeError('pct_classifiers should be a float.')
 
         if pct_classifiers > 1 or pct_classifiers < 0:
@@ -61,9 +61,11 @@ class StaticSelection(ClassifierMixin):
 
          Parameters
         ----------
-        X : ndarray of shape = [n_samples, n_features] containing the data.
+        X : array of shape = [n_samples, n_features]
+            The data to be classified
 
-        y : class labels of each sample in X.
+        y : array of shape = [n_samples]
+            Class labels of each sample in X.
 
         """
         self.classes = np.unique(y)
@@ -83,11 +85,13 @@ class StaticSelection(ClassifierMixin):
 
         Parameters
         ----------
-        X : ndarray of shape = [n_samples, n_features] containing the data.
+        X : array of shape = [n_samples, n_features]
+            The data to be classified
 
         Returns
         -------
-        predicted_labels : array of shape = [n_samples] with the predicted class for each sample..
+        predicted_labels : array of shape = [n_samples]
+                           Predicted class for each sample in X.
         """
         self._check_is_fitted()
         predicted_labels = majority_voting(self.ensemble, X)
