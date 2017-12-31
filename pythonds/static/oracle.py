@@ -36,13 +36,16 @@ class Oracle:
 
          Parameters
         ----------
-        X : ndarray of shape = [n_samples, n_features] containing the data.
+        X : array of shape = [n_samples, n_features]
+            The data to be classified
 
-        y : class labels of each sample in X.
+        y : array of shape = [n_samples]
+            Class labels of each sample in X.
 
         Returns
         -------
-        predicted_labels : array of shape = [n_samples] with the predicted class for each sample.
+        predicted_labels : array of shape = [n_samples]
+                           Predicted class for each sample in X.
         """
         predicted_labels = -np.ones(y.size, dtype=int)
 
@@ -60,11 +63,13 @@ class Oracle:
     def score(self, X, y):
         """Prepare the labels using the Oracle model.
 
-         Parameters
+        Parameters
         ----------
-        X : ndarray of shape = [n_samples, n_features] containing the data.
+        X : array of shape = [n_samples, n_features]
+            The data to be classified
 
-        y : class labels of each sample in X.
+        y : array of shape = [n_samples]
+            Class labels of each sample in X.
 
         Returns
         -------

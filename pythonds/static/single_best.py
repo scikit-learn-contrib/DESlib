@@ -42,14 +42,16 @@ class SingleBest(ClassifierMixin):
         self.classes = None
 
     def fit(self, X, y):
-        """Selects the base classifier with the highest accuracy in the dataset. The best classifier is
-        kept in self.best_clf.
+        """Fit the model by selecting the base classifier with the highest accuracy in the dataset.
+        The single best classifier is kept in self.best_clf and its index is kept in self.best_clf_index.
 
-         Parameters
+        Parameters
         ----------
-        X : ndarray of shape = [n_samples, n_features] containing the data.
+        X : array of shape = [n_samples, n_features]
+            The data to be classified
 
-        y : class labels of each sample in X.
+        y : array of shape = [n_samples]
+            Class labels of each sample in X.
 
         """
         self.classes = np.unique(y)
@@ -67,30 +69,31 @@ class SingleBest(ClassifierMixin):
 
         Parameters
         ----------
-        X : ndarray of shape = [n_samples, n_features] containing the data.
+        X : array of shape = [n_samples, n_features]
+            The data to be classified
 
         Returns
         -------
-        predicted_labels : array of shape = [n_samples] with the predicted class for each sample..
+        predicted_labels : array of shape = [n_samples]
+                           Predicted class for each sample in X.
         """
         self._check_is_fitted()
         predicted_labels = self.best_clf.predict(X)
         return predicted_labels
 
     def predict_proba(self, X):
-        """Estimates the posterior probabilities for each class in the classification problem.
-
-        The returned probability estimates for all classes are ordered by the
-        label of classes.
+        """Estimates the posterior probabilities for each class for each sample in X. The returned probability
+         estimates for all classes are ordered by the label of classes.
 
         Parameters
         ----------
-        X : ndarray of shape = [n_samples, n_features]
+        X : array of shape = [n_samples, n_features]
+            The data to be classified
 
         Returns
         -------
-        predicted_proba : ndarray of shape = [n_samples, n_classes] with the
-        probabilities estimates for each class in the classifier model.
+        predicted_proba : array of shape = [n_samples, n_classes]
+                          Posterior probabilities estimates for each class.
         """
         self._check_is_fitted()
 
@@ -101,8 +104,7 @@ class SingleBest(ClassifierMixin):
         return predicted_proba
 
     def _check_is_fitted(self):
-        """Verify if the estimator algorithm was fitted.
-           Raises an error if it is not fitted.
+        """Verify if the estimator algorithm was fitted. Raises an error if it is not fitted.
         """
         if self.best_clf is None:
                 raise NotFittedError('Estimator not fitted. Call "fit" before exploiting the model.')

@@ -9,7 +9,8 @@ import sys
 """
 This file contains the implementation of key diversity measures found in the ensemble literature:
 
-- Double fault measure
+- Double Fault 
+- Negative Double fault
 - Q-statistics
 - Ratio of errors
 
@@ -26,31 +27,34 @@ in combining classifiers." Information fusion 3.2 (2002): 135-148.
 Giacinto, Giorgio, and Fabio Roli. "Design of effective neural network ensembles for image classification purposes.
 " Image and Vision Computing 19.9 (2001): 699-707.
 
+Aksela, Matti. "Comparison of classifier selection methods for improving committee performance.
+" Multiple Classifier Systems (2003): 159-159.
 """
 
 
 def _process_predictions(y, y_pred1, y_pred2):
-    """Performs a majority voting combination scheme between the base classifiers
-    specified in the vector indices. Returns the label of the query sample as the
-    most voted class.
+    """Pre-process the predictions of a pair of base classifiers for the computation of the diversity measures
 
     Parameters
     ----------
-    y : class labels of each sample in X.
+    y : array of shape = [n_samples]:
+        class labels of each sample in X.
 
-    y_pred1 : predicted class labels by the classifier 1 for each sample in X.
+    y_pred1 : array of shape = [n_samples]:
+              predicted class labels by the classifier 1 for each sample in X.
 
-    y_pred2 : predicted class labels by the classifier 2 for each sample in X.
+    y_pred2 : array of shape = [n_samples]:
+              predicted class labels by the classifier 2 for each sample in X.
 
     Returns
     -------
-    N00 : Number of samples that both classifiers predict the wrong label.
+    N00 : Percentage of samples that both classifiers predict the wrong label.
 
-    N10 : Number of samples that only classifier 2 predicts the wrong label.
+    N10 : Percentage of samples that only classifier 2 predicts the wrong label.
 
-    N10 : Number of samples that only classifier 1 predicts the wrong label.
+    N10 : Percentage of samples that only classifier 1 predicts the wrong label.
 
-    N11 : Number of samples that both classifiers predicts the correct label.
+    N11 : Percentage of samples that both classifiers predicts the correct label.
     """
     size_y = len(y)
     if size_y != len(y_pred1) or size_y != len(y_pred2):
@@ -70,28 +74,28 @@ def _process_predictions(y, y_pred1, y_pred2):
     return N00/size_y, N10/size_y, N01/size_y, N11/size_y
 
 
-def negative_double_fault(y, y_pred1, y_pred2):
-    return -double_fault(y, y_pred1, y_pred2)
-
-
 def double_fault(y, y_pred1, y_pred2):
-    """Calculates the double fault measure. This measure represents the probability that both classifiers makes the
-    wrong prediction.
+    """Calculates the double fault (df) measure. This measure represents the probability that both classifiers makes the
+    wrong prediction. A lower value of df means the base classifiers are less likely to make the same error.
+    This measure must be minimized to increase diversity.
 
     Parameters
     ----------
-    y : class labels of each sample in X.
+    y : array of shape = [n_samples]:
+        class labels of each sample in X.
 
-    y_pred1 : predicted class labels by the classifier 1 for each sample in X.
+    y_pred1 : array of shape = [n_samples]:
+              predicted class labels by the classifier 1 for each sample in X.
 
-    y_pred2 : predicted class labels by the classifier 2 for each sample in X.
+    y_pred2 : array of shape = [n_samples]:
+              predicted class labels by the classifier 2 for each sample in X.
 
     Returns
     -------
     df : The double fault measure between two classifiers
 
     References
-    -------
+    ----------
     Giacinto, Giorgio, and Fabio Roli. "Design of effective neural network ensembles for image classification purposes."
     Image and Vision Computing 19.9 (2001): 699-707.
     """
@@ -100,18 +104,47 @@ def double_fault(y, y_pred1, y_pred2):
     return df
 
 
-def Q_statistic(y, y_pred1, y_pred2):
-    """Calculates Q-statistics diversity measure between a pair of classifiers. The Q value is in a range [-1, 1].
-     Classifiers that tend to classify the same object correctly will have positive values of Q.
-     Q = 0 for two statistically independent classifiers.
+def negative_double_fault(y, y_pred1, y_pred2):
+    """The negative of the double fault measure. This measure should be maximized for a higher diversity.
 
     Parameters
     ----------
-    y : class labels of each sample in X.
+    y : array of shape = [n_samples]:
+        class labels of each sample in X.
 
-    y_pred1 : predicted class labels by the classifier 1 for each sample in X.
+    y_pred1 : array of shape = [n_samples]:
+              predicted class labels by the classifier 1 for each sample in X.
 
-    y_pred2 : predicted class labels by the classifier 2 for each sample in X.
+    y_pred2 : array of shape = [n_samples]:
+              predicted class labels by the classifier 2 for each sample in X.
+
+    Returns
+    -------
+    df : The negative double fault measure between two classifiers
+
+    References
+    ----------
+    Giacinto, Giorgio, and Fabio Roli. "Design of effective neural network ensembles for image classification purposes."
+    Image and Vision Computing 19.9 (2001): 699-707.
+    """
+    return -double_fault(y, y_pred1, y_pred2)
+
+
+def Q_statistic(y, y_pred1, y_pred2):
+    """Calculates the Q-statistics diversity measure between a pair of classifiers. The Q value is in a range [-1, 1].
+    Classifiers that tend to classify the same object correctly will have positive values of Q, and
+    Q = 0 for two independent classifiers.
+
+    Parameters
+    ----------
+    y : array of shape = [n_samples]:
+        class labels of each sample in X.
+
+    y_pred1 : array of shape = [n_samples]:
+              predicted class labels by the classifier 1 for each sample in X.
+
+    y_pred2 : array of shape = [n_samples]:
+              predicted class labels by the classifier 2 for each sample in X.
 
     Returns
     -------
@@ -123,19 +156,28 @@ def Q_statistic(y, y_pred1, y_pred2):
 
 
 def ratio_errors(y, y_pred1, y_pred2):
-    """Calculates Ratio of errors diversity measure between a pair of classifiers.
+    """Calculates Ratio of errors diversity measure between a pair of classifiers. A higher value means that the base
+    classifiers are less likely to make the same errors. The ratio must be maximized for a higher diversity.
 
     Parameters
     ----------
-    y : class labels of each sample in X.
+    y : array of shape = [n_samples]:
+        class labels of each sample in X.
 
-    y_pred1 : predicted class labels by the classifier 1 for each sample in X.
+    y_pred1 : array of shape = [n_samples]:
+              predicted class labels by the classifier 1 for each sample in X.
 
-    y_pred2 : predicted class labels by the classifier 2 for each sample in X.
+    y_pred2 : array of shape = [n_samples]:
+              predicted class labels by the classifier 2 for each sample in X.
 
     Returns
     -------
     ratio : The q-statistic measure between two classifiers
+
+    References
+    ----------
+    Aksela, Matti. "Comparison of classifier selection methods for improving committee performance."
+    Multiple Classifier Systems (2003): 159-159.
     """
     N00, N10, N01, N11 = _process_predictions(y, y_pred1, y_pred2)
     if N00 == 0:

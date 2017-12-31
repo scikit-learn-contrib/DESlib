@@ -32,13 +32,16 @@ def majority_voting(classifier_ensemble, query):
 
     Parameters
     ----------
-    classifier_ensemble : List of classifiers used in the aggregation scheme.
+    classifier_ensemble : list of shape = [n_classifiers]
+                         containing the ensemble of classifiers used in the aggregation scheme.
 
-    query : np.array = [n_samples, n_features] containing the samples to be classified
+    query : array of shape = [n_samples, n_features]
+            containing the samples to be classified
 
     Returns
     -------
-    predicted_label : The label of each query sample predicted using the majority voting rule
+    predicted_label : array of shape = [n_samples]
+                      The label of each query sample predicted using the majority voting rule
     """
     # Check if a single sample was passed down to the function. In this case the sample must be converted to a 2D array.
     if query.ndim == 1:
@@ -60,15 +63,20 @@ def weighted_majority_voting(classifier_ensemble, weights, query):
 
     Parameters
     ----------
-    classifier_ensemble : List of classifiers used in the aggregation scheme.
+    classifier_ensemble : list of shape = [n_classifiers]
+                         containing the ensemble of classifiers used in the aggregation scheme.
 
-    weights : np.array = [n_samples, n_classifiers] with the weights associated to each base classifier for each sample
+    weights : array of shape = [n_samples, n_classifiers]
+              Weights associated to each base classifier for each sample
 
-    query : np.array = [n_samples, n_features] containing the samples to be classified
+
+    query : array of shape = [n_samples, n_features]
+            The samples to be classified
 
     Returns
     -------
-    predicted_label : The label of each query sample predicted using the weighted majority voting rule
+    predicted_label : array of shape = [n_samples]
+                      The label of each query sample predicted using the majority voting rule
     """
     # Check if a single sample was passed down to the function. In this case the sample must be converted to a 2D array.
     if query.ndim == 1:
@@ -88,11 +96,13 @@ def majority_voting_rule(votes):
 
     Parameters
     ----------
-    votes : np.array = [n_samples, n_classifiers], The votes obtained by each classifier for each sample.
+    votes : array of shape = [n_samples, n_classifiers],
+            The votes obtained by each classifier for each sample.
 
     Returns
     -------
-    predicted_label : np.array = [n_samples] The label associated to each query sample.
+    predicted_label : array of shape = [n_samples]
+                      The label of each query sample predicted using the majority voting rule
     """
     return mode(votes, axis=1)[0]
 
@@ -102,13 +112,16 @@ def weighted_majority_voting_rule(votes, weights):
 
     Parameters
     ----------
-    votes : np.array = [n_samples, n_classifiers] with the votes of the base classifiers
+    votes : array of shape = [n_samples, n_classifiers],
+            The votes obtained by each classifier for each sample.
 
-    weights : np.array = [n_samples, n_classifiers] The weights associated to each classifier for each sample
+    weights : array of shape = [n_samples, n_classifiers]
+              Weights associated to each base classifier for each sample
 
     Returns
     -------
-    predicted_label : The label of the query sample predicted using the weighted majority voting rule
+    predicted_label : array of shape = [n_samples]
+                      The label of each query sample predicted using the majority voting rule
     """
     if weights.shape != votes.shape:
         raise ValueError('The size of the arrays votes and weights should be the same. weights = {0} '
