@@ -8,6 +8,7 @@ API Reference:
 
     modules/des
     modules/dcs
+    modules/static
     modules/util
 
 
