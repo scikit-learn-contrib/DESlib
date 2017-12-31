@@ -114,3 +114,8 @@ def test_entropy_func_two_classes():
     expected = [0.0, 1.0, -1.0]
     result = entropy_func(n_classes, supports, is_correct)
     assert np.isclose(result, expected, atol=0.01).all()
+
+
+def test_entropy_func_parameter_shape():
+    with pytest.raises(ValueError):
+        entropy_func(2, np.array([0, 1]), np.array([0]))

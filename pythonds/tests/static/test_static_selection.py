@@ -58,3 +58,10 @@ def test_not_fitted():
     with pytest.raises(NotFittedError):
         static_selection_test.predict(np.array([1, -1]))
 
+
+def test_invalid_pct():
+    with pytest.raises(TypeError):
+        StaticSelection(create_pool_classifiers(), pct_classifiers='something')
+
+    with pytest.raises(ValueError):
+        StaticSelection(create_pool_classifiers(), pct_classifiers=1.2)
