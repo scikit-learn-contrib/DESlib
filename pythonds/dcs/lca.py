@@ -55,16 +55,13 @@ class LCA(DCS):
                   classifiers for the random and diff selection schemes. If the difference is lower than the
                   threshold, their performance are considered equivalent.
 
-    version : String (Default = "woods")
-              Change the implementation of the LCA according to Woods [1] or Britto [2] implementations.
-
     References
     ----------
-    [1] Woods, Kevin, W. Philip Kegelmeyer, and Kevin Bowyer. "Combination of multiple classifiers
+    Woods, Kevin, W. Philip Kegelmeyer, and Kevin Bowyer. "Combination of multiple classifiers
     using local accuracy estimates." IEEE transactions on pattern analysis and machine intelligence
     19.4 (1997): 405-410.
 
-    [2] Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection of classifiers—a comprehensive
+    Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection of classifiers—a comprehensive
     review." Pattern Recognition 47.11 (2014): 3665-3680.
 
     R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
@@ -72,7 +69,7 @@ class LCA(DCS):
 
     """
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 aknn=False, selection_method='best', diff_thresh=0.1, rng=np.random.RandomState(), version='woods'):
+                 aknn=False, selection_method='best', diff_thresh=0.1, rng=np.random.RandomState()):
 
             super(LCA, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                       aknn=aknn,
@@ -80,14 +77,6 @@ class LCA(DCS):
                                       diff_thresh=diff_thresh,
                                       rng=rng)
 
-            if not isinstance(version, str):
-                raise TypeError('Parameter version should be a string. version = ', type(version))
-
-            version = version.lower()
-            if version not in ['woods', 'britto']:
-                raise ValueError('Invalid value for parameter "version". version should be either "woods" or "britto"')
-
-            self.version = version
             self.name = 'Local Classifier Accuracy (LCA)'
 
     def estimate_competence(self, query):
@@ -101,9 +90,6 @@ class LCA(DCS):
         only the samples belonging to the class wl in this neighborhood. In this case, wl is the predict class
         of the base classifier ci for the query sample.
 
-        Britto : Is the algorithm presented in Britto et al. [2]. In this method, the neighborhood is composed
-        of the K-Nearest Neighbors instances that belongs to a specific class wl.
-
         Returns an array containing the level of competence estimated using the LCA method
         for each base classifier. The size of the array is equals to the size of the pool of classifiers.
 
@@ -116,34 +102,22 @@ class LCA(DCS):
         competences : array = [n_classifiers] containing the competence level estimated
         for each base classifier
         """
+        dists, idx_neighbors = self._get_region_competence(query)
         competences = np.zeros(self.n_classifiers)
-
-        if self.version == 'britto':
-            # the whole DSEL is considered until k samples of the predicted class if found
-            dists, idx_neighbors = self._get_region_competence(query, k=self.n_samples)
-        else:
-            # consider only samples from the predicted class among the k-Nearest neighbors
-            dists, idx_neighbors = self._get_region_competence(query)
 
         for clf_index, clf in enumerate(self.pool_classifiers):
             # Check if the dynamic frienemy pruning (DFP) should be used used
             if self.mask[clf_index]:
                 result = []
-                predicted_label = clf.predict(query)
-                # Counter is needed for the survey method
-                counter = 0
+                predicted_label = clf.predict(query)[0]
                 for index in idx_neighbors:
                     # Get only neighbors from the same class as predicted by the
                     # classifier (clf) to form the region of competence
-                    if self.DSEL_target[index] == predicted_label[0]:
+                    if self.DSEL_target[index] == predicted_label:
                         result.append(self.processed_dsel[index][clf_index])
-                        counter += 1
 
-                    # This check is for britto implementation to use a maximum of k neighbors of the predicted class
-                    if counter >= self.k:
-                        break
                 if len(result) == 0:
-                    competences[clf_index] = 0
+                    competences[clf_index] = 0.0
                 else:
                     competences[clf_index] = np.mean(result)
 
