@@ -9,7 +9,6 @@ import numpy as np
 from pythonds.des.base import DES
 
 
-# TODO Work on the weighted versions
 class KNORAE(DES):
     """k-Nearest Oracles Eliminate (KNORAE).
     
@@ -39,11 +38,6 @@ class KNORAE(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    weighted : Boolean (Default = False)
-               Determines whether the distance between neighbors and the query sample are used to weight
-               the decision of each selected classifier. The outputs of the selected ensemble is therefore
-               combined using a weighted majority voting scheme.
-
     aknn : Boolean (Default = False)
            Determines the type of KNN algorithm that is used. set to true for the A-KNN method.
 
@@ -62,16 +56,15 @@ class KNORAE(DES):
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
                  IH_rate=0.30,
-                 weighted=False,
                  aknn=False):
 
         super(KNORAE, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                      aknn=aknn)
-        self.weighted = weighted
-        self.name = 'k-Nearest Oracles Eliminate'
+
+        self.name = 'k-Nearest Oracles Eliminate (KNORA-E)'
 
     def estimate_competence(self, query):
-        """Estimate the competence of the base classifiers. In the case of the KNORA-E techinque, the classifiers
+        """Estimate the competence of the base classifiers. In the case of the KNORA-E technique, the classifiers
         are only considered competent when they achieve a 100% accuracy in the region of competence. For each base,
         we estimate the maximum size of the region of competence that it is a local oracle.
 
@@ -109,7 +102,7 @@ class KNORAE(DES):
     def select(self, competences):
         """Selects all base classifiers that obtained a local accuracy of 100% in the region of competence
         (i.e., local oracle). In the case that no base classifiers obtain 100% accuracy, the size of the region
-         of competece is reduced and the search for the local oracle is restarted.
+         of competence is reduced and the search for the local oracle is restarted.
 
         Note: Instead of re-applying the method several times, we compute the number of consecutive correct
         classification of each base classifier starting from the closest neighbor to the more distant in the
@@ -119,12 +112,12 @@ class KNORAE(DES):
 
         Parameters
         ----------
-        competences : array = [n_classifiers] containing the competence level estimated
-        for each base classifier
+        competences : array of shape = [n_classifiers]
+                      The competence level estimated for each base classifier
 
         Returns
         -------
-        indices : the indices of the selected base classifiers
+        indices : list with the indices of the selected base classifiers
 
         """
         max_value = np.max(competences)
@@ -132,7 +125,7 @@ class KNORAE(DES):
             indices = [clf_index for clf_index, clf_competence in enumerate(
                 competences) if clf_competence == max_value]
         else:
-            # no classifier was competent.
-            indices = []
+            # use the whole pool if no classifier was deemed competent
+            indices = list(range(self.n_classifiers))
 
         return indices

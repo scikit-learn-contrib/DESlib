@@ -4,16 +4,14 @@
 #
 # License: BSD 3 clause
 
-import collections
-
 import numpy as np
+from scipy.stats import mode
 
 from pythonds.des.base import DES
 
 
-# TODO Work on the weighted versions.
 class KNORAU(DES):
-    """k-Nearest Oracles Union (KNORAU).
+    """k-Nearest Oracles Union (KNORA-U).
     
     This method works selects all classifiers that correctly classified at least
     one sample belonging to the region of competence of the test sample x. Each 
@@ -39,10 +37,6 @@ class KNORAU(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    weighted : Boolean (Default = False)
-               Determines whether the distance between neighbors and the query sample are used to weight
-               the decision of each selected classifier. The outputs of the selected ensemble is therefore
-               combined using a weighted majority voting scheme.
 
     aknn : Boolean (Default = False)
            Determines the type of KNN algorithm that is used. set to true for the A-KNN method.
@@ -61,29 +55,25 @@ class KNORAU(DES):
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
                  IH_rate=0.30,
-                 aknn=False,
-                 weighted=False):
+                 aknn=False):
 
         super(KNORAU, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                      aknn=aknn)
-        self.weighted = weighted
-        self.name = 'k-Nearest Oracles Union'
+
+        self.name = 'k-Nearest Oracles Union (KNORA-U)'
 
     def estimate_competence(self, query):
-        """In this method, the competence of the base classifiers is simply computed as the number of samples
+        """The competence of the base classifiers is simply estimated as the number of samples
         in the region of competence that it correctly classified.
-
-        Returns an array containing the level of competence estimated.
-        The size of the array is equals to the size of the generated_pool of classifiers.
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_features] containing the test sample
 
         Returns
         -------
-        competences : array = [n_classifiers] containing the competence level estimated
-        for each base classifier
+        competences : array of shape = [n_classifiers] containing the competence level estimated
+                     for each base classifier
         """
         dists, idx_neighbors = self._get_region_competence(query)
         competences = np.zeros(self.n_classifiers)
@@ -104,11 +94,11 @@ class KNORAU(DES):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_features] containing the test sample
 
         Returns
         -------
-        The predicted label of the query
+        votes : the number of votes for each class
         """
         weights = self.estimate_competence(query)
         # If all weights is equals to zero, it means that no classifier was selected. Hence, use all of them
@@ -133,9 +123,8 @@ class KNORAU(DES):
 
         Returns
         -------
-        The predicted label of the query
+        predicted_label : Prediction of the ensemble for the input query.
         """
         votes = self.select(query)
-        counter = collections.Counter(votes)
-        predicted_label = counter.most_common()[0][0]
+        predicted_label = mode(votes)[0]
         return predicted_label
