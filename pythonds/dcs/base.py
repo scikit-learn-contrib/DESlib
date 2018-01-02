@@ -3,6 +3,7 @@ from abc import ABCMeta
 import numpy as np
 
 from pythonds.base import DS
+from pythonds.util.aggregation import majority_voting, predict_proba_ensemble
 
 
 class DCS(DS):
@@ -143,7 +144,7 @@ class DCS(DS):
             selected_clf = best_index
 
         elif self.selection_method == 'diff':
-            """Select a base classifier if its competence level is significant better than the rest. 
+            """Selects a base classifier if its competence level is significant better than the rest. 
             If there is no such classifier, select randomly a base model.
 
 
@@ -176,7 +177,7 @@ class DCS(DS):
 
         Selects the most competent base classifier and use it to predict the label of the query sample.
 
-        If self.version == "all", the weighted majority voting scheme is used to predict the label of the query sample
+        If self.mode == "all", the weighted majority voting scheme is used to predict the label of the query sample
 
         Parameters
         ----------
@@ -194,7 +195,8 @@ class DCS(DS):
         else:
             # Selected ensemble of classifiers is combined using Majority Voting
             indices = self.select(competences)
-            predicted_label = self.majority_voting(indices, query)
+            classifier_ensemble = self._get_classifier_ensemble(indices)
+            predicted_label = majority_voting(classifier_ensemble, query)
 
         return predicted_label
 
@@ -202,7 +204,7 @@ class DCS(DS):
         """Predicts the posterior probabilities of the corresponding query sample.
         Returns the probability estimates of each class.
 
-        If self.version == "all", get the probability estimates of the selected ensemble. Otherwise,
+        If self.mode == "all", get the probability estimates of the selected ensemble. Otherwise,
         the technique gets the probability estimates from the selected base classifier
 
         Parameters
@@ -221,6 +223,7 @@ class DCS(DS):
         else:
             # Selected ensemble of classifiers is combined using Majority Voting
             indices = self.select(competences)
-            predicted_proba = self.predict_proba_ensemble(query, indices)
+            classifier_ensemble = self._get_classifier_ensemble(indices)
+            predicted_proba = predict_proba_ensemble(classifier_ensemble, query)
 
         return predicted_proba
