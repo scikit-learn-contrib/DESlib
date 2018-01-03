@@ -70,7 +70,7 @@ def test_classify_instance_hybrid():
 # ------------------------ Testing predict_proba -----------------
 
 
-# The prediction of probability here should be an average of the probabilities estimates of the three selected
+# The prediction of probability here should be an average_rule of the probabilities estimates of the three selected
 # base classifiers
 def test_predict_proba_selection():
     query = np.array([-1, 1])
