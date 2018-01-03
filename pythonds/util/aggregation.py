@@ -110,7 +110,7 @@ def majority_voting_rule(votes):
     predicted_label : array of shape = [n_samples]
                       The label of each query sample predicted using the majority voting rule
     """
-    return mode(votes, axis=1)[0][0]
+    return mode(votes, axis=1)[0][:, 0]
 
 
 def weighted_majority_voting_rule(votes, weights):
@@ -228,8 +228,8 @@ def predict_proba_ensemble_weighted(classifier_ensemble, weights, X):
     return softmax(predicted_proba)
 
 
-def average(classifier_ensemble, X):
-    """Apply the average rule to predict the label of each sample in X.
+def average_rule(classifier_ensemble, X):
+    """Apply the average_rule rule to predict the label of each sample in X.
 
     Parameters
     ----------
