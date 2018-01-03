@@ -14,6 +14,8 @@ from sklearn.base import ClassifierMixin
 from sklearn.exceptions import NotFittedError
 from sklearn.neighbors import KNeighborsClassifier
 
+from pythonds.util.aggregation import predict_proba_ensemble
+
 
 class DS(ClassifierMixin):
     """Base class for a dynamic classifier (dcs) and ensemble (des) selection methods.
@@ -280,21 +282,17 @@ class DS(ClassifierMixin):
         self._check_input_predict(X)
 
         n_samples = X.shape[0]
-        predicted_proba = np.zeros(n_samples, self.n_classes)
+        predicted_proba = np.zeros((n_samples, self.n_classes))
         for index, instance in enumerate(X):
             # Do not use dynamic selection if all base classifiers agrees on the
             # same label.
             if self._all_classifier_agree(instance):
 
                 #  since it may have better probabilities estimates
-                predicted_proba[index] = self.pool_classifiers[0].predict(instance.reshape(1, -1))[0]
+                # predicted_proba[index] = self.pool_classifiers[0].predict(instance.reshape(1, -1))[0]
+                predicted_proba[index, :] = predict_proba_ensemble(self.pool_classifiers, instance.reshape(1, -1))[0]
 
             else:
-                # proceeds with DS, calculates the region of competence of the query sample
-
-                # Reset the neighbors and the distances as the query changed.
-                self.neighbors = None
-                self.distances = None
 
                 # Check whether use the DFP or hardness information is used to compute the competence region
                 if self.DFP or self.with_IH:
@@ -317,102 +315,51 @@ class DS(ClassifierMixin):
 
                     predicted_proba[index, :] = self.predict_proba_instance(instance.reshape(1, -1))
 
+        # Reset the neighbors and the distances as they are specific to a given query.
+        self.neighbors = None
+        self.distances = None
         return predicted_proba
 
-    def majority_voting(self, indices, query):
-        """Performs a majority voting combination scheme between the base classifiers
-        specified in the vector indices. Returns the label of the query sample as the
-        most voted class.
 
-        Parameters
-        ----------
-        indices : index of the base classifier to be used in the combination scheme
-
-        query : Sample to be classified
-
-        Returns
-        -------
-        predicted_label : The label of the query sample, predicted by the majority voting rule
-        """
-        # if indices is empty (no classifier is selected, use all of them)
-        if len(indices) == 0:
-            indices = list(range(self.n_classifiers))
-
-        votes = [self.pool_classifiers[idx].predict(query)[0] for idx in indices]
-        counter = collections.Counter(votes)
-        predicted_label = counter.most_common()[0][0]
-
-        return predicted_label
-
-    def weighted_majority_voting(self, indices, weights, query):
-        """Performs a majority voting combination scheme between the base classifiers
-        specified in the vector indices. Returns the label of the query sample as the
-        most voted class.
-
-        Parameters
-        ----------
-        indices : index of the base classifier to be used in the combination scheme
-
-        weights : the weights associated to each classifier for the combination scheme
-
-        query : Sample to be classified
-
-        Returns
-        -------
-        predicted_label : The label of the query sample, predicted by the majority voting rule
-        """
-        ensemble_size = len(indices)
-        if weights.size != ensemble_size:
-            raise ValueError('The size of the weights vector should be equals to the size of the ensemble!')
-
-        if len(indices) == 0:
-            indices = list(range(self.n_classifiers))
-            weights = np.ones(self.n_classifiers)/self.n_classifiers
-
-        w_votes = np.zeros(self.n_classes)
-        for idx in indices:
-            w_votes[self.pool_classifiers[idx].predict(query)[0]] += weights[idx]
-        predicted_label = np.argmax(w_votes)
-
-        return predicted_label
-
-    def predict_proba_ensemble(self, query, indices, weights=None):
-        """Compute the posterior probabilities of each class for the query sample
-
-        Parameters
-        ----------
-        indices : index of the base classifier to be used in the combination scheme
-
-        weights : Weight of each classifier in the decision (Default=None)
-
-        query : Sample to predict the probability estimates
-
-        Returns
-        -------
-        predicted_proba : Probability estimates for each class
-        """
-        ensemble_size = len(indices)
-        if weights is not None:
-            if weights.size != ensemble_size:
-                raise ValueError('The size of the weights vector should be equals to the size of the ensemble!')
-
-        # if indices is empty (no classifier is selected, use all of them)
-        if ensemble_size == 0:
-            indices = list(range(self.n_classifiers))
-
-        proba = np.zeros((1, self.n_classes))
-
-        if weights is None:
-            for idx in indices:
-                proba += np.array(self.pool_classifiers[idx].predict_proba(query))
-
-        else:
-            for idx in indices:
-                proba += np.array(self.pool_classifiers[idx].predict_proba(query)) * weights[idx]
-
-        predicted_proba = proba / ensemble_size
-
-        return predicted_proba
+    # def predict_proba_ensemble(self, query, indices, weights=None):
+    #     """Compute the posterior probabilities of each class for the query sample
+    #
+    #     Parameters
+    #     ----------
+    #     indices : index of the base classifier to be used in the combination scheme
+    #
+    #     weights : Weight of each classifier in the decision (Default=None)
+    #
+    #     query : Sample to predict the probability estimates
+    #
+    #     Returns
+    #     -------
+    #     predicted_proba : Probability estimates for each class
+    #     """
+    #     ensemble_size = len(indices)
+    #     # if weights is not None:
+    #     #     if weights.size != ensemble_size:
+    #     #         raise ValueError('The size of the weights vector should be equals to the size of the ensemble!')
+    #     #
+    #     # if indices is empty (no classifier is selected, use all of them)
+    #     if ensemble_size == 0:
+    #         indices = list(range(self.n_classifiers))
+    #
+    #     proba = np.zeros((1, self.n_classes))
+    #
+    #     if weights is None:
+    #         for idx in indices:
+    #             proba += np.array(self.pool_classifiers[idx].predict_proba(query))
+    #
+    #     else:
+    #         for idx in indices:
+    #             proba += np.array(self.pool_classifiers[idx].predict_proba(query)) * weights[idx]
+    #
+    #     predicted_proba = proba / ensemble_size
+    #     if weights is not None:
+    #         predicted_proba = softmax(predicted_proba)
+    #
+    #     return predicted_proba
 
     def _hardness_region_competence(self, region_competence):
         """Calculate the Instance hardness of the sample based on its neighborhood. The sample is deemed hard to
@@ -477,13 +424,24 @@ class DS(ClassifierMixin):
                 else:
                     mask[clf_index] = 0
                 if ~np.all(mask):
-                    # Considers the whole pool if no base classifiers croesses the region of competence
+                    # Considers the whole pool if no base classifiers crosses the region of competence
                     mask = np.ones(self.n_classifiers)
                 return mask
         else:
             # The sample is located in a safe region. All base classifiers can predict the label
             mask = np.ones(self.n_classifiers)
         return mask
+
+    def _get_classifier_ensemble(self, indices):
+        """This function receive the indices of the selected classifiers and returns an ensemble with the selected
+        base classifiers
+
+        Returns
+        -------
+        classifier_ensemble : A list with the selected base classifiers
+        """
+        classifier_ensemble = [self.pool_classifiers[index] for index in indices]
+        return classifier_ensemble
 
     def _preprocess_dsel(self):
         """Compute the prediction of each base classifier for

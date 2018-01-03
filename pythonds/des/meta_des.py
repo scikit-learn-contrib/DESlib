@@ -11,6 +11,7 @@ from sklearn.exceptions import NotFittedError
 from sklearn.naive_bayes import MultinomialNB, GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.utils.validation import check_is_fitted
+from mdlp.discretization import MDLP
 
 from pythonds.des.base import DES
 
@@ -39,7 +40,7 @@ class METADES(DES):
            Determines the type of KNN algorithm that is used. set to true for the A-KNN method.
 
     mode : String (Default = "selection")
-              Determines the version of META-des that is used (selection, weighting or hybrid).
+              Determines the mode of META-des that is used (selection, weighting or hybrid).
 
     DFP : Boolean (Default = False)
           Determines if the dynamic frienemy pruning is applied.
@@ -84,7 +85,7 @@ class METADES(DES):
         self.gamma = gamma
         if selector is None:
             warnings.warn("No classifier model passed for the Meta-Classifier. Using a Naive Bayes instead")
-            self.meta_classifier = GaussianNB()
+            self.meta_classifier = MultinomialNB()
         else:
             self.meta_classifier = selector
 
@@ -120,7 +121,7 @@ class METADES(DES):
         except NotFittedError as _:
             if not self.meta_training_dataset:
                 self._generate_meta_training_set()
-            self.train_meta_classifier()
+            self._train_meta_classifier()
 
     def _fit_OP(self, X, y, kp):
         """Fit the
@@ -179,13 +180,14 @@ class METADES(DES):
         # check with the classifier model how to compute f5
         f5 = np.max(clf.predict_proba(query))
         v = f1 + f2 + [f3] + f4 + [f5]
+
         return v
 
     def _generate_meta_training_set(self):
         """Routine to generate the meta-training dataset that is further used to train the meta-classifier (Lambda)
 
         The first step is to apply the sample selection mechanism in order to decide whether  or not the corresponding
-        sample should be used for meta-training process. Then, for each base classifierthe five sets of meta-features
+        sample should be used for meta-training process. Then, for each base classifier, five sets of meta-features
         are calculated and added to the meta-training dataset.
         """
         for idx_sample, sample in enumerate(self.DSEL_data):
@@ -209,12 +211,16 @@ class METADES(DES):
 
                     # train the meta classifier
 
-    def train_meta_classifier(self):
+    def _train_meta_classifier(self):
         """Train the meta-classifier (lambda), using the meta-training dataset.
 
         """
         self.meta_training_dataset = np.array(self.meta_training_dataset)
         self.meta_training_target = np.array(self.meta_training_target)
+        if isinstance(self.selector, MultinomialNB):
+            self.mdlp = MDLP()
+            self.meta_training_dataset = self.mdlp.fit_transform(self.meta_training_dataset, self.meta_training_target)
+
         self.meta_classifier.fit(self.meta_training_dataset, self.meta_training_target)
 
     def _get_out_profiles(self, query, kp=None):
@@ -287,13 +293,16 @@ r
             if self.mask[clf_index]:
                 vectors.append(self.compute_meta_features(query, idx_neighbors, idx_neighbors_op, clf, clf_index))
             else:
-                # TODO: Check if that pruning scheme works. By setting everything to zero
+                # TODO: Check if that pruning scheme works by setting everything to zero.
                 vectors.append(np.zeros(self.n_metafeatures))
 
+        vectors = np.array(vectors)
+        if isinstance(self.selector, MultinomialNB):
+            vectors = self.mdlp.transform(vectors)
         if self.version == "selection":
-            competences = self.meta_classifier.predict(np.array(vectors))
+            competences = self.meta_classifier.predict(vectors)
         else:
             # Get the probability for class 1 (Competent)
-            competences = self.meta_classifier.predict_proba(np.array(vectors))[:, 1]
+            competences = self.meta_classifier.predict_proba(vectors)[:, 1]
 
         return competences

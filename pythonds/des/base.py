@@ -1,6 +1,8 @@
 from abc import ABCMeta
 
 from pythonds.base import DS
+from pythonds.util.aggregation import weighted_majority_voting, majority_voting, predict_proba_ensemble, \
+    predict_proba_ensemble_weighted
 
 
 class DES(DS):
@@ -55,15 +57,19 @@ class DES(DS):
         super(DES, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
                                   safe_k=safe_k, IH_rate=IH_rate, aknn=aknn)
 
+        if not isinstance(mode, str):
+            raise TypeError('Parameter "mode" should be a string. Currently "mode" = {}' .format(type(mode)))
+
         mode = mode.lower()
 
         if mode not in ['selection', 'hybrid', 'weighting']:
-            raise ValueError('Invalid value for parameter "version"')
+            raise ValueError('Invalid value for parameter "mode". "mode" should be one of these options '
+                             '{selection, hybrid, weighting}')
 
-        self.version = mode
+        self.mode = mode
 
     def estimate_competence(self, query):
-        """estimate the competence of each base classifier ci
+        """Estimate the competence of each base classifier ci
         the classification of the query sample x.
         Returns an array containing the level of competence estimated
         for each base classifier. The size of the vector is equals to
@@ -75,8 +81,8 @@ class DES(DS):
 
         Returns
         -------
-        competences : array = [n_classifiers] containing the competence level estimated
-        for each base classifier
+        competences : array of shape = [n_classifiers]
+                      The competence level estimated for each base classifier
         """
         pass
 
@@ -88,11 +94,12 @@ class DES(DS):
 
         Parameters
         ----------
-        competences : array = [n_classifiers] containing the estimated competence level for the base classifiers
+        competences : array of shape = [n_classifiers]
+                      The estimated competence level for the base classifiers
 
         Returns
         -------
-        indices : index of the selected base classifier(s)
+        indices : List of index of the selected base classifier(s)
 
         """
         pass
@@ -101,37 +108,40 @@ class DES(DS):
         """Predicts the label of the corresponding query sample.
         Returns the predicted label.
 
-        If self.version == "selection", the selected ensemble is combined using the
+        If self.mode == "selection", the selected ensemble is combined using the
         majority voting rule
 
-        If self.version == "weighting", all base classifiers are used for classification, however their influence
+        If self.mode == "weighting", all base classifiers are used for classification, however their influence
         in the final decision are weighted according to their estimated competence level. The weighted majority voting
         scheme is used to combine the decisions of the base classifiers.
 
-        If self.version == "hybrid",  A hybrid Dynamic selection and weighting approach is used. First an
+        If self.mode == "hybrid",  A hybrid Dynamic selection and weighting approach is used. First an
         ensemble with the competent base classifiers are selected. Then, their decisions are aggregated using the
         weighted majority voting rule according to its competence level estimates.
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_features]
+                The test sample
 
         Returns
         -------
         predicted_label: The predicted label of the query
         """
         competences = self.estimate_competence(query)
-        if self.version == "selection":
+        if self.mode == "selection":
             indices = self.select(competences)
-            predicted_label = self.majority_voting(indices, query)
+            classifier_ensemble = self._get_classifier_ensemble(indices)
+            predicted_label = majority_voting(classifier_ensemble, query)[0]
 
-        elif self.version == "weighting":
-            indices = range(self.n_classifiers)
-            predicted_label = self.weighted_majority_voting(indices, competences, query)
+        elif self.mode == "weighting":
+            predicted_label = weighted_majority_voting(self.pool_classifiers, competences, query)[0]
 
         else:
             indices = self.select(competences)
-            predicted_label = self.weighted_majority_voting(indices, competences, query)
+            competences_ensemble = competences[indices]
+            classifier_ensemble = self._get_classifier_ensemble(indices)
+            predicted_label = weighted_majority_voting(classifier_ensemble, competences_ensemble, query)[0]
 
         return predicted_label
 
@@ -139,36 +149,37 @@ class DES(DS):
         """Predicts the posterior probabilities of the corresponding query sample.
         Returns the probability estimates of each class.
 
-        If self.version == "selection", the selected ensemble is combined using the
-        majority voting rule
+        If self.mode == "selection", the selected ensemble is used to estimate the probabilities. The average rule is
+        used to give probabilities estimates.
 
-        If self.version == "weighting", all base classifiers are used for classification, however their influence
-        in the final decision are weighted according to their estimated competence level. The weighted majority voting
-        scheme is used to combine the decisions of the base classifiers.
+        If self.mode == "weighting", all base classifiers are used for estimating the probabilities, however their
+        influence in the final decision are weighted according to their estimated competence level. A weighted average
+        method is used to give the probabilities estimates.
 
-        If self.version == "Hybrid",  A hybrid Dynamic selection and weighting approach is used. First an
-        ensemble with the competent base classifiers are selected. Then, their decisions are aggregated using the
-        weighted majority voting rule according to its competence level estimates.
+        If self.mode == "Hybrid",  A hybrid Dynamic selection and weighting approach is used. First an
+        ensemble with the competent base classifiers are selected. Then, their decisions are aggregated using a
+        weighted average rule to give the probabilities estimates.
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
-
+        query : array of shape = [n_features]
+                The test sample
         Returns
         -------
         predicted_proba : array = [n_classes] with the probability estimates for all classes
         """
-        if self.version == "selection":
-            indices, _ = self.select(query)
-            predicted_proba = self.predict_proba_ensemble(query, indices)
+        competences = self.estimate_competence(query)
+        if self.mode == "selection":
+            indices = self.select(competences)
+            classifier_ensemble = self._get_classifier_ensemble(indices)
+            predicted_proba = predict_proba_ensemble(classifier_ensemble, query)
 
-        elif self.version == "weighting":
-            competences = self.estimate_competence(query)
-            indices = range(self.n_classifiers)
-            predicted_proba = self.predict_proba_ensemble(query, indices, competences)
-
+        elif self.mode == "weighting":
+            predicted_proba = predict_proba_ensemble_weighted(self.pool_classifiers, competences, query)
         else:
-            indices, competences = self.select(query)
-            predicted_proba = self.predict_proba_ensemble(query, indices, competences)
+            indices = self.select(competences)
+            competences_ensemble = competences[indices]
+            classifier_ensemble = self._get_classifier_ensemble(indices)
+            predicted_proba = predict_proba_ensemble_weighted(classifier_ensemble, competences_ensemble, query)
 
         return predicted_proba

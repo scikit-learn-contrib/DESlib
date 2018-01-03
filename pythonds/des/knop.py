@@ -4,14 +4,12 @@
 #
 # License: BSD 3 clause
 
-import collections
-
 import numpy as np
+from scipy.stats import mode
 
 from pythonds.des.base import DES
 
 
-# TODO work on the weighted versions
 class KNOP(DES):
     """k-Nearest Output Profiles (KNOP).
 
@@ -36,11 +34,6 @@ class KNOP(DES):
     IH_rate : float (default = 0.3)
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
-
-    weighted : Boolean (Default = False)
-               Determines whether the distance between neighbors and the query sample are used to weight
-               the decision of each selected classifier. The outputs of the selected ensemble is therefore
-               combined using a weighted majority voting scheme.
 
     aknn : Boolean (Default = False)
            Determines the type of KNN algorithm that is used. set to true for the A-KNN method.
@@ -80,15 +73,17 @@ class KNOP(DES):
 
     def fit(self, X, y):
         """Train the DS model by setting the KNN algorithm and
-        pre-processing the information required to apply the DS
+        pre-process the information required to apply the DS
         methods. In this case, the scores of the base classifiers for the dynamic selection dataset (DSEL)
         are pre-calculated to transform each sample in DSEL into an output profile.
 
          Parameters
         ----------
-        X : matrix of shape = [n_samples, n_features] with the data.
+        X : array of shape = [n_samples, n_features]
+            containing the input data.
 
-        y : class labels of each sample in X.
+        y : array of shape = [n_samples]
+            Class labels of each sample in X.
 
         Returns
         -------
@@ -110,12 +105,13 @@ class KNOP(DES):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_features]
+                The test sample to be classified
 
         Returns
         -------
-        competences : array = [n_classifiers] containing the competence level estimated
-        for each base classifier
+        competences : array of shape = [n_classifiers]
+                      The competence level estimated for each base classifier
         """
         dists, idx_neighbors = self._get_region_competence(query)
         competences = np.zeros(self.n_classifiers)
@@ -136,11 +132,12 @@ class KNOP(DES):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_features]
+                The test sample to be classified
 
         Returns
         -------
-        The predicted label of the query
+        votes : array containing the votes of the ensemble for each class
         """
         output_profile_query = self._output_profile_transform(query)
         weights = self.estimate_competence(output_profile_query.reshape(1, -1))
@@ -163,27 +160,14 @@ class KNOP(DES):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_features]
+                The test sample to be classified.
 
         Returns
         -------
-        The predicted label of the query
+        predicted_label : Prediction of the ensemble for the input query.
         """
         votes = self.select(query)
-        counter = collections.Counter(votes)
-        predicted_label = counter.most_common()[0][0]
+        predicted_label = mode(votes)[0]
 
         return predicted_label
-
-if __name__ == "__main__":
-    from sklearn.datasets import load_iris
-    from sklearn.linear_model import LogisticRegression
-    from pythonds.util.generate_pool import generate_pool
-
-    iris = load_iris()
-    model = LogisticRegression()
-    pool = generate_pool(iris.data, iris.target, model)
-
-    metades = KNOP(pool, with_IH=False, DFP=False, IH_rate=0.15)
-    metades.fit(iris.data, iris.target)
-    print(metades.score(iris.data, iris.target))
