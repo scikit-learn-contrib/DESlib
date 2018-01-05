@@ -10,9 +10,11 @@ import numbers
 from abc import abstractmethod, ABCMeta
 
 import numpy as np
+from scipy.stats import mode
 from sklearn.base import ClassifierMixin
 from sklearn.exceptions import NotFittedError
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.utils.validation import check_X_y
 
 from pythonds.util.aggregation import predict_proba_ensemble
 
@@ -52,7 +54,7 @@ class DS(ClassifierMixin):
         self.distances = None
         self.mask = None
 
-        if self.with_IH and self.Ih_k is None:
+        if self.with_IH and self.IH_k is None:
             self.IH_k = self.k
 
         # check if the input parameters are correct. Raise an error if the generated_pool is not fitted or k < 1
@@ -141,7 +143,7 @@ class DS(ClassifierMixin):
         -------
         self
         """
-        self._check_input_shape(X, y)
+        check_X_y(X, y)
         self._set_dsel(X, y)
         self.fit_knn(X, y, self.k)
         return self
@@ -150,11 +152,14 @@ class DS(ClassifierMixin):
         """Fit the k-NN classifier inside the dynamic selection method.
          Parameters
         ----------
-        X : matrix of shape = [n_samples, n_features] with the data.
+        X : array of shape = [n_samples, n_features]
+            The Input data.
 
-        y : class labels of each sample in X.
+        y : array of shape = [n_samples]
+            class labels of each sample in X.
 
-        k : int (Default=self.k), Number of neighbors calculated by the k-NN method
+        k : int (Default=self.k)
+            Number of neighbors used in the k-NN method
         """
         if self.aknn:
             # changing the DSEL set prior to use standard KNN?)
@@ -174,9 +179,11 @@ class DS(ClassifierMixin):
 
         Parameters
         ----------
-        X : ndarray of shape = [n_samples, n_features] each row corresponding to a different instance
+        X : array of shape = [n_samples, n_features]
+            The Input data.
 
-        y: array of shape = [n_samples] containing the labels of each instance
+        y : array of shape = [n_samples]
+            class labels of each sample in X.
         """
         self.DSEL_data = X
         self.DSEL_target = y
@@ -192,13 +199,13 @@ class DS(ClassifierMixin):
 
         Returns
         -------
-        dists : A vector with the distances between the query and
-        each sample in the region of competence. The vector is ordered
-        in an ascending fashion
-        idx : Indices of the instances belonging to the region of competence
-        of the query sample.
-        """
+        dists : list of shape = [k]
+                The distances between the query and each sample in the region of competence. The vector is ordered
+                in an ascending fashion.
 
+        idx : list of shape = [k]
+              Indices of the instances belonging to the region of competence of the given query sample.
+        """
         # Check if the neighborhood was already estimated to avoid unnecessary calculations.
         if self.distances is None or self.neighbors is None:
             if k is None:
@@ -218,13 +225,16 @@ class DS(ClassifierMixin):
 
         Parameters
         ----------
-        X : ndarray of shape = [n_samples, n_features]
+        X : array of shape = [n_samples, n_features]
+            The input data.
 
         Returns
         -------
-        predicted_labels : array of shape = [n_samples] with the
-            predicted class for each sample.
+        predicted_labels : array of shape = [n_samples]
+                           Predicted class label for each sample in X.
         """
+        # Check if the DS model was trained
+        self._check_is_fitted()
         # Check if X is a valid input
         self._check_input_predict(X)
 
@@ -233,20 +243,24 @@ class DS(ClassifierMixin):
         for index, instance in enumerate(X):
             # Do not use dynamic selection if all base classifiers agrees on the
             # same label.
+            instance = instance.reshape(1, -1)
             if self._all_classifier_agree(instance):
 
-                predicted_labels[index] = self.pool_classifiers[0].predict(instance.reshape(1, -1))[0]
+                predicted_labels[index] = self.pool_classifiers[0].predict(instance)[0]
 
             else:
                 # proceeds with DS, calculates the region of competence of the query sample
                 if self.DFP or self.with_IH:
-                    self.distances, self.neighbors = self._get_region_competence(instance.reshape(1, -1))
+                    self.distances, self.neighbors = self._get_region_competence(instance)
 
                 # If Instance hardness (IH) is used, check the IH of the region of competence to decide between
                 # DS or the knn classifier
                 if self.with_IH and (self._hardness_region_competence(self.neighbors) <= self.IH_rate):
                     # use the KNN for prediction if the sample is located in a safe region.
-                    predicted_labels[index] = self.knn.predict(instance.reshape(1, -1))
+                    # predicted_labels[index] = self.knn.predict(instance)
+                    # Using the pre-calculated set of neighbors to perform the decision
+                    y_neighbors = [self.DSEL_target[neighbor_idx] for neighbor_idx in self.neighbors]
+                    predicted_labels[index], _ = mode(y_neighbors)
 
                 # Otherwise, use DS for classification
                 else:
@@ -256,7 +270,7 @@ class DS(ClassifierMixin):
                     else:
                             self.mask = np.ones(self.n_classifiers)
 
-                    predicted_labels[index] = self.classify_instance(instance.reshape(1, -1))
+                    predicted_labels[index] = self.classify_instance(instance)
 
                 self.neighbors = None
                 self.distances = None
@@ -271,13 +285,17 @@ class DS(ClassifierMixin):
 
         Parameters
         ----------
-        X : ndarray of shape = [n_samples, n_features]
+        X : array of shape = [n_samples, n_features]
+            The input data.
 
         Returns
         -------
         predicted_proba : ndarray of shape = [n_samples, n_classes] with the
         probabilities estimates for each class in the classifier model.
         """
+        # Check if the DS model was trained
+        self._check_is_fitted()
+
         # Check if X is a valid input
         self._check_input_predict(X)
 
@@ -286,24 +304,24 @@ class DS(ClassifierMixin):
         for index, instance in enumerate(X):
             # Do not use dynamic selection if all base classifiers agrees on the
             # same label.
+            instance = instance.reshape(1, -1)
             if self._all_classifier_agree(instance):
 
                 #  since it may have better probabilities estimates
-                # predicted_proba[index] = self.pool_classifiers[0].predict(instance.reshape(1, -1))[0]
-                predicted_proba[index, :] = predict_proba_ensemble(self.pool_classifiers, instance.reshape(1, -1))[0]
+                predicted_proba[index, :] = predict_proba_ensemble(self.pool_classifiers, instance)[0]
 
             else:
 
                 # Check whether use the DFP or hardness information is used to compute the competence region
                 if self.DFP or self.with_IH:
-                    self.distances, self.neighbors = self._get_region_competence(instance.reshape(1, -1))
+                    self.distances, self.neighbors = self._get_region_competence(instance)
 
                 # If Instance hardness (IH) is used, check the hardness level of the region of competence
                 # to decide between DS or the knn classifier
                 if self.with_IH and (self._hardness_region_competence(self.neighbors) <= self.IH_rate):
                     # use the KNN for prediction if the sample is located in a safe region.
                     # TODO: Optimize that to not re-calculate the neighborhood
-                    predicted_proba[index, :] = self.knn.predict_proba(instance.reshape(1, -1))
+                    predicted_proba[index, :] = self.knn.predict_proba(instance)
 
                 # Otherwise, use DS for classification
                 else:
@@ -313,53 +331,12 @@ class DS(ClassifierMixin):
                     else:
                             self.mask = np.ones(self.n_classifiers)
 
-                    predicted_proba[index, :] = self.predict_proba_instance(instance.reshape(1, -1))
+                    predicted_proba[index, :] = self.predict_proba_instance(instance)
 
         # Reset the neighbors and the distances as they are specific to a given query.
         self.neighbors = None
         self.distances = None
         return predicted_proba
-
-
-    # def predict_proba_ensemble(self, query, indices, weights=None):
-    #     """Compute the posterior probabilities of each class for the query sample
-    #
-    #     Parameters
-    #     ----------
-    #     indices : index of the base classifier to be used in the combination scheme
-    #
-    #     weights : Weight of each classifier in the decision (Default=None)
-    #
-    #     query : Sample to predict the probability estimates
-    #
-    #     Returns
-    #     -------
-    #     predicted_proba : Probability estimates for each class
-    #     """
-    #     ensemble_size = len(indices)
-    #     # if weights is not None:
-    #     #     if weights.size != ensemble_size:
-    #     #         raise ValueError('The size of the weights vector should be equals to the size of the ensemble!')
-    #     #
-    #     # if indices is empty (no classifier is selected, use all of them)
-    #     if ensemble_size == 0:
-    #         indices = list(range(self.n_classifiers))
-    #
-    #     proba = np.zeros((1, self.n_classes))
-    #
-    #     if weights is None:
-    #         for idx in indices:
-    #             proba += np.array(self.pool_classifiers[idx].predict_proba(query))
-    #
-    #     else:
-    #         for idx in indices:
-    #             proba += np.array(self.pool_classifiers[idx].predict_proba(query)) * weights[idx]
-    #
-    #     predicted_proba = proba / ensemble_size
-    #     if weights is not None:
-    #         predicted_proba = softmax(predicted_proba)
-    #
-    #     return predicted_proba
 
     def _hardness_region_competence(self, region_competence):
         """Calculate the Instance hardness of the sample based on its neighborhood. The sample is deemed hard to
@@ -370,11 +347,12 @@ class DS(ClassifierMixin):
 
         Parameters
         ----------
-        region_competence : array = [k] containing the indices of the samples belonging to the region of competence
+        region_competence : list of shape = [k]
+                            The indices of the samples belonging to the region of competence
 
         Returns
         -------
-        hardness : float, with the calculated IH of the corresponding sample
+        hardness : The calculated IH level of the corresponding sample
 
         Reference
         ----------
@@ -412,8 +390,8 @@ class DS(ClassifierMixin):
 
             # Check if the base classifier predict the correct label for a sample belonging to each class.
             for clf_index in range(self.n_classifiers):
-                predictions = [self.processed_dsel[index][clf_index] for index in self.neighbors]
-                correct_class_pred = [self.DSEL_target[index] for count, index in enumerate(self.neighbors)
+                predictions = [self.processed_dsel[index][clf_index] for index in self.neighbors[:self.IH_k]]
+                correct_class_pred = [self.DSEL_target[index] for count, index in enumerate(self.neighbors[:self.IH_k])
                                       if predictions[count] == 1]
                 """
                 # If that is true, it means that it correctly classified at least one neighbor for each class in 
@@ -421,12 +399,11 @@ class DS(ClassifierMixin):
                 """
                 if np.array_equal(np.unique(neighbors_y), np.unique(correct_class_pred)):
                     mask[clf_index] = 1
-                else:
-                    mask[clf_index] = 0
-                if ~np.all(mask):
-                    # Considers the whole pool if no base classifiers crosses the region of competence
-                    mask = np.ones(self.n_classifiers)
-                return mask
+            # Check if all classifiers were pruned
+            if not np.count_nonzero(mask):
+                # Considers the whole pool if no base classifiers crosses the region of competence
+                mask = np.ones(self.n_classifiers)
+            return mask
         else:
             # The sample is located in a safe region. All base classifiers can predict the label
             mask = np.ones(self.n_classifiers)
@@ -466,7 +443,7 @@ class DS(ClassifierMixin):
         return processed_dsel, BKS_dsel
 
     def _output_profile_transform(self, query):
-        """Transform the query in an output profile. Each position of the ouput profiles vector
+        """Transform the query in an output profile. Each position of the output profiles vector
         is the score obtained by a base classifier ci for the classes of the query.
 
         Returns
@@ -517,6 +494,10 @@ class DS(ClassifierMixin):
         -------
         scores : scores obtained for the corresponding sample
         """
+        if self.dsel_scores is None:
+            raise NotFittedError('dsel_scores was not fitted yet. Call "_pre_process_dsel_scores" '
+                                 'to pre-process the classification scores before its use.')
+
         if sample_idx is None:
             scores = self.dsel_scores[:, clf_idx * self.n_classes:(clf_idx * self.n_classes) + self.n_classes]
         else:
@@ -538,7 +519,6 @@ class DS(ClassifierMixin):
         agrees on the same label. False otherwise
         """
         target = None
-        query = query.reshape(1, -1)
         for clf in self.pool_classifiers:
             [temp] = clf.predict(query)
             if target is None:
@@ -551,15 +531,6 @@ class DS(ClassifierMixin):
 
         return True
 
-    @staticmethod
-    def _check_input_shape(X, y):
-        """Check if the vectors X and y have the same number of samples. Raises an error
-        if it is different.
-        """
-        if X.shape[0] != y.shape[0]:
-            raise ValueError("The number of samples in X and y must be the same"
-                             "n_samples X = %s, n_samples y = %s " % (X.shape[0], y.shape[0]))
-
     def _check_parameters(self):
         """Verify if the input parameters are correct (generated_pool and k)
         raises an error if k < 1 or generated_pool is not fitted.
@@ -571,35 +542,38 @@ class DS(ClassifierMixin):
                 raise ValueError("parameter k must be higher than 1."
                                  "input k is %s " % self.k)
 
-        # IH_h should be equals or lower the neighborhood size k.
+        # IH_k should be equals or lower the neighborhood size k.
         if self.IH_k is not None and self.k is not None:
             if self.IH_k > self.k:
                 raise ValueError("parameter IH_k must be equal or less than parameter k."
                                  "input IH_k is %s  and k is " % self.k, self.IH_k)
+
+        if not isinstance(self.IH_rate, float):
+            raise TypeError("parameter IH_rate should be a float between [0.0, 0.5]")
+
+        if 0 > self.IH_rate or self.IH_rate > 0.5:
+            raise ValueError("Parameter IH_rate should be between [0.0, 0.5]."
+                             "IH_rate = {}" .format(self.IH_rate))
+
         self._validate_pool()
 
     def _check_is_fitted(self):
         """Verify if the dynamic selection algorithm was fitted.
         Raises an error if it is not fitted.
         """
-        if self.knn is None:
-            raise NotFittedError("Estimator not fitted, "
+        if self.knn is None or self.processed_dsel is None:
+            raise NotFittedError("DS method not fitted, "
                                  "call `fit` before exploiting the model.")
 
     def _validate_pool(self):
         """Check the estimator and the n_estimator attribute, set the
         `base_estimator_` attribute."""
-        if not isinstance(self.n_classifiers, (numbers.Integral, np.int)):
-            raise ValueError("n_classifiers must be an integer, "
-                             "got {0}.".format(type(self.n_classifiers)))
-
         if self.n_classifiers <= 0:
             raise ValueError("n_classifiers must be greater than zero, "
-                             "got {0}.".format(self.n_classifiers))
+                             "got {}.".format(self.n_classifiers))
 
         for clf in self.pool_classifiers:
-            if clf is None:
-                raise ValueError("All base classifiers should be fitted before use")
+            # check_is_fitted(clf, '"estimator_"')
             if "predict_proba" not in dir(clf):
                 raise ValueError("All base classifiers should output probability estimates")
 
@@ -617,7 +591,7 @@ class DS(ClassifierMixin):
     def _check_input_predict(self, X):
 
         if X is None or np.isnan(X).any():
-            raise ValueError('The input variable X is invalid! X = ', X)
+            raise ValueError('The input variable X is invalid! X = {}' .format(X))
 
         self._check_num_features(X)
 
