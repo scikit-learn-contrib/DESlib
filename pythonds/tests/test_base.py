@@ -268,3 +268,65 @@ def test_input_IH_rate(IH_rate):
 
     with pytest.raises((ValueError, TypeError)):
         DS(create_pool_classifiers(), with_IH=True, IH_rate=IH_rate)
+
+
+def test_predict_proba_all_agree():
+    query = np.atleast_2d([1, 1])
+    ds_test = DS(create_pool_classifiers())
+    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+    ds_test.dsel_scores = dsel_scores_ex1
+    ds_test._all_classifier_agree = MagicMock(return_value=True)
+    proba = ds_test.predict_proba(query)
+    assert np.isclose(proba, np.atleast_2d([0.61, 0.39])).all()
+
+
+# In this test, the three neighborhoods have an hardness level lower than the parameter IH_rate (0.5). Thus, the KNN
+# Should be used to predict probabilities
+@pytest.mark.parametrize('index', [0, 1, 2])
+def test_predict_proba_IH_knn(index):
+    query = np.atleast_2d([1, 1])
+    ds_test = DS(create_pool_classifiers(), with_IH=True, IH_rate=0.5)
+    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+    ds_test.dsel_scores = dsel_scores_ex1
+
+    ds_test.neighbors = neighbors_ex1[index, :]
+    ds_test.distances = distances_ex1[index, :]
+
+    ds_test.knn.predict_proba = MagicMock(return_value=np.atleast_2d([0.45, 0.55]))
+    proba = ds_test.predict_proba(query)
+    assert np.isclose(proba, np.atleast_2d([0.45, 0.55])).all()
+
+
+# In this test, the three neighborhoods have an hardness level higher than the parameter IH_rate. Thus, the prediction
+# should be passed down to the predict_proba_instance function.
+@pytest.mark.parametrize('index', [0, 1, 2])
+def test_predict_proba_instance_called(index):
+    query = np.atleast_2d([1, 1])
+    ds_test = DS(create_pool_classifiers(), with_IH=True, IH_rate=0.10)
+    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+
+    ds_test.neighbors = neighbors_ex1[index, :]
+    ds_test.distances = distances_ex1[index, :]
+
+    ds_test.predict_proba_instance = MagicMock(return_value=np.atleast_2d([0.25, 0.75]))
+    proba = ds_test.predict_proba(query)
+    assert np.isclose(proba, np.atleast_2d([0.25, 0.75])).all()
+
+
+# In this test, the frienemy pruning is used. So, the value of self.mask should change.
+def test_predict_proba_DFP():
+    query = np.atleast_2d([1, 1])
+    ds_test = DS(create_pool_classifiers(), DFP=True, safe_k=3)
+    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+
+    # change the state of the system
+    ds_test.processed_dsel = dsel_processed_ex1
+    ds_test.DSEL_target = y_dsel_ex1
+    ds_test.DSEL_data = X_dsel_ex1
+    ds_test.neighbors = neighbors_ex1[0, :]
+    ds_test.distances = distances_ex1[0, :]
+
+    ds_test.predict_proba_instance = MagicMock(return_value=np.atleast_2d([0.25, 0.75]))
+    ds_test.predict_proba(query)
+    assert np.array_equal(ds_test.mask, np.array([1, 1, 0]))
+
