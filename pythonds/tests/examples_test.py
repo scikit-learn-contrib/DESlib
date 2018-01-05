@@ -115,14 +115,14 @@ n_classes_ex_kuncheva = 3
 def create_base_classifier(return_value, return_prob=None):
     classifier = MagicMock()
     classifier.predict.return_value = [return_value]
-    classifier.predict_proba.return_value = [return_prob]
+    classifier.predict_proba.return_value = return_prob
     return classifier
 
 
 def create_pool_classifiers():
-    clf_0 = create_base_classifier(return_value=0, return_prob=np.array([0.5, 0.5]))
-    clf_1 = create_base_classifier(return_value=1, return_prob=np.array([1.0, 0.0]))
-    clf_2 = create_base_classifier(return_value=0, return_prob=np.array([0.33, 0.67]))
+    clf_0 = create_base_classifier(return_value=0, return_prob=np.atleast_2d([0.5, 0.5]))
+    clf_1 = create_base_classifier(return_value=1, return_prob=np.atleast_2d([1.0, 0.0]))
+    clf_2 = create_base_classifier(return_value=0, return_prob=np.atleast_2d([0.33, 0.67]))
     pool_classifiers = [clf_0, clf_1, clf_2]
     return pool_classifiers
 

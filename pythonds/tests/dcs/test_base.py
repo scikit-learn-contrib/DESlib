@@ -104,7 +104,7 @@ def test_predict_proba_instance():
     expected = pool_classifiers[np.argmax(competences)].predict_proba(query)
 
     predicted_proba = dcs_test.predict_proba_instance(query)
-    assert predicted_proba == expected
+    assert np.array_equal(predicted_proba, expected)
 
 
 @pytest.mark.parametrize('competences, expected', [([0.6, 0.2, 0.6], [0.415, 0.585]),
