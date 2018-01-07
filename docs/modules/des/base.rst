@@ -1,4 +1,4 @@
-Base class
+DES class
 ----------
 
 .. automodule:: pythonds.des.base

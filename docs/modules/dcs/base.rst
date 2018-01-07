@@ -1,4 +1,4 @@
-Base class
+DCS class
 ----------
 
 .. automodule:: pythonds.dcs.base
