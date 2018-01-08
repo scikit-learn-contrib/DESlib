@@ -12,3 +12,4 @@ Probabilistic
     minimum_difference
     exponential
     logarithmic
+    entropy
