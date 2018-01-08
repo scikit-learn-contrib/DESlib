@@ -6,7 +6,8 @@ from pythonds.util.aggregation import weighted_majority_voting, majority_voting,
 
 
 class DES(DS):
-    """Base class for a Dynamic Ensemble Selection (des) technique.
+    """Base class for a Dynamic Ensemble Selection (DES).
+
     All dynamic ensemble selection techniques should inherit from this class.
 
     Warning: This class should not be instantiated directly, use derived classes instead.
@@ -106,7 +107,6 @@ class DES(DS):
 
     def classify_instance(self, query):
         """Predicts the label of the corresponding query sample.
-        Returns the predicted label.
 
         If self.mode == "selection", the selected ensemble is combined using the
         majority voting rule
@@ -147,7 +147,6 @@ class DES(DS):
 
     def predict_proba_instance(self, query):
         """Predicts the posterior probabilities of the corresponding query sample.
-        Returns the probability estimates of each class.
 
         If self.mode == "selection", the selected ensemble is used to estimate the probabilities. The average rule is
         used to give probabilities estimates.

@@ -85,7 +85,7 @@ class Probabilistic(DES):
         is calculated for each data point in DSEL in order to speed up the process during the
         testing phases.
 
-        C_src is estimated with the source_competence() function that is overriden by each DS method
+        C_src is estimated with the source_competence() function that is overridden by each DS method
         based on this paradigm
 
          Parameters
@@ -102,7 +102,7 @@ class Probabilistic(DES):
         if self.k is None:
             self.k = self.n_samples
 
-        self.fit_knn(X, y, self.n_samples)
+        self._fit_region_competence(X, y, self.n_samples)
         # Pre process the scores in DSEL (it is required only for the source of competence estimation
         # Maybe I should not keep this matrix in order to reduce memory requirement.
         self.dsel_scores = self._preprocess_dsel_scores()
@@ -244,8 +244,6 @@ class Logarithmic(Probabilistic):
     T.Woloszynski, M. Kurzynski, A measure of competence based on randomized reference classifier for dynamic
     ensemble selection, in: International Conference on Pattern Recognition (ICPR), 2010, pp. 4194–4197.
 
-    R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
-    Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
     def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
                  mode='selection'):
@@ -309,8 +307,9 @@ class Entropy(Probabilistic):
     B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
     multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197–206.
 
-    R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
-    Information Fusion, vol. 41, pp. 195 – 216, 2018.
+    Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
+    for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
+
     """
     def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
                  mode='selection'):
@@ -385,9 +384,6 @@ class Exponential(Probabilistic):
 
     Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
     for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
-
-    R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
-    Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
     def __init__(self, pool_classifiers, k=None, aknn=False, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
@@ -625,8 +621,9 @@ class MinimumDifference(Probabilistic):
     B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
     multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197–206.
 
-    R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
-    Information Fusion, vol. 41, pp. 195 – 216, 2018.
+    Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
+    for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
+
     """
     def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
                  mode='selection'):

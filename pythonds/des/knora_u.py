@@ -112,10 +112,8 @@ class KNORAU(DES):
 
     def classify_instance(self, query):
         """Predicts the label of the corresponding query sample.
-        Returns the predicted label.
 
-        The prediction is made aggregating the votes obtained by all selected base classifiers. The predicted label
-        is the class that obtained the highest number of votes
+        The prediction is made by aggregating the votes obtained by all selected base classifiers.
 
         Parameters
         ----------

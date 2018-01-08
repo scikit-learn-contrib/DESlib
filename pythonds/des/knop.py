@@ -91,7 +91,7 @@ class KNOP(DES):
         """
         self._set_dsel(X, y)
         self.dsel_scores = self._preprocess_dsel_scores()
-        self.fit_knn(self.dsel_scores, y, self.k)
+        self._fit_region_competence(self.dsel_scores, y, self.k)
 
         return self
     
@@ -153,7 +153,6 @@ class KNOP(DES):
 
     def classify_instance(self, query):
         """Predicts the label of the corresponding query sample.
-        Returns the predicted label.
 
         The prediction is made aggregating the votes obtained by all selected base classifiers. The predicted label
         is the class that obtained the highest number of votes

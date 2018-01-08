@@ -10,10 +10,10 @@ from pythonds.des.base import DES
 
 
 class KNORAE(DES):
-    """k-Nearest Oracles Eliminate (KNORAE).
+    """k-Nearest Oracles Eliminate (KNORA-E).
     
-    This method searches for a local Oracle, which can correctly classify all
-    samples belonging to the region of competence of the test sample x. All classifiers
+    This method searches for a local Oracle, which is a base classifier that correctly classify all
+    samples belonging to the region of competence of the test sample. All classifiers
     with a perfect performance in the region of competence is selected. In the case that 
     no classifiers achieve a perfect accuracy, the size of the region of competence is reduced
     (by one neighbor) and the performance of the classifiers are re-evaluated. The outputs
@@ -66,21 +66,20 @@ class KNORAE(DES):
     def estimate_competence(self, query):
         """Estimate the competence of the base classifiers. In the case of the KNORA-E technique, the classifiers
         are only considered competent when they achieve a 100% accuracy in the region of competence. For each base,
-        we estimate the maximum size of the region of competence that it is a local oracle.
-
-        The return competence level is the maximum size of the region of competence that the corresponding base
+        we estimate the maximum size of the region of competence that it is a local oracle (achieves 100%). The
+        competence level estimate is then the maximum size of the region of competence that the corresponding base
         classifier is a local Oracle.
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_features]
+                The test sample
 
         Returns
         -------
-        indices : the indices of the selected base classifiers
 
-        competences : array = [n_classifiers] containing the competence level estimated
-        for each base classifier
+        competences : array of shape = [n_classifiers]
+                      The competence level estimated for each base classifier in the pool
         """
         dists, idx_neighbors = self._get_region_competence(query)
         competences = np.zeros(self.n_classifiers)
@@ -102,13 +101,16 @@ class KNORAE(DES):
     def select(self, competences):
         """Selects all base classifiers that obtained a local accuracy of 100% in the region of competence
         (i.e., local oracle). In the case that no base classifiers obtain 100% accuracy, the size of the region
-         of competence is reduced and the search for the local oracle is restarted.
+        of competence is reduced and the search for the local oracle is restarted.
 
-        Note: Instead of re-applying the method several times, we compute the number of consecutive correct
-        classification of each base classifier starting from the closest neighbor to the more distant in the
-        estimate_competence function. The number of consecutive correct classification represents the size of
-        the region of competence in which the corresponding base classifier is an Local Oracle. Then, we select
-        all base classifiers with the maximum value for the number of consecutive correct classification.
+        Notes
+        ------
+        Instead of re-applying the method several times (reducing the size of the region of competence),
+        we compute the number of consecutive correct classification of each base classifier starting from the
+        closest neighbor to the more distant in the estimate_competence function. The number of consecutive correct
+        classification represents the size of the region of competence in which the corresponding base classifier
+        is an Local Oracle. Then, we select all base classifiers with the maximum value for the number of consecutive
+        correct classification. This speed up the selection process.
 
         Parameters
         ----------
@@ -117,7 +119,7 @@ class KNORAE(DES):
 
         Returns
         -------
-        indices : list with the indices of the selected base classifiers
+        indices : List with the indices of the selected base classifiers
 
         """
         max_value = np.max(competences)

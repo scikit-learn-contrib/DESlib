@@ -14,7 +14,7 @@ from scipy.stats import mode
 from sklearn.base import ClassifierMixin
 from sklearn.exceptions import NotFittedError
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.utils.validation import check_X_y
+from sklearn.utils.validation import check_X_y, check_is_fitted
 
 from pythonds.util.aggregation import predict_proba_ensemble
 
@@ -145,10 +145,10 @@ class DS(ClassifierMixin):
         """
         check_X_y(X, y)
         self._set_dsel(X, y)
-        self.fit_knn(X, y, self.k)
+        self._fit_region_competence(X, y, self.k)
         return self
 
-    def fit_knn(self, X, y, k):
+    def _fit_region_competence(self, X, y, k):
         """Fit the k-NN classifier inside the dynamic selection method.
          Parameters
         ----------
@@ -220,8 +220,7 @@ class DS(ClassifierMixin):
         return dists, idx
 
     def predict(self, X):
-        """Predict the label of each sample in X.
-        returns the predicted label.
+        """Predict the class label for each sample in X.
 
         Parameters
         ----------
@@ -278,10 +277,7 @@ class DS(ClassifierMixin):
         return predicted_labels
 
     def predict_proba(self, X):
-        """Estimates the posterior probabilities for each class in the classification problem.
-
-        The returned probability estimates for all classes are ordered by the
-        label of classes.
+        """Estimates the posterior probabilities for sample in X.
 
         Parameters
         ----------
@@ -290,7 +286,7 @@ class DS(ClassifierMixin):
 
         Returns
         -------
-        predicted_proba : ndarray of shape = [n_samples, n_classes] with the
+        predicted_proba : array of shape = [n_samples, n_classes] with the
         probabilities estimates for each class in the classifier model.
         """
         # Check if the DS model was trained
@@ -573,7 +569,7 @@ class DS(ClassifierMixin):
                              "got {}.".format(self.n_classifiers))
 
         for clf in self.pool_classifiers:
-            # check_is_fitted(clf, '"estimator_"')
+            check_is_fitted(clf, "classes_")
             if "predict_proba" not in dir(clf):
                 raise ValueError("All base classifiers should output probability estimates")
 

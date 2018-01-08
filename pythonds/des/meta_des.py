@@ -8,16 +8,15 @@ import warnings
 
 import numpy as np
 from sklearn.exceptions import NotFittedError
-from sklearn.naive_bayes import MultinomialNB, GaussianNB
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.utils.validation import check_is_fitted
-from mdlp.discretization import MDLP
 
 from pythonds.des.base import DES
 
 
 class METADES(DES):
-    """Meta learning for dynamic ensemble selection (META-des).
+    """Meta learning for dynamic ensemble selection (META-DES).
 
     This method works selects all classifiers that correctly classified at least
     one sample belonging to the region of competence of the test sample x. Each
@@ -58,7 +57,7 @@ class METADES(DES):
 
     References
     ----------
-    Cruz, R.M., Sabourin, R., Cavalcanti, G.D. and Ren, T.I., 2015. META-des: A dynamic ensemble selection framework
+    Cruz, R.M., Sabourin, R., Cavalcanti, G.D. and Ren, T.I., 2015. META-DES: A dynamic ensemble selection framework
     using meta-learning. Pattern Recognition, 48(5), pp.1925-1935.
 
     Cruz, R.M., Sabourin, R. and Cavalcanti, G.D., 2015, July. META-des. H: a dynamic ensemble selection technique
@@ -92,7 +91,7 @@ class METADES(DES):
         self.OPKNN = None
         self.meta_training_dataset = []
         self.meta_training_target = []
-        self.n_metafeatures = (self.k*2) + self.Kp + 2
+        self.n_meta_features = (self.k * 2) + self.Kp + 2
 
     def fit(self, X, y):
         """Prepare the DS model by setting the KNN algorithm and
@@ -101,7 +100,7 @@ class METADES(DES):
 
         Parameters
         ----------
-        X : matrix of shape = [n_samples, n_features] with the data.
+        X : array of shape = [n_samples, n_features] with the data.
 
         y : class labels of each sample in X.
 
@@ -110,7 +109,7 @@ class METADES(DES):
         self
         """
         self._set_dsel(X, y)
-        self.fit_knn(X, y, self.k)
+        self._fit_region_competence(X, y, self.k)
         self.dsel_scores = self._preprocess_dsel_scores()
         self._fit_OP(self.dsel_scores, y, self.kp)
 
@@ -124,7 +123,7 @@ class METADES(DES):
             self._train_meta_classifier()
 
     def _fit_OP(self, X, y, kp):
-        """Fit the
+        """Fit the set of output profiles.
         -------
         query_idx : int containing the index of the query sample in DSEL
 
@@ -198,7 +197,7 @@ class METADES(DES):
             if self.Hc > disagreement > (1 - self.Hc):
                 # Extract meta-features
                 _, idx_neighbors = self._get_region_competence(sample, self.k + 1)
-                _, idx_neighbors_op = self._get_out_profiles(sample, self.kp + 1)
+                _, idx_neighbors_op = self._get_similar_out_profiles(sample, self.kp + 1)
                 # Remove itself from the list of NN
                 idx_neighbors = idx_neighbors[1:]
                 idx_neighbors_op = idx_neighbors_op[1:]
@@ -218,12 +217,19 @@ class METADES(DES):
         self.meta_training_dataset = np.array(self.meta_training_dataset)
         self.meta_training_target = np.array(self.meta_training_target)
         if isinstance(self.selector, MultinomialNB):
-            self.mdlp = MDLP()
-            self.meta_training_dataset = self.mdlp.fit_transform(self.meta_training_dataset, self.meta_training_target)
+            try:
+                from mdlp.discretization import MDLP
+                self.mdlp = MDLP()
+                self.meta_training_dataset = self.mdlp.fit_transform(self.meta_training_dataset,
+                                                                     self.meta_training_target)
+            except ImportError:
+                raise ValueError('In order to use you need to install the MDLP discretization package. '
+                                 'Call pip install git+https://github.com/hlin117/mdlp-discretization to install'
+                                 'the package.')
 
         self.meta_classifier.fit(self.meta_training_dataset, self.meta_training_target)
 
-    def _get_out_profiles(self, query, kp=None):
+    def _get_similar_out_profiles(self, query, kp=None):
         """Get the most similar output profiles of the query sample.
 
         Parameters
@@ -249,17 +255,16 @@ class METADES(DES):
 
     def select(self, competences):
         """Selects the base classifiers that obtained a competence level higher than the predefined
-        threshold gamma.
+        threshold Gamma.
 
         Parameters
         ----------
-        competences : array = [n_classifiers] containing the competence level estimated
+        competences : array of shape = [n_classifiers] containing the competence level estimated
         for each base classifier
 
         Returns
         -------
         indices : the indices of the selected base classifiers
-r
         """
         indices = [idx for idx, _ in enumerate(competences) if competences[idx] >= self.gamma]
 
@@ -270,7 +275,7 @@ r
         return indices
 
     def estimate_competence(self, query):
-        """estimate the competence of each base classifier ci
+        """Estimate the competence of each base classifier ci
         the classification of the query sample x.
         Returns an array containing the level of competence estimated
         for each base classifier. The size of the vector is equals to
@@ -286,7 +291,7 @@ r
         for each base classifier
         """
         _, idx_neighbors = self._get_region_competence(query)
-        _, idx_neighbors_op = self._get_out_profiles(query)
+        _, idx_neighbors_op = self._get_similar_out_profiles(query)
         vectors = []
         for clf_index, clf in enumerate(self.pool_classifiers):
             # Check if the dynamic frienemy pruning (DFP) should be used used
@@ -294,7 +299,7 @@ r
                 vectors.append(self.compute_meta_features(query, idx_neighbors, idx_neighbors_op, clf, clf_index))
             else:
                 # TODO: Check if that pruning scheme works by setting everything to zero.
-                vectors.append(np.zeros(self.n_metafeatures))
+                vectors.append(np.zeros(self.n_meta_features))
 
         vectors = np.array(vectors)
         if isinstance(self.selector, MultinomialNB):
