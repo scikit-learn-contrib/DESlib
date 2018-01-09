@@ -64,20 +64,21 @@ class DESP(DES):
         super(DESP, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                    aknn=aknn, mode=mode)
 
-        self.name = 'des-Performance (des-P)'
+        self.name = 'DES-Performance (DES-P)'
 
     def estimate_competence(self, query):
-        """estimate the competence of each base classifier ci
-        based on its classification performance in the region of competence
+        """estimate the competence of each base classifier in the pool. The competence level is estimated
+         based on the classification accuracy of the base classifier for the region of competence.
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_features]
+                The test sample
 
         Returns
         -------
-        competences : array = [n_classifiers] containing the competence level estimated
-        for each base classifier
+        competences : array of shape = [n_classifiers]
+                      The competence level estimated for each base classifier
         """
         dists, idx_neighbors = self._get_region_competence(query)
         competences = np.zeros(self.n_classifiers)
@@ -91,19 +92,19 @@ class DESP(DES):
         return competences
 
     def select(self, competences):
-        """Selects the base classifiers that obtained a local classification accuracy higher than the
-        Random Classifier. The performance of the random classifier is 1/L, where L is the number of classes
+        """Selects all base classifiers that obtained a local classification accuracy higher than the
+        Random Classifier. The performance of the random classifier is denoted 1/L, where L is the number of classes
         in the problem.
 
         Parameters
         ----------
-        competences : array = [n_classifiers] containing the competence level estimated
-        for each base classifier
+        competences : array of shape = [n_classifiers] containing the competence level estimated
+                      for each base classifier.
 
         Returns
         -------
-        indices : the indices of the selected base classifiers
-r
+        indices : List with the indices of the selected base classifiers.
+
         """
         RC = (1.0 / self.n_classes)
         # Select classifiers with local accuracy superior than the random classifier rc.

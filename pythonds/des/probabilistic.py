@@ -65,6 +65,7 @@ class Probabilistic(DES):
 
     R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
+
     """
     __metaclass__ = ABCMeta
 
@@ -85,10 +86,10 @@ class Probabilistic(DES):
         is calculated for each data point in DSEL in order to speed up the process during the
         testing phases.
 
-        C_src is estimated with the source_competence() function that is overriden by each DS method
+        C_src is estimated with the source_competence() function that is overridden by each DS method
         based on this paradigm
 
-         Parameters
+        Parameters
         ----------
         X : matrix of shape = [n_samples, n_features] with the data.
 
@@ -102,7 +103,7 @@ class Probabilistic(DES):
         if self.k is None:
             self.k = self.n_samples
 
-        self.fit_knn(X, y, self.n_samples)
+        self._fit_region_competence(X, y, self.n_samples)
         # Pre process the scores in DSEL (it is required only for the source of competence estimation
         # Maybe I should not keep this matrix in order to reduce memory requirement.
         self.dsel_scores = self._preprocess_dsel_scores()
@@ -122,8 +123,8 @@ class Probabilistic(DES):
 
         Returns
         -------
-        competences : array = [n_classifiers] containing the competence level estimated
-        for each base classifier
+        competences : array of shape = [n_classifiers]
+                      The competence level estimated for each base classifier
         """
         dists, idx_neighbors = self._get_region_competence(query)
         dists_organized = np.array([dists[index] for index in np.argsort(idx_neighbors)])
@@ -152,14 +153,13 @@ class Probabilistic(DES):
 
         Parameters
         ----------
-        competences : array = [n_classifiers] containing the estimated competence level for the base classifiers
+        competences : array of shape = [n_classifiers]
+                      The estimated competence level for the base classifiers
 
         Returns
         -------
         indices : the indices of the selected base classifiers
 
-        competences : array = [n_classifiers] containing the competence level estimated
-        for each base classifier
         """
         # Set the threshold as the performance of the random classifier
         if self.selection_threshold is None:
@@ -176,11 +176,12 @@ class Probabilistic(DES):
     @staticmethod
     def potential_func(dist):
         """Gaussian potential function to decrease the
-        influence of the source of competence as the distance between
-        x and query increases
+        influence of the source of competence as the distance between xk and the query increases
+
+        Parameters
         ----------
-        dist : np.array(dtype=Float), distance between the corresponding
-        sample to the query
+        dist : array of shape = [self.n_samples]
+               distance between the corresponding sample to the query
 
         Returns
         -------
@@ -196,7 +197,8 @@ class Probabilistic(DES):
 
         Returns
         ----------
-        C_src : ndarray = [n_samples, n_classifiers] the competence source for each base classifier at each data point.
+        C_src : array of shape = [n_samples, n_classifiers]
+                The competence source for each base classifier at each data point.
         """
         pass
 
@@ -243,9 +245,6 @@ class Logarithmic(Probabilistic):
 
     T.Woloszynski, M. Kurzynski, A measure of competence based on randomized reference classifier for dynamic
     ensemble selection, in: International Conference on Pattern Recognition (ICPR), 2010, pp. 4194–4197.
-
-    R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
-    Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
     def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
                  mode='selection'):
@@ -255,6 +254,14 @@ class Logarithmic(Probabilistic):
         self.name = "DES-Logarithmic"
 
     def source_competence(self):
+        """The source of competence C_src at the validation point xk is calculated by logarithm in the support
+        obtained by the base classifier.
+
+        Returns
+        ----------
+        C_src : array of shape = [n_samples, n_classifiers]
+                The competence source for each base classifier at each data point.
+        """
         C_src = np.zeros((self.n_samples, self.n_classifiers))
         for clf_index in range(self.n_classifiers):
             supports = self._get_scores_dsel(clf_index)
@@ -267,11 +274,11 @@ class Logarithmic(Probabilistic):
 
 class Entropy(Probabilistic):
     """The source of competence C_src at the validation point xk is a product of two factors:  The absolute value of
-     the competence and the sign. The value of the source competence is inverse proportional to the normalized entropy
-     of its supports vector. The sign of competence is simply determined by correct/incorrect classification of xk [1].
+    the competence and the sign. The value of the source competence is inverse proportional to the normalized entropy
+    of its supports vector. The sign of competence is simply determined by correct/incorrect classification of xk [1].
 
-     The influence of each sample xk is defined according to a Gaussian function model[2]. Samples that are closer to
-     the query have a higher influence in the competence estimation.
+    The influence of each sample xk is defined according to a Gaussian function model[2]. Samples that are closer to
+    the query have a higher influence in the competence estimation.
 
     Parameters
     ----------
@@ -309,8 +316,8 @@ class Entropy(Probabilistic):
     B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
     multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197–206.
 
-    R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
-    Information Fusion, vol. 41, pp. 195 – 216, 2018.
+    Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
+    for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
     """
     def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
                  mode='selection'):
@@ -322,13 +329,14 @@ class Entropy(Probabilistic):
 
     def source_competence(self):
         """The source of competence C_src at the validation point xk is a product of two factors: The absolute value of
-         the competence and the sign. The value of the source competence is inverse proportional
+        the competence and the sign. The value of the source competence is inverse proportional
         to the normalized entropy of its supports vector.The sign of competence is simply determined by
         correct/incorrect classification of the instance xk.
 
         Returns
         ----------
-        C_src : ndarray = [n_samples, n_classifiers] the competence source for each base classifier at each data point.
+        C_src : array of shape = [n_samples, n_classifiers]
+                The competence source for each base classifier at each data point.
         """
         C_src = np.zeros((self.n_samples, self.n_classifiers))
         for clf_index in range(self.n_classifiers):
@@ -341,11 +349,11 @@ class Entropy(Probabilistic):
 
 class Exponential(Probabilistic):
     """The source of competence C_src at the validation point xk is a product of two factors:  The absolute value of
-     the competence and the sign. The value of the source competence is inverse proportional to the normalized entropy
-     of its supports vector. The sign of competence is simply determined by correct/incorrect classification of xk [1].
+    the competence and the sign. The value of the source competence is inverse proportional to the normalized entropy
+    of its supports vector. The sign of competence is simply determined by correct/incorrect classification of xk [1].
 
-     The influence of each sample xk is defined according to a Gaussian function model[2]. Samples that are closer to
-     the query have a higher influence in the competence estimation.
+    The influence of each sample xk is defined according to a Gaussian function model[2]. Samples that are closer to
+    the query have a higher influence in the competence estimation.
 
     Parameters
     ----------
@@ -386,9 +394,6 @@ class Exponential(Probabilistic):
     Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
     for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
 
-    R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
-    Information Fusion, vol. 41, pp. 195 – 216, 2018.
-
     """
     def __init__(self, pool_classifiers, k=None, aknn=False, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
                  mode='selection'):
@@ -401,13 +406,14 @@ class Exponential(Probabilistic):
 
     def source_competence(self):
         """The source of competence C_src at the validation point xk is a product of two factors: The absolute value of
-         the competence and the sign. The value of the source competence is inverse proportional
+        the competence and the sign. The value of the source competence is inverse proportional
         to the normalized entropy of its supports vector.The sign of competence is simply determined by
         correct/incorrect classification of the instance xk.
 
         Returns
         ----------
-        C_src : ndarray = [n_samples, n_classifiers] the competence source for each base classifier at each data point.
+        C_src : array of shape = [n_samples, n_classifiers]
+                The competence source for each base classifier at each data point.
         """
         C_src = np.zeros((self.n_samples, self.n_classifiers))
         for clf_index in range(self.n_classifiers):
@@ -419,7 +425,7 @@ class Exponential(Probabilistic):
 
 
 class RRC(Probabilistic):
-    """des based on the Randomized Reference Classifier method (des-RRC).
+    """DES technique based on the Randomized Reference Classifier method (DES-RRC).
 
     Parameters
     ----------
@@ -472,7 +478,7 @@ class RRC(Probabilistic):
 
         super(RRC, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                   aknn=aknn, mode=mode)
-        self.name = "des-RRC"
+        self.name = "DES-RRC"
         self.selection_threshold = None
 
     def source_competence(self):
@@ -482,9 +488,11 @@ class RRC(Probabilistic):
         The source of competence C_src at the validation point xk calculated using the probabilistic model based on
         the supports obtained by the base classifier and randomized reference classifier (RRC) model.
         The probabilistic modeling of the classifier competence is calculated using the ccprmod function.
+
         Returns
         ----------
-        C_src : ndarray = [n_samples, n_classifiers] the competence source for each base classifier at each data point.
+        C_src : array of shape = [n_samples, n_classifiers]
+                The competence source for each base classifier at each data point.
         """
         c_src = np.zeros((self.n_samples, self.n_classifiers))
 
@@ -497,7 +505,7 @@ class RRC(Probabilistic):
 
 
 class DESKL(Probabilistic):
-    """Dynamic Ensemble Selection-Kullback-Leibler divergence (des-KL).
+    """Dynamic Ensemble Selection-Kullback-Leibler divergence (DES-KL).
 
     This method estimates the competence of the classifier from the
     information theory perspective. The competence of the base classifiers
@@ -547,6 +555,7 @@ class DESKL(Probabilistic):
 
     R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
+
     """
     def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
                  mode='selection'):
@@ -554,7 +563,7 @@ class DESKL(Probabilistic):
         super(DESKL, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                     aknn=aknn, mode=mode)
         self.selection_threshold = 0.0
-        self.name = 'des-Kullback-Leibler (des-KL)'
+        self.name = 'DES-Kullback-Leibler (DES-KL)'
 
     def source_competence(self):
         """Calculates the source of competence using the KL divergence method.
@@ -566,7 +575,8 @@ class DESKL(Probabilistic):
 
         Returns
         ----------
-        C_src : ndarray = [n_samples, n_classifiers] the competence source for each base classifier at each data point.
+        C_src : array of shape = [n_samples, n_classifiers]
+                The competence source for each base classifier at each data point.
         """
         c_src = np.zeros((self.n_samples, self.n_classifiers))
 
@@ -625,8 +635,9 @@ class MinimumDifference(Probabilistic):
     B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
     multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197–206.
 
-    R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
-    Information Fusion, vol. 41, pp. 195 – 216, 2018.
+    Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
+    for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
+
     """
     def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
                  mode='selection'):
@@ -645,7 +656,8 @@ class MinimumDifference(Probabilistic):
 
         Returns
         ----------
-        C_src : ndarray = [n_samples, n_classifiers] the competence source for each base classifier at each data point.
+        C_src : array of shape = [n_samples, n_classifiers]
+                The competence source for each base classifier at each data point.
         """
         C_src = np.zeros((self.n_samples, self.n_classifiers))
         for clf_index in range(self.n_classifiers):

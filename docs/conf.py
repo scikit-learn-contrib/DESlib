@@ -13,8 +13,6 @@
 # serve to show the default.
 
 import sys
-import os
-import shlex
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -33,11 +31,15 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.mathjax',
+    'sphinx.ext.linkcode',  # link to github, see linkcode_resolve() below
     'numpydoc',
 ]
 
 numpydoc_show_class_members = False
 
+# See https://github.com/rtfd/readthedocs.org/issues/283
+mathjax_path = ('https://cdn.mathjax.org/mathjax/latest/MathJax.js?'
+                'config=TeX-AMS-MML_HTMLorMML')
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -55,8 +57,10 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pythonds'
-copyright = u'2017, Rafael Cruz'
-author = u'Rafael Cruz'
+copyright = u'2017, Rafael M. O. Cruz'
+author = u'Rafael M. O. Cruz'
+
+import pythonds
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -291,3 +295,28 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+# Resolve function for the linkcode extension.
+def linkcode_resolve(domain, info):
+    def find_source():
+        # try to find the file and line number, based on code from numpy:
+        # https://github.com/numpy/numpy/blob/master/doc/source/conf.py#L286
+        obj = sys.modules[info['module']]
+        for part in info['fullname'].split('.'):
+            obj = getattr(obj, part)
+        import inspect
+        import os
+        fn = inspect.getsourcefile(obj)
+        fn = os.path.relpath(fn, start=os.path.dirname(pythonds.__file__))
+        source, lineno = inspect.getsourcelines(obj)
+        return fn, lineno, lineno + len(source) - 1
+
+    if domain != 'py' or not info['module']:
+        return None
+    try:
+        filename = 'pythonds/%s#L%d-L%d' % find_source()
+    except Exception:
+        filename = info['module'].replace('.', '/') + '.py'
+    #   tag = 'master' if 'dev' in release else ('v' + release)
+    tag = 'master'
+    return "https://github.com/Menelau/PythonDS/blob/%s/%s" % (tag, filename)

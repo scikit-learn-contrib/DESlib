@@ -83,12 +83,11 @@ class LCA(DCS):
         """estimate the competence of each base classifier ci
         the classification of the query sample using the local class accuracy method.
 
-        Two versions of the LCA are considered for the competence estimates:
 
-        Woods : In this algorithm the K-Nearest Neighbors of the test sample are estimated. Then, the
+        In this algorithm the K-Nearest Neighbors of the test sample are estimated. Then, the
         local accuracy of the base classifiers is estimated by its classification accuracy taking into account
-        only the samples belonging to the class wl in this neighborhood. In this case, wl is the predict class
-        of the base classifier ci for the query sample.
+        only the samples belonging to the class wl in this neighborhood.
+
 
         Returns an array containing the level of competence estimated using the LCA method
         for each base classifier. The size of the array is equals to the size of the pool of classifiers.

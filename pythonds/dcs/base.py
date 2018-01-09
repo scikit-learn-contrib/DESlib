@@ -92,11 +92,7 @@ class DCS(DS):
         self.rng = rng
 
     def estimate_competence(self, query):
-        """estimate the competence of each base classifier ci
-        the classification of the query sample x.
-        Returns an array containing the level of competence estimated
-        for each base classifier. The size of the vector is equals to
-        the size of the generated_pool of classifiers.
+        """estimate the competence of each base classifier for the classification of the query sample.
 
         Parameters
         ----------
@@ -104,14 +100,14 @@ class DCS(DS):
 
         Returns
         -------
-        competences : array = [n_classifiers] containing the competence level estimated
-        for each base classifier
+        competences : array of shape = [n_classifiers]
+                      The competence level estimated for each base classifier in the pool
         """
         pass
 
     def select(self, competences):
-        """Select the most competent classifier for
-        the classification of the query sample x. Four selection schemes based on the competence estimates.
+        """Select the most competent classifier for the classification of the query sample given the competence level
+        estimates. Four selection schemes are available.
 
         Best : The base classifier with the highest competence level is selected. In cases where more than one
         base classifier achieves the same competence level, the one with the lowest index is selected. This method
@@ -122,7 +118,7 @@ class DCS(DS):
         threshold). If no base classifier is significantly better, the base classifier is selected randomly among the
         member with equivalent competence level.
 
-        Random: Selects a random base classifier among all base classifiers that achieved the same competence level.
+        Random : Selects a random base classifier among all base classifiers that achieved the same competence level.
 
         ALL : all base classifiers with the max competence level estimates are selected (note that in this case the
         dcs technique becomes a des).
@@ -172,12 +168,10 @@ class DCS(DS):
         return selected_clf
 
     def classify_instance(self, query):
-        """Predicts the label of the corresponding query sample.
-        Returns the predicted label.
+        """Predicts the class label of the corresponding query sample.
 
-        Selects the most competent base classifier and use it to predict the label of the query sample.
-
-        If self.mode == "all", the weighted majority voting scheme is used to predict the label of the query sample
+        If self.mode == "all", the majority voting scheme is used to aggregate the predictions of all classifiers with
+        the max competence level estimate.
 
         Parameters
         ----------
@@ -202,7 +196,6 @@ class DCS(DS):
 
     def predict_proba_instance(self, query):
         """Predicts the posterior probabilities of the corresponding query sample.
-        Returns the probability estimates of each class.
 
         If self.mode == "all", get the probability estimates of the selected ensemble. Otherwise,
         the technique gets the probability estimates from the selected base classifier
