@@ -5,8 +5,8 @@
 # License: BSD 3 clause
 
 import numpy as np
-from pythonds.des.base import DES
 
+from pythonds.des.base import DES
 from pythonds.util.diversity import negative_double_fault, Q_statistic, ratio_errors
 
 
@@ -123,14 +123,14 @@ class DESKNN(DES):
         competences = np.zeros(self.n_classifiers)
         predicted_matrix = np.zeros((self.k, self.n_classifiers))
         for clf_index in range(self.n_classifiers):
-            hit_result = [self.processed_dsel[index][clf_index] for index in idx_neighbors]
-            predictions = [self.BKS_dsel[index][clf_index] for index in idx_neighbors]
+            hit_result = self.processed_dsel[idx_neighbors, clf_index]
+            predictions = self.BKS_dsel[idx_neighbors, clf_index]
             predicted_matrix[:, clf_index] = predictions
             competences[clf_index] = np.mean(hit_result)
 
         # Calculate the more_diverse matrix. It becomes computationally expensive
         # When the region of competence is high
-        targets = [self.DSEL_target[index] for index in idx_neighbors]
+        targets = self.DSEL_target[idx_neighbors]
         diversity = np.zeros(self.n_classifiers)
 
         for clf_index in range(self.n_classifiers):
@@ -173,22 +173,6 @@ class DESKNN(DES):
 
         indices = competent_indices[diversity_indices]
         return indices
-
-    def classify_instance(self, query):
-        """Predicts the label of the corresponding query sample.
-        Returns the predicted label.
-
-        Parameters
-        ----------
-        query : array containing the test sample = [n_features]
-
-        Returns
-        -------
-        predicted_label: The predicted label of the query
-        """
-        indices = self.select(query)
-        predicted_label = self.majority_voting(indices, query)
-        return predicted_label
 
     def _validate_inputs(self):
         """Check if the parameters passed as argument are correct.
