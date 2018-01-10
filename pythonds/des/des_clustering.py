@@ -5,11 +5,12 @@
 # License: BSD 3 clause
 
 import numpy as np
-from pythonds.des.base import DES
 from sklearn.cluster import KMeans
 from sklearn.metrics import accuracy_score
 
-from pythonds.util.diversity import double_fault, Q_statistic, ratio_errors
+from pythonds.des.base import DES
+from pythonds.util.aggregation import majority_voting
+from pythonds.util.diversity import Q_statistic, ratio_errors, negative_double_fault
 
 
 class DESClustering(DES):
@@ -46,10 +47,10 @@ class DESClustering(DES):
               whether the technique will perform dynamic selection, dynamic weighting
               or an hybrid approach for classification
 
-    N : float (Default = 0.3)
+    pct_accuracy : float (Default = 0.5)
         Percentage of base classifiers selected based on accuracy
 
-    J : float (Default = 0.3)
+    J : float (Default = 0.33)
         Percentage of base classifiers selected based n diversity
 
     more_diverse : Boolean (Default = True)
@@ -71,44 +72,52 @@ class DESClustering(DES):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers, k=5, mode='selection', N=0.3, J=0.3, more_diverse=True, metric='DF',
-                 DFP=False, with_IH=False, safe_k=None, IH_rate=0.30):
+    def __init__(self, pool_classifiers, k=5, mode='selection',
+                 pct_accuracy=0.5,
+                 pct_diversity=0.33,
+                 more_diverse=True,
+                 metric='DF',
+                 DFP=False,
+                 with_IH=False,
+                 safe_k=None,
+                 IH_rate=0.30):
 
-        metric.upper()
         super(DESClustering, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
                                             safe_k=safe_k, IH_rate=IH_rate, mode=mode)
 
-        self.N = int(self.n_classifiers * N)
-        self.J = int(self.n_classifiers * J)
-        self.more_diverse = more_diverse
-        self.metric = metric
-        self.name = 'DESClustering (des-C)'
+        self.name = 'DES-Clustering'
+        self.N = int(self.n_classifiers * pct_accuracy)
+        self.J = int(np.ceil(self.n_classifiers * pct_diversity))
+        self.metric = metric.upper()
+        self._validate_parameters()
+
         if metric == 'DF':
-            self.diversity_func = double_fault
+            self.diversity_func = negative_double_fault
         elif metric == 'Q':
             self.diversity_func = Q_statistic
         else:
             self.diversity_func = ratio_errors
 
+        self.more_diverse = more_diverse
         self.clustering = KMeans(n_clusters=k)
         self.accuracy_cluster = np.zeros((self.k, self.n_classifiers))
         self.diversity_cluster = np.zeros((self.k, self.n_classifiers))
-        # Since the clusters are fixed, we can pre-compute the ensemble for each cluster
-        self.classifiers_cluster = np.zeros((self.k, self.N + self.J))
-        self.indices = np.zeros((self.k, self.N + self.J),  dtype=int)
 
-        self._validate_inputs()
+        # Since the clusters are fixed, we can pre-compute the ensemble for each cluster
+        self.classifiers_cluster = np.zeros((self.k, self.J))
+        self.indices = np.zeros((self.k, self.J),  dtype=int)
 
     def fit(self, X, y):
         """Train the DS model by setting the Clustering algorithm and
         pre-processing the information required to apply the DS
-        methods. In this case, after applying the clustering method, the ensemble containing
+        methods. In this case, after fitting the clustering method, the ensemble containing
         most competent classifiers taking into account accuracy and diversity are
         estimated for each cluster.
 
         Parameters
         ----------
-        X : matrix of shape = [n_samples, n_features] with the data.
+        X : array of shape = [n_samples, n_features]
+            The input data.
 
         y : class labels of each sample in X.
 
@@ -116,43 +125,70 @@ class DESClustering(DES):
         -------
         self
         """
+
         self._set_dsel(X, y)
         labels = self.clustering.fit_predict(X)
+
+        # For each cluster estimate the most accurate and most competent classifiers for it.
         for cluster_index in range(self.k):
-            # create a dataset with this cluster
-            data = []
-            targets = []
-            for sample_index, label in enumerate(labels):
-                if label == cluster_index:
-                    data.append(self.DSEL_data[sample_index, :])
-                    targets.append(self.DSEL_target[sample_index])
 
-            # compute accuracy of each classifier in this cluster
-            prediction_matrix = np.empty((len(targets), self.n_classifiers))
-            for clf_index, clf in enumerate(self.pool_classifiers):
-                predictions = clf.predict(np.array(data))
-                self.accuracy_cluster[cluster_index][clf_index] = accuracy_score(np.array(targets), predictions)
+            # Get the indices of the samples in the corresponding cluster.
+            sample_indices = np.where(labels == cluster_index)[0]
+
+            # Get the target labels for the samples in the corresponding cluster.
+            targets = self.DSEL_target[sample_indices]
+
+            # Compute accuracy of each classifier in this cluster
+            prediction_matrix = np.zeros((len(targets), self.n_classifiers))
+            for clf_index in range(self.n_classifiers):
+                predictions = self.BKS_dsel[sample_indices, clf_index]
                 prediction_matrix[:, clf_index] = predictions
+                # Check if the dynamic frienemy pruning (DFP) should be used used
+                if self.mask[clf_index]:
+                    self.accuracy_cluster[cluster_index][clf_index] = accuracy_score(np.array(targets), predictions)
 
-            # get the most accurate classifiers for the corresponding cluster
+            # Get the N most accurate classifiers for the corresponding cluster
             accuracies = self.accuracy_cluster[cluster_index, :]
             accuracy_indices = np.argsort(accuracies)[::-1][0:self.N]
 
-            # compute the more_diverse of each base classifier in this cluster
-            for clf_index in range(self.n_classifiers):
-                for clf_index2 in range(self.n_classifiers):
-                    if clf_index != clf_index2:
-                        self.diversity_cluster[cluster_index][clf_index] += \
-                            double_fault(targets, prediction_matrix[:, clf_index], prediction_matrix[:, clf_index2])
+            self.diversity_cluster[cluster_index, :] = self._compute_diversity(targets, prediction_matrix)
+            diversity_of_selected = self.diversity_cluster[cluster_index, accuracy_indices]
 
-            diversity = self.diversity_cluster[cluster_index, :]
-            diversity = np.delete(diversity, accuracy_indices)
             if self.more_diverse:
-                diversity_indices = np.argsort(diversity)[::-1][0:self.J]
+                diversity_indices = np.argsort(diversity_of_selected)[::-1][0:self.J]
             else:
-                diversity_indices = np.argsort(diversity)[0:self.J]
+                diversity_indices = np.argsort(diversity_of_selected)[0:self.J]
 
-            self.indices[cluster_index, :] = np.hstack((accuracy_indices, diversity_indices))
+            self.indices[cluster_index, :] = accuracy_indices[diversity_indices]
+
+    def _compute_diversity(self, targets, prediction_matrix):
+        """Computes the pairwise diversity matrix.
+
+         Parameters
+         ----------
+         targets : array of shape = [n_samples]:
+                   Class labels of each sample in X.
+
+         prediction_matrix : array of shape = [n_samples, n_classifiers]:
+                             Predicted class labels for each classifier in the pool
+
+         Returns
+         -------
+         diversity : array of shape = [n_classifiers, n_classifiers]
+                     The pairwise diversity matrix calculated for the pool of classifiers
+
+         """
+        diversity = np.zeros(self.n_classifiers)
+
+        for clf_index in range(self.n_classifiers):
+            for clf_index2 in range(clf_index + 1, self.n_classifiers):
+                this_diversity = self.diversity_func(targets,
+                                                     prediction_matrix[:, clf_index],
+                                                     prediction_matrix[:, clf_index2])
+
+                diversity[clf_index] += this_diversity
+                diversity[clf_index2] += this_diversity
+        return diversity
 
     def estimate_competence(self, query):
         """get the competence estimates of each base classifier ci for the classification of the query sample x.
@@ -163,17 +199,17 @@ class DESClustering(DES):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_features]
+                The query sample
 
         Returns
         -------
-        competences : array = [n_classifiers] containing the competence level estimated
-        for each base classifier
+        competences : array = [n_classifiers]
+                      The competence level estimated for each base classifier
         """
         cluster_index = self.clustering.predict(query)
         competences = self.accuracy_cluster[cluster_index][:]
-        diversity = self.diversity_cluster[cluster_index][:]
-        return competences[0, :], diversity[0, :]
+        return competences
 
     def select(self, query):
         """Select an ensemble with the most accurate and most diverse classifier for the classification of the query.
@@ -184,14 +220,13 @@ class DESClustering(DES):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_features]
+                The query sample
 
         Returns
         -------
-        indices : the indices of the selected base classifiers
+        indices : List containing the indices of the selected base classifiers
 
-        competences : array = [n_classifiers] containing the competence level estimated
-        for each base classifier
         """
         cluster_index = self.clustering.predict(query)[0]
         indices = self.indices[cluster_index, :]
@@ -211,10 +246,11 @@ class DESClustering(DES):
         predicted_label: The predicted label of the query
         """
         indices = self.select(query)
-        predicted_label = self.majority_voting(indices, query)
+        classifier_ensemble = self._get_classifier_ensemble(indices)
+        predicted_label = majority_voting(classifier_ensemble, query)
         return predicted_label
 
-    def _validate_inputs(self):
+    def _validate_parameters(self):
         """Check if the parameters passed as argument are correct.
 
         The diversity_func must be either ['DF', 'Q', 'RATIO']
@@ -222,11 +258,12 @@ class DESClustering(DES):
         The values of N and J should be higher than 0, and N >= J
         ----------
         """
-        assert self.metric in ['DF', 'Q', 'RATIO']
+        if self.metric not in ['DF', 'Q', 'RATIO']:
+            raise ValueError('Diversity metric must be one of the following values: "DF", "Q" or "Ratio"')
 
         if self.N <= 0 or self.J <= 0:
             raise ValueError("The values of N and J should be higher than 0"
-                             "N = %s, J= %s " % (self.N, self.J))
+                             "N, J" .format(self.N, self.J))
         if self.N < self.J:
             raise ValueError("The value of N should be greater or equals than J"
-                             "N = %s, J= %s " % (self.N, self.J))
+                             "N, J" .format(self.N, self.J))

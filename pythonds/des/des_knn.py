@@ -7,6 +7,7 @@
 import numpy as np
 
 from pythonds.des.base import DES
+from pythonds.util.aggregation import majority_voting
 from pythonds.util.diversity import negative_double_fault, Q_statistic, ratio_errors
 
 
@@ -46,7 +47,7 @@ class DESKNN(DES):
               whether the technique will perform dynamic selection, dynamic weighting
               or an hybrid approach for classification
 
-    pct_accuracy : float (Default = 0.3)
+    pct_accuracy : float (Default = 0.5)
         Percentage of base classifiers selected based on accuracy
 
     pct_diversity : float (Default = 0.3)
@@ -75,7 +76,7 @@ class DESKNN(DES):
                  IH_rate=0.30,
                  aknn=False,
                  mode='selection',
-                 pct_accuracy=0.3,
+                 pct_accuracy=0.5,
                  pct_diversity=0.3,
                  more_diverse=True,
                  metric='DF'):
@@ -88,15 +89,16 @@ class DESKNN(DES):
         self.J = int(self.n_classifiers * pct_diversity)
         self.more_diverse = more_diverse
         self.name = 'Dynamic Ensemble Selection-KNN (DES-KNN)'
+
         self.metric = metric
+        self._validate_parameters()
+
         if metric == 'DF':
             self.diversity_func = negative_double_fault
         elif metric == 'Q':
             self.diversity_func = Q_statistic
         else:
             self.diversity_func = ratio_errors
-
-        self._validate_inputs()
 
     def estimate_competence(self, query):
         """get the competence estimates of each base classifier ci for the classification of the query sample x.
@@ -126,7 +128,9 @@ class DESKNN(DES):
             hit_result = self.processed_dsel[idx_neighbors, clf_index]
             predictions = self.BKS_dsel[idx_neighbors, clf_index]
             predicted_matrix[:, clf_index] = predictions
-            competences[clf_index] = np.mean(hit_result)
+            # Check if the dynamic frienemy pruning (DFP) should be used used
+            if self.mask[clf_index]:
+                competences[clf_index] = np.mean(hit_result)
 
         # Calculate the more_diverse matrix. It becomes computationally expensive
         # When the region of competence is high
@@ -165,7 +169,6 @@ class DESKNN(DES):
         diversity_of_selected = diversity[competent_indices]
 
         # sort the remaining classifiers to select the most diverse ones
-        # Since DF is used, the more_diverse is minimized
         if self.more_diverse:
             diversity_indices = np.argsort(diversity_of_selected)[::-1][0:self.J]
         else:
@@ -174,7 +177,24 @@ class DESKNN(DES):
         indices = competent_indices[diversity_indices]
         return indices
 
-    def _validate_inputs(self):
+    def classify_instance(self, query):
+        """Predicts the label of the corresponding query sample.
+        Returns the predicted label.
+
+        Parameters
+        ----------
+        query : array containing the test sample = [n_features]
+
+        Returns
+        -------
+        predicted_label: The predicted label of the query
+        """
+        indices = self.select(query)
+        classifier_ensemble = self._get_classifier_ensemble(indices)
+        predicted_label = majority_voting(classifier_ensemble, query)
+        return predicted_label
+
+    def _validate_parameters(self):
         """Check if the parameters passed as argument are correct.
 
         The diversity_func must be either ['DF', 'Q', 'RATIO']
@@ -182,11 +202,12 @@ class DESKNN(DES):
         The values of N and J should be higher than 0, and N >= J
         ----------
         """
-        assert self.metric in ['DF', 'Q', 'RATIO']
+        if self.metric not in ['DF', 'Q', 'RATIO']:
+            raise ValueError('Diversity metric must be one of the following values: "DF", "Q" or "Ratio"')
 
         if self.N <= 0 or self.J <= 0:
             raise ValueError("The values of N and J should be higher than 0"
-                             "N = %s, J= %s " % (self.N, self.J))
+                             "N = {}, J= {} " .format(self.N, self.J))
         if self.N < self.J:
             raise ValueError("The value of N should be greater or equals than J"
-                             "N = %s, J= %s " % (self.N, self.J))
+                             "N = {}, J= {} " .format(self.N, self.J))
