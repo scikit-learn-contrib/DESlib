@@ -101,9 +101,9 @@ class KNORAU(DES):
         votes : the number of votes for each class
         """
         weights = self.estimate_competence(query)
-        # If all weights is equals to zero, it means that no classifier was selected. Hence, use all of them
-        if all(weight == 0 for weight in weights):
+        if np.sum(weights) == 0:
             weights = np.ones(self.n_classifiers, dtype=int)
+
         votes = np.array([], dtype=int)
         for clf_idx, clf in enumerate(self.pool_classifiers):
             votes = np.hstack((votes, np.ones(weights[clf_idx], dtype=int) * clf.predict(query)[0]))

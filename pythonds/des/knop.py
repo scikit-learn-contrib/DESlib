@@ -141,9 +141,12 @@ class KNOP(DES):
         """
         output_profile_query = self._output_profile_transform(query)
         weights = self.estimate_competence(output_profile_query.reshape(1, -1))
-        # If all weights is equals to zero, it means that no classifier was selected. Hence, use all of them
-        if all(weight == 0 for weight in weights):
+
+        # If all weights is equals to zero, it means that no classifier was selected. Hence, use all of them with equal
+        # weights.
+        if np.sum(weights) == 0:
             weights = np.ones(self.n_classifiers, dtype=int)
+
         votes = np.array([], dtype=int)
         for clf_idx, clf in enumerate(self.pool_classifiers):
             votes = np.hstack(

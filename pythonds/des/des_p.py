@@ -110,4 +110,7 @@ class DESP(DES):
         # Select classifiers with local accuracy superior than the random classifier rc.
         indices = [clf_index for clf_index, clf_competence in enumerate(competences)
                    if clf_competence > RC]
+
+        if len(indices) == 0:
+            indices = list(range(self.n_classifiers))
         return indices

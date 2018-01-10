@@ -7,8 +7,6 @@
 from abc import abstractmethod, ABCMeta
 
 import numpy as np
-from scipy.stats import entropy
-from sklearn.preprocessing import minmax_scale
 
 from pythonds.des.base import DES
 from pythonds.util.prob_functions import entropy_func, ccprmod, log_func, exponential_func, min_difference
@@ -70,7 +68,7 @@ class Probabilistic(DES):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
-                 mode='selection', selection_threshold=0):
+                 mode='selection', selection_threshold=None):
 
         super(Probabilistic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
                                             IH_rate=IH_rate,
@@ -128,22 +126,16 @@ class Probabilistic(DES):
         """
         dists, idx_neighbors = self._get_region_competence(query)
         dists_organized = np.array([dists[index] for index in np.argsort(idx_neighbors)])
-        """
-        # The potential function has a problem when the distances are higher than 1 (which can occur when the feature,
-        #were not normalized. In such case, use the minmax function to scale the distance vector to a range [0,1]
-        # To a range between 0 and 1
-        """
-        if np.max(dists_organized > 1.0):
-            dists_organized = minmax_scale(dists_organized)
 
-        potential = self.potential_func(dists_organized)
+        potential_dists = self.potential_func(dists_organized)
+        sum_potential = np.sum(potential_dists)
         competences = np.zeros(self.n_classifiers)
 
         for clf_index in range(self.n_classifiers):
             # Check if the dynamic frienemy pruning (DFP) should be used used
             if self.mask[clf_index]:
-                temp_competence = np.multiply(self.C_src[:, clf_index], potential)
-                competences[clf_index] = np.sum(temp_competence)/np.sum(potential)
+                temp_competence = np.multiply(self.C_src[:, clf_index], potential_dists)
+                competences[clf_index] = np.sum(temp_competence)/sum_potential
 
         return competences
 
@@ -169,7 +161,7 @@ class Probabilistic(DES):
                    if clf_competence > self.selection_threshold]
 
         if len(indices) == 0:
-            indices = range(self.n_classifiers)
+            indices = list(range(self.n_classifiers))
 
         return indices
 
@@ -580,12 +572,13 @@ class DESKL(Probabilistic):
         """
         c_src = np.zeros((self.n_samples, self.n_classifiers))
 
+        C_src = np.zeros((self.n_samples, self.n_classifiers))
         for clf_index in range(self.n_classifiers):
-            qk = np.ones(self.n_classes)/self.n_classes
-            clf_results = self.processed_dsel[:, clf_index]
-            clf_results[clf_results == 0] = -1.0
-            kl = np.array([entropy(self._get_scores_dsel(clf_index, index), qk) for index in range(self.n_samples)])
-            c_src[:, clf_index] = kl*clf_results
+            supports = self._get_scores_dsel(clf_index)
+            is_correct = self.processed_dsel[:, clf_index]
+            C_src[:, clf_index] = entropy_func(self.n_classes, supports, is_correct)
+
+        return C_src
 
         return c_src
 
