@@ -117,7 +117,7 @@ def entropy_func(n_classes, supports, is_correct):
     n_samples = is_correct.shape[0]
     if n_samples != supports.shape[0]:
         raise ValueError("The number of samples in X and y must be the same"
-                         "n_samples X = %s, n_samples y = %s " % (n_samples, supports.shape[0]))
+                         "n_samples X = {}, n_samples y = {} " .format(n_samples, supports.shape[0]))
 
     supports[supports > 1.0] = 1.0
     supports[supports < 0.0] = 0.0
