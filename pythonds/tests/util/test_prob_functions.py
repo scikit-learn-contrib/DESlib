@@ -107,7 +107,7 @@ def test_exponential_func():
     assert result3 > result4 > result2 > result1
 
 
-def test_entropy_func_two_classes():
+def test_entropy_func_three_classes():
     n_classes = 3
     supports = np.array([[0.33, 0.33, 0.33], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]])
     is_correct = np.array([0, 1, 0])
