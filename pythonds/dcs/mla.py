@@ -119,6 +119,9 @@ class MLA(DCS):
                         result.append(float(self.processed_dsel[index][clf_index]) * dists_normalized[counter])
                         dists_temp.append(dists_normalized[counter])
 
-                competences[clf_index] = sum(result) / sum(dists_temp)
+                if len(result) == 0:
+                    competences[clf_index] = 0.0
+                else:
+                    competences[clf_index] = sum(result) / sum(dists_temp)
 
         return competences
