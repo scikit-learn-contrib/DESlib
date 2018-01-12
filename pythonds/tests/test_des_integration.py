@@ -6,12 +6,16 @@ from sklearn.linear_model import Perceptron
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
+from pythonds.dcs.a_posteriori import APosteriori
+# DCS techniques
 from pythonds.dcs.a_priori import APriori
+from pythonds.dcs.lca import LCA
 from pythonds.dcs.mcb import MCB
-# Example of a dcs techniques
+from pythonds.dcs.mla import MLA
 from pythonds.dcs.ola import OLA
+from pythonds.dcs.rank import Rank
 from pythonds.des.des_p import DESP
-# Example of a des techniques
+# DES techniques
 from pythonds.des.knora_e import KNORAE
 from pythonds.des.knora_u import KNORAU
 
@@ -74,6 +78,23 @@ def test_ola():
     assert np.isclose(ola.score(X_test, y_test), 0.96808510638297873)
 
 
+def test_lca():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    lca = LCA(pool_classifiers)
+    lca.fit(X_dsel, y_dsel)
+    assert np.isclose(lca.score(X_test, y_test), 0.96808510638297873)
+
+
+
+def test_MLA():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    mla = MLA(pool_classifiers)
+    mla.fit(X_dsel, y_dsel)
+    assert np.isclose(mla.score(X_test, y_test), 0.96808510638297873)
+
+
 def test_mcb():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
@@ -92,10 +113,69 @@ def test_apriori():
     assert np.isclose(apriori.score(X_test, y_test), 0.97872340425531912)
 
 
-def test_baseline():
+def test_rank():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    # Calculate classification accuracy of each technique
-    assert np.isclose(pool_classifiers.score(X_test, y_test), 0.97872340425531912)
+    rank = Rank(pool_classifiers)
+    rank.fit(X_dsel, y_dsel)
+    assert np.isclose(rank.score(X_test, y_test), 0.96276595744680848)
+
+
+def test_aposteriori():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+    rng = np.random.RandomState(123456)
+
+    a_posteriori = APosteriori(pool_classifiers, rng=rng)
+    a_posteriori.fit(X_dsel, y_dsel)
+    assert np.isclose(a_posteriori.score(X_test, y_test), 0.96276595744680848)
+
+
+#
+# def test_meta():
+#     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+#
+#     meta_des = METADES(pool_classifiers)
+#     meta_des.fit(X_dsel, y_dsel)
+#     assert np.isclose(meta_des.score(X_test, y_test), 0.97872340425531912)
+#
+#
+# def test_rrc():
+#     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+#
+#     rrc = RRC(pool_classifiers)
+#     rrc.fit(X_dsel, y_dsel)
+#     assert np.isclose(rrc.score(X_test, y_test), 0.97340425531914898)
+#
+#
+# def test_deskl():
+#     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+#
+#     deskl = DESKL(pool_classifiers)
+#     deskl.fit(X_dsel, y_dsel)
+#     assert np.isclose(deskl.score(X_test, y_test), 0.97340425531914898)
+#
+#
+# def test_minimum_diff():
+#     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+#
+#     minimum_diff = MinimumDifference(pool_classifiers)
+#     minimum_diff.fit(X_dsel, y_dsel)
+#     assert np.isclose(minimum_diff.score(X_test, y_test), 0.97340425531914898)
+#
+#
+# def test_knop():
+#     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+#
+#     knop = KNOP(pool_classifiers)
+#     knop.fit(X_dsel, y_dsel)
+#     assert np.isclose(knop.score(X_test, y_test), 0.97340425531914898)
+#
+#
+# def test_desknn():
+#     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+#
+#     desknn = DESKNN(pool_classifiers)
+#     desknn.fit(X_dsel, y_dsel)
+#     assert np.isclose(desknn.score(X_test, y_test), 0.97340425531914898)
 
 
