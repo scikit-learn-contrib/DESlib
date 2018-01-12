@@ -258,7 +258,7 @@ class DS(ClassifierMixin):
                     # use the KNN for prediction if the sample is located in a safe region.
                     # predicted_labels[index] = self.knn.predict(instance)
                     # Using the pre-calculated set of neighbors to perform the decision
-                    y_neighbors = [self.DSEL_target[neighbor_idx] for neighbor_idx in self.neighbors]
+                    y_neighbors = self.DSEL_target[self.neighbors[:self.IH_k]]
                     predicted_labels[index], _ = mode(y_neighbors)
 
                 # Otherwise, use DS for classification
@@ -379,14 +379,14 @@ class DS(ClassifierMixin):
         Ensemble Selection, Pattern Recognition, vol. 72, December 2017, pp 44-58.
         """
         # Check if query is in a indecision region
-        neighbors_y = [self.DSEL_target[index] for index in self.neighbors[:self.IH_k]]
+        neighbors_y = self.DSEL_target[self.neighbors[:self.IH_k]]
         if len(set(neighbors_y)) > 1:
             # There are more than on class in the region of competence (It is an indecision region).
             mask = np.zeros(self.n_classifiers)
 
             # Check if the base classifier predict the correct label for a sample belonging to each class.
             for clf_index in range(self.n_classifiers):
-                predictions = [self.processed_dsel[index][clf_index] for index in self.neighbors[:self.IH_k]]
+                predictions = self.processed_dsel[self.neighbors[:self.IH_k], clf_index]
                 correct_class_pred = [self.DSEL_target[index] for count, index in enumerate(self.neighbors[:self.IH_k])
                                       if predictions[count] == 1]
                 """

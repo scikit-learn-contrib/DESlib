@@ -119,8 +119,7 @@ class KNOP(DES):
         for clf_index in range(self.n_classifiers):
             # Check if the dynamic frienemy pruning (DFP) should be used used
             if self.mask[clf_index]:
-                tmp = [self.processed_dsel[index][clf_index] for index in idx_neighbors]
-                competences[clf_index] = np.sum(tmp)
+                competences[clf_index] = np.sum(self.processed_dsel[idx_neighbors, clf_index])
 
         return competences.astype(dtype=int)
 

@@ -18,10 +18,12 @@ class DESP(DES):
 
     Parameters
     ----------
-    pool_classifiers : type, the generated_pool of classifiers trained for the corresponding
-    classification problem.
+    pool_classifiers : list of classifiers
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       The classifiers should support methods "predict" and "predict_proba".
 
-    k : int (Default = 7), Number of neighbors used to estimate the competence of the base classifiers.
+    k : int (Default = 7)
+        Number of neighbors used to estimate the competence of the base classifiers.
 
     DFP : Boolean (Default = False)
           Determines if the dynamic frienemy pruning is applied.
@@ -41,8 +43,8 @@ class DESP(DES):
            Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
 
     mode : String (Default = "selection")
-              whether the technique will perform dynamic selection, dynamic weighting
-              or an hybrid approach for classification
+           Whether the technique will perform dynamic selection,
+           dynamic weighting or an hybrid approach for classification.
 
     References
     ----------
@@ -85,9 +87,7 @@ class DESP(DES):
         for clf_index in range(self.n_classifiers):
             # Check if the dynamic frienemy pruning (DFP) should be used used
             if self.mask[clf_index]:
-
-                result = [self.processed_dsel[index][clf_index] for index in idx_neighbors]
-                competences[clf_index] = np.mean(result)
+                competences[clf_index] = np.mean(self.processed_dsel[idx_neighbors, clf_index])
 
         return competences
 

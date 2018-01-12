@@ -81,21 +81,18 @@ class KNORAE(DES):
         competences : array of shape = [n_classifiers]
                       The competence level estimated for each base classifier in the pool
         """
-        dists, idx_neighbors = self._get_region_competence(query)
+        _, idx_neighbors = self._get_region_competence(query)
         competences = np.zeros(self.n_classifiers)
 
         for clf_index in range(self.n_classifiers):
             # Check if the dynamic frienemy pruning (DFP) should be used used
             if self.mask[clf_index]:
-                counter = 0
-                for index in idx_neighbors:
-                    if self.processed_dsel[index][clf_index]:
-                        counter += 1
-
-                    else:
-                        break
-                competences[clf_index] = counter
-
+                results_neighbors = self.processed_dsel[idx_neighbors, clf_index]
+                indices_errors = np.where(results_neighbors == 0)[0]
+                if indices_errors.size != 0:
+                    competences[clf_index] = np.min(indices_errors)
+                else:
+                    competences[clf_index] = self.k
         return competences
 
     def select(self, competences):
