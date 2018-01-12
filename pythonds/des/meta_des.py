@@ -31,7 +31,7 @@ class METADES(DES):
 
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
-    
+
     kp : int (Default = 5)
          Number of output profiles used to estimate the competence of the base classifiers.
 
@@ -68,30 +68,31 @@ class METADES(DES):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers, selector=MultinomialNB(), k=7, kp=5, Hc=0.8, gamma=0.5, mode='hybrid',
+    def __init__(self, pool_classifiers, meta_classifier=MultinomialNB(), k=7, kp=5, Hc=1.0, gamma=0.5, mode='selection',
                  DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False):
 
         super(METADES, self).__init__(pool_classifiers, k, DFP=DFP,
-                                      with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate, aknn=aknn)
-        mode.lower()
-        assert Hc > 0.5
-        assert gamma > 0
-        assert mode in ['selection', 'hybrid', 'weighting']
-        self.name = 'META-des'
-        self.version = mode
-        self.kp = kp
+                                      with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate, aknn=aknn, mode=mode)
+
+        self._check_input_parameters(Hc, gamma, meta_classifier)
+
+        self.name = 'META-DES'
+        self.Kp = kp
         self.Hc = Hc
         self.gamma = gamma
-        if selector is None:
+
+        if meta_classifier is None:
             warnings.warn("No classifier model passed for the Meta-Classifier. Using a Naive Bayes instead")
             self.meta_classifier = MultinomialNB()
         else:
-            self.meta_classifier = selector
+            self.meta_classifier = meta_classifier
 
-        self.OPKNN = None
+        self.op_knn = None
         self.meta_training_dataset = []
         self.meta_training_target = []
         self.n_meta_features = (self.k * 2) + self.Kp + 2
+
+        self.bins = np.linspace(0.1, 1, 10)
 
     def fit(self, X, y):
         """Prepare the DS model by setting the KNN algorithm and
@@ -111,15 +112,14 @@ class METADES(DES):
         self._set_dsel(X, y)
         self._fit_region_competence(X, y, self.k)
         self.dsel_scores = self._preprocess_dsel_scores()
-        self._fit_OP(self.dsel_scores, y, self.kp)
+        self._fit_OP(self.dsel_scores, y, self.Kp)
 
         # check whether the meta-classifier was already trained
         # since it could have been pre-processed before
         try:
             check_is_fitted(self.meta_classifier, "classes_")
         except NotFittedError as _:
-            if not self.meta_training_dataset:
-                self._generate_meta_training_set()
+            self._generate_meta_training_set()
             self._train_meta_classifier()
 
     def _fit_OP(self, X, y, kp):
@@ -133,22 +133,24 @@ class METADES(DES):
         for the query sample.
 
         """
-        self.OPKNN = KNeighborsClassifier(n_neighbors=kp, n_jobs=-1, algorithm='auto')
-        self.OPKNN.fit(X, y)
+        self.op_knn = KNeighborsClassifier(n_neighbors=kp, n_jobs=-1, algorithm='auto')
+        self.op_knn.fit(X, y)
 
-    def _sample_selection(self, query_idx):
+    def _sample_selection_agreement(self, query_idx):
         """Check the number of base classifier that predict the correct label for the query sample.
         Parameters
         ----------
-        query_idx : int containing the index of the query sample in DSEL
+        query_idx : int
+                    The index of the query sample in DSEL
 
         Returns
         -------
-        agreement : float with the percentage of the base classifier that predicted the correct label
-        for the query sample.
+        pct_agree : float
+                    The percentage of the base classifier that predicted the correct label for the query sample.
 
         """
-        return np.sum(self.processed_dsel[query_idx, :]) / 100
+        pct_agree = np.sum(self.processed_dsel[query_idx, :]) / self.n_classifiers
+        return pct_agree
 
     def compute_meta_features(self, query, idx_neighbors, idx_neighbors_op, clf, clf_index):
         """Compute the five sets of meta-features used in the META-des framework. Returns
@@ -178,6 +180,7 @@ class METADES(DES):
         f4 = [self.processed_dsel[idx][clf_index] for idx in idx_neighbors_op]
         # check with the classifier model how to compute f5
         f5 = np.max(clf.predict_proba(query))
+
         v = f1 + f2 + [f3] + f4 + [f5]
 
         return v
@@ -192,12 +195,11 @@ class METADES(DES):
         for idx_sample, sample in enumerate(self.DSEL_data):
             sample = sample.reshape(1, -1)
             # sample selection mechanism
-            # TODO: review this sample selection part
-            disagreement = self._sample_selection(idx_sample)
+            disagreement = self._sample_selection_agreement(idx_sample)
             if self.Hc > disagreement > (1 - self.Hc):
                 # Extract meta-features
                 _, idx_neighbors = self._get_region_competence(sample, self.k + 1)
-                _, idx_neighbors_op = self._get_similar_out_profiles(sample, self.kp + 1)
+                _, idx_neighbors_op = self._get_similar_out_profiles(sample, self.Kp + 1)
                 # Remove itself from the list of NN
                 idx_neighbors = idx_neighbors[1:]
                 idx_neighbors_op = idx_neighbors_op[1:]
@@ -216,16 +218,10 @@ class METADES(DES):
         """
         self.meta_training_dataset = np.array(self.meta_training_dataset)
         self.meta_training_target = np.array(self.meta_training_target)
-        if isinstance(self.selector, MultinomialNB):
-            try:
-                from mdlp.discretization import MDLP
-                self.mdlp = MDLP()
-                self.meta_training_dataset = self.mdlp.fit_transform(self.meta_training_dataset,
-                                                                     self.meta_training_target)
-            except ImportError:
-                raise ValueError('In order to use you need to install the MDLP discretization package. '
-                                 'Call pip install git+https://github.com/hlin117/mdlp-discretization to install'
-                                 'the package.')
+
+        if isinstance(self.meta_classifier, MultinomialNB):
+            # Digitize the data (Same implementation we have on PRTools)
+            self.meta_training_dataset = np.digitize(self.meta_training_dataset, self.bins)
 
         self.meta_classifier.fit(self.meta_training_dataset, self.meta_training_target)
 
@@ -248,9 +244,9 @@ class METADES(DES):
         """
         query_op = self._output_profile_transform(query).reshape(1, -1)
         if kp is None:
-            kp = self.kp
+            kp = self.Kp
 
-        [dists], [idx] = self.OPKNN.kneighbors(query_op, n_neighbors=kp, return_distance=True)
+        [dists], [idx] = self.op_knn.kneighbors(query_op, n_neighbors=kp, return_distance=True)
         return dists, idx
 
     def select(self, competences):
@@ -270,7 +266,7 @@ class METADES(DES):
 
         # if no classifier was selected, use the whole pool
         if len(indices) == 0:
-            indices = range(self.n_classifiers)
+            indices = list(range(self.n_classifiers))
 
         return indices
 
@@ -295,19 +291,28 @@ class METADES(DES):
         vectors = []
         for clf_index, clf in enumerate(self.pool_classifiers):
             # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.mask[clf_index]:
                 vectors.append(self.compute_meta_features(query, idx_neighbors, idx_neighbors_op, clf, clf_index))
-            else:
-                # TODO: Check if that pruning scheme works by setting everything to zero.
-                vectors.append(np.zeros(self.n_meta_features))
 
         vectors = np.array(vectors)
-        if isinstance(self.selector, MultinomialNB):
-            vectors = self.mdlp.transform(vectors)
-        if self.version == "selection":
-            competences = self.meta_classifier.predict(vectors)
-        else:
-            # Get the probability for class 1 (Competent)
-            competences = self.meta_classifier.predict_proba(vectors)[:, 1]
+        if isinstance(self.meta_classifier, MultinomialNB):
+            vectors = np.digitize(vectors, self.bins)
+
+        # Get the probability for class 1 (Competent)
+        competences = self.meta_classifier.predict_proba(vectors)[:, 1] * self.mask
 
         return competences
+
+    @staticmethod
+    def _check_input_parameters(Hc, gamma, meta_classifier):
+        if not isinstance(Hc, (float, int)):
+            raise ValueError('Parameter Hc should be either a number. Currently Hc = {}'.format(type(Hc)))
+        if Hc < 0.5:
+            raise ValueError('Parameter Hc should be higher than 0.5. Currently Hc = {}'.format(Hc))
+        if not isinstance(gamma, float):
+            raise ValueError('Parameter Hc should be either a float. Currently Hc = {}'.format(type(Hc)))
+        if gamma < 0.5:
+            raise ValueError('Parameter gamma should be higher than 0.5. Currently gamma = {}'.format(gamma))
+        if meta_classifier is not None and "predict_proba" not in dir(meta_classifier):
+            raise ValueError("The meta-classifier should output probability estimates")
+
+
