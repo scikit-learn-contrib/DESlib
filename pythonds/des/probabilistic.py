@@ -570,7 +570,6 @@ class DESKL(Probabilistic):
         C_src : array of shape = [n_samples, n_classifiers]
                 The competence source for each base classifier at each data point.
         """
-        c_src = np.zeros((self.n_samples, self.n_classifiers))
 
         C_src = np.zeros((self.n_samples, self.n_classifiers))
         for clf_index in range(self.n_classifiers):
@@ -579,8 +578,6 @@ class DESKL(Probabilistic):
             C_src[:, clf_index] = entropy_func(self.n_classes, supports, is_correct)
 
         return C_src
-
-        return c_src
 
 
 class MinimumDifference(Probabilistic):
