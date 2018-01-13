@@ -5,8 +5,6 @@
 # License: BSD 3 clause
 
 
-import collections
-import numbers
 from abc import abstractmethod, ABCMeta
 
 import numpy as np
@@ -30,20 +28,19 @@ class DS(ClassifierMixin):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False):
+    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30):
 
         self.pool_classifiers = pool_classifiers
         self.n_classifiers = len(self.pool_classifiers)
         self.k = k
         self.DFP = DFP              # Dynamic Frienemy Pruning
-        self.aknn = aknn            # Adaptive K-NN
-        self.with_IH = with_IH      # Use hardness to switch between DS and KNN
-        self.IH_k = safe_k            # K for defining a safe region
+        self.with_IH = with_IH      # Whether to use hardness to switch between DS and KNN
+        self.safe_k = safe_k          # K value used for defining a safe region
         self.IH_rate = IH_rate
         self.processed_dsel = None
         self.BKS_dsel = None
         self.dsel_scores = None
-        self.knn = None
+        self.roc_algorithm = None   # Algorithm used to define the region of competence
         self.DSEL_data = None
         self.DSEL_target = None
         self.classes = None
@@ -52,10 +49,10 @@ class DS(ClassifierMixin):
         self.n_features = None
         self.neighbors = None
         self.distances = None
-        self.mask = None
+        self.DFP_mask = None       # Mask used to apply the classifier pruning
 
-        if self.with_IH and self.IH_k is None:
-            self.IH_k = self.k
+        if self.with_IH and self.safe_k is None:
+            self.safe_k = self.k
 
         # check if the input parameters are correct. Raise an error if the generated_pool is not fitted or k < 1
         self._check_parameters()
@@ -161,15 +158,8 @@ class DS(ClassifierMixin):
         k : int (Default=self.k)
             Number of neighbors used in the k-NN method
         """
-        if self.aknn:
-            # changing the DSEL set prior to use standard KNN?)
-            self.knn = KNeighborsClassifier(
-                n_neighbors=k, n_jobs=-1, algorithm='auto')
-
-        else:
-            self.knn = KNeighborsClassifier(
-                n_neighbors=k, n_jobs=-1, algorithm='auto')
-        self.knn.fit(X, y)
+        self.roc_algorithm = KNeighborsClassifier(n_neighbors=k, n_jobs=-1, algorithm='auto')
+        self.roc_algorithm.fit(X, y)
 
     def _set_dsel(self, X, y):
         """Pre-Process the input X and y data into the
@@ -211,7 +201,7 @@ class DS(ClassifierMixin):
             if k is None:
                 k = self.k
 
-            [dists], [idx] = self.knn.kneighbors(query, n_neighbors=k, return_distance=True)
+            [dists], [idx] = self.roc_algorithm.kneighbors(query, n_neighbors=k, return_distance=True)
 
         else:
             dists = self.distances
@@ -253,21 +243,21 @@ class DS(ClassifierMixin):
                     self.distances, self.neighbors = self._get_region_competence(instance)
 
                 # If Instance hardness (IH) is used, check the IH of the region of competence to decide between
-                # DS or the knn classifier
+                # DS or the roc_algorithm classifier
                 if self.with_IH and (self._hardness_region_competence(self.neighbors) <= self.IH_rate):
                     # use the KNN for prediction if the sample is located in a safe region.
-                    # predicted_labels[index] = self.knn.predict(instance)
+                    # predicted_labels[index] = self.roc_algorithm.predict(instance)
                     # Using the pre-calculated set of neighbors to perform the decision
-                    y_neighbors = self.DSEL_target[self.neighbors[:self.IH_k]]
+                    y_neighbors = self.DSEL_target[self.neighbors[:self.safe_k]]
                     predicted_labels[index], _ = mode(y_neighbors)
 
                 # Otherwise, use DS for classification
                 else:
                     # Check if the dynamic frienemy pruning should be used
                     if self.DFP:
-                            self.mask = self._frienemy_pruning()
+                            self.DFP_mask = self._frienemy_pruning()
                     else:
-                            self.mask = np.ones(self.n_classifiers)
+                            self.DFP_mask = np.ones(self.n_classifiers)
 
                     predicted_labels[index] = self.classify_instance(instance)
 
@@ -313,19 +303,19 @@ class DS(ClassifierMixin):
                     self.distances, self.neighbors = self._get_region_competence(instance)
 
                 # If Instance hardness (IH) is used, check the hardness level of the region of competence
-                # to decide between DS or the knn classifier
+                # to decide between DS or the roc_algorithm classifier
                 if self.with_IH and (self._hardness_region_competence(self.neighbors) <= self.IH_rate):
                     # use the KNN for prediction if the sample is located in a safe region.
                     # TODO: Optimize that to not re-calculate the neighborhood
-                    predicted_proba[index, :] = self.knn.predict_proba(instance)
+                    predicted_proba[index, :] = self.roc_algorithm.predict_proba(instance)
 
                 # Otherwise, use DS for classification
                 else:
                     # Check if the dynamic frienemy pruning should be used
                     if self.DFP:
-                            self.mask = self._frienemy_pruning()
+                            self.DFP_mask = self._frienemy_pruning()
                     else:
-                            self.mask = np.ones(self.n_classifiers)
+                            self.DFP_mask = np.ones(self.n_classifiers)
 
                     predicted_proba[index, :] = self.predict_proba_instance(instance)
 
@@ -355,12 +345,11 @@ class DS(ClassifierMixin):
         Smith, M.R., Martinez, T. and Giraud-Carrier, C., 2014. An instance level analysis of data complexity.
         Machine learning, 95(2), pp.225-256
         """
-        neighbors_y = [self.DSEL_target[index] for index in region_competence[:self.IH_k]]
+        neighbors_y = [self.DSEL_target[index] for index in region_competence[:self.safe_k]]
 
-        counter = collections.Counter(neighbors_y)
+        _, num_majority_class = mode(neighbors_y)
         # Get the number of examples of the majority class in the region of competence
-        count_most_common = counter.most_common()[0][1]
-        hardness = (self.k - count_most_common) / self.k
+        hardness = (self.k - num_majority_class) / self.k
 
         return hardness
 
@@ -371,7 +360,7 @@ class DS(ClassifierMixin):
 
         Returns
         -------
-        mask : array = [n_classifiers] with the probability estimates for all classes
+        DFP_mask : array = [n_classifiers] with the probability estimates for all classes
 
         Reference:
         -------
@@ -379,25 +368,25 @@ class DS(ClassifierMixin):
         Ensemble Selection, Pattern Recognition, vol. 72, December 2017, pp 44-58.
         """
         # Check if query is in a indecision region
-        neighbors_y = self.DSEL_target[self.neighbors[:self.IH_k]]
+        neighbors_y = self.DSEL_target[self.neighbors[:self.safe_k]]
         if len(set(neighbors_y)) > 1:
-            # There are more than on class in the region of competence (It is an indecision region).
+            # There are more than on class in the region of competence (So it is an indecision region).
             mask = np.zeros(self.n_classifiers)
 
             # Check if the base classifier predict the correct label for a sample belonging to each class.
             for clf_index in range(self.n_classifiers):
-                predictions = self.processed_dsel[self.neighbors[:self.IH_k], clf_index]
-                correct_class_pred = [self.DSEL_target[index] for count, index in enumerate(self.neighbors[:self.IH_k])
+                predictions = self.processed_dsel[self.neighbors[:self.safe_k], clf_index]
+                correct_class_pred = [self.DSEL_target[index] for count, index in enumerate(self.neighbors[:self.safe_k])
                                       if predictions[count] == 1]
                 """
                 # If that is true, it means that it correctly classified at least one neighbor for each class in 
                 the region of competence
                 """
-                if np.array_equal(np.unique(neighbors_y), np.unique(correct_class_pred)):
+                if np.unique(correct_class_pred).size > 1:
                     mask[clf_index] = 1
             # Check if all classifiers were pruned
             if not np.count_nonzero(mask):
-                # Considers the whole pool if no base classifiers crosses the region of competence
+                # Do not apply the pruning mechanism.
                 mask = np.ones(self.n_classifiers)
             return mask
         else:
@@ -532,17 +521,24 @@ class DS(ClassifierMixin):
         raises an error if k < 1 or generated_pool is not fitted.
         """
         if self.k is not None:
-            if not isinstance(self.k, numbers.Integral):
+            if not isinstance(self.k, int):
                 raise TypeError("parameter k should be an integer")
             if self.k <= 1:
                 raise ValueError("parameter k must be higher than 1."
-                                 "input k is %s " % self.k)
+                                 "input k is {} " .format(self.k))
 
-        # IH_k should be equals or lower the neighborhood size k.
-        if self.IH_k is not None and self.k is not None:
-            if self.IH_k > self.k:
-                raise ValueError("parameter IH_k must be equal or less than parameter k."
-                                 "input IH_k is %s  and k is " % self.k, self.IH_k)
+        if self.safe_k is not None:
+            if not isinstance(self.safe_k, int):
+                raise TypeError("parameter safe_k should be an integer")
+            if self.safe_k <= 1:
+                raise ValueError("parameter safe_k must be higher than 1."
+                                 "input safe_k is {} " .format(self.safe_k))
+
+        # safe_k should be equals or lower the neighborhood size k.
+        if self.safe_k is not None and self.k is not None:
+            if self.safe_k > self.k:
+                raise ValueError("parameter safe_k must be equal or less than parameter k."
+                                 "input safe_k is {} and k is {}" .format(self.k, self.safe_k))
 
         if not isinstance(self.IH_rate, float):
             raise TypeError("parameter IH_rate should be a float between [0.0, 0.5]")
@@ -557,7 +553,7 @@ class DS(ClassifierMixin):
         """Verify if the dynamic selection algorithm was fitted.
         Raises an error if it is not fitted.
         """
-        if self.knn is None or self.processed_dsel is None:
+        if self.roc_algorithm is None or self.processed_dsel is None:
             raise NotFittedError("DS method not fitted, "
                                  "call `fit` before exploiting the model.")
 
@@ -580,9 +576,8 @@ class DS(ClassifierMixin):
         n_features = X.shape[1]
         if self.n_features != n_features:
             raise ValueError("Number of features of the model must "
-                             "match the input. Model n_features is %s and "
-                             "input n_features is %s "
-                             % (self.n_features, n_features))
+                             "match the input. Model n_features is {} and "
+                             "input n_features is {} " .format(self.n_features, n_features))
 
     def _check_input_predict(self, X):
 

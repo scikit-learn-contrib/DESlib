@@ -35,9 +35,6 @@ class DCS(DS):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False)
-           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
-
     selection_method : String (Default = "best")
                        Determines which method is used to select the base classifier
                        after the competences are estimated.
@@ -67,7 +64,7 @@ class DCS(DS):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers, k=7, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
-                 aknn=False, selection_method='best', diff_thresh=0.1, rng=np.random.RandomState()):
+                 selection_method='best', diff_thresh=0.1, rng=np.random.RandomState()):
 
         if not isinstance(selection_method, str):
             raise TypeError('The parameter selection_method should be a string.'
@@ -86,7 +83,7 @@ class DCS(DS):
             raise ValueError('diff_thresh should be lower than 0.5. diff_thresh = ', diff_thresh)
 
         super(DCS, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
-                                  safe_k=safe_k, IH_rate=IH_rate, aknn=aknn)
+                                  safe_k=safe_k, IH_rate=IH_rate)
         self.selection_method = selection_method
         self.diff_thresh = diff_thresh
         self.rng = rng

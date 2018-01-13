@@ -39,9 +39,6 @@ class DESP(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False)
-           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
-
     mode : String (Default = "selection")
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
@@ -60,11 +57,10 @@ class DESP(DES):
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
                  IH_rate=0.30,
-                 aknn=False,
                  mode='selection'):
 
         super(DESP, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                   aknn=aknn, mode=mode)
+                                   mode=mode)
 
         self.name = 'DES-Performance (DES-P)'
 
@@ -86,7 +82,7 @@ class DESP(DES):
         competences = np.zeros(self.n_classifiers)
         for clf_index in range(self.n_classifiers):
             # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.mask[clf_index]:
+            if self.DFP_mask[clf_index]:
                 competences[clf_index] = np.mean(self.processed_dsel[idx_neighbors, clf_index])
 
         return competences

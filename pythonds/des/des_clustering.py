@@ -29,20 +29,6 @@ class DESClustering(DES):
     k : int (Default = 5)
         Number of neighbors used to estimate the competence of the base classifiers.
 
-    DFP : Boolean (Default = False)
-          Determines if the dynamic frienemy pruning is applied.
-
-    with_IH : Boolean (Default = False)
-              Whether the hardness level of the region of competence is used to decide between
-              using the DS algorithm or the KNN for classification of a given query sample.
-
-    safe_k : int (default = None)
-             The size of the indecision region.
-
-    IH_rate : float (default = 0.3)
-              Hardness threshold. If the hardness level of the competence region is lower than
-              the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
-
     mode : String (Default = "selection")
               whether the technique will perform dynamic selection, dynamic weighting
               or an hybrid approach for classification
@@ -50,7 +36,7 @@ class DESClustering(DES):
     pct_accuracy : float (Default = 0.5)
         Percentage of base classifiers selected based on accuracy
 
-    J : float (Default = 0.33)
+    pct_diversity : float (Default = 0.33)
         Percentage of base classifiers selected based n diversity
 
     more_diverse : Boolean (Default = True)
@@ -77,13 +63,9 @@ class DESClustering(DES):
                  pct_diversity=0.33,
                  more_diverse=True,
                  metric='DF',
-                 DFP=False,
-                 with_IH=False,
-                 safe_k=None,
-                 IH_rate=0.30):
+                 rng=np.random.RandomState()):
 
-        super(DESClustering, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
-                                            safe_k=safe_k, IH_rate=IH_rate, mode=mode)
+        super(DESClustering, self).__init__(pool_classifiers, k, mode=mode)
 
         self.name = 'DES-Clustering'
         self.N = int(self.n_classifiers * pct_accuracy)
@@ -99,7 +81,7 @@ class DESClustering(DES):
             self.diversity_func = ratio_errors
 
         self.more_diverse = more_diverse
-        self.clustering = KMeans(n_clusters=k)
+        self.roc_algorithm = KMeans(n_clusters=k, random_state=rng)
         self.accuracy_cluster = np.zeros((self.k, self.n_classifiers))
         self.diversity_cluster = np.zeros((self.k, self.n_classifiers))
 
@@ -110,7 +92,7 @@ class DESClustering(DES):
     def fit(self, X, y):
         """Train the DS model by setting the Clustering algorithm and
         pre-processing the information required to apply the DS
-        methods. In this case, after fitting the clustering method, the ensemble containing
+        methods. In this case, after fitting the roc_algorithm method, the ensemble containing
         most competent classifiers taking into account accuracy and diversity are
         estimated for each cluster.
 
@@ -127,7 +109,7 @@ class DESClustering(DES):
         """
 
         self._set_dsel(X, y)
-        labels = self.clustering.fit_predict(X)
+        labels = self.roc_algorithm.fit_predict(X)
 
         # For each cluster estimate the most accurate and most competent classifiers for it.
         for cluster_index in range(self.k):
@@ -144,8 +126,7 @@ class DESClustering(DES):
                 predictions = self.BKS_dsel[sample_indices, clf_index]
                 prediction_matrix[:, clf_index] = predictions
                 # Check if the dynamic frienemy pruning (DFP) should be used used
-                if self.mask[clf_index]:
-                    self.accuracy_cluster[cluster_index][clf_index] = accuracy_score(np.array(targets), predictions)
+                self.accuracy_cluster[cluster_index][clf_index] = accuracy_score(np.array(targets), predictions)
 
             # Get the N most accurate classifiers for the corresponding cluster
             accuracies = self.accuracy_cluster[cluster_index, :]
@@ -207,14 +188,14 @@ class DESClustering(DES):
         competences : array = [n_classifiers]
                       The competence level estimated for each base classifier
         """
-        cluster_index = self.clustering.predict(query)
+        cluster_index = self.roc_algorithm.predict(query)
         competences = self.accuracy_cluster[cluster_index][:]
         return competences
 
     def select(self, query):
         """Select an ensemble with the most accurate and most diverse classifier for the classification of the query.
 
-        Since the method is based on clustering, the ensemble for each cluster is already pre-calculated. So, we only
+        Since the method is based on roc_algorithm, the ensemble for each cluster is already pre-calculated. So, we only
         need to estimate which is the nearest cluster and then get the classifiers that were pre-selected for this
         cluster
 
@@ -228,9 +209,8 @@ class DESClustering(DES):
         indices : List containing the indices of the selected base classifiers
 
         """
-        cluster_index = self.clustering.predict(query)[0]
+        cluster_index = self.roc_algorithm.predict(query)[0]
         indices = self.indices[cluster_index, :]
-
         return indices
 
     def classify_instance(self, query):
@@ -239,7 +219,8 @@ class DESClustering(DES):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_features]
+                The test sample
 
         Returns
         -------

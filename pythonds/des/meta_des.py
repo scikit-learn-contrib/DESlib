@@ -35,8 +35,12 @@ class METADES(DES):
     kp : int (Default = 5)
          Number of output profiles used to estimate the competence of the base classifiers.
 
-    aknn : Boolean (Default = False)
-           Determines the type of KNN algorithm that is used. set to true for the A-KNN method.
+    Hc : float (Default = 0.8)
+         Sample selection threshold.
+
+    gamma : float(Default = 0.5)
+            Threshold used to select the base classifier. Only the base classifiers with competence level higher than
+            the gamma are selected to compose the ensemble.
 
     mode : String (Default = "selection")
               Determines the mode of META-des that is used (selection, weighting or hybrid).
@@ -68,11 +72,19 @@ class METADES(DES):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers, meta_classifier=MultinomialNB(), k=7, kp=5, Hc=1.0, gamma=0.5, mode='selection',
-                 DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False):
+    def __init__(self, pool_classifiers, meta_classifier=MultinomialNB(),
+                 k=7,
+                 kp=5,
+                 Hc=0.8,
+                 gamma=0.5,
+                 mode='selection',
+                 DFP=False,
+                 with_IH=False,
+                 safe_k=None,
+                 IH_rate=0.30):
 
         super(METADES, self).__init__(pool_classifiers, k, DFP=DFP,
-                                      with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate, aknn=aknn, mode=mode)
+                                      with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate, mode=mode)
 
         self._check_input_parameters(Hc, gamma, meta_classifier)
 
@@ -210,8 +222,6 @@ class METADES(DES):
                     self.meta_training_dataset.append(vector)
                     self.meta_training_target.append(target)
 
-                    # train the meta classifier
-
     def _train_meta_classifier(self):
         """Train the meta-classifier (lambda), using the meta-training dataset.
 
@@ -230,7 +240,8 @@ class METADES(DES):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_features]
+                The test sample
 
         kp : The number of output profiles (most similar) to be selected.
 
@@ -255,14 +266,14 @@ class METADES(DES):
 
         Parameters
         ----------
-        competences : array of shape = [n_classifiers] containing the competence level estimated
-        for each base classifier
+        competences : array of shape = [n_classifiers]
+                      The competence level estimated for each base classifier
 
         Returns
         -------
         indices : the indices of the selected base classifiers
         """
-        indices = [idx for idx, _ in enumerate(competences) if competences[idx] >= self.gamma]
+        indices = [idx for idx, _ in enumerate(competences) if competences[idx] > self.gamma]
 
         # if no classifier was selected, use the whole pool
         if len(indices) == 0:
@@ -279,12 +290,13 @@ class METADES(DES):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_features]
+                The test sample
 
         Returns
         -------
-        competences : array = [n_classifiers] containing the competence level estimated
-        for each base classifier
+        competences : array of shape = [n_classifiers]
+                      The competence level estimated for each base classifier
         """
         _, idx_neighbors = self._get_region_competence(query)
         _, idx_neighbors_op = self._get_similar_out_profiles(query)
@@ -298,7 +310,7 @@ class METADES(DES):
             vectors = np.digitize(vectors, self.bins)
 
         # Get the probability for class 1 (Competent)
-        competences = self.meta_classifier.predict_proba(vectors)[:, 1] * self.mask
+        competences = self.meta_classifier.predict_proba(vectors)[:, 1] * self.DFP_mask
 
         return competences
 

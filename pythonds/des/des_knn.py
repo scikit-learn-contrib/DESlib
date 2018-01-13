@@ -40,9 +40,6 @@ class DESKNN(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False)
-           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
-
     mode : String (Default = "selection")
               whether the technique will perform dynamic selection, dynamic weighting
               or an hybrid approach for classification
@@ -74,7 +71,6 @@ class DESKNN(DES):
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
                  IH_rate=0.30,
-                 aknn=False,
                  mode='selection',
                  pct_accuracy=0.5,
                  pct_diversity=0.3,
@@ -83,7 +79,7 @@ class DESKNN(DES):
 
         metric = metric.upper()
         super(DESKNN, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                     aknn=aknn, mode=mode)
+                                     mode=mode)
 
         self.N = int(self.n_classifiers * pct_accuracy)
         self.J = int(self.n_classifiers * pct_diversity)
@@ -111,15 +107,15 @@ class DESKNN(DES):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
-
+        query : array cf shape  = [n_features]
+                The query sample
         Returns
         -------
-        competences : array = [n_classifiers] containing the competence level estimated
-        for each base classifier
+        competences : array of shape = [n_classifiers]
+                      The competence level estimated for each base classifier
 
-        diversity : array = [n_classifiers] containing the diversity estimated
-        for each base classifier
+        diversity : array of shape = [n_classifiers]
+                    The diversity estimated for each base classifier
         """
         dists, idx_neighbors = self._get_region_competence(query)
         competences = np.zeros(self.n_classifiers)
@@ -129,7 +125,7 @@ class DESKNN(DES):
             predictions = self.BKS_dsel[idx_neighbors, clf_index]
             predicted_matrix[:, clf_index] = predictions
             # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.mask[clf_index]:
+            if self.DFP_mask[clf_index]:
                 competences[clf_index] = np.mean(hit_result)
 
         # Calculate the more_diverse matrix. It becomes computationally expensive
@@ -153,14 +149,13 @@ class DESKNN(DES):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_features]
+                The test sample
 
         Returns
         -------
         indices : the indices of the selected base classifiers
 
-        competences : array = [n_classifiers] containing the competence level estimated
-        for each base classifier
         """
         # sort the array to remove the most accurate classifiers
         competences, diversity = self.estimate_competence(query)
@@ -183,7 +178,8 @@ class DESKNN(DES):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_features]
+                The test sample
 
         Returns
         -------

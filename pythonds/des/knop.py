@@ -35,9 +35,6 @@ class KNOP(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False)
-           Determines the type of KNN algorithm that is used. set to true for the A-KNN method.
-
     References
     ----------
     Cavalin, Paulo R., Robert Sabourin, and Ching Y. Suen. "LoGID: An adaptive framework combining local and global
@@ -59,15 +56,13 @@ class KNOP(DES):
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
                  IH_rate=0.30,
-                 weighted=False,
-                 aknn=False):
+                 weighted=False):
 
         super(KNOP, self).__init__(pool_classifiers, k,
                                    DFP=DFP,
                                    with_IH=with_IH,
                                    safe_k=safe_k,
-                                   IH_rate=IH_rate,
-                                   aknn=aknn)
+                                   IH_rate=IH_rate)
         self.weighted = weighted
         self.name = 'K-Nearest Output Profiles (KNOP)'
 
@@ -118,7 +113,7 @@ class KNOP(DES):
 
         for clf_index in range(self.n_classifiers):
             # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.mask[clf_index]:
+            if self.DFP_mask[clf_index]:
                 competences[clf_index] = np.sum(self.processed_dsel[idx_neighbors, clf_index])
 
         return competences.astype(dtype=int)
