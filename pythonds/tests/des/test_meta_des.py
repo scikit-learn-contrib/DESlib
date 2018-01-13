@@ -68,10 +68,10 @@ def test_estimate_competence():
     meta_test._get_similar_out_profiles = MagicMock(return_value=[0, neighbors_ex1[2, 0:meta_test.Kp]])
 
     meta_test.meta_classifier.predict_proba = MagicMock(return_value=np.array([[0.0, 0.8]]))
-    meta_test.mask = np.array([1, 0, 1])
+    meta_test.DFP_mask = np.array([1, 0, 1])
 
     competences = meta_test.estimate_competence(query)
-    assert np.allclose(competences, 0.8)
+    assert np.allclose(competences, [0.8, 0.0, 0.8])
 
 
 def test_select():

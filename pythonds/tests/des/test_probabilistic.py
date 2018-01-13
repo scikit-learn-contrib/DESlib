@@ -1,4 +1,4 @@
-from pythonds.des.probabilistic import Probabilistic, RRC, DESKL, Logarithmic, Exponential, Entropy, MinimumDifference
+from pythonds.des.probabilistic import Probabilistic, RRC, DESKL, Logarithmic, Exponential, MinimumDifference
 from pythonds.tests.examples_test import *
 
 
@@ -59,7 +59,7 @@ def test_estimate_competence():
     probabilistic_test = Probabilistic(create_pool_classifiers())
     probabilistic_test.distances = [0.5, 1.0, 2.0]
     probabilistic_test.neighbors = [0, 1, 2]
-    probabilistic_test.mask = np.ones(probabilistic_test.n_classifiers)
+    probabilistic_test.DFP_mask = np.ones(probabilistic_test.n_classifiers)
 
     probabilistic_test.C_src = np.array([[0.5, 0.2, 0.8],
                                          [1.0, 1.0, 1.0],
@@ -75,7 +75,7 @@ def test_estimate_competence_zeros():
     probabilistic_test = Probabilistic(create_pool_classifiers())
     probabilistic_test.distances = distances_ex1[0, 0:3]
     probabilistic_test.neighbors = [0, 2, 1]
-    probabilistic_test.mask = np.zeros(probabilistic_test.n_classifiers)
+    probabilistic_test.DFP_mask = np.zeros(probabilistic_test.n_classifiers)
     probabilistic_test.C_src = np.zeros((3, 3))
     competence = probabilistic_test.estimate_competence(query)
     assert np.sum(competence) == 0.0
@@ -87,7 +87,7 @@ def test_estimate_competence_ones():
     probabilistic_test = Probabilistic(create_pool_classifiers())
     probabilistic_test.distances = distances_ex1[0, 0:3]
     probabilistic_test.neighbors = [0, 2, 1]
-    probabilistic_test.mask = np.ones(probabilistic_test.n_classifiers)
+    probabilistic_test.DFP_mask = np.ones(probabilistic_test.n_classifiers)
     probabilistic_test.C_src = np.ones((3, 3))
     competence = probabilistic_test.estimate_competence(query)
     assert (competence == 1.0).all()
@@ -198,24 +198,3 @@ def test_source_competence_exponential():
     expected = np.array([[0.0], [-1.0], [1.0]])
     assert np.allclose(C_src, expected, atol=0.01)
 
-
-""" Test the source_competence using the entropy method. Here we consider the same values 
-applied in the test_prob_functions.py to assert if the source_competence function call the ccprmod correctly
-and fill the competence source (C_src) with the correct results.
-
-- Three classes are considered.
-- The scores used are: [[0.33, 0.33, 0.33], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]]
-- The preprocessed dsel is: [[False], [True], [False]] (only the second sample was correctly classified)
-- The expected value should be: an np.array (3,1) with the values = [[0.0], [1.0], [-1.0]]
-"""
-
-
-def test_source_competence_entropy():
-    entropy_test = Entropy([create_base_classifier(return_value=1, return_prob=1.0)])
-    entropy_test.dsel_scores = np.array([[0.33, 0.33, 0.33], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]])
-    entropy_test.processed_dsel = np.array([[False], [True], [False]])
-    entropy_test.n_classes = 3
-    entropy_test.n_samples = 3
-    C_src = entropy_test.source_competence()
-    expected = np.array([[0.0], [1.0], [-1.0]])
-    assert np.allclose(C_src, expected, atol=0.01)
