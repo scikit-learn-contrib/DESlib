@@ -47,6 +47,9 @@ class MCB(DCS):
                   classifiers for the random and diff selection schemes. If the difference is lower than the
                   threshold, their performance are considered equivalent.
 
+    rng : numpy.random.RandomState instance
+          Random number generator to assure reproducible results.
+
     References
     ----------
     Giacinto, Giorgio, and Fabio Roli. "Dynamic classifier selection based on multiple classifier behaviour."

@@ -48,6 +48,9 @@ class APosteriori(DCS):
                   classifiers for the random and diff selection schemes. If the difference is lower than the
                   threshold, their performance are considered equivalent.
 
+    rng : numpy.random.RandomState instance
+          Random number generator to assure reproducible results.
+
     References
     ----------
     G. Giacinto and F. Roli, Methods for Dynamic Classifier Selection
