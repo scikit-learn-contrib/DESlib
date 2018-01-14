@@ -35,7 +35,7 @@ class METADES(DES):
     kp : int (Default = 5)
          Number of output profiles used to estimate the competence of the base classifiers.
 
-    Hc : float (Default = 0.8)
+    Hc : float (Default = 1.0)
          Sample selection threshold.
 
     gamma : float(Default = 0.5)
@@ -75,7 +75,7 @@ class METADES(DES):
     def __init__(self, pool_classifiers, meta_classifier=MultinomialNB(),
                  k=7,
                  kp=5,
-                 Hc=0.8,
+                 Hc=1.0,
                  gamma=0.5,
                  mode='selection',
                  DFP=False,
@@ -146,7 +146,13 @@ class METADES(DES):
 
         """
         self.op_knn = KNeighborsClassifier(n_neighbors=kp, n_jobs=-1, algorithm='auto')
-        self.op_knn.fit(X, y)
+
+        if self.n_classes == 2:
+            # Get only the scores for one class since they are complementary
+            X_temp = X[:, ::2]
+            self.op_knn.fit(X_temp, y)
+        else:
+            self.op_knn.fit(X, y)
 
     def _sample_selection_agreement(self, query_idx):
         """Check the number of base classifier that predict the correct label for the query sample.
@@ -227,7 +233,7 @@ class METADES(DES):
 
         """
         self.meta_training_dataset = np.array(self.meta_training_dataset)
-        self.meta_training_target = np.array(self.meta_training_target)
+        self.meta_training_target = np.array(self.meta_training_target, dtype=int)
 
         if isinstance(self.meta_classifier, MultinomialNB):
             # Digitize the data (Same implementation we have on PRTools)
@@ -256,6 +262,10 @@ class METADES(DES):
         query_op = self._output_profile_transform(query).reshape(1, -1)
         if kp is None:
             kp = self.Kp
+
+        if self.n_classes == 2:
+            # Get only the scores for one class since they are complementary
+            query_op = query_op[:, ::2]
 
         [dists], [idx] = self.op_knn.kneighbors(query_op, n_neighbors=kp, return_distance=True)
         return dists, idx

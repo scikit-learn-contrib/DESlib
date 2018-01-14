@@ -14,11 +14,11 @@ from pythonds.dcs.mcb import MCB
 from pythonds.dcs.mla import MLA
 from pythonds.dcs.ola import OLA
 from pythonds.dcs.rank import Rank
+# DES techniques
 from pythonds.des.des_clustering import DESClustering
 from pythonds.des.des_knn import DESKNN
 from pythonds.des.des_p import DESP
 from pythonds.des.knop import KNOP
-# DES techniques
 from pythonds.des.knora_e import KNORAE
 from pythonds.des.knora_u import KNORAU
 from pythonds.des.meta_des import METADES
@@ -192,7 +192,7 @@ def test_des_clustering():
 
     des_clustering = DESClustering(pool_classifiers, rng=rng)
     des_clustering.fit(X_dsel, y_dsel)
-    assert np.isclose(des_clustering.score(X_test, y_test), 0.97340425531914898)
+    assert np.isclose(des_clustering.score(X_test, y_test), 0.97872340425531912)
 
 
 def test_oracle():
