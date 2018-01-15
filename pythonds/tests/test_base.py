@@ -59,7 +59,7 @@ def test_check_safe_k_type(safe_k):
 
 
 @pytest.mark.parametrize('safe_k', [0, 1, -1])
-def test_check_safe_k_type(safe_k):
+def test_check_safe_k_value(safe_k):
     pool_classifiers = create_pool_classifiers()
 
     with pytest.raises(ValueError):
