@@ -12,7 +12,7 @@ def test_estimate_competence(index, expected):
     rank_test.processed_dsel = dsel_processed_ex1
     rank_test.neighbors = neighbors_ex1[index, :]
     rank_test.distances = distances_ex1[index, :]
-    rank_test.mask = [1, 1, 1]
+    rank_test.DFP_mask = [1, 1, 1]
     query = np.array([1, 1])
     competences = rank_test.estimate_competence(query.reshape(1, -1))
     assert np.isclose(competences, expected).all()

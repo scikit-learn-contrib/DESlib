@@ -14,10 +14,19 @@ from pythonds.dcs.mcb import MCB
 from pythonds.dcs.mla import MLA
 from pythonds.dcs.ola import OLA
 from pythonds.dcs.rank import Rank
-from pythonds.des.des_p import DESP
 # DES techniques
+from pythonds.des.des_clustering import DESClustering
+from pythonds.des.des_knn import DESKNN
+from pythonds.des.des_p import DESP
+from pythonds.des.knop import KNOP
 from pythonds.des.knora_e import KNORAE
 from pythonds.des.knora_u import KNORAU
+from pythonds.des.meta_des import METADES
+from pythonds.des.probabilistic import RRC, MinimumDifference, DESKL
+# Static techniques
+from pythonds.static.oracle import Oracle
+from pythonds.static.single_best import SingleBest
+from pythonds.static.static_selection import StaticSelection
 
 
 def setup_classifiers():
@@ -86,7 +95,6 @@ def test_lca():
     assert np.isclose(lca.score(X_test, y_test), 0.96808510638297873)
 
 
-
 def test_MLA():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
@@ -130,52 +138,81 @@ def test_aposteriori():
     assert np.isclose(a_posteriori.score(X_test, y_test), 0.96276595744680848)
 
 
-#
-# def test_meta():
-#     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-#
-#     meta_des = METADES(pool_classifiers)
-#     meta_des.fit(X_dsel, y_dsel)
-#     assert np.isclose(meta_des.score(X_test, y_test), 0.97872340425531912)
-#
-#
-# def test_rrc():
-#     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-#
-#     rrc = RRC(pool_classifiers)
-#     rrc.fit(X_dsel, y_dsel)
-#     assert np.isclose(rrc.score(X_test, y_test), 0.97340425531914898)
-#
-#
-# def test_deskl():
-#     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-#
-#     deskl = DESKL(pool_classifiers)
-#     deskl.fit(X_dsel, y_dsel)
-#     assert np.isclose(deskl.score(X_test, y_test), 0.97340425531914898)
-#
-#
-# def test_minimum_diff():
-#     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-#
-#     minimum_diff = MinimumDifference(pool_classifiers)
-#     minimum_diff.fit(X_dsel, y_dsel)
-#     assert np.isclose(minimum_diff.score(X_test, y_test), 0.97340425531914898)
-#
-#
-# def test_knop():
-#     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-#
-#     knop = KNOP(pool_classifiers)
-#     knop.fit(X_dsel, y_dsel)
-#     assert np.isclose(knop.score(X_test, y_test), 0.97340425531914898)
-#
-#
-# def test_desknn():
-#     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-#
-#     desknn = DESKNN(pool_classifiers)
-#     desknn.fit(X_dsel, y_dsel)
-#     assert np.isclose(desknn.score(X_test, y_test), 0.97340425531914898)
+def test_meta():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    meta_des = METADES(pool_classifiers)
+    meta_des.fit(X_dsel, y_dsel)
+    assert np.isclose(meta_des.score(X_test, y_test), 0.97872340425531912)
 
 
+def test_rrc():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    rrc = RRC(pool_classifiers)
+    rrc.fit(X_dsel, y_dsel)
+    assert np.isclose(rrc.score(X_test, y_test), 0.97340425531914898)
+
+
+def test_deskl():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    deskl = DESKL(pool_classifiers)
+    deskl.fit(X_dsel, y_dsel)
+    assert np.isclose(deskl.score(X_test, y_test), 0.97340425531914898)
+
+
+def test_minimum_diff():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    minimum_diff = MinimumDifference(pool_classifiers)
+    minimum_diff.fit(X_dsel, y_dsel)
+    assert np.isclose(minimum_diff.score(X_test, y_test), 0.97340425531914898)
+
+
+def test_knop():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    knop = KNOP(pool_classifiers)
+    knop.fit(X_dsel, y_dsel)
+    assert np.isclose(knop.score(X_test, y_test), 0.97340425531914898)
+
+
+def test_desknn():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    desknn = DESKNN(pool_classifiers)
+    desknn.fit(X_dsel, y_dsel)
+    assert np.isclose(desknn.score(X_test, y_test), 0.97340425531914898)
+
+
+def test_des_clustering():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+    rng = np.random.RandomState(123456)
+
+    des_clustering = DESClustering(pool_classifiers, rng=rng)
+    des_clustering.fit(X_dsel, y_dsel)
+    assert np.isclose(des_clustering.score(X_test, y_test), 0.97872340425531912)
+
+
+def test_oracle():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    oracle = Oracle(pool_classifiers)
+    assert np.isclose(oracle.score(X_test, y_test), 0.99468085106382975)
+
+
+def test_single_best():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    single_best = SingleBest(pool_classifiers)
+    single_best.fit(X_dsel, y_dsel)
+    assert np.isclose(single_best.score(X_test, y_test), 0.97872340425531912)
+
+
+def test_static_selection():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    static_selection = StaticSelection(pool_classifiers)
+    static_selection.fit(X_dsel, y_dsel)
+    assert np.isclose(static_selection.score(X_test, y_test), 0.96808510638297873)

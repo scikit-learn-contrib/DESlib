@@ -20,7 +20,7 @@ def test_estimate_competence_all_ones(index, expected):
 
     a_priori_test.neighbors = neighbors_ex1[index, :]
     a_priori_test.distances = distances_all_ones[index, :]
-    a_priori_test.mask = [1, 1, 1]
+    a_priori_test.DFP_mask = [1, 1, 1]
 
     competences = a_priori_test.estimate_competence(query.reshape(1, -1))
     assert np.isclose(competences, expected).all()
@@ -39,7 +39,7 @@ def test_estimate_competence_kuncheva_ex():
 
     a_priori_test.neighbors = neighbors_ex_kuncheva
     a_priori_test.distances = distances_ex_kuncheva
-    a_priori_test.mask = [1]
+    a_priori_test.DFP_mask = [1]
 
     competences = a_priori_test.estimate_competence(query.reshape(1, -1))
     assert np.isclose(competences, 0.70, atol=0.01)
@@ -61,7 +61,7 @@ def test_estimate_competence2(index, expected):
 
     a_priori_test.neighbors = neighbors_ex1[index, 0:3]
     a_priori_test.distances = distances_all_ones[index, 0:3]
-    a_priori_test.mask = [1, 1, 1]
+    a_priori_test.DFP_mask = [1, 1, 1]
 
     competences = a_priori_test.estimate_competence(query.reshape(1, -1))
     assert np.isclose(competences, expected).all()

@@ -12,7 +12,7 @@ def test_estimate_competence(index, expected):
 
     des_p_test = DESP(create_pool_classifiers())
     des_p_test.fit(X_dsel_ex1, y_dsel_ex1)
-    des_p_test.mask = np.ones(des_p_test.n_classifiers)
+    des_p_test.DFP_mask = np.ones(des_p_test.n_classifiers)
     des_p_test.neighbors = neighbors_ex1[index, :]
     des_p_test.distances = distances_ex1[index, :]
     competences = des_p_test.estimate_competence(query)
@@ -28,7 +28,7 @@ def test_select_two_classes(index, expected):
     des_p_test = DESP(create_pool_classifiers())
     des_p_test.fit(X_dsel_ex1, y_dsel_ex1)
 
-    des_p_test.mask = np.ones(des_p_test.n_classifiers)
+    des_p_test.DFP_mask = np.ones(des_p_test.n_classifiers)
     des_p_test.neighbors = neighbors_ex1[index, :]
     des_p_test.distances = distances_ex1[index, :]
 
@@ -49,7 +49,7 @@ def test_select_three_classes(index, expected):
     des_p_test.fit(X_dsel_ex1, y_dsel_ex1)
 
     des_p_test.n_classes = 3
-    des_p_test.mask = np.ones(des_p_test.n_classifiers)
+    des_p_test.DFP_mask = np.ones(des_p_test.n_classifiers)
     des_p_test.neighbors = neighbors_ex1[index, :]
     des_p_test.distances = distances_ex1[index, :]
 
@@ -69,7 +69,7 @@ def test_select_ten_classes(index,):
     des_p_test.fit(X_dsel_ex1, y_dsel_ex1)
 
     des_p_test.n_classes = 10
-    des_p_test.mask = np.ones(des_p_test.n_classifiers)
+    des_p_test.DFP_mask = np.ones(des_p_test.n_classifiers)
     des_p_test.neighbors = neighbors_ex1[index, :]
     des_p_test.distances = distances_ex1[index, :]
 

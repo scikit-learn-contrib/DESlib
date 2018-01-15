@@ -38,7 +38,7 @@ def test_estimate_competence():
 
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1)
     target.fit(x, y)
-    target.mask = np.ones(target.n_classifiers)
+    target.DFP_mask = np.ones(target.n_classifiers)
     target._get_region_competence = lambda x: (None, [0, 1, 2, 3, 4, 5, 6])
 
     competences, diversity = target.estimate_competence(2)
@@ -59,7 +59,7 @@ def test_estimate_competence_Q():
 
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1, metric='Q')
     target.fit(x, y)
-    target.mask = np.ones(target.n_classifiers)
+    target.DFP_mask = np.ones(target.n_classifiers)
     target._get_region_competence = lambda x: (None, [0, 1, 2, 3, 4, 5, 6])
 
     competences, diversity = target.estimate_competence(2)
@@ -80,7 +80,7 @@ def test_estimate_competence_ratio():
 
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1, metric='Ratio')
     target.fit(x, y)
-    target.mask = np.ones(target.n_classifiers)
+    target.DFP_mask = np.ones(target.n_classifiers)
     target._get_region_competence = lambda x: (None, [0, 1, 2, 3, 4, 5, 6])
 
     competences, diversity = target.estimate_competence(2)

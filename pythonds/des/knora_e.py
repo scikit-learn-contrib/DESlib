@@ -38,9 +38,6 @@ class KNORAE(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False)
-           Determines the type of KNN algorithm that is used. set to true for the A-KNN method.
-
     References
     ----------
     Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr. "From dynamic classifier selection to dynamic ensemble
@@ -55,11 +52,9 @@ class KNORAE(DES):
     """
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30,
-                 aknn=False):
+                 IH_rate=0.30):
 
-        super(KNORAE, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                     aknn=aknn)
+        super(KNORAE, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate)
 
         self.name = 'k-Nearest Oracles Eliminate (KNORA-E)'
 
@@ -81,21 +76,18 @@ class KNORAE(DES):
         competences : array of shape = [n_classifiers]
                       The competence level estimated for each base classifier in the pool
         """
-        dists, idx_neighbors = self._get_region_competence(query)
+        _, idx_neighbors = self._get_region_competence(query)
         competences = np.zeros(self.n_classifiers)
 
         for clf_index in range(self.n_classifiers):
             # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.mask[clf_index]:
-                counter = 0
-                for index in idx_neighbors:
-                    if self.processed_dsel[index][clf_index]:
-                        counter += 1
-
-                    else:
-                        break
-                competences[clf_index] = counter
-
+            if self.DFP_mask[clf_index]:
+                results_neighbors = self.processed_dsel[idx_neighbors, clf_index]
+                indices_errors = np.where(results_neighbors == 0)[0]
+                if indices_errors.size != 0:
+                    competences[clf_index] = np.min(indices_errors)
+                else:
+                    competences[clf_index] = self.k
         return competences
 
     def select(self, competences):

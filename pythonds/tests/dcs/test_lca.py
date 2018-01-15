@@ -12,7 +12,7 @@ def test_estimate_competence_woods(index, expected):
     lca_test.processed_dsel = dsel_processed_ex1
     lca_test.neighbors = neighbors_ex1[index, :]
     lca_test.distances = distances_ex1[index, :]
-    lca_test.mask = [1, 1, 1]
+    lca_test.DFP_mask = [1, 1, 1]
     lca_test.DSEL_target = y_dsel_ex1
     query = np.array([1, 1])
     competences = lca_test.estimate_competence(query.reshape(1, -1))
@@ -32,7 +32,7 @@ def test_estimate_competence_diff_target(index):
 
     lca.neighbors = neighbors_ex1[index, :]
     lca.distances = distances_ex1[index, :]
-    lca.mask = [1, 1, 1]
+    lca.DFP_mask = [1, 1, 1]
 
     expected = [0.0, 0.0, 0.0]
 

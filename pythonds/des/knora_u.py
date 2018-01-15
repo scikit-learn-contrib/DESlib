@@ -54,11 +54,9 @@ class KNORAU(DES):
     """
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30,
-                 aknn=False):
+                 IH_rate=0.30):
 
-        super(KNORAU, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                     aknn=aknn)
+        super(KNORAU, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate)
 
         self.name = 'k-Nearest Oracles Union (KNORA-U)'
 
@@ -80,9 +78,8 @@ class KNORAU(DES):
 
         for clf_index in range(self.n_classifiers):
             # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.mask[clf_index]:
-                tmp = [self.processed_dsel[index][clf_index] for index in idx_neighbors]
-                competences[clf_index] = np.sum(tmp)
+            if self.DFP_mask[clf_index]:
+                competences[clf_index] = np.sum(self.processed_dsel[idx_neighbors, clf_index])
 
         return competences.astype(dtype=int)
 
@@ -117,7 +114,8 @@ class KNORAU(DES):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_features]
+                The test sample
 
         Returns
         -------

@@ -50,18 +50,26 @@ def test_check_k_type(k):
         DS(pool_classifiers, k=k)
 
 
-@pytest.mark.parametrize('IH_k', ['a', 2.5])
-def test_check_IH_k(IH_k):
+@pytest.mark.parametrize('safe_k', ['a', 2.5])
+def test_check_safe_k_type(safe_k):
     pool_classifiers = create_pool_classifiers()
 
     with pytest.raises(TypeError):
-        DS(pool_classifiers, IH_k=IH_k)
+        DS(pool_classifiers, safe_k=safe_k)
 
 
-@pytest.mark.parametrize('k, ih_k', [(2, 3), (5, 7)])
-def test_valid_IH_k(k, ih_k):
+@pytest.mark.parametrize('safe_k', [0, 1, -1])
+def test_check_safe_k_value(safe_k):
+    pool_classifiers = create_pool_classifiers()
+
     with pytest.raises(ValueError):
-        DS([create_base_classifier(1)], k=k, safe_k=ih_k)
+        DS(pool_classifiers, safe_k=safe_k)
+
+
+@pytest.mark.parametrize('k, safe_k', [(2, 3), (5, 7)])
+def test_valid_safe_k(k, safe_k):
+    with pytest.raises(ValueError):
+        DS([create_base_classifier(1)], k=k, safe_k=safe_k)
 
 
 def create_classifiers_disagree():
@@ -242,7 +250,7 @@ def test_DFP_is_used():
     ds_test.distances = distances_ex1[0, :]
     ds_test.classify_instance = MagicMock(return_value=0)
     ds_test.predict(query)
-    assert np.array_equal(ds_test.mask, np.array([1, 1, 0]))
+    assert np.array_equal(ds_test.DFP_mask, np.array([1, 1, 0]))
 
 
 @pytest.mark.parametrize('index, expected', [(0, 0), (1, 0), (2, 1)])
@@ -292,7 +300,7 @@ def test_predict_proba_IH_knn(index):
     ds_test.neighbors = neighbors_ex1[index, :]
     ds_test.distances = distances_ex1[index, :]
 
-    ds_test.knn.predict_proba = MagicMock(return_value=np.atleast_2d([0.45, 0.55]))
+    ds_test.roc_algorithm.predict_proba = MagicMock(return_value=np.atleast_2d([0.45, 0.55]))
     proba = ds_test.predict_proba(query)
     assert np.isclose(proba, np.atleast_2d([0.45, 0.55])).all()
 
@@ -313,7 +321,7 @@ def test_predict_proba_instance_called(index):
     assert np.isclose(proba, np.atleast_2d([0.25, 0.75])).all()
 
 
-# In this test, the frienemy pruning is used. So, the value of self.mask should change.
+# In this test, the frienemy pruning is used. So, the value of self.DFP_mask should change.
 def test_predict_proba_DFP():
     query = np.atleast_2d([1, 1])
     ds_test = DS(create_pool_classifiers(), DFP=True, safe_k=3)
@@ -328,5 +336,5 @@ def test_predict_proba_DFP():
 
     ds_test.predict_proba_instance = MagicMock(return_value=np.atleast_2d([0.25, 0.75]))
     ds_test.predict_proba(query)
-    assert np.array_equal(ds_test.mask, np.array([1, 1, 0]))
+    assert np.array_equal(ds_test.DFP_mask, np.array([1, 1, 0]))
 

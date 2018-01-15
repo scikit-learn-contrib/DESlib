@@ -43,9 +43,6 @@ class Probabilistic(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False)
-           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
-
     mode : String (Default = "selection")
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
@@ -67,12 +64,11 @@ class Probabilistic(DES):
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
+    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
                  mode='selection', selection_threshold=None):
 
         super(Probabilistic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
                                             IH_rate=IH_rate,
-                                            aknn=aknn,
                                             mode=mode)
         self.C_src = None
         self.selection_threshold = selection_threshold
@@ -133,7 +129,7 @@ class Probabilistic(DES):
 
         for clf_index in range(self.n_classifiers):
             # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.mask[clf_index]:
+            if self.DFP_mask[clf_index]:
                 temp_competence = np.multiply(self.C_src[:, clf_index], potential_dists)
                 competences[clf_index] = np.sum(temp_competence)/sum_potential
 
@@ -223,9 +219,6 @@ class Logarithmic(Probabilistic):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False)
-           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
-
     mode : String (Default = "selection")
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
@@ -238,11 +231,10 @@ class Logarithmic(Probabilistic):
     T.Woloszynski, M. Kurzynski, A measure of competence based on randomized reference classifier for dynamic
     ensemble selection, in: International Conference on Pattern Recognition (ICPR), 2010, pp. 4194–4197.
     """
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
-                 mode='selection'):
+    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection'):
 
         super(Logarithmic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                          aknn=aknn, mode=mode)
+                                          mode=mode)
         self.name = "DES-Logarithmic"
 
     def source_competence(self):
@@ -260,81 +252,6 @@ class Logarithmic(Probabilistic):
             support_correct = [supports[sample_idx, i] for sample_idx, i in enumerate(self.DSEL_target)]
             support_correct = np.array(support_correct)
             C_src[:, clf_index] = log_func(self.n_classes, support_correct)
-
-        return C_src
-
-
-class Entropy(Probabilistic):
-    """The source of competence C_src at the validation point xk is a product of two factors:  The absolute value of
-    the competence and the sign. The value of the source competence is inverse proportional to the normalized entropy
-    of its supports vector. The sign of competence is simply determined by correct/incorrect classification of xk [1].
-
-    The influence of each sample xk is defined according to a Gaussian function model[2]. Samples that are closer to
-    the query have a higher influence in the competence estimation.
-
-    Parameters
-    ----------
-    pool_classifiers : list of classifiers
-                       The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
-
-    k : int (Default = None)
-        Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
-        selection dataset is used, and the influence of each sample is based on its distance to the query.
-
-    DFP : Boolean (Default = False)
-          Determines if the dynamic frienemy pruning is applied.
-
-    with_IH : Boolean (Default = False)
-              Whether the hardness level of the region of competence is used to decide between
-              using the DS algorithm or the KNN for classification of a given query sample.
-
-    safe_k : int (default = None)
-             The size of the indecision region.
-
-    IH_rate : float (default = 0.3)
-              Hardness threshold. If the hardness level of the competence region is lower than
-              the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
-
-    aknn : Boolean (Default = False)
-           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
-
-    mode : String (Default = "selection")
-           Whether the technique will perform dynamic selection,
-           dynamic weighting or an hybrid approach for classification.
-
-    References
-    ----------
-    B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
-    multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197–206.
-
-    Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
-    for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
-    """
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
-                 mode='selection'):
-
-        super(Entropy, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                      aknn=aknn, mode=mode)
-        self.selection_threshold = 0.0
-        self.name = "DES-Entropy"
-
-    def source_competence(self):
-        """The source of competence C_src at the validation point xk is a product of two factors: The absolute value of
-        the competence and the sign. The value of the source competence is inverse proportional
-        to the normalized entropy of its supports vector.The sign of competence is simply determined by
-        correct/incorrect classification of the instance xk.
-
-        Returns
-        ----------
-        C_src : array of shape = [n_samples, n_classifiers]
-                The competence source for each base classifier at each data point.
-        """
-        C_src = np.zeros((self.n_samples, self.n_classifiers))
-        for clf_index in range(self.n_classifiers):
-            supports = self._get_scores_dsel(clf_index)
-            is_correct = self.processed_dsel[:, clf_index]
-            C_src[:, clf_index] = entropy_func(self.n_classes, supports, is_correct)
 
         return C_src
 
@@ -371,9 +288,6 @@ class Exponential(Probabilistic):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False)
-           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
-
     mode : String (Default = "selection")
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
@@ -387,11 +301,11 @@ class Exponential(Probabilistic):
     for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
 
     """
-    def __init__(self, pool_classifiers, k=None, aknn=False, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
+    def __init__(self, pool_classifiers, k=None, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
                  mode='selection'):
 
         super(Exponential, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                          aknn=aknn, mode=mode)
+                                          mode=mode)
 
         self.selection_threshold = 0
         self.name = "DES-Exponential"
@@ -446,9 +360,6 @@ class RRC(Probabilistic):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False)
-           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
-
     mode : String (Default = "selection")
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
@@ -465,11 +376,10 @@ class RRC(Probabilistic):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
-                 mode='selection'):
+    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection'):
 
         super(RRC, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                  aknn=aknn, mode=mode)
+                                  mode=mode)
         self.name = "DES-RRC"
         self.selection_threshold = None
 
@@ -530,9 +440,6 @@ class DESKL(Probabilistic):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False)
-           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
-
     mode : String (Default = "selection")
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
@@ -549,11 +456,10 @@ class DESKL(Probabilistic):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
-                 mode='selection'):
+    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection'):
 
         super(DESKL, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                    aknn=aknn, mode=mode)
+                                    mode=mode)
         self.selection_threshold = 0.0
         self.name = 'DES-Kullback-Leibler (DES-KL)'
 
@@ -570,7 +476,6 @@ class DESKL(Probabilistic):
         C_src : array of shape = [n_samples, n_classifiers]
                 The competence source for each base classifier at each data point.
         """
-        c_src = np.zeros((self.n_samples, self.n_classifiers))
 
         C_src = np.zeros((self.n_samples, self.n_classifiers))
         for clf_index in range(self.n_classifiers):
@@ -579,8 +484,6 @@ class DESKL(Probabilistic):
             C_src[:, clf_index] = entropy_func(self.n_classes, supports, is_correct)
 
         return C_src
-
-        return c_src
 
 
 class MinimumDifference(Probabilistic):
@@ -616,9 +519,6 @@ class MinimumDifference(Probabilistic):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False)
-           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
-
     mode : String (Default = "selection")
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
@@ -632,10 +532,10 @@ class MinimumDifference(Probabilistic):
     for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
 
     """
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, aknn=False,
+    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
                  mode='selection'):
         super(MinimumDifference, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
-                                                IH_rate=IH_rate, aknn=aknn, mode=mode)
+                                                IH_rate=IH_rate, mode=mode)
 
         # Threshold is 0 since incompetent classifiers should have a negative competence level
         self.selection_threshold = 0.0

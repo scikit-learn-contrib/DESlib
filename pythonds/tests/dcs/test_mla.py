@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 
 from pythonds.dcs.mla import MLA
@@ -19,7 +18,7 @@ def test_estimate_competence_all_ones(index):
 
     mla_test.neighbors = neighbors_ex1[index, :]
     mla_test.distances = distances_all_ones[index, :]
-    mla_test.mask = [1, 1, 1]
+    mla_test.DFP_mask = [1, 1, 1]
 
     expected = [1.0, 1.0, 1.0]
 
@@ -43,10 +42,11 @@ def test_estimate_competence(index, expected):
 
     mla_test.neighbors = neighbors_ex1[index, :]
     mla_test.distances = distances_all_ones[index, :]
-    mla_test.mask = [1, 1, 1]
+    mla_test.DFP_mask = [1, 1, 1]
 
     competences = mla_test.estimate_competence(query.reshape(1, -1))
     assert np.isclose(competences, expected).all()
+
 
 # Testing example from kuncheva's book (combining pattern classifiers)
 def test_estimate_competence_kuncheva_ex():
@@ -61,7 +61,28 @@ def test_estimate_competence_kuncheva_ex():
 
     mla_test.neighbors = neighbors_ex_kuncheva
     mla_test.distances = distances_ex_kuncheva
-    mla_test.mask = [1]
+    mla_test.DFP_mask = [1]
 
     competences = mla_test.estimate_competence(query.reshape(1, -1))
     assert np.isclose(competences, 0.95, atol=0.01)
+
+
+# in this test case, the target of the neighbors is always different than the predicted. So
+# the estimation of competence should always be zero
+@pytest.mark.parametrize('index', [0, 1, 2])
+def test_estimate_competence_diff_target(index):
+    query = np.array([1, 1])
+
+    mla_test = MLA(create_pool_classifiers())
+
+    mla_test.processed_dsel = dsel_processed_ex1
+    mla_test.DSEL_target = np.ones(15, dtype=int) * 3
+
+    mla_test.neighbors = neighbors_ex1[index, :]
+    mla_test.distances = distances_ex1[index, :]
+    mla_test.DFP_mask = [1, 1, 1]
+
+    expected = [0.0, 0.0, 0.0]
+
+    competences = mla_test.estimate_competence(query.reshape(1, -1))
+    assert np.isclose(competences, expected).all()

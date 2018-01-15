@@ -35,9 +35,6 @@ class DES(DS):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False)
-           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
-
     mode : String (Default = "selection")
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
@@ -53,10 +50,10 @@ class DES(DS):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False,
-                 safe_k=None, IH_rate=0.30, aknn=False, mode='selection'):
+                 safe_k=None, IH_rate=0.30, mode='selection'):
 
         super(DES, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
-                                  safe_k=safe_k, IH_rate=IH_rate, aknn=aknn)
+                                  safe_k=safe_k, IH_rate=IH_rate)
 
         if not isinstance(mode, str):
             raise TypeError('Parameter "mode" should be a string. Currently "mode" = {}' .format(type(mode)))

@@ -39,9 +39,6 @@ class APosteriori(DCS):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    aknn : Boolean (Default = False)
-           Determines the type of KNN algorithm that is used. Set to true for the A-KNN method.
-
     selection_method : String (Default = "best")
                        Determines which method is used to select the base classifier
                        after the competences are estimated.
@@ -50,6 +47,9 @@ class APosteriori(DCS):
                   Threshold to measure the difference between the competence level of the base
                   classifiers for the random and diff selection schemes. If the difference is lower than the
                   threshold, their performance are considered equivalent.
+
+    rng : numpy.random.RandomState instance
+          Random number generator to assure reproducible results.
 
     References
     ----------
@@ -67,10 +67,9 @@ class APosteriori(DCS):
 
     """
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 aknn=False, selection_method='diff', diff_thresh=0.1, rng=np.random.RandomState()):
+                 selection_method='diff', diff_thresh=0.1, rng=np.random.RandomState()):
 
         super(APosteriori, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                          aknn=aknn,
                                           selection_method=selection_method,
                                           diff_thresh=diff_thresh,
                                           rng=rng)
@@ -100,12 +99,12 @@ class APosteriori(DCS):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
-
+        query : array cf shape  = [n_features]
+                The query sample
         Returns
         -------
-        competences : array = [n_classifiers] containing the competence level estimated
-        for each base classifier
+        competences : array of shape = [n_classifiers]
+                      The competence level estimated for each base classifier
         """
         dists, idx_neighbors = self._get_region_competence(query)
         dists_normalized = 1.0/dists
@@ -114,7 +113,7 @@ class APosteriori(DCS):
         for clf_index, clf in enumerate(self.pool_classifiers):
 
             # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.mask[clf_index]:
+            if self.DFP_mask[clf_index]:
 
                 result = []
                 dists_temp = []

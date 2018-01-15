@@ -53,7 +53,7 @@ def test_estimate_competence(index, expected):
     mcb_test.processed_dsel = dsel_processed_ex1
     mcb_test.neighbors = neighbors_ex1[index, :]
     mcb_test.distances = distances_ex1[index, :]
-    mcb_test.mask = [1, 1, 1]
+    mcb_test.DFP_mask = [1, 1, 1]
     mcb_test.BKS_dsel = bks_dsel_ex1
     competences = mcb_test.estimate_competence(query.reshape(1, -1))
     assert np.isclose(competences, expected).all()
@@ -70,7 +70,7 @@ def test_estimate_competence2(index, expected):
     mcb_test.processed_dsel = dsel_processed_ex1
     mcb_test.neighbors = neighbors_ex1[index, :]
     mcb_test.distances = distances_ex1[index, :]
-    mcb_test.mask = [1, 1, 1]
+    mcb_test.DFP_mask = [1, 1, 1]
     # Only changing the pre-processed BKS to see if the filter works.
     mcb_test.BKS_dsel = bks_dsel_ex2
     competences = mcb_test.estimate_competence(query.reshape(1, -1))
@@ -90,7 +90,7 @@ def test_estimate_competence3(index, expected):
     mcb_test.processed_dsel = dsel_processed_ex1
     mcb_test.neighbors = neighbors_ex1[index, :]
     mcb_test.distances = distances_ex1[index, :]
-    mcb_test.mask = [1, 1, 1]
+    mcb_test.DFP_mask = [1, 1, 1]
     # Only changing the pre-processed BKS to see if the filter works.
     mcb_test.BKS_dsel = bks_dsel_ex3
     competences = mcb_test.estimate_competence(query.reshape(1, -1))
