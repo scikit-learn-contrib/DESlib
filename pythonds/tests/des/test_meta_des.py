@@ -6,11 +6,6 @@ from pythonds.des.meta_des import METADES
 from pythonds.tests.examples_test import *
 
 
-def test_meta_classifier_not_fitted():
-    meta_test = METADES(create_pool_classifiers())
-    assert 1 == 1
-
-
 def test_meta_classifier_not_predict_proba():
     with pytest.raises(ValueError):
         METADES(create_pool_classifiers(), Perceptron())
@@ -39,15 +34,6 @@ def test_compute_meta_features():
     meta_features = meta_test.compute_meta_features(query, neighbors, neighbors_op, pool[0], 0)
     expected = expected_f1 + expected_f2 + expected_f3 + expected_f4 + expected_f5
     assert meta_features == expected
-
-
-def test_generate_meta_training():
-    assert 1 == 1
-
-
-def test_train_meta_classifier():
-
-    assert 1 == 1
 
 
 def test_estimate_competence():
