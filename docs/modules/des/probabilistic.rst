@@ -1,7 +1,7 @@
 Probabilistic
 -------------
 
-.. automodule:: pythonds.des.probabilistic
+.. automodule:: deslib.des.probabilistic
 
 .. autoclass:: Probabilistic
     :members:
@@ -12,4 +12,3 @@ Probabilistic
     minimum_difference
     exponential
     logarithmic
-    entropy

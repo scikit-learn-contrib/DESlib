@@ -1,7 +1,7 @@
 LCA
 ----------
 
-.. automodule:: pythonds.dcs.lca
+.. automodule:: deslib.dcs.lca
 
 .. autoclass:: LCA
     :members: fit, predict, predict_proba, score, estimate_competence, select

@@ -1,8 +1,8 @@
 # Example applying the Dynamic Frienemy Pruning algorithm.
-from pythonds.dcs.a_priori import APriori
+from deslib.dcs.a_priori import APriori
 # Example of dcs techniques
-from pythonds.dcs.ola import OLA
-from pythonds.des.des_p import DESP
+from deslib.dcs.ola import OLA
+from deslib.des.des_p import DESP
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.datasets import load_breast_cancer
 from sklearn.ensemble import BaggingClassifier
@@ -10,7 +10,7 @@ from sklearn.linear_model import Perceptron
 from sklearn.model_selection import train_test_split
 
 # Example of des techniques
-from pythonds.des.knora_e import KNORAE
+from deslib.des.knora_e import KNORAE
 
 data = load_breast_cancer()
 X = data.data

@@ -1,7 +1,7 @@
 Static Selection
 ====================================
 
-.. automodule:: pythonds.static
+.. automodule:: deslib.static
 
 .. toctree::
     static/oracle

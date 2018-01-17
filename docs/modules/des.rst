@@ -1,7 +1,7 @@
 Dynamic Ensemble Selection
 ====================================
 
-.. automodule:: pythonds.des
+.. automodule:: deslib.des
 
 .. toctree::
     des/base

@@ -1,7 +1,7 @@
 DES class
 ----------
 
-.. automodule:: pythonds.des.base
+.. automodule:: deslib.des.base
 
 .. autoclass:: DES
     :members:

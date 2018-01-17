@@ -1,7 +1,7 @@
 DES-Logarithmic
 ---------------
 
-.. automodule:: pythonds.des.probabilistic
+.. automodule:: deslib.des.probabilistic
 
 .. autoclass:: Logarithmic
     :members: source_competence

@@ -1,7 +1,7 @@
 DES-Minimum Difference
 ----------------------
 
-.. automodule:: pythonds.des.probabilistic
+.. automodule:: deslib.des.probabilistic
 
 .. autoclass:: MinimumDifference
     :members: source_competence

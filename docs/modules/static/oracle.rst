@@ -1,7 +1,7 @@
 Oracle
 --------------
 
-.. automodule:: pythonds.static.oracle
+.. automodule:: deslib.static.oracle
 
 .. autoclass:: Oracle
     :members:

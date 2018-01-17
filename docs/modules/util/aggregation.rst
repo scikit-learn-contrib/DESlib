@@ -1,5 +1,5 @@
 Aggregation
 --------------
 
-.. automodule:: pythonds.util.aggregation
+.. automodule:: deslib.util.aggregation
     :members:

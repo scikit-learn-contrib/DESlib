@@ -1,7 +1,7 @@
 DES-Exponential
 ----------------
 
-.. automodule:: pythonds.des.probabilistic
+.. automodule:: deslib.des.probabilistic
 
 .. autoclass:: Exponential
     :members: source_competence

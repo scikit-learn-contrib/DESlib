@@ -1,9 +1,9 @@
-Welcome to PythonDS documentation!
+Welcome to DESlib documentation!
 =================================================
 
-PythonDS is an ensemble learning library focusing the implementation of the state-of-the-art techniques for dynamic classifier and ensemble selection.
+DESlib is an ensemble learning library focusing the implementation of the state-of-the-art techniques for dynamic classifier and ensemble selection.
 
-Pythonds is a work in progress. Contributions are welcomed through its GitHub page: `GitHub`_.
+DESlib is a work in progress. Contributions are welcomed through its GitHub page: `GitHub`_.
 
 Introduction:
 -------------
@@ -24,9 +24,9 @@ Installation:
 
 The package can be installed using pip:
 
-pip install git+https://github.com/Menelau/PythonDS
+pip install git+https://github.com/Menelau/DESlib
 
-Pythonds is tested to work with Python 3.5, and 3.6. The dependency requirements are:
+DESlib is tested to work with Python 3.5, and 3.6. The dependency requirements are:
 
 scipy(>=0.13.3)
 numpy(>=1.8.2)
@@ -50,7 +50,7 @@ Example using the KNORA-E techniques using a random forest to generate the pool 
 .. code-block:: python
 
     from sklearn.ensemble import RandomForestClassifier
-    from pythonds.des.knora_e import KNORAE
+    from deslib.des.knora_e import KNORAE
 
 
     # Train a pool of 10 classifiers

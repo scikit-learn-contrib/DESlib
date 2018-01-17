@@ -1,7 +1,7 @@
 Dynamic Classifier Selection
 ====================================
 
-.. automodule:: pythonds.dcs
+.. automodule:: deslib.dcs
 
 .. toctree::
     dcs/base

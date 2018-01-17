@@ -1,7 +1,7 @@
 DES-KL
 --------
 
-.. automodule:: pythonds.des.probabilistic
+.. automodule:: deslib.des.probabilistic
 
 .. autoclass:: DESKL
     :members: source_competence

@@ -1,7 +1,7 @@
 Static Selection
 ----------------
 
-.. automodule:: pythonds.static.static_selection
+.. automodule:: deslib.static.static_selection
 
 .. autoclass:: StaticSelection
     :members:

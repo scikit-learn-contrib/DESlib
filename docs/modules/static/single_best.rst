@@ -1,7 +1,7 @@
 Single Best
 --------------
 
-.. automodule:: pythonds.static.single_best
+.. automodule:: deslib.static.single_best
 
 .. autoclass:: SingleBest
     :members:

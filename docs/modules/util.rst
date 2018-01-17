@@ -1,7 +1,7 @@
 Util
 ====================================
 
-.. automodule:: pythonds.util
+.. automodule:: deslib.util
 
 .. toctree::
     util/diversity

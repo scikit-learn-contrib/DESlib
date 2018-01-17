@@ -1,7 +1,7 @@
 DCS class
 ----------
 
-.. automodule:: pythonds.dcs.base
+.. automodule:: deslib.dcs.base
 
 .. autoclass:: DCS
     :members:

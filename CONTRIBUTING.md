@@ -1,4 +1,4 @@
-Contributing to PythonDS
+Contributing to DESlib
 ========================
 
 You can contribute to the project in several ways:
@@ -15,7 +15,7 @@ Reporting Bugs and requesting features:
 We use Github issues to track all bugs and feature requests; feel free to
 open an issue if you have found a bug or wish to see a new feature implemented.
 Before opening a new issue, please check if the issue is not being currently addressed:
-[Issues](https://github.com/Menelau/PythonDS/issues)
+[Issues](https://github.com/Menelau/DESlib/issues)
 
 For reporting bugs:
 
@@ -59,14 +59,14 @@ Contributing with code:
 
 The preferred way to contribute is to fork the main repository to your account:
 
-1. Fork the [project repository](https://github.com/Menelau/PythonDS):
+1. Fork the [project repository](https://github.com/Menelau/DESlib):
    click on the 'Fork' button near the top of the page. This creates
    a copy of the code under your account on the GitHub server.
 
 2. Clone this copy to your local disk:
 
-        $ git clone git@github.com:YourLogin/PythonDS.git
-        $ cd PythonDS
+        $ git clone git@github.com:YourLogin/DESlib.git
+        $ cd DESlib
 
 3. Install all requirements for development:
 

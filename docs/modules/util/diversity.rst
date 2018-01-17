@@ -1,5 +1,5 @@
 Diversity
 --------------
 
-.. automodule:: pythonds.util.diversity
+.. automodule:: deslib.util.diversity
     :members:

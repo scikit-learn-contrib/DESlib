@@ -5,12 +5,12 @@ from sklearn.linear_model import Perceptron
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.ensemble import BaggingClassifier
 
-from pythonds.dcs.ola import OLA
-from pythonds.dcs.a_priori import APriori
-from pythonds.dcs.mcb import MCB
-from pythonds.des.des_p import DESP
-from pythonds.des.knora_u import KNORAU
-from pythonds.des.knora_e import KNORAE
+from deslib.dcs.ola import OLA
+from deslib.dcs.a_priori import APriori
+from deslib.dcs.mcb import MCB
+from deslib.des.des_p import DESP
+from deslib.des.knora_u import KNORAU
+from deslib.des.knora_e import KNORAE
 
 if __name__ == "__main__":
     # Generate a classification dataset

@@ -6,9 +6,9 @@ from sklearn.ensemble import BaggingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 
-from pythonds.des.probabilistic import DESKL
+from deslib.des.probabilistic import DESKL
 # Example of probabilistic des techniques
-from pythonds.des.probabilistic import RRC
+from deslib.des.probabilistic import RRC
 
 if __name__ == "__main__":
 

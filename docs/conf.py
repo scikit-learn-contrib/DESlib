@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pythonds documentation build configuration file, created by
+# deslib documentation build configuration file, created by
 # sphinx-quickstart on Wed Dec 13 10:07:40 2017.
 #
 # This file is execfile()d with the current directory set to its
@@ -56,11 +56,11 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'pythonds'
+project = u'deslib'
 copyright = u'2017, Rafael M. O. Cruz'
 author = u'Rafael M. O. Cruz'
 
-import pythonds
+import deslib
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -213,7 +213,7 @@ html_static_path = ['_static']
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pythondsdoc'
+htmlhelp_basename = 'deslibdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -235,7 +235,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'pythonds.tex', u'pythonds Documentation',
+  (master_doc, 'deslib.tex', u'deslib Documentation',
    u'Rafael Cruz', 'manual'),
 ]
 
@@ -265,7 +265,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'pythonds', u'pythonds Documentation',
+    (master_doc, 'deslib', u'deslib Documentation',
      [author], 1)
 ]
 
@@ -279,8 +279,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (master_doc, 'pythonds', u'pythonds Documentation',
-   author, 'pythonds', 'One line description of project.',
+  (master_doc, 'deslib', u'deslib Documentation',
+   author, 'deslib', 'One line description of project.',
    'Miscellaneous'),
 ]
 
@@ -307,16 +307,16 @@ def linkcode_resolve(domain, info):
         import inspect
         import os
         fn = inspect.getsourcefile(obj)
-        fn = os.path.relpath(fn, start=os.path.dirname(pythonds.__file__))
+        fn = os.path.relpath(fn, start=os.path.dirname(deslib.__file__))
         source, lineno = inspect.getsourcelines(obj)
         return fn, lineno, lineno + len(source) - 1
 
     if domain != 'py' or not info['module']:
         return None
     try:
-        filename = 'pythonds/%s#L%d-L%d' % find_source()
+        filename = 'deslib/%s#L%d-L%d' % find_source()
     except Exception:
         filename = info['module'].replace('.', '/') + '.py'
     #   tag = 'master' if 'dev' in release else ('v' + release)
     tag = 'master'
-    return "https://github.com/Menelau/PythonDS/blob/%s/%s" % (tag, filename)
+    return "https://github.com/Menelau/DESlib/blob/%s/%s" % (tag, filename)

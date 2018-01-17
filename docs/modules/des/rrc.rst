@@ -1,7 +1,7 @@
 Randomized Reference Classifier (RRC)
 -------------------------------------
 
-.. automodule:: pythonds.des.probabilistic
+.. automodule:: deslib.des.probabilistic
 
 .. autoclass:: RRC
     :members: source_competence

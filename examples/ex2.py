@@ -1,15 +1,15 @@
-from pythonds.dcs.a_priori import APriori
-from pythonds.dcs.mcb import MCB
+from deslib.dcs.a_priori import APriori
+from deslib.dcs.mcb import MCB
 # Example of a dcs techniques
-from pythonds.dcs.ola import OLA
-from pythonds.des.des_p import DESP
-from pythonds.des.knora_u import KNORAU
+from deslib.dcs.ola import OLA
+from deslib.des.des_p import DESP
+from deslib.des.knora_u import KNORAU
 from sklearn.datasets import load_breast_cancer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
 # Example of a des techniques
-from pythonds.des.knora_e import KNORAE
+from deslib.des.knora_e import KNORAE
 
 if __name__ == "__main__":
 

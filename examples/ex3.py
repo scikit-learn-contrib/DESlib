@@ -1,9 +1,9 @@
-from pythonds.dcs.a_priori import APriori
-from pythonds.dcs.mcb import MCB
+from deslib.dcs.a_priori import APriori
+from deslib.dcs.mcb import MCB
 # Example of a dcs techniques
-from pythonds.dcs.ola import OLA
-from pythonds.des.des_p import DESP
-from pythonds.des.knora_u import KNORAU
+from deslib.dcs.ola import OLA
+from deslib.des.des_p import DESP
+from deslib.des.knora_u import KNORAU
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.datasets import load_breast_cancer
 # Base classifier models
@@ -16,7 +16,7 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
 # Example of a des techniques
-from pythonds.des.knora_e import KNORAE
+from deslib.des.knora_e import KNORAE
 
 if __name__ == "__main__":
     # Generate a classification dataset

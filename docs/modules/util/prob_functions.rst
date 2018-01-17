@@ -1,5 +1,5 @@
 Probabilistic Functions
 ------------------------
 
-.. automodule:: pythonds.util.prob_functions
+.. automodule:: deslib.util.prob_functions
     :members:
