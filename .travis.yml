@@ -1,0 +1,16 @@
+language: python
+python:
+  - "3.5"
+  - "3.6"
+before_install:
+  - pip install -U pip
+install:
+  - travis_wait travis_retry pip install -r requirements-dev.txt
+  - travis_retry pip install python-coveralls
+  - travis_retry python setup.py
+script: py.test --runslow --cov-config=.coveragerc
+after_success:
+  - coveralls
+cache:
+  - directories:
+    - $HOME/.cache/pip
