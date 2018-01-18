@@ -61,10 +61,6 @@ copyright = u'2017, Rafael M. O. Cruz'
 author = u'Rafael M. O. Cruz'
 
 import deslib
-import deslib.dcs
-import deslib.des
-import deslib.static
-import deslib.util
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

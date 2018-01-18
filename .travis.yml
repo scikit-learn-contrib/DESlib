@@ -9,7 +9,7 @@ install:
   - travis_retry pip install python-coveralls
   - travis_retry python setup.py build
   - travis_retry python setup.py install
-script: py.test --runslow --cov-config=.coveragerc
+script: py.test --cov-config=.coveragerc
 after_success:
   - coveralls
 cache:
