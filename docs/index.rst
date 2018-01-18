@@ -3,12 +3,12 @@ Welcome to DESlib documentation!
 
 DESlib is an ensemble learning library focusing the implementation of the state-of-the-art techniques for dynamic classifier and ensemble selection.
 
-DESlib is a work in progress. Contributions are welcomed through its GitHub page: `GitHub`_.
+DESlib is a work in progress. Contributions are welcomed through its GitHub page: https://github.com/Menelau/DESlib.
 
 Introduction:
 -------------
 
-Dynamic Selection (DS) refers to techniques in which the base classifiers1 are selected
+Dynamic Selection (DS) refers to techniques in which the base classifiers are selected
 on the fly, according to each new sample to be classified. Only the most competent, or an ensemble containing the most competent classifiers is selected to predict
 the label of a specific test sample. The rationale for such techniques is that not every classifier in
 the pool is an expert in classifying all unknown samples; rather, each base classifier is an expert in
@@ -76,4 +76,4 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-.. _GitHub: https://github.com/Menelau/PyrhonDS
+.. _GitHub: https://github.com/Menelau/DESlib
