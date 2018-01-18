@@ -6,3 +6,4 @@ sphinx_rtd_theme
 numpydoc
 pytest
 coverage
+deslib
