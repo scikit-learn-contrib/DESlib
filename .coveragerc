@@ -1,15 +1,2 @@
 [run]
-branch = True
-source = deslib
-include = */deslib/*
-omit =
-    */setup.py
-
-[report]
-exclude_lines =
-    if self.debug:
-    pragma: no cover
-    raise NotImplementedError
-    if __name__ == .__main__.:
-ignore_errors = True
-show_missing = True
+omit = deslib/tests/*
