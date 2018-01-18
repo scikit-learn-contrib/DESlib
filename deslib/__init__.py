@@ -20,4 +20,4 @@ util
 """
 
 # list of all modules available in the library
-__all__ = ['des', 'dcs', 'static', 'util']
+__all__ = ['des', 'dcs', 'static', 'util', 'tests']
