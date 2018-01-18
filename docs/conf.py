@@ -61,6 +61,10 @@ copyright = u'2017, Rafael M. O. Cruz'
 author = u'Rafael M. O. Cruz'
 
 import deslib
+import deslib.dcs
+import deslib.des
+import deslib.static
+import deslib.util
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -321,16 +325,3 @@ def linkcode_resolve(domain, info):
     #   tag = 'master' if 'dev' in release else ('v' + release)
     tag = 'master'
     return "https://github.com/Menelau/DESlib/blob/%s/%s" % (tag, filename)
-
-
-from unittest import mock
-
-MOCK_MODULES = [
-    'deslib',
-    'deslib.des',
-    'deslib.dcs',
-    'deslib.static',
-    'deslib.util']
-
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = mock.Mock()
