@@ -321,3 +321,16 @@ def linkcode_resolve(domain, info):
     #   tag = 'master' if 'dev' in release else ('v' + release)
     tag = 'master'
     return "https://github.com/Menelau/DESlib/blob/%s/%s" % (tag, filename)
+
+
+from unittest import mock
+
+MOCK_MODULES = [
+    'deslib',
+    'deslib.des',
+    'deslib.dcs',
+    'deslib.static',
+    'deslib.util']
+
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()

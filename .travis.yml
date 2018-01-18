@@ -7,6 +7,8 @@ before_install:
 install:
   - travis_wait travis_retry pip install -r requirements-dev.txt
   - travis_retry pip install python-coveralls
+  - travis_retry python setup.py build
+  - travis_retry python setup.py install
 script: py.test --runslow --cov-config=.coveragerc
 after_success:
   - coveralls
