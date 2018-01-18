@@ -4,7 +4,6 @@ source = deslib
 include = */deslib/*
 omit =
     */setup.py
-    *tests/
 
 [report]
 exclude_lines =
