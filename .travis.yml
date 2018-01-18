@@ -9,7 +9,7 @@ install:
   - travis_retry pip install codecov
   - travis_retry python setup.py build
   - travis_retry python setup.py install
-script: py.test --cov-config=.coveragerc
+script: coverage run -m py.test
 after_success:
   - codecov
 cache:
