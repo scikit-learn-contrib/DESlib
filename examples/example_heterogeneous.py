@@ -39,12 +39,12 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)
 
     # Scale the variables to have 0 mean and unit variance
-    scalar = StandardScaler()
-    X_train = scalar.fit_transform(X_train)
-    X_test = scalar.transform(X_test)
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
 
     # Split the data into training and DSEL for DS techniques
-    X_train2, X_dsel, y_train2, y_dsel = train_test_split(X, y, test_size=0.5)
+    X_train, X_dsel, y_train, y_dsel = train_test_split(X, y, test_size=0.5)
 
     model_perceptron = CalibratedClassifierCV(Perceptron(max_iter=100)).fit(X_train, y_train)
     model_linear_svm = CalibratedClassifierCV(LinearSVC()).fit(X_train, y_train)
