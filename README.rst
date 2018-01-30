@@ -41,7 +41,18 @@ Installation:
 
 The package can be installed using pip:
 
-pip install git+https://github.com/Menelau/DESlib
+Stable version:
+
+.. code-block:: bash
+
+    pip install deslib
+
+Latest version (under development):
+
+.. code-block:: bash
+
+    pip install git+https://github.com/Menelau/DESlib
+
 
 Dependencies:
 -------------
