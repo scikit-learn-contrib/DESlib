@@ -24,7 +24,17 @@ Installation:
 
 The package can be installed using pip:
 
-pip install git+https://github.com/Menelau/DESlib
+Stable version:
+
+.. code-block:: bash
+
+    pip install deslib
+
+Latest version (under development):
+
+.. code-block:: bash
+
+    pip install git+https://github.com/Menelau/DESlib
 
 DESlib is tested to work with Python 3.5, and 3.6. The dependency requirements are:
 
