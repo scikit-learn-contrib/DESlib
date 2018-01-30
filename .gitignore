@@ -1,4 +1,8 @@
 *.pyc
 __pycache__
-DESlib.egg-info
 .ipynb_checkpoints
+
+
+build
+dist
+DESlib.egg-info
