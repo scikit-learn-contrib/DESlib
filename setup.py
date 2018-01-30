@@ -10,7 +10,7 @@ with io.open(os.path.join(setup_path, 'README.rst'), 'r') as f:
     README = f.read()
 
 setup(name='DESlib',
-      version='0.1',
+      version='0.2.dev',
       url='https://github.com/Menelau/DESlib',
       maintainer='Rafael M. O. Cruz, L. G. Hafemann',
       maintainer_email='rafaelmenelau@gmail.com',
