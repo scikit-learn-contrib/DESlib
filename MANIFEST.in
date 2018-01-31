@@ -1,6 +1,6 @@
 include *.rst
 include CONTRIBUTING.md
-include LICENSE
+include LICENSE.txt
 include requirements.txt
 include requirements-dev.txt
 
