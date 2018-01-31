@@ -29,7 +29,8 @@ def test_fit_homogeneous_clusters():
 
     assert clustering_test.accuracy_cluster[0, 1] == 0.0 and clustering_test.accuracy_cluster[0, [0, 2]].all() == 1.0
     assert clustering_test.accuracy_cluster[1, 1] == 1.0 and clustering_test.accuracy_cluster[1, [0, 2]].all() == 0.0
-    assert np.isin(clustering_test.indices[0, :], np.array([0, 2, 3, 5])).all()
+    for idx in clustering_test.indices[0, :]:
+        assert idx in (0, 2, 3, 5)
 
 
 def test_fit_heterogeneous_clusters():
@@ -77,7 +78,8 @@ def test_fit_clusters_less_diverse():
 
     assert clustering_test.accuracy_cluster[0, 1] == 0.0 and clustering_test.accuracy_cluster[0, [0, 2]].all() == 1.0
     assert clustering_test.accuracy_cluster[1, 1] == 1.0 and clustering_test.accuracy_cluster[1, [0, 2]].all() == 0.0
-    assert np.isin(clustering_test.indices[0, :], np.array([1, 3, 5, 4])).all()
+    for idx in clustering_test.indices[0, :]:
+        assert idx in (1, 3, 4, 5)
 
 
 def test_select():
