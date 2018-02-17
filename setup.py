@@ -3,10 +3,10 @@
 from distutils.core import setup
 from setuptools import find_packages
 import os
-import io
+import codecs
 
 setup_path = os.path.abspath(os.path.dirname(__file__))
-with io.open(os.path.join(setup_path, 'README.rst'), 'r') as f:
+with codecs.open(os.path.join(setup_path, 'README.rst'), encoding='utf-8-sig') as f:
     README = f.read()
 
 setup(name='DESlib',
