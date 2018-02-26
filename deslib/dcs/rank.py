@@ -9,14 +9,18 @@ import numpy as np
 from deslib.dcs.base import DCS
 
 
-class Rank(DCS, object):
+class Rank(DCS):
     """Modified Classifier Rank.
 
     The modified classifier rank method evaluates the competence level of each individual classifiers
-    and select the most competent one to predict the label of each test sample x.
+    and select the most competent one to predict the label of each test sample :math:`x`.
     The competence of each base classifier is calculated as the number of correctly classified samples,
-    starting from the closest neighbor of x. The classifier with the highest number of correctly classified
-    samples is selected.
+    starting from the closest neighbor of :math:`x`. The classifier with the highest number of correctly classified
+    samples is considered the most competent.
+
+    The Rank method selects the base classifier presenting the highest competence level. In a case
+    where more than one base classifier achieves the same competence level, the one that was evaluated first
+    is selected. The selection methodology can be modified by changing the hyper-parameter selection_method.
 
     Parameters
     ----------
@@ -81,13 +85,11 @@ class Rank(DCS, object):
         self.name = 'Modified Classifier Rank'
 
     def estimate_competence(self, query):
-        """estimate the rank of each base classifier ci considering the whole neighborhood.
+        """estimate the competence level of each base classifier :math:`c_{i}` for
+        the classification of the query sample using the modified ranking scheme.
+
         The rank of the base classifier is estimated by the number of consecutive correctly classified samples
         in the defined region of competence.
-
-        Returns an array containing the level of competence (rank) estimated
-        for each base classifier. The size of the array is equals to
-        the size of the pool of classifiers.
 
         Parameters
         ----------

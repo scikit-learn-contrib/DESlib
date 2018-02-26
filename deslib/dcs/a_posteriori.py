@@ -9,12 +9,27 @@ import numpy as np
 from deslib.dcs.base import DCS
 
 
+#    This method works similarly to the LCA technique. The only difference is that it uses
+#    the scores obtained by the base classifiers as well as the distance between the test sample
+#    and each pattern in the region of competence are also considered in the competence estimation.
+
+
 class APosteriori(DCS):
     """A Posteriori Dynamic classifier selection.
-    
-    This method works similarly to the LCA technique. The only difference is that it uses
-    the scores obtained by the base classifiers as well as the distance between the test sample
-    and each pattern in the region of competence are also considered in the competence estimation.
+
+    The A Posteriori method uses the probability of correct classification of a given base classifier :math:`c_{i}`
+    for each neighbor :math:`x_{k}` with respect to a single class. Consider a classifier :math:`c_{i}` that assigns
+    a test sample to class :math:`w_{l}`. Then, only the samples belonging to class :math:`w_{l}` are taken into
+    account during the competence level estimates. Base classifiers with a higher probability of correct
+    classification have a higher competence level. Moreover, the method also weights the influence of each
+    neighbor :math:`x_{k}` according to its Euclidean distance to the query sample. The closest neighbors have a higher
+    influence on the competence level estimate. In cases where no sample in the region of competence belongs to the
+    predicted class, :math:`w_{l}`, the competence level estimate of the base classifier is equal to zero.
+
+    A single classifier is selected only if its competence level is
+    significantly higher than that of the other base classifiers in the pool (higher than a pre-defined threshold).
+    Otherwise, all classifiers in the pool are combined using the majority voting rule. The selection methodology can
+    be modified by modifying the hyper-parameter selection_method.
 
     Parameters
     ----------
@@ -81,21 +96,21 @@ class APosteriori(DCS):
         return self
 
     def estimate_competence(self, query):
-        """estimate the competence of each base classifier ci
+        """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the A Posteriori method.
 
-        The A Posteriori method considers the probability of correct classification of the base classifier
-        ci, taking into account the supports obtained by the base classifier ci for the samples belonging to the
-        region of competence. The probability of correct classification for a base classifier ci is calculated taking
-        into account only the samples in the region of competence from a specific class wl. In this case, wl is the
-        predict class of the base classifier ci for the query sample.
-
+        The competence level is estimated based on the probability of correct classification of the base classifier
+        :math:`c_{i}`, for each neighbor :math:`x_{k}` belonging to a specific class :math:`w_{l}`.
+        In this case, :math:`w_{l}` is  the class predicted by the base classifier :math:`c_{i}`, for the query sample.
         This method also weights the influence of each training sample according to its Euclidean distance to the
-        query instance. The closest samples have a higher influence in the computation of the competence level.
+        query instance. The closest samples have a higher influence in the computation of the competence level. The
+        competence level estimate is represented by the following equation:
 
+        .. math:: \\delta_{i,j} = \\frac{\\sum_{\\mathbf{x}_{k} \\in \\omega_{l}}P(\\omega_{l} \\mid
+            \\mathbf{x}_{k}, c_{i} )W_{k}}{\\sum_{k = 1}^{K}P(\\omega_{l} \\mid \\mathbf{x}_{k}, c_{i} )W_{k}}
 
-        Returns an array containing the level of competence estimated using the LCA method
-        for each base classifier. The size of the array is equals to the size of the pool of classifiers.
+        where :math:`\\delta_{i,j}' represents the competence level of :math:`c_{i}` for the classification of
+        query.
 
         Parameters
         ----------

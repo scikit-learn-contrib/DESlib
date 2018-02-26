@@ -17,6 +17,11 @@ class OLA(DCS):
     The competence of each base classifier is calculated as its classification accuracy
     in the neighborhood of x (region of competence).
 
+    The LCA method selects the base classifier presenting the highest competence level. In a case
+    where more than one base classifier achieves the same competence level, the one that was evaluated first
+    is selected. The selection methodology can be modified by changing the hyper-parameter selection_method.
+
+
     Parameters
     ----------
     pool_classifiers : list of classifiers
@@ -74,14 +79,18 @@ class OLA(DCS):
         self.name = 'Overall Local Accuracy (OLA)'
 
     def estimate_competence(self, query):
-        """estimate the competence of each base classifier ci
-        the classification of the query sample using the Overall Local Accuracy criterion.
+        """estimate the competence level of each base classifier :math:`c_{i}` for
+        the classification of the query sample.
 
-        The competences for each base classifier ci is estimated by its classification accuracy considering
-        the k-Nearest Neighbors.
+        The competences for each base classifier :math:`c_{i}` is estimated by its classification accuracy considering
+        the k-Nearest Neighbors (region of competence). The
+        competence level estimate is represented by the following equation:
 
-        Returns an array containing the level of competence estimated using the OLA method
-        for each base classifier. The size of the array is equals to the size of the generated_pool of classifiers.
+        .. math:: \\delta_{i,j} = \\frac{1}{K}\\sum_{k = 1}^{K}
+            P(\\omega_{l} \\mid \\mathbf{x}_{k} \\in \\omega_{l}, c_{i} )
+
+        where :math:`\\delta_{i,j}' represents the competence level of :math:`c_{i}` for the classification of
+        query.
 
         Parameters
         ----------
@@ -99,8 +108,6 @@ class OLA(DCS):
             # Check if the dynamic frienemy pruning (DFP) should be used
             if self.DFP_mask[clf_index]:
                 competences[clf_index] = np.mean(self.processed_dsel[idx_neighbors, clf_index])
-                #result = [self.processed_dsel[index][clf_index] for index in idx_neighbors]
-                #competences[clf_index] = np.mean(result)
 
         return competences
 
