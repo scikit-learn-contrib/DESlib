@@ -1,5 +1,5 @@
-OLA
-----------
+Overall Local Accuracy (OLA)
+-----------------------------
 
 .. automodule:: deslib.dcs.ola
 

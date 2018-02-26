@@ -1,5 +1,5 @@
-DES class
-----------
+DES base class
+----------------
 
 .. automodule:: deslib.des.base
 

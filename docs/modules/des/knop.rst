@@ -1,5 +1,5 @@
-KNOP
---------
+k-Nearest Output Profiles (KNOP)
+--------------------------------
 
 .. automodule:: deslib.des.knop
 
