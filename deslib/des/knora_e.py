@@ -14,10 +14,11 @@ class KNORAE(DES):
     
     This method searches for a local Oracle, which is a base classifier that correctly classify all
     samples belonging to the region of competence of the test sample. All classifiers
-    with a perfect performance in the region of competence is selected. In the case that 
+    with a perfect performance in the region of competence are selected (local Oracles). In the case that
     no classifiers achieve a perfect accuracy, the size of the region of competence is reduced
-    (by one neighbor) and the performance of the classifiers are re-evaluated. The outputs
+    (by removing the farthest neighbor) and the performance of the classifiers are re-evaluated. The outputs
     of the selected ensemble of classifiers is combined using the majority voting scheme.
+    If no base classifier is selected, the whole pool is used for classification.
     
     Parameters
     ----------
@@ -61,9 +62,9 @@ class KNORAE(DES):
     def estimate_competence(self, query):
         """Estimate the competence of the base classifiers. In the case of the KNORA-E technique, the classifiers
         are only considered competent when they achieve a 100% accuracy in the region of competence. For each base,
-        we estimate the maximum size of the region of competence that it is a local oracle (achieves 100%). The
+        we estimate the maximum size of the region of competence that it is a local oracle. The
         competence level estimate is then the maximum size of the region of competence that the corresponding base
-        classifier is a local Oracle.
+        classifier is considered a local Oracle.
 
         Parameters
         ----------

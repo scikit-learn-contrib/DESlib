@@ -13,10 +13,11 @@ from deslib.des.base import DES
 class KNORAU(DES):
     """k-Nearest Oracles Union (KNORA-U).
     
-    This method works selects all classifiers that correctly classified at least
-    one sample belonging to the region of competence of the test sample x. Each 
+    This method selects all classifiers that correctly classified at least
+    one sample belonging to the region of competence of the query sample. Each
     selected classifier has a number of votes equals to the number of samples in the
-    region of competence that it predicts the correct label.
+    region of competence that it predicts the correct label. The votes obtained by all
+    base classifiers are aggregated to obtain the final ensemble decision.
 
     Parameters
     ----------
@@ -64,6 +65,8 @@ class KNORAU(DES):
         """The competence of the base classifiers is simply estimated as the number of samples
         in the region of competence that it correctly classified.
 
+        This information is later used to determine the number of votes obtained for each base classifier.
+
         Parameters
         ----------
         query : array of shape = [n_features] containing the test sample
@@ -110,7 +113,8 @@ class KNORAU(DES):
     def classify_instance(self, query):
         """Predicts the label of the corresponding query sample.
 
-        The prediction is made by aggregating the votes obtained by all selected base classifiers.
+        The prediction is made by aggregating the votes obtained by all selected base classifiers. The class with
+        the highest number of votes is the predicted label.
 
         Parameters
         ----------

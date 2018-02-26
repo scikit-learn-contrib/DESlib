@@ -18,10 +18,21 @@ from deslib.des.base import DES
 class METADES(DES):
     """Meta learning for dynamic ensemble selection (META-DES).
 
-    This method works selects all classifiers that correctly classified at least
-    one sample belonging to the region of competence of the test sample x. Each
-    selected classifier has a number of votes equals to the number of samples in the
-    region of competence that it predicts the correct label.
+    The META-DES framework is based on the assumption that the dynamic ensemble selection problem can be considered
+    as a meta-problem. This meta-problem uses different criteria regarding the behavior of a base
+    classifier :math:`c_{i}`, in order to decide whether it is competent enough to classify a given test
+    sample.
+
+    The framework performs a meta-training stage, in which, the meta-features are extracted from each instance
+    belonging to the training and the dynamic selection dataset (DSEL). Then, the extracted meta-features are used
+    to train the meta-classifier :math:`\\lambda`. The meta-classifier is trained to predict whether or not a
+    base classifier :math:`c_{i}` is competent enough to classify a given input sample.
+
+    When an unknown sample is presented to the system, the meta-features for each base classifier :math:`c_{i}`
+    in relation to the input sample are calculated and presented to the meta-classifier. The meta-classifier
+    estimates the competence level of the base classifier :math:`c_{i}` for the classification of the query sample.
+    Base classifiers with competence level higher than a pre-defined threshold are selected. If no base classifier
+    is selected, the whole pool is used for classification.
 
     Parameters
     ----------
@@ -109,7 +120,10 @@ class METADES(DES):
     def fit(self, X, y):
         """Prepare the DS model by setting the KNN algorithm and
         pre-processing the information required to apply the DS
-        methods
+        method.
+
+        This method also extracts the meta-features and trains the meta-classifier :math:`\\lambda`
+        if the meta-classifier was not yet trained.
 
         Parameters
         ----------
@@ -156,6 +170,7 @@ class METADES(DES):
 
     def _sample_selection_agreement(self, query_idx):
         """Check the number of base classifier that predict the correct label for the query sample.
+
         Parameters
         ----------
         query_idx : int
@@ -172,7 +187,7 @@ class METADES(DES):
 
     def compute_meta_features(self, query, idx_neighbors, idx_neighbors_op, clf, clf_index):
         """Compute the five sets of meta-features used in the META-des framework. Returns
-        the meta-features vector V_i,j.
+        the meta-features vector :math:`v_{i,j}`.
 
         Parameters
         ----------
@@ -229,7 +244,7 @@ class METADES(DES):
                     self.meta_training_target.append(target)
 
     def _train_meta_classifier(self):
-        """Train the meta-classifier (lambda), using the meta-training dataset.
+        """Train the meta-classifier :math:`\\lambda`, using the meta-training dataset.
 
         """
         self.meta_training_dataset = np.array(self.meta_training_dataset)
@@ -272,7 +287,7 @@ class METADES(DES):
 
     def select(self, competences):
         """Selects the base classifiers that obtained a competence level higher than the predefined
-        threshold Gamma.
+        threshold defined in self.gamma.
 
         Parameters
         ----------
@@ -292,11 +307,12 @@ class METADES(DES):
         return indices
 
     def estimate_competence(self, query):
-        """Estimate the competence of each base classifier ci
-        the classification of the query sample x.
-        Returns an array containing the level of competence estimated
-        for each base classifier. The size of the vector is equals to
-        the size of the generated_pool of classifiers.
+        """Estimate the competence of each base classifier :math:`c_i`
+        the classification of the query sample.
+
+        First, the meta-features of each base classifier :math:`c_i` for the classification of the
+        query sample are estimated. These meta-features are passed down to the meta-classifier :math:`\\lambda`
+        for the competence level estimation.
 
         Parameters
         ----------
@@ -326,6 +342,16 @@ class METADES(DES):
 
     @staticmethod
     def _check_input_parameters(Hc, gamma, meta_classifier):
+        """Check if the parameters passed as argument are correct.
+
+        - Hc should be higher than 0.5
+
+        - gamma should be higher than 0.5
+
+        - The meta-classifier must implement the predict_proba function or be equal to None (Naive Bayes is
+        used in its place).
+        ----------
+        """
         if not isinstance(Hc, (float, int)):
             raise ValueError('Parameter Hc should be either a number. Currently Hc = {}'.format(type(Hc)))
         if Hc < 0.5:

@@ -15,10 +15,11 @@ from deslib.util.diversity import Q_statistic, ratio_errors, negative_double_fau
 
 class DESClustering(DES):
     """Dynamic ensemble selection-Clustering (DES-Clustering).
+
     This method selects an ensemble of classifiers taking into account the
-    accuracy and more_diverse of the base classifiers. The K-means algorithm is used to define the region of competence
-    First the most accurate classifiers are selected. Next, the most diverse classifiers, in relation to the selected
-    classifiers, are added to the ensemble
+    accuracy and diversity of the base classifiers. The K-means algorithm is used to define the region of competence.
+    For each cluster, the N most accurate classifiers are first selected. Then, the J more diverse classifiers from the
+    N most accurate classifiers are selected to compose the ensemble.
 
     Parameters
     ----------
@@ -95,9 +96,12 @@ class DESClustering(DES):
     def fit(self, X, y):
         """Train the DS model by setting the Clustering algorithm and
         pre-processing the information required to apply the DS
-        methods. In this case, after fitting the roc_algorithm method, the ensemble containing
-        most competent classifiers taking into account accuracy and diversity are
-        estimated for each cluster.
+        methods.
+
+        First the data is divided into K clusters. Then, for each cluster, the N most accurate classifiers
+        are first selected. Then, the J more diverse classifiers from the N most accurate classifiers are
+        selected to compose the ensemble of the corresponding cluster. An ensemble of classifiers is assigned
+        to each of the K clusters.
 
         Parameters
         ----------
@@ -175,11 +179,12 @@ class DESClustering(DES):
         return diversity
 
     def estimate_competence(self, query):
-        """get the competence estimates of each base classifier ci for the classification of the query sample x.
+        """Get the competence estimates of each base classifier :math:`c_{i}`
+        for the classification of the query sample.
 
-        In this case, the competences are pre-calculated based on each cluster. So this method computes the
-        nearest cluster of the query sample and get the pre-calculated competences of the base classifiers
-        for the nearest cluster.
+        In this case, the competences were already pre-calculated for each cluster. So this method computes the
+        nearest cluster and get the pre-calculated competences of the base classifiers
+        for the corresponding cluster.
 
         Parameters
         ----------
@@ -198,9 +203,8 @@ class DESClustering(DES):
     def select(self, query):
         """Select an ensemble with the most accurate and most diverse classifier for the classification of the query.
 
-        Since the method is based on roc_algorithm, the ensemble for each cluster is already pre-calculated. So, we only
-        need to estimate which is the nearest cluster and then get the classifiers that were pre-selected for this
-        cluster
+        The ensemble for each cluster was already pre-calculated in the fit method. So, this method calculates the
+        closest cluster, and returns the ensemble associated to this cluster.
 
         Parameters
         ----------
@@ -218,7 +222,6 @@ class DESClustering(DES):
 
     def classify_instance(self, query):
         """Predicts the label of the corresponding query sample.
-        Returns the predicted label.
 
         Parameters
         ----------

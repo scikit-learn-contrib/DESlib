@@ -13,10 +13,11 @@ from deslib.util.diversity import negative_double_fault, Q_statistic, ratio_erro
 
 class DESKNN(DES):
     """Dynamic ensemble Selection KNN (DES-KNN).
+
     This method selects an ensemble of classifiers taking into account the
-    accuracy and more_diverse of the base classifiers. First the most accurate classifiers
-    are selected. Next, the most diverse classifiers, in relation to the selected classifiers,
-    are added to the ensemble
+    accuracy and diversity of the base classifiers. The k-NN algorithm is used to define the region of competence.
+    The N most accurate classifiers in the region of competence are first selected.
+    Then, the J more diverse classifiers from the N most accurate classifiers are selected to compose the ensemble.
 
     Parameters
     ----------
@@ -97,7 +98,8 @@ class DESKNN(DES):
             self.diversity_func = ratio_errors
 
     def estimate_competence(self, query):
-        """get the competence estimates of each base classifier ci for the classification of the query sample x.
+        """estimate the competence level of each base classifier :math:`c_{i}` for
+        the classification of the query sample.
 
         The competence is estimated using the accuracy and diversity criteria. First the classification accuracy
         of the base classifiers in the region of competence is estimated. Then the diversity of the base classifiers
@@ -145,7 +147,7 @@ class DESKNN(DES):
 
     def select(self, query):
         """Select an ensemble containing the N most accurate ant the J most diverse classifiers for the classification
-        of the query
+        of the query sample.
 
         Parameters
         ----------
