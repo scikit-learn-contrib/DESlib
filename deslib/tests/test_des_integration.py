@@ -28,31 +28,61 @@ from deslib.static.oracle import Oracle
 from deslib.static.single_best import SingleBest
 from deslib.static.static_selection import StaticSelection
 
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
 
-def setup_classifiers():
+
+def test_label_encoder_integration_list_classifiers():
+    rng = np.random.RandomState(123456)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(encode_labels=['no', 'yes'], rng=rng)
+
+    pool_classifiers = [LogisticRegression(), SVC(probability=True)]
+    [clf.fit(X_train, y_train) for clf in pool_classifiers]
+
+    knorau = KNORAU(pool_classifiers)
+    knorau.fit(X_dsel, y_dsel)
+
+    this_score = knorau.score(X_test, y_test)
+    assert np.isclose(this_score, 0.9574468085106383)
+
+
+def test_label_encoder_integration_sklearn_ensembles():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers(encode_labels=['no', 'yes'])
+
+    knorau = KNORAU(pool_classifiers)
+    knorau.fit(X_dsel, y_dsel)
+    assert np.isclose(knorau.score(X_test, y_test), 0.97340425531914898)
+
+
+def setup_classifiers(encode_labels=None):
     rng = np.random.RandomState(123456)
 
-    # Generate a classification dataset
-    data = load_breast_cancer()
-    X = data.data
-    y = data.target
-    # split the data into training and test data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=rng)
-
-    # Scale the variables to have 0 mean and unit variance
-    scalar = StandardScaler()
-    X_train = scalar.fit_transform(X_train)
-    X_test = scalar.transform(X_test)
-
-    # Split the data into training and DSEL for DS techniques
-    X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train, test_size=0.5, random_state=rng)
-    # Considering a pool composed of 10 base classifiers
-    # Calibrating Perceptrons to estimate probabilities
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(encode_labels, rng)
     model = CalibratedClassifierCV(Perceptron(max_iter=5))
     # Train a pool of 100 classifiers
     pool_classifiers = BaggingClassifier(model, n_estimators=10, random_state=rng)
     pool_classifiers.fit(X_train, y_train)
     return pool_classifiers, X_dsel, y_dsel, X_test, y_test
+
+
+def load_dataset(encode_labels, rng):
+    # Generate a classification dataset
+    data = load_breast_cancer()
+    X = data.data
+    y = data.target
+    if encode_labels is not None:
+        y = np.take(encode_labels, y)
+    # split the data into training and test data
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=rng)
+    # Scale the variables to have 0 mean and unit variance
+    scalar = StandardScaler()
+    X_train = scalar.fit_transform(X_train)
+    X_test = scalar.transform(X_test)
+    # Split the data into training and DSEL for DS techniques
+    X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train, test_size=0.5, random_state=rng)
+    # Considering a pool composed of 10 base classifiers
+    # Calibrating Perceptrons to estimate probabilities
+    return X_dsel, X_test, X_train, y_dsel, y_test, y_train
 
 
 def test_knorau():

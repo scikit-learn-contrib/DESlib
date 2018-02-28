@@ -95,9 +95,11 @@ class KNOP(DES):
         -------
         self
         """
-        self._set_dsel(X, y)
+
+        y_ind = self.setup_label_encoder(y)
+        self._set_dsel(X, y_ind)
         self.dsel_scores = self._preprocess_dsel_scores()
-        self._fit_region_competence(self.dsel_scores, y, self.k)
+        self._fit_region_competence(self.dsel_scores, y_ind, self.k)
 
         return self
     

@@ -1,6 +1,7 @@
 import pytest
 from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import Perceptron
+from unittest.mock import Mock
 
 from deslib.base import DS
 from deslib.tests.examples_test import *
@@ -12,7 +13,7 @@ def test_all_classifiers_agree():
     ds = DS(pool_classifiers)
 
     x = np.ones((1, 10))
-    assert ds._all_classifier_agree(x)
+    assert ds._all_classifier_agree_query(x)
 
 
 def test_not_all_classifiers_agree():
@@ -22,7 +23,7 @@ def test_not_all_classifiers_agree():
     ds = DS(pool_classifiers)
 
     x = np.ones((1, 10))
-    assert not ds._all_classifier_agree(x)
+    assert not ds._all_classifier_agree_query(x)
 
 
 @pytest.mark.parametrize('query', [None, [np.nan, 1.0]])
@@ -271,7 +272,7 @@ def test_predict_proba_all_agree():
     ds_test = DS(create_pool_classifiers())
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     ds_test.dsel_scores = dsel_scores_ex1
-    ds_test._all_classifier_agree = MagicMock(return_value=True)
+    ds_test._all_classifier_agree_query = MagicMock(return_value=True)
     proba = ds_test.predict_proba(query)
     assert np.isclose(proba, np.atleast_2d([0.61, 0.39])).all()
 
@@ -326,3 +327,63 @@ def test_predict_proba_DFP():
     ds_test.predict_proba(query)
     assert np.array_equal(ds_test.DFP_mask, np.array([1, 1, 0]))
 
+
+def create_pool_classifiers_dog_cat_plane():
+    clf_0 = create_base_classifier(return_value='cat', return_prob=np.atleast_2d([0.5, 0.5]))
+    clf_1 = create_base_classifier(return_value='dog', return_prob=np.atleast_2d([1.0, 0.0]))
+    clf_2 = create_base_classifier(return_value='plane', return_prob=np.atleast_2d([0.33, 0.67]))
+    pool_classifiers = [clf_0, clf_1, clf_2]
+    return pool_classifiers
+
+
+def create_pool_classifiers_dog():
+    clf_0 = create_base_classifier(return_value='dog', return_prob=np.atleast_2d([0.5, 0.5]))
+    pool_classifiers = [clf_0, clf_0, clf_0]
+    return pool_classifiers
+
+
+def test_label_encoder_only_dsel_allagree():
+    X_dsel_ex1 = np.array([[-1, 1], [-0.75, 0.5], [-1.5, 1.5]])
+    y_dsel_ex1 = np.array(['cat', 'dog', 'plane'])
+
+    query = np.atleast_2d([[1, 0], [-1,-1]])
+    ds_test = DS(create_pool_classifiers_dog(), k=2)
+    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+    ds_test.neighbors = neighbors_ex1[0, :]
+    ds_test.distances = distances_ex1[0, :]
+    predictions = ds_test.predict(query)
+    assert np.array_equal(predictions, ['dog', 'dog'])
+
+
+
+def test_label_encoder_only_dsel():
+    X_dsel_ex1 = np.array([[-1, 1], [-0.75, 0.5], [-1.5, 1.5]])
+    y_dsel_ex1 = np.array(['cat', 'dog', 'plane'])
+
+    query = np.atleast_2d([[1, 0], [-1,-1]])
+    ds_test = DS(create_pool_classifiers_dog_cat_plane(), k=2)
+    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+    ds_test.neighbors = neighbors_ex1[0, :]
+    ds_test.distances = distances_ex1[0, :]
+    ds_test.classify_instance = Mock()
+    ds_test.classify_instance.side_effect = [1, 0]
+    predictions = ds_test.predict(query)
+    assert np.array_equal(predictions, ['dog', 'cat'])
+
+
+def test_label_encoder_base():
+    from sklearn.linear_model import LogisticRegression
+
+    X_dsel_ex1 = np.array([[-1, 1], [-0.75, 0.5], [-1.5, 1.5]])
+    y_dsel_ex1 = np.array(['cat', 'dog', 'plane'])
+
+    x = [[-2, -2], [2, 2]]
+    y = ['cat', 'dog']
+    pool_classifiers = [LogisticRegression().fit(x, y) for _ in range(2)]
+
+    query = np.atleast_2d([[1, 0], [-1, -1]])
+    ds_test = DS(pool_classifiers, k=2)
+    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+    predictions = ds_test.predict(query)
+
+    assert np.equal(predictions, ['cat', 'dog'])

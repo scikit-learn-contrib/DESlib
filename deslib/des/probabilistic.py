@@ -95,11 +95,13 @@ class Probabilistic(DES):
         -------
         self
         """
-        self._set_dsel(X, y)
+
+        y_ind = self.setup_label_encoder(y)
+        self._set_dsel(X, y_ind)
         if self.k is None:
             self.k = self.n_samples
 
-        self._fit_region_competence(X, y, self.n_samples)
+        self._fit_region_competence(X, y_ind, self.n_samples)
         # Pre process the scores in DSEL (it is required only for the source of competence estimation
         # Maybe I should not keep this matrix in order to reduce memory requirement.
         self.dsel_scores = self._preprocess_dsel_scores()

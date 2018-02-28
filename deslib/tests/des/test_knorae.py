@@ -42,10 +42,13 @@ def test_select(index, expected):
 def test_select_none_competent():
     query = np.atleast_2d([1, 1])
 
-    knora_e_test = KNORAE(create_pool_all_agree(2, 100))
-    knora_e_test.fit(X_dsel_ex1, y_dsel_ex1)
+    y_dsel = np.array([2, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0])
+    neighbors = [8, 11, 4, 7, 13, 10, 1]
 
-    knora_e_test.neighbors = neighbors_ex1[0, :]
+    knora_e_test = KNORAE(create_pool_all_agree(2, 100))
+    knora_e_test.fit(X_dsel_ex1, y_dsel)
+
+    knora_e_test.neighbors = neighbors
     knora_e_test.distances = distances_ex1[0, :]
     knora_e_test.DFP_mask = np.ones(knora_e_test.n_classifiers)
 
@@ -53,7 +56,6 @@ def test_select_none_competent():
     indices = knora_e_test.select(competences)
 
     assert indices == list(range(knora_e_test.n_classifiers))
-
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
 # In this case the test should not raise an error since this class does not require base classifiers that
