@@ -89,7 +89,7 @@ class OLA(DCS):
         .. math:: \\delta_{i,j} = \\frac{1}{K}\\sum_{k = 1}^{K}
             P(\\omega_{l} \\mid \\mathbf{x}_{k} \\in \\omega_{l}, c_{i} )
 
-        where :math:`\\delta_{i,j}' represents the competence level of :math:`c_{i}` for the classification of
+        where :math:`\\delta_{i,j}` represents the competence level of :math:`c_{i}` for the classification of
         query.
 
         Parameters

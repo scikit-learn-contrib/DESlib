@@ -99,7 +99,7 @@ class APriori(DCS):
         .. math:: 	\\delta_{i,j} = \\frac{\\sum_{k = 1}^{K}P(\\omega_{l} \\mid
             \mathbf{x}_{k} \\in \\omega_{l}, c_{i} )W_{k}}{\\sum_{k = 1}^{K}W_{k}}
 
-        where :math:`\\delta_{i,j}' represents the competence level of :math:`c_{i}` for the classification of
+        where :math:`\\delta_{i,j}` represents the competence level of :math:`c_{i}` for the classification of
         query.
 
         Parameters

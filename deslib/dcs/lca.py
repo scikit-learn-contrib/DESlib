@@ -95,7 +95,7 @@ class LCA(DCS):
         .. math:: \\delta_{i,j} = \\frac{\\sum_{\\mathbf{x}_{k} \\in \\omega_{l}}P(\\omega_{l} \\mid \\mathbf{x}_{k},
             c_{i} )}{\\sum_{k = 1}^{K}P(\\omega_{l} \\mid \\mathbf{x}_{k}, c_{i} )}
 
-        where :math:`\\delta_{i,j}' represents the competence level of :math:`c_{i}` for the classification of
+        where :math:`\\delta_{i,j}` represents the competence level of :math:`c_{i}` for the classification of
         query.
 
         Parameters
