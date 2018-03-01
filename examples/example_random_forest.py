@@ -1,4 +1,8 @@
 """
+====================================================================
+Example Random Forest
+====================================================================
+
 In this example we use a pool of classifiers generated using the Random Forest method rather than Bagging. We also
 show how to change the size of the region of competence, used to estimate the local competence of the base classifiers.
 

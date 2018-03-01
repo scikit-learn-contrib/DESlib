@@ -1,4 +1,8 @@
 """
+====================================================================
+Example Bagging
+====================================================================
+
 In this example we show how to apply different DCS and DES techniques for a classification dataset.
 
 A very important aspect in dynamic selection is the generation of a pool of classifiers. A common practice in the
