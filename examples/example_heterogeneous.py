@@ -1,4 +1,8 @@
 """
+====================================================================
+Example Heterogeneous
+====================================================================
+
 In this example we show that the framework can also be used using different classifier models in the pool
 of classifiers. Such pool of classifiers are called Heterogeneous.
 

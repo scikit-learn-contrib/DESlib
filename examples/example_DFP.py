@@ -1,4 +1,8 @@
 """
+====================================================================
+Example DFP
+====================================================================
+
 In this example we show how to apply the dynamic frienemy pruning (DFP) to different dynamic selection techniques.
 
 The DFP method is an online pruning model which analyzes the region of competence to know if it is composed of samples
