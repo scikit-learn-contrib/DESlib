@@ -104,12 +104,6 @@ follows PEP8 guidelines.
    the issue and mention the issue number in the pull request description to
    ensure a link is created to the original issue.
 
-
-References
------------
-
-.. [1] : R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,” Information Fusion, vol. 41, pp. 195 – 216, 2018.
-
 .. _GitHub: https://github.com/Menelau/DESlib.
 
 .. _scikit-learn: http://scikit-learn.org/stable/

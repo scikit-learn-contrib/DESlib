@@ -15,6 +15,8 @@ classifier that attained the highest competence level is selected for the classi
 .. automodule:: deslib.dcs
 
 .. toctree::
+    :maxdepth: 3
+
     modules/dcs/base
     modules/dcs/a_posteriori
     modules/dcs/a_priori
@@ -33,6 +35,8 @@ All base classifiers that attain a minimum competence level are selected to comp
 .. automodule:: deslib.des
 
 .. toctree::
+    :maxdepth: 3
+
     modules/des/base
     modules/des/meta_des
     modules/des/des_clustering
@@ -53,6 +57,8 @@ comparison of DS methods: Single Best (SB), Static Selection (SS) and Oracle.
 .. automodule:: deslib.static
 
 .. toctree::
+    :maxdepth: 3
+
     modules/static/oracle
     modules/static/single_best
     modules/static/static_selection
@@ -64,6 +70,8 @@ Utility functions for ensemble methods such as diversity and aggregation methods
 .. automodule:: deslib.util
 
 .. toctree::
+    :maxdepth: 3
+
     modules/util/diversity
     modules/util/aggregation
     modules/util/prob_functions

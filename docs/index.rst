@@ -1,7 +1,6 @@
 Welcome to DESlib documentation!
 =================================================
 
-
 DESlib is an ensemble learning library focusing the implementation of the state-of-the-art techniques for dynamic classifier
 and ensemble selection.
 
@@ -31,15 +30,15 @@ and **score(X, y)**.
 The implementation of the DS methods is modular, following a taxonomy defined in [1]_.
 This taxonomy considers the main characteristics of DS methods, that are centered in three components:
 
-1. the  methodology used to define the local region, in which the competence level of the base classifiers are estimated (region of competence);
+1. the methodology used to define the local region, in which the competence level of the base classifiers are estimated (region of competence);
 2. the source of information used to estimate the competence level of the base classifiers.
 3. the selection approach to define the best classifier (for DCS) or the best set of classifiers (for DES).
 
 This modular approach makes it easy for researchers to implement new DS methods, in many cases requiring only the
 implementation of the method **estimate_competence**, that is, how the local competence of the base classifier is measured.
 
-API Reference
---------------
+`API Reference <api.html>`_
+----------------------------
 
 If you are looking for information on a specific function, class or
 method, this part of the documentation is for you.
@@ -47,17 +46,16 @@ method, this part of the documentation is for you.
 .. toctree::
     :hidden:
 
-    installation
-    development
+    user_guide
     api
-    tutorial
+    auto_examples/index
     news
 
 
-Examples
----------
+`Example <auto_examples/index.html>`_
+----------------------------------------
 
-Example using the KNORA-E techniques using a random forest to generate the pool of classifiers:
+Here we present an example of the KNORA-E techniques using a random forest to generate the pool of classifiers:
 
 .. code-block:: python
 
@@ -78,7 +76,7 @@ Example using the KNORA-E techniques using a random forest to generate the pool 
     knorae.predict(X_test)
 
 The library accepts any list of classifiers (from scikit-learn) as input, including a list containing different classifier models (heterogeneous ensembles).
-More examples to use the API can be found in the examples page.
+More examples to use the API can be found in the `examples page <auto_examples/index.html>`_.
 
 
 Indices and tables
