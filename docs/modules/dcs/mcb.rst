@@ -1,5 +1,5 @@
-MCB
-----------
+Multiple Classifier Behaviour (MCB)
+-----------------------------------
 
 .. automodule:: deslib.dcs.mcb
 

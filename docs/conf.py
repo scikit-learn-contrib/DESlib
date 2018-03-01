@@ -15,6 +15,7 @@
 import sys
 import os
 import deslib
+import sphinx_gallery
 
 version = '.'.join(deslib.__version__.split('.', 2)[:2])
 release = deslib.__version__
@@ -39,6 +40,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.linkcode',  # link to github, see linkcode_resolve() below
     'numpydoc',
+    'sphinx_gallery.gen_gallery',
 ]
 
 numpydoc_show_class_members = False
@@ -260,6 +262,13 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_domain_indices = True
 
+# sphinx-gallery configuration
+sphinx_gallery_conf = {
+    'doc_module': 'imblearn',
+    'backreferences_dir': os.path.join('generated'),
+    'reference_url': {
+        'imblearn': None}
+}
 
 # -- Options for manual page output ---------------------------------------
 

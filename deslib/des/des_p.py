@@ -10,11 +10,13 @@ from deslib.des.base import DES
 
 
 class DESP(DES):
-    """Dynamic ensemble selection-Performance(des-p).
+    """Dynamic ensemble selection-Performance(DES-P).
+
     This method selects all base classifiers that achieve a classification
     performance, in the region of competence, that is higher than the random
     classifier (RC). The performance of the random classifier is defined by
-    RC = 1/M, where M is the number of classes in the problem.
+    RC = 1/L, where L is the number of classes in the problem.
+    If no base classifier is selected, the whole pool is used for classification.
 
     Parameters
     ----------
@@ -65,8 +67,10 @@ class DESP(DES):
         self.name = 'DES-Performance (DES-P)'
 
     def estimate_competence(self, query):
-        """estimate the competence of each base classifier in the pool. The competence level is estimated
-         based on the classification accuracy of the base classifier for the region of competence.
+        """estimate the competence of each base classifier :math:`c_{i}` for
+        the classification of the query sample base on its local performance.
+
+        .. math:: \\delta_{i,j} =  \\hat{P}(c_{i} \\mid \\theta_{j} ) - \\frac{1}{L}
 
         Parameters
         ----------

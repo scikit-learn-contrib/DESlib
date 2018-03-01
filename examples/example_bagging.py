@@ -55,7 +55,7 @@ if __name__ == "__main__":
     ola = OLA(pool_classifiers)
     mcb = MCB(pool_classifiers)
     apriori = APriori(pool_classifiers)
-    meta = METADES(pool_classifiers, Hc=0.8)
+    meta = METADES(pool_classifiers)
 
     # Fit the des techniques
     knorau.fit(X_dsel, y_dsel)
@@ -75,6 +75,7 @@ if __name__ == "__main__":
     print('Classification accuracy DESP: ', desp.score(X_test, y_test))
     print('Classification accuracy OLA: ', ola.score(X_test, y_test))
     print('Classification accuracy A priori: ', apriori.score(X_test, y_test))
+    print('Classification accuracy MCB: ', mcb.score(X_test, y_test))
     print('Classification accuracy META-DES: ', meta.score(X_test, y_test))
 
 

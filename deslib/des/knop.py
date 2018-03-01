@@ -13,6 +13,15 @@ from deslib.des.base import DES
 class KNOP(DES):
     """k-Nearest Output Profiles (KNOP).
 
+    This method selects all classifiers that correctly classified at least
+    one sample belonging to the region of competence of the query sample. In this case,
+    the region of competence is estimated using the decisions of the base classifier (output profiles).
+    Thus, the similarity between the query and the validation samples are measured in the decision space
+    rather than the feature space. Each
+    selected classifier has a number of votes equals to the number of samples in the
+    region of competence that it predicts the correct label. The votes obtained by all
+    base classifiers are aggregated to obtain the final ensemble decision.
+
     Parameters
     ----------
     pool_classifiers : type, the generated_pool of classifiers trained for the corresponding
@@ -91,12 +100,10 @@ class KNOP(DES):
         return self
     
     def estimate_competence(self, query):
-        """In this method, the competence of the base classifiers is simply computed as the number of samples
-        in the region of competence that it correctly classified. However, the region of competence here is
-        estimated in the decision space using output profiles.
+        """The competence of the base classifiers is simply estimated as the number of samples
+        in the region of competence that it correctly classified.
 
-        Returns an array containing the level of competence estimated.
-        The size of the array is equals to the size of the generated_pool of classifiers.
+        This information is later used to determine the number of votes obtained for each base classifier.
 
         Parameters
         ----------

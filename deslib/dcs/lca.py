@@ -10,15 +10,19 @@ from deslib.dcs.base import DCS
 
 
 class LCA(DCS):
-    """Local Classifier Accuracy (LCA).
+    """Local Class Accuracy (LCA).
 
     Evaluates the competence level of each individual classifiers and
     select the most competent one to predict the label of each test sample.
     The competence of each base classifier is calculated based on its local 
-    accuracy with respect to some output class. Consider a classifier that assigns
-    a test sample to class Ci. The competence is estimated by the percentage of the local training
-    samples assigned to class Ci by this classifier that have been correctly labeled.
-    
+    accuracy with respect to some output class. Consider a classifier :math:`c_{i}` that assigns
+    a test sample to class :math:`w_{l}`. The competence level of :math:`c_{i}` is estimated by the percentage of the
+    local training samples assigned to class :math:`w_{l}` that it predicts the correct class label.
+
+    The LCA method selects the base classifier presenting the highest competence level. In a case
+    where more than one base classifier achieves the same competence level, the one that was evaluated first
+    is selected. The selection methodology can be modified by changing the hyper-parameter selection_method.
+
 
     Parameters
     ----------
@@ -79,22 +83,26 @@ class LCA(DCS):
             self.name = 'Local Classifier Accuracy (LCA)'
 
     def estimate_competence(self, query):
-        """estimate the competence of each base classifier ci
+        """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the local class accuracy method.
 
-
-        In this algorithm the K-Nearest Neighbors of the test sample are estimated. Then, the
+        In this algorithm the k-Nearest Neighbors of the test sample are estimated. Then, the
         local accuracy of the base classifiers is estimated by its classification accuracy taking into account
-        only the samples belonging to the class wl in this neighborhood.
+        only the samples from the class :math:`w_{l}` in this neighborhood. In this case, :math:`w_{l}` is
+        the class predicted by the base classifier :math:`c_{i}`, for the query sample.  The
+        competence level estimate is represented by the following equation:
 
+        .. math:: \\delta_{i,j} = \\frac{\\sum_{\\mathbf{x}_{k} \\in \\omega_{l}}P(\\omega_{l} \\mid \\mathbf{x}_{k},
+            c_{i} )}{\\sum_{k = 1}^{K}P(\\omega_{l} \\mid \\mathbf{x}_{k}, c_{i} )}
 
-        Returns an array containing the level of competence estimated using the LCA method
-        for each base classifier. The size of the array is equals to the size of the pool of classifiers.
+        where :math:`\\delta_{i,j}` represents the competence level of :math:`c_{i}` for the classification of
+        query.
 
         Parameters
         ----------
         query : array cf shape  = [n_features]
                 The query sample
+
         Returns
         -------
         competences : array of shape = [n_classifiers]

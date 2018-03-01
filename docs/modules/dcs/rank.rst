@@ -1,5 +1,5 @@
-Rank
-----------
+Modified Rank
+---------------
 
 .. automodule:: deslib.dcs.rank
 

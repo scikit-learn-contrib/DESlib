@@ -16,7 +16,11 @@ class MLA(DCS):
     is weighted by the distance between the test sample and each pattern in the region of competence 
     for the estimation of the classifiers competences. Only the classifier that achieved the highest
     competence level is select to predict the label of the test sample x.
-        
+
+    The MLA method selects the base classifier presenting the highest competence level. In a case
+    where more than one base classifier achieves the same competence level, the one that was evaluated first
+    is selected. The selection methodology can be modified by changing the hyper-parameter selection_method.
+
     Parameters
     ----------
     pool_classifiers : list of classifiers
@@ -76,16 +80,20 @@ class MLA(DCS):
         self.name = 'Modified Local Accuracy (MLA)'
 
     def estimate_competence(self, query):
-        """estimate the competence of each base classifier ci
+        """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the Modified Local Accuracy (MLA) method.
 
-        Two versions of the LCA are considered for the competence estimates:
+        The competence level of the base classifiers is estimated by its classification accuracy taking
+        into account only the samples belonging to a given class :math:`w_{l}`.In this case, :math:`w_{l}` is
+        the class predicted by the base classifier :math:`c_{i}`, for the query sample. This method also weights
+        the influence of each training sample according to its Euclidean distance to the query instance.
+        The closest samples have a higher influence in the computation of the competence level. The
+        competence level estimate is represented by the following equation:
 
-        The Modified local accuracy of the base classifiers is estimated by its classification accuracy taking
-        into account only the samples belonging to the class wl in the region of competence. In this case, wl is
-        the predict class of the base classifier ci for the query sample. This method also weights the influence
-        of each training sample according to its Euclidean distance to the query instance. The closest samples have
-        a higher influence in the computation of the competence level.
+        .. math:: \\delta_{i,j} = \\sum_{k = 1}^{K}P(\\omega_{l} \\mid \\mathbf{x}_{k} \\in \\omega_{l}, c_{i} )W_{k}
+
+        where :math:`\\delta_{i,j}` represents the competence level of :math:`c_{i}` for the classification of
+        query.
 
         Parameters
         ----------

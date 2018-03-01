@@ -1,5 +1,5 @@
-KNORA-E
---------
+k-Nearest Oracle-Eliminate (KNORA-E)
+--------------------------------------
 
 .. automodule:: deslib.des.knora_e
 

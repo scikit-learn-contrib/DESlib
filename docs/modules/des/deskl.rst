@@ -1,5 +1,5 @@
-DES-KL
---------
+DES-Kullback Leibler
+---------------------
 
 .. automodule:: deslib.des.probabilistic
 

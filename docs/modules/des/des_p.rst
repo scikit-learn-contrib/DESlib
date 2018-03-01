@@ -1,5 +1,5 @@
-DES-P
---------
+Dynamic Ensemble Selection performance (DES-P)
+----------------------------------------------
 
 .. automodule:: deslib.des.des_p
 

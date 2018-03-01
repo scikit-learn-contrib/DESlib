@@ -12,8 +12,16 @@ from deslib.dcs.base import DCS
 class MCB(DCS):
     """Multiple Classifier Behaviour (MCB).
 
-    The MCB method evaluates the competence level of each individual classifiers taking into account
-    both the local accuracy of the base 
+    The MCB method evaluates the competence level of each individual classifiers taking into account the local
+    accuracy of the base classifier in the region of competence. The region of competence is defined using the
+    k-NN and behavioral knowledge space (BKS) method. First the k-nearest neighbors of the test sample are computed.
+    Then, the set containing the k-nearest neighbors is filtered based on the similarity of the query sample and its
+    neighbors using the decision space (BKS representation).
+
+    A single classifier :math:`c_{i}` is selected only if its competence level is
+    significantly higher than that of the other base classifiers in the pool (higher than a pre-defined threshold).
+    Otherwise, all classifiers in the pool are combined using the majority voting rule. The selection methodology can
+    be modified by changing the hyper-parameter selection_method.
 
     Parameters
     ----------
@@ -88,21 +96,25 @@ class MCB(DCS):
         self.name = 'Multiple Classifier Behaviour (MCB)'
 
     def estimate_competence(self, query):
-        """estimate the competence of each base classifier ci
+        """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the Multiple Classifier Behaviour criterion.
 
         The region of competence in this method is estimated taking into account the feature space and the decision
         space (using the behaviour knowledge space method [4]). First, the k-Nearest Neighbors of the query sample
         are defined in the feature space to compose the region of competence. Then, the similarity in the BKS space
-        between the query and the instances in its region of competence are estimated. Instances with similarity lower
-        than a predefined threshold are removed from the region of competence.
+        between the query and the instances in the region of competence are estimated using the following equations:
 
-        Then, the competence level of the base classifiers are estimated based on their classification accuracy in the
-        final region of competence.
+        .. math:: S(\\tilde{\\mathbf{x}}_{j},\\tilde{\\mathbf{x}}_{k}) = \\frac{1}{M}
+            \\sum\\limits_{i = 1}^{M}T(\\mathbf{x}_{j},\\mathbf{x}_{k})
 
+        .. math:: T(\\mathbf{x}_{j},\\mathbf{x}_{k}) = \\left\\{\\begin{matrix} 1 & \\text{if} &
+            c_{i}(\\mathbf{x}_{j}) =  c_{i}(\\mathbf{x}_{k}),\\\\
+            0 & \\text{if} & c_{i}(\\mathbf{x}_{j}) \\neq  c_{i}(\\mathbf{x}_{k}). \\end{matrix}\\right.
 
-        Returns an array containing the level of competence estimated using the MCB method
-        for each base classifier. The size of the array is equals to the size of the generated_pool of classifiers.
+        Where :math:`S(\\tilde{\\mathbf{x}}_{j},\\tilde{\\mathbf{x}}_{k})` denotes the similarity between two samples
+        based on the behaviour knowledge space method (BKS). Instances with similarity lower than a predefined threshold
+        are removed from the region of competence. The competence level of the base classifiers are estimated as their
+        classification accuracy in the final region of competence.
 
         Parameters
         ----------
@@ -143,7 +155,7 @@ class MCB(DCS):
         """Transform the query sample to the decision space using the Behaviour Knowledge Space (BKS) method [4].
 
         The BKS space is a vector = [n_classifiers], in which each position i is equals to the class label predicted
-        by the base classifier ci for the query sample.
+        by the base classifier :math:`c_{i}` for the query sample :math:`x_j`.
 
         Parameters
         ----------

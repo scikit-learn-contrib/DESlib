@@ -1,5 +1,5 @@
-LCA
-----------
+Local Class Accuracy (LCA)
+--------------------------
 
 .. automodule:: deslib.dcs.lca
 

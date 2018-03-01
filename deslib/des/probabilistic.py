@@ -111,6 +111,9 @@ class Probabilistic(DES):
         and the potential function model. The source of competence C_src for all data points in DSEL
         is already pre-computed in the fit() steps.
 
+        .. math:: \\delta_{i,j} = \\frac{\\sum_{k=1}^{N}C_{src} \\: exp( -d (\\mathbf{x}_{k}, \\mathbf{x}_{q})^{2} )}
+            {exp( -d (\\mathbf{x}_{k}, \\mathbf{x}_{q})^{2} )}
+
         Parameters
         ----------
         query : array containing the test sample = [n_features]
@@ -164,7 +167,12 @@ class Probabilistic(DES):
     @staticmethod
     def potential_func(dist):
         """Gaussian potential function to decrease the
-        influence of the source of competence as the distance between xk and the query increases
+        influence of the source of competence as the distance between :math:`\mathbf{x}_{k}` and the query
+        :math:`\mathbf{x}_{q}` increases. The function is computed using the following equation:
+
+        .. math:: potential = exp( -dist (\mathbf{x}_{k}, \mathbf{x}_{q})^{2} )
+
+        where dist represents the Euclidean distance between :math:`\mathbf{x}_{k}` and :math:`\mathbf{x}_{q}`
 
         Parameters
         ----------
@@ -238,8 +246,8 @@ class Logarithmic(Probabilistic):
         self.name = "DES-Logarithmic"
 
     def source_competence(self):
-        """The source of competence C_src at the validation point xk is calculated by logarithm in the support
-        obtained by the base classifier.
+        """The source of competence C_src at the validation point :math:`\mathbf{x}_{k}` is calculated by
+        logarithm function in the support obtained by the base classifier.
 
         Returns
         ----------
@@ -257,12 +265,14 @@ class Logarithmic(Probabilistic):
 
 
 class Exponential(Probabilistic):
-    """The source of competence C_src at the validation point xk is a product of two factors:  The absolute value of
+    """The source of competence C_src at the validation point :math:`\mathbf{x}_{k}` is a product of two factors:
+    The absolute value of
     the competence and the sign. The value of the source competence is inverse proportional to the normalized entropy
-    of its supports vector. The sign of competence is simply determined by correct/incorrect classification of xk [1].
+    of its supports vector. The sign of competence is simply determined by correct/incorrect classification
+    of :math:`\mathbf{x}_{k}` [1].
 
-    The influence of each sample xk is defined according to a Gaussian function model[2]. Samples that are closer to
-    the query have a higher influence in the competence estimation.
+    The influence of each sample :math:`\mathbf{x}_{k}` is defined according to a Gaussian function model[2].
+    Samples that are closer to the query have a higher influence in the competence estimation.
 
     Parameters
     ----------
@@ -294,10 +304,10 @@ class Exponential(Probabilistic):
 
     References
     ----------
-    B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
+    [1] B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
     multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197–206.
 
-    Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
+    [2] Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
     for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
 
     """
@@ -311,10 +321,10 @@ class Exponential(Probabilistic):
         self.name = "DES-Exponential"
 
     def source_competence(self):
-        """The source of competence C_src at the validation point xk is a product of two factors: The absolute value of
-        the competence and the sign. The value of the source competence is inverse proportional
+        """The source of competence C_src at the validation point :math:`\mathbf{x}_{k}` is a product of two factors:
+        The absolute value of  the competence and the sign. The value of the source competence is inverse proportional
         to the normalized entropy of its supports vector.The sign of competence is simply determined by
-        correct/incorrect classification of the instance xk.
+        correct/incorrect classification of the instance :math:`\mathbf{x}_{k}`.
 
         Returns
         ----------
@@ -369,9 +379,6 @@ class RRC(Probabilistic):
     Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
     for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
 
-    Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection of classifiers—a comprehensive review."
-    Pattern Recognition 47.11 (2014): 3665-3680.
-
     R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
@@ -387,9 +394,10 @@ class RRC(Probabilistic):
         """
         Calculates the source of competence using the randomized reference classifier (RRC) method.
 
-        The source of competence C_src at the validation point xk calculated using the probabilistic model based on
-        the supports obtained by the base classifier and randomized reference classifier (RRC) model.
-        The probabilistic modeling of the classifier competence is calculated using the ccprmod function.
+        The source of competence C_src at the validation point :math:`\mathbf{x}_{k}` calculated using the
+        probabilistic model based on the supports obtained by the base classifier and randomized reference
+        classifier (RRC) model. The probabilistic modeling of the classifier competence is calculated using
+        the ccprmod function.
 
         Returns
         ----------
@@ -466,10 +474,10 @@ class DESKL(Probabilistic):
     def source_competence(self):
         """Calculates the source of competence using the KL divergence method.
 
-        The source of competence C_src at the validation point xk calculated using the KL divergence
+        The source of competence C_src at the validation point :math:`\mathbf{x}_{k}` is calculated by the KL divergence
         between the vector of class supports produced by the base classifier and the outputs of a random classifier (RC)
         RC = 1/L, L being the number of classes in the problem. The value of C_src is negative if the base classifier
-        misclassified the instance xk
+        misclassified the instance :math:`\mathbf{x}_{k}`.
 
         Returns
         ----------
@@ -489,8 +497,8 @@ class DESKL(Probabilistic):
 class MinimumDifference(Probabilistic):
     """
     Computes the competence level of the classifiers based on the difference between the support obtained by each class.
-    The competence level at a data point (xk) is equal to the minimum difference between the support obtained to the
-    correct class and the support obtained for different classes.
+    The competence level at a data point :math:`\mathbf{x}_{k}` is equal to the minimum difference between the
+    support obtained to the correct class and the support obtained for different classes.
 
     The influence of each sample xk is defined according to a Gaussian function model[2]. Samples that are closer to
     the query have a higher influence in the competence estimation.
@@ -525,10 +533,10 @@ class MinimumDifference(Probabilistic):
 
     References
     ----------
-    B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
+    [1] B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
     multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197–206.
 
-    Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
+    [2] Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
     for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
 
     """
@@ -544,8 +552,9 @@ class MinimumDifference(Probabilistic):
     def source_competence(self):
         """Calculates the source of competence using the Minimum Difference method.
 
-        The source of competence C_src at the validation point xk calculated by the Minimum Difference between
-        the supports obtained to the correct class and the support obtained by the other classes
+        The source of competence C_src at the validation point :math:`\mathbf{x}_{k}` calculated by the
+        Minimum Difference between the supports obtained to the correct class and the support obtained by
+        the other classes
 
         Returns
         ----------

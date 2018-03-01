@@ -1,5 +1,5 @@
-KNORA-U
---------
+k-Nearest Oracle Union (KNORA-U)
+--------------------------------
 
 .. automodule:: deslib.des.knora_u
 

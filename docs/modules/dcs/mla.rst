@@ -1,5 +1,5 @@
-MLA
-----------
+Modified Local Accuracy (MLA)
+-----------------------------
 
 .. automodule:: deslib.dcs.mla
 

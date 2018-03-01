@@ -1,0 +1,45 @@
+Version 0.1
+===========
+
+API
+~~~
+
+- First release of the stable API. By `Rafael M O Cruz`_ and `Luiz G Hafemann`_.
+
+Implemented methods:
+~~~~~~~~~~~~~~~~~~~~~
+
+* DES techniques currently available are:
+    1. META-DES
+    2. K-Nearest-Oracle-Eliminate (KNORA-E)
+    3. K-Nearest-Oracle-Union (KNORA-U)
+    4. Dynamic Ensemble Selection-Performance(DES-P)
+    5. K-Nearest-Output Profiles (KNOP)
+    6. Randomized Reference Classifier (DES-RRC)
+    7. DES Kullback-Leibler Divergence (DES-KL)
+    8. DES-Exponential
+    9. DES-Logarithmic
+    10. DES-Minimum Difference
+    11. DES-Clustering
+    12. DES-KNN
+
+* DCS techniques:
+    1. Modified Classifier Rank (Rank)
+    2. Overall Locall Accuracy (OLA)
+    3. Local Class Accuracy (LCA)
+    4. Modified Local Accuracy (MLA)
+    5. Multiple Classifier Behaviour (MCB)
+    6. A Priori Selection (A Priori)
+    7. A Posteriori Selection (A Posteriori)
+
+* Baseline methods:
+    1. Oracle
+    2. Single Best
+    3. Static Selection
+
+* Dynamic Frienemy Prunning (DFP)
+* Diversity measures
+* Aggregation functions
+
+.. _Rafael M O Cruz: https://github.com/Menelau
+.. _Luiz G Hafemann: https://github.com/lghafemann

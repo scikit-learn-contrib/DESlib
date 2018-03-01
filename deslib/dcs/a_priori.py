@@ -11,10 +11,16 @@ from deslib.dcs.base import DCS
 
 class APriori(DCS):
     """A Priori dynamic classifier selection.
-    
-    This method works similarly to the OLA technique. The only difference is that it uses
-    the scores obtained by the base classifiers as well as the distance between the test sample
-    and each pattern in the region of competence are also considered in the competence estimation.
+
+    The A Priori method uses the probability of correct classification of a given base classifier :math:`c_{i}` for each
+    neighbor :math:`x_{k}` for the competence level estimation. Base classifiers with a higher probability of correct
+    classification have a higher competence level. Moreover, the method also weights the influence of each
+    neighbor :math:`x_{k}` according to its Euclidean distance to the query sample. The closest neighbors have a higher
+    influence on the competence level estimate.
+
+    A single classifier is selected only if its competence level is
+    significantly higher than that of the other base classifiers in the pool (higher than a pre-defined threshold).
+    Otherwise, all classifiers i the pool are combined using the majority voting rule.
 
     Parameters
     ----------
@@ -81,18 +87,20 @@ class APriori(DCS):
         return self
 
     def estimate_competence(self, query):
-        """estimate the competence of each base classifier ci
-        the classification of the query sample using the A Priori method.
+        """estimate the competence of each base classifier :math:`c_{i}` for
+        the classification of the query sample using the A Priori rule:
 
-        The A Priori method considers the probability of correct classification of the base classifier
-        ci, in the region of competence, taking into account the supports obtained by the base classifier ci. Hence,
-        the vector containing the posterior probabilities for each class is considered instead of only the label
-        assigned to each sample in the region of competence. This method also weights the influence
+        The competence level is estimated based on the probability of correct classification of the base classifier
+        :math:`c_{i}`, considering all samples in the region of competence. This method also weights the influence
         of each training sample according to its Euclidean distance to the query instance. The closest samples have
-        a higher influence in the computation of the competence level.
+        a higher influence in the computation of the competence level.  The
+        competence level estimate is represented by the following equation:
 
-        Returns an array containing the level of competence estimated using the LCA method
-        for each base classifier. The size of the array is equals to the size of the pool of classifiers.
+        .. math:: 	\\delta_{i,j} = \\frac{\\sum_{k = 1}^{K}P(\\omega_{l} \\mid
+            \mathbf{x}_{k} \\in \\omega_{l}, c_{i} )W_{k}}{\\sum_{k = 1}^{K}W_{k}}
+
+        where :math:`\\delta_{i,j}` represents the competence level of :math:`c_{i}` for the classification of
+        query.
 
         Parameters
         ----------

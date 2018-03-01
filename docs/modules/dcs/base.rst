@@ -1,5 +1,5 @@
-DCS class
-----------
+DCS base class
+--------------
 
 .. automodule:: deslib.dcs.base
 
