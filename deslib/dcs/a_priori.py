@@ -79,6 +79,8 @@ class APriori(DCS):
                                       selection_method=selection_method,
                                       diff_thresh=diff_thresh,
                                       rng=rng)
+        self._check_predict_proba()
+
         self.name = 'A Priori'
 
     def fit(self, X, y):

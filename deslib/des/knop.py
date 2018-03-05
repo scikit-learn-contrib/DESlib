@@ -72,6 +72,8 @@ class KNOP(DES):
                                    with_IH=with_IH,
                                    safe_k=safe_k,
                                    IH_rate=IH_rate)
+        self._check_predict_proba()
+
         self.weighted = weighted
         self.name = 'K-Nearest Output Profiles (KNOP)'
 
