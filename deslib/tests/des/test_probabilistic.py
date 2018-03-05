@@ -1,5 +1,18 @@
+import pytest
+from sklearn.linear_model import Perceptron
 from deslib.des.probabilistic import Probabilistic, RRC, DESKL, Logarithmic, Exponential, MinimumDifference
 from deslib.tests.examples_test import *
+
+# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
+# Should raise an exception when the base classifier cannot estimate posterior probabilities (predict_proba)
+# Using Perceptron classifier as it does not implements the predict_proba method.
+def test_not_predict_proba():
+    X = X_dsel_ex1
+    y = y_dsel_ex1
+    clf1 = Perceptron()
+    clf1.fit(X, y)
+    with pytest.raises(ValueError):
+        Probabilistic([clf1, clf1])
 
 
 # Being all zeros, no base classifier is deemed competent, so the system selects all of them
@@ -41,18 +54,22 @@ def test_select_threshold():
     assert np.array_equal(indices, expected)
 
 
+# Test the potential function calculation. The return value should be zero in this test.
 def test_potential_function_zeros():
     dists = np.zeros(10)
     value = Probabilistic.potential_func(dists)
     assert np.array_equal(value, np.ones(10))
 
 
+# Test the potential function calculation. Higher values for distances should obtain a lower value in the results
 def test_potential_function():
     dists = np.array([1.0, 0.5, 2, 0.33])
     value = Probabilistic.potential_func(dists)
     assert np.allclose(value, [0.3679, 0.7788, 0.0183, 0.8968], atol=0.001)
 
 
+# Test the estimate_competence method using a pre-calculated source of competence matrix. The final competence is
+# a result of the competence source and the result of the potential function model at each data point.
 def test_estimate_competence():
 
     query = np.atleast_2d([1, 1])

@@ -112,18 +112,6 @@ def test_input_shape_fit():
         ds_test.fit(X, y)
 
 
-# Tests if the base estimators implements the predict proba function
-def test_predict_proba_exists():
-    query = np.array([[1.0, 1.0]])
-
-    X = X_dsel_ex1
-    y = y_dsel_ex1
-    clf1 = Perceptron()
-    clf1.fit(X, y)
-    with pytest.raises(ValueError):
-        DS([clf1, clf1])
-
-
 @pytest.mark.parametrize('index, expected', [(0, 0.42),
                                              (1, 0.28),
                                              (2, 0.28)])

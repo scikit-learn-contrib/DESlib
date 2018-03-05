@@ -1,5 +1,5 @@
 import pytest
-
+from sklearn.linear_model import Perceptron
 from deslib.dcs.a_priori import APriori
 from deslib.tests.examples_test import *
 
@@ -71,3 +71,15 @@ def test_fit():
     a_priori_test = APriori(create_pool_classifiers())
     a_priori_test.fit(X_dsel_ex1, y_dsel_ex1)
     assert np.isclose(a_priori_test.dsel_scores, [0.5, 0.5, 1.0, 0.0, 0.33, 0.67]).all()
+
+
+# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
+# Should raise an exception when the base classifier cannot estimate posterior probabilities (predict_proba)
+# Using Perceptron classifier as it does not implements the predict_proba method.
+def test_not_predict_proba():
+    X = X_dsel_ex1
+    y = y_dsel_ex1
+    clf1 = Perceptron()
+    clf1.fit(X, y)
+    with pytest.raises(ValueError):
+        APriori([clf1, clf1])

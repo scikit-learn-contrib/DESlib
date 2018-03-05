@@ -1,5 +1,5 @@
 import pytest
-
+from sklearn.linear_model import Perceptron
 from deslib.des.knop import KNOP
 from deslib.tests.examples_test import *
 
@@ -58,5 +58,15 @@ def test_fit():
     assert np.array_equal(knop_test.roc_algorithm._fit_X, knop_test.dsel_scores)
 
 
+# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
+# Should raise an exception when the base classifier cannot estimate posterior probabilities (predict_proba)
+# Using Perceptron classifier as it does not implements the predict_proba method.
+def test_not_predict_proba():
+    X = X_dsel_ex1
+    y = y_dsel_ex1
+    clf1 = Perceptron()
+    clf1.fit(X, y)
+    with pytest.raises(ValueError):
+        KNOP([clf1, clf1])
 
 
