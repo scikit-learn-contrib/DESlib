@@ -2,6 +2,7 @@ import pytest
 
 from deslib.des.des_p import DESP
 from deslib.tests.examples_test import *
+from sklearn.linear_model import Perceptron
 
 
 @pytest.mark.parametrize('index, expected', [(0, [0.57142857, 0.4285714, 0.57142857]),
@@ -85,3 +86,14 @@ def test_select_none_competent():
     competences = np.ones(des_p_test.n_classifiers) * 0.49
     indices = des_p_test.select(competences)
     assert indices == list(range(des_p_test.n_classifiers))
+
+
+# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
+# In this case the test should not raise an error since this class does not require base classifiers that
+# can estimate probabilities
+def test_predict_proba():
+    X = X_dsel_ex1
+    y = y_dsel_ex1
+    clf1 = Perceptron()
+    clf1.fit(X, y)
+    DESP([clf1, clf1])

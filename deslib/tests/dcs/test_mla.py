@@ -1,4 +1,5 @@
 import pytest
+from sklearn.linear_model import Perceptron
 
 from deslib.dcs.mla import MLA
 from deslib.tests.examples_test import *
@@ -86,3 +87,14 @@ def test_estimate_competence_diff_target(index):
 
     competences = mla_test.estimate_competence(query.reshape(1, -1))
     assert np.isclose(competences, expected).all()
+
+
+# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
+# In this case the test should not raise an error since this class does not require base classifiers that
+# can estimate probabilities
+def test_predict_proba():
+    X = X_dsel_ex1
+    y = y_dsel_ex1
+    clf1 = Perceptron()
+    clf1.fit(X, y)
+    MLA([clf1, clf1])

@@ -2,6 +2,7 @@ from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
+from sklearn.linear_model import Perceptron
 
 from deslib.des.des_knn import DESKNN
 from deslib.tests.examples_test import create_pool_classifiers
@@ -157,3 +158,14 @@ def test_classify_instance():
 
     predicted = des_knn_test.classify_instance(query)
     assert predicted == 0
+
+
+# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
+# In this case the test should not raise an error since this class does not require base classifiers that
+# can estimate probabilities
+def test_predict_proba():
+    X = np.random.randn(5, 5)
+    y = np.array([0, 1, 0, 0, 0])
+    clf1 = Perceptron()
+    clf1.fit(X, y)
+    DESKNN([clf1, clf1, clf1])

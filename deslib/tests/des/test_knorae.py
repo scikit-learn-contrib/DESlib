@@ -2,6 +2,7 @@ import pytest
 
 from deslib.des.knora_e import KNORAE
 from deslib.tests.examples_test import *
+from sklearn.linear_model import Perceptron
 
 
 @pytest.mark.parametrize('index, expected', [(0, [1.0, 0.0, 1.0]),
@@ -52,5 +53,17 @@ def test_select_none_competent():
     indices = knora_e_test.select(competences)
 
     assert indices == list(range(knora_e_test.n_classifiers))
+
+
+# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
+# In this case the test should not raise an error since this class does not require base classifiers that
+# can estimate probabilities
+def test_predict_proba():
+    X = X_dsel_ex1
+    y = y_dsel_ex1
+    clf1 = Perceptron()
+    clf1.fit(X, y)
+    KNORAE([clf1, clf1])
+
 
 

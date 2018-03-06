@@ -2,6 +2,7 @@ import pytest
 
 from deslib.des.knora_u import KNORAU
 from deslib.tests.examples_test import *
+from sklearn.linear_model import Perceptron
 
 
 @pytest.mark.parametrize('index, expected', [(0, [4.0, 3.0, 4.0]),
@@ -59,6 +60,18 @@ def test_weights_zero():
 
     result = knora_u_test.select(query)
     assert np.array_equal(result, np.array([0, 1, 0]))
+
+
+# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
+# In this case the test should not raise an error since this class does not require base classifiers that
+# can estimate probabilities
+def test_predict_proba():
+    X = X_dsel_ex1
+    y = y_dsel_ex1
+    clf1 = Perceptron()
+    clf1.fit(X, y)
+    KNORAU([clf1, clf1])
+
 
 
 
