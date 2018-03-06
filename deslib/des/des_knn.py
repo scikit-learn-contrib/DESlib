@@ -84,7 +84,7 @@ class DESKNN(DES):
                                      mode=mode)
 
         self.N = int(self.n_classifiers * pct_accuracy)
-        self.J = int(self.n_classifiers * pct_diversity)
+        self.J = int(np.ceil(self.n_classifiers * pct_diversity))
         self.more_diverse = more_diverse
         self.name = 'Dynamic Ensemble Selection-KNN (DES-KNN)'
 
