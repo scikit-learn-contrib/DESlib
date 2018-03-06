@@ -22,6 +22,10 @@ class KNORAE(DES):
     
     Parameters
     ----------
+    pool_classifiers : list of classifiers
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       The classifiers should support the method "predict".
+
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
 
