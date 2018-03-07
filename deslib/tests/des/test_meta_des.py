@@ -96,3 +96,15 @@ def test_parameter_Hc(Hc):
 def test_parameter_gamma(gamma):
     with pytest.raises((ValueError, TypeError)):
         METADES(create_pool_classifiers(), gamma=gamma)
+
+
+# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
+# Should raise an exception when the base classifier cannot estimate posterior probabilities (predict_proba)
+# Using Perceptron classifier as it does not implements the predict_proba method.
+def test_not_predict_proba():
+    X = X_dsel_ex1
+    y = y_dsel_ex1
+    clf1 = Perceptron()
+    clf1.fit(X, y)
+    with pytest.raises(ValueError):
+        METADES([clf1, clf1])

@@ -285,6 +285,9 @@ class DS(ClassifierMixin):
         # Check if X is a valid input
         self._check_input_predict(X)
 
+        # Check if the base classifiers are able to estimate posterior probabilities (implements predict_proba).
+        self._check_predict_proba()
+
         n_samples = X.shape[0]
         predicted_proba = np.zeros((n_samples, self.n_classes))
         for index, instance in enumerate(X):
@@ -455,6 +458,7 @@ class DS(ClassifierMixin):
         containing the scores (probabilities) for each class
         obtained by each base classifier in the generated_pool for each sample in DSEL.
         """
+
         dsel_scores = np.zeros(
             (self.DSEL_target.size, self.n_classifiers * self.n_classes))
 
@@ -462,6 +466,12 @@ class DS(ClassifierMixin):
             scores = clf.predict_proba(self.DSEL_data)
             dsel_scores[:, index * self.n_classes:(index * self.n_classes) + self.n_classes] = scores
         return dsel_scores
+
+    def _check_predict_proba(self):
+        for clf in self.pool_classifiers:
+            check_is_fitted(clf, "classes_")
+            if "predict_proba" not in dir(clf):
+                raise ValueError("All base classifiers should output probability estimates")
 
     def _get_scores_dsel(self, clf_idx, sample_idx=None):
         """Get the outputs (scores) obtained by the base classifier
@@ -563,11 +573,6 @@ class DS(ClassifierMixin):
         if self.n_classifiers <= 0:
             raise ValueError("n_classifiers must be greater than zero, "
                              "got {}.".format(self.n_classifiers))
-
-        for clf in self.pool_classifiers:
-            check_is_fitted(clf, "classes_")
-            if "predict_proba" not in dir(clf):
-                raise ValueError("All base classifiers should output probability estimates")
 
     def _check_num_features(self, X):
         """Verify if the number of features (n_features) of X is equals to the number

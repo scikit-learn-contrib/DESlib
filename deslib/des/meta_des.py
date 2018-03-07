@@ -97,6 +97,7 @@ class METADES(DES):
         super(METADES, self).__init__(pool_classifiers, k, DFP=DFP,
                                       with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate, mode=mode)
 
+        self._check_predict_proba()
         self._check_input_parameters(Hc, gamma, meta_classifier)
 
         self.name = 'META-DES'

@@ -70,6 +70,8 @@ class Probabilistic(DES):
         super(Probabilistic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
                                             IH_rate=IH_rate,
                                             mode=mode)
+        self._check_predict_proba()
+
         self.C_src = None
         self.selection_threshold = selection_threshold
 

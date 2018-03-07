@@ -21,8 +21,9 @@ class DESKNN(DES):
 
     Parameters
     ----------
-    pool_classifiers : type, the generated_pool of classifiers trained for the corresponding
-    classification problem.
+    pool_classifiers : list of classifiers
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       The classifiers should support the method "predict".
 
     k : int (Default = 5)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -83,7 +84,7 @@ class DESKNN(DES):
                                      mode=mode)
 
         self.N = int(self.n_classifiers * pct_accuracy)
-        self.J = int(self.n_classifiers * pct_diversity)
+        self.J = int(np.ceil(self.n_classifiers * pct_diversity))
         self.more_diverse = more_diverse
         self.name = 'Dynamic Ensemble Selection-KNN (DES-KNN)'
 
