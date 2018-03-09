@@ -7,7 +7,7 @@
 import numpy as np
 
 from deslib.des.base import DES
-from deslib.util.aggregation import majority_voting
+from deslib.util.aggregation import majority_voting_rule
 from deslib.util.diversity import negative_double_fault, Q_statistic, ratio_errors
 
 
@@ -98,7 +98,7 @@ class DESKNN(DES):
         else:
             self.diversity_func = ratio_errors
 
-    def estimate_competence(self, query):
+    def estimate_competence(self, query, predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}` for
         the classification of the query sample.
 
@@ -112,6 +112,10 @@ class DESKNN(DES):
         ----------
         query : array cf shape  = [n_features]
                 The query sample
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
+
         Returns
         -------
         competences : array of shape = [n_classifiers]
@@ -175,7 +179,7 @@ class DESKNN(DES):
         indices = competent_indices[diversity_indices]
         return indices
 
-    def classify_instance(self, query):
+    def classify_instance(self, query, predictions):
         """Predicts the label of the corresponding query sample.
         Returns the predicted label.
 
@@ -184,13 +188,16 @@ class DESKNN(DES):
         query : array of shape = [n_features]
                 The test sample
 
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
+
         Returns
         -------
         predicted_label: The predicted label of the query
         """
         indices = self.select(query)
-        classifier_ensemble = self._get_classifier_ensemble(indices)
-        predicted_label = majority_voting(classifier_ensemble, query)
+        votes = np.atleast_2d(predictions[indices])
+        predicted_label = majority_voting_rule(votes)
         return predicted_label
 
     def _validate_parameters(self):

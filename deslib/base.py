@@ -86,7 +86,7 @@ class DS(ClassifierMixin):
         pass
 
     @abstractmethod
-    def estimate_competence(self, query):
+    def estimate_competence(self, query, predictions=None):
         """estimate the competence of each base classifier ci
         the classification of the query sample x.
         Returns an array containing the level of competence estimated
@@ -97,6 +97,9 @@ class DS(ClassifierMixin):
         ----------
         query : array containing the test sample = [n_features]
 
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
+
         Returns
         -------
         competences : array = [n_classifiers] containing the competence level estimated
@@ -105,13 +108,16 @@ class DS(ClassifierMixin):
         pass
 
     @abstractmethod
-    def classify_instance(self, query):
+    def classify_instance(self, query, predictions):
         """Predicts the label of the corresponding query sample.
         Returns the predicted label.
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array containing the test sample = [n_samples, n_features]
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------
@@ -284,7 +290,7 @@ class DS(ClassifierMixin):
                     else:
                             self.DFP_mask = np.ones(self.n_classifiers)
 
-                    predicted_labels[index] = self.classify_instance(instance)
+                    predicted_labels[index] = self.classify_instance(instance, base_predictions[index, :])
 
                 self.neighbors = None
                 self.distances = None
@@ -450,7 +456,6 @@ class DS(ClassifierMixin):
         processed_dsel = BKS_dsel == self.DSEL_target[:, np.newaxis]
 
         return processed_dsel, BKS_dsel
-
 
     def _predict_base(self, X):
         predictions = np.zeros((X.shape[0], self.n_classifiers))

@@ -1,7 +1,8 @@
 from abc import ABCMeta
 
 from deslib.base import DS
-from deslib.util.aggregation import weighted_majority_voting, majority_voting, predict_proba_ensemble, \
+import numpy as np
+from deslib.util.aggregation import weighted_majority_voting_rule, majority_voting_rule, predict_proba_ensemble, \
     predict_proba_ensemble_weighted
 
 
@@ -66,7 +67,7 @@ class DES(DS):
 
         self.mode = mode
 
-    def estimate_competence(self, query):
+    def estimate_competence(self, query, predictions=None):
         """Estimate the competence of each base classifier ci
         the classification of the query sample x.
         Returns an array containing the level of competence estimated
@@ -76,6 +77,9 @@ class DES(DS):
         Parameters
         ----------
         query : array containing the test sample = [n_features]
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------
@@ -102,7 +106,7 @@ class DES(DS):
         """
         pass
 
-    def classify_instance(self, query):
+    def classify_instance(self, query, predictions):
         """Predicts the label of the corresponding query sample.
 
         If self.mode == "selection", the selected ensemble is combined using the
@@ -118,8 +122,10 @@ class DES(DS):
 
         Parameters
         ----------
-        query : array of shape = [n_features]
-                The test sample
+        query : array containing the test sample = [n_samples, n_features]
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------
@@ -128,17 +134,17 @@ class DES(DS):
         competences = self.estimate_competence(query)
         if self.mode == "selection":
             indices = self.select(competences)
-            classifier_ensemble = self._get_classifier_ensemble(indices)
-            predicted_label = majority_voting(classifier_ensemble, query)[0]
+            votes = np.atleast_2d(predictions[indices])
+            predicted_label = majority_voting_rule(votes)
 
         elif self.mode == "weighting":
-            predicted_label = weighted_majority_voting(self.pool_classifiers, competences, query)[0]
-
+            votes = np.atleast_2d(predictions)
+            predicted_label = weighted_majority_voting_rule(votes, competences)
         else:
             indices = self.select(competences)
             competences_ensemble = competences[indices]
-            classifier_ensemble = self._get_classifier_ensemble(indices)
-            predicted_label = weighted_majority_voting(classifier_ensemble, competences_ensemble, query)[0]
+            votes = np.atleast_2d(predictions[indices])
+            predicted_label = weighted_majority_voting_rule(votes, competences_ensemble)
 
         return predicted_label
 

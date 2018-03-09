@@ -8,7 +8,7 @@ from deslib.tests.examples_test import *
 # Should always be 1.0 since the supports for the correct class is always 1.
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_estimate_competence_all_ones(index):
-    query = np.array([1, 1])
+    query = np.atleast_2d([1, 1])
 
     mla_test = MLA(create_pool_classifiers())
 
@@ -23,7 +23,11 @@ def test_estimate_competence_all_ones(index):
 
     expected = [1.0, 1.0, 1.0]
 
-    competences = mla_test.estimate_competence(query.reshape(1, -1))
+    predictions = []
+    for clf in mla_test.pool_classifiers:
+        predictions.append(clf.predict(query))
+    competences = mla_test.estimate_competence(query, predictions=np.array(predictions))
+
     assert np.isclose(competences, expected).all()
 
 
@@ -32,7 +36,7 @@ def test_estimate_competence_all_ones(index):
                                              (1, [0.80000,  1.00000,  0.80000]),
                                              (2, [1.00000,  0.60000,  0.50000])])
 def test_estimate_competence(index, expected):
-    query = np.array([1, 1])
+    query = np.atleast_2d([1, 1])
 
     mla_test = MLA(create_pool_classifiers())
 
@@ -45,13 +49,17 @@ def test_estimate_competence(index, expected):
     mla_test.distances = distances_all_ones[index, :]
     mla_test.DFP_mask = [1, 1, 1]
 
-    competences = mla_test.estimate_competence(query.reshape(1, -1))
+    predictions = []
+    for clf in mla_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+    competences = mla_test.estimate_competence(query, predictions=np.array(predictions))
+
     assert np.isclose(competences, expected).all()
 
 
 # Testing example from kuncheva's book (combining pattern classifiers)
 def test_estimate_competence_kuncheva_ex():
-    query = np.array([1, 1])
+    query = np.atleast_2d([1, 1])
 
     mla_test = MLA([create_base_classifier(return_value=1)], k=k_ex_kuncheva)
 
@@ -64,7 +72,11 @@ def test_estimate_competence_kuncheva_ex():
     mla_test.distances = distances_ex_kuncheva
     mla_test.DFP_mask = [1]
 
-    competences = mla_test.estimate_competence(query.reshape(1, -1))
+    predictions = []
+    for clf in mla_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+    competences = mla_test.estimate_competence(query, predictions=np.array(predictions))
+
     assert np.isclose(competences, 0.95, atol=0.01)
 
 
@@ -72,7 +84,7 @@ def test_estimate_competence_kuncheva_ex():
 # the estimation of competence should always be zero
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_estimate_competence_diff_target(index):
-    query = np.array([1, 1])
+    query = np.atleast_2d([1, 1])
 
     mla_test = MLA(create_pool_classifiers())
 
@@ -85,9 +97,12 @@ def test_estimate_competence_diff_target(index):
 
     expected = [0.0, 0.0, 0.0]
 
-    competences = mla_test.estimate_competence(query.reshape(1, -1))
-    assert np.isclose(competences, expected).all()
+    predictions = []
+    for clf in mla_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+    competences = mla_test.estimate_competence(query, predictions=np.array(predictions))
 
+    assert np.isclose(competences, expected).all()
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
 # In this case the test should not raise an error since this class does not require base classifiers that

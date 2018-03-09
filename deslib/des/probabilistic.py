@@ -110,7 +110,7 @@ class Probabilistic(DES):
         self.C_src = self.source_competence()
         return self
 
-    def estimate_competence(self, query):
+    def estimate_competence(self, query, predictions=None):
         """estimate the competence of each base classifier ci using the source of competence C_src
         and the potential function model. The source of competence C_src for all data points in DSEL
         is already pre-computed in the fit() steps.
@@ -121,6 +121,9 @@ class Probabilistic(DES):
         Parameters
         ----------
         query : array containing the test sample = [n_features]
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------

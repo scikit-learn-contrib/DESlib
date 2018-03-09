@@ -3,7 +3,7 @@ from abc import ABCMeta
 import numpy as np
 
 from deslib.base import DS
-from deslib.util.aggregation import majority_voting, predict_proba_ensemble
+from deslib.util.aggregation import majority_voting_rule, predict_proba_ensemble
 
 
 class DCS(DS):
@@ -91,12 +91,15 @@ class DCS(DS):
         self.diff_thresh = diff_thresh
         self.rng = rng
 
-    def estimate_competence(self, query):
+    def estimate_competence(self, query, predictions=None):
         """estimate the competence of each base classifier for the classification of the query sample.
 
         Parameters
         ----------
         query : array containing the test sample = [n_features]
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------
@@ -167,7 +170,7 @@ class DCS(DS):
 
         return selected_clf
 
-    def classify_instance(self, query):
+    def classify_instance(self, query, predictions):
         """Predicts the class label of the corresponding query sample.
 
         If self.mode == "all", the majority voting scheme is used to aggregate the predictions of all classifiers with
@@ -175,22 +178,26 @@ class DCS(DS):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array containing the test sample = [n_samples, n_features]
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------
         The predicted label of the query
         """
-        competences = self.estimate_competence(query)
+        competences = self.estimate_competence(query, predictions=predictions)
+
         if self.selection_method != 'all':
             # only one classifier is selected
             clf_index = self.select(competences)
-            predicted_label = self.pool_classifiers[clf_index].predict(query)[0]
+            predicted_label = predictions[clf_index]
         else:
             # Selected ensemble of classifiers is combined using Majority Voting
             indices = self.select(competences)
-            classifier_ensemble = self._get_classifier_ensemble(indices)
-            predicted_label = majority_voting(classifier_ensemble, query)
+            votes = np.atleast_2d(predictions[indices])
+            predicted_label = majority_voting_rule(votes)
 
         return predicted_label
 

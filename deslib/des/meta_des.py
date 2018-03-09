@@ -309,7 +309,7 @@ class METADES(DES):
 
         return indices
 
-    def estimate_competence(self, query):
+    def estimate_competence(self, query, predictions=None):
         """Estimate the competence of each base classifier :math:`c_i`
         the classification of the query sample.
 
@@ -321,6 +321,9 @@ class METADES(DES):
         ----------
         query : array of shape = [n_features]
                 The test sample
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------

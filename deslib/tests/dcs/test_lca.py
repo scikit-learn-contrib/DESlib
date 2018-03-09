@@ -14,29 +14,36 @@ def test_estimate_competence_woods(index, expected):
     lca_test.distances = distances_ex1[index, :]
     lca_test.DFP_mask = [1, 1, 1]
     lca_test.DSEL_target = y_dsel_ex1
-    query = np.array([1, 1])
-    competences = lca_test.estimate_competence(query.reshape(1, -1))
+
+    query = np.atleast_2d([1, 1])
+
+    predictions = []
+    for clf in lca_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+    competences = lca_test.estimate_competence(query, predictions=np.array(predictions))
+
     assert np.isclose(competences, expected).all()
 
 
-# in this test case, the target of the neighbors is always different than the predicted. So
+# in this test case, the target of the neighbors is always different than the predicted class. So
 # the estimation of competence should always be zero
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_estimate_competence_diff_target(index):
-    query = np.array([1, 1])
+    lca_test = LCA(create_pool_classifiers())
+    lca_test.processed_dsel = dsel_processed_ex1
+    lca_test.DSEL_target = np.ones(15, dtype=int) * 3
+    lca_test.neighbors = neighbors_ex1[index, :]
+    lca_test.distances = distances_ex1[index, :]
+    lca_test.DFP_mask = [1, 1, 1]
 
-    lca = LCA(create_pool_classifiers())
-
-    lca.processed_dsel = dsel_processed_ex1
-    lca.DSEL_target = np.ones(15, dtype=int) * 3
-
-    lca.neighbors = neighbors_ex1[index, :]
-    lca.distances = distances_ex1[index, :]
-    lca.DFP_mask = [1, 1, 1]
-
+    query = np.atleast_2d([1, 1])
     expected = [0.0, 0.0, 0.0]
 
-    competences = lca.estimate_competence(query.reshape(1, -1))
+    predictions = []
+    for clf in lca_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+    competences = lca_test.estimate_competence(query, predictions=np.array(predictions))
+
     assert np.isclose(competences, expected).all()
 
 

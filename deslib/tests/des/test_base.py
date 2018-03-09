@@ -28,14 +28,18 @@ while classifiers with indices 1 and 4 predicts class 1.
 # In this first example only dynamic selection is considered.  Since the selected indices are 0, 1 and 5 the expected
 # prediction should be 0 (2 votes).
 def test_classify_instance_selection():
-    query = np.array([-1, 1])
+    query = np.atleast_2d([-1, 1])
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
     des_test = DES(pool_classifiers, mode='selection')
     # competences = [0.55, 1.0, 0.2, 0.65, 0.75, 0.8]
     selected_index = [0, 1, 5]
     des_test.select = MagicMock(return_value=selected_index)
 
-    predicted_label = des_test.classify_instance(query)
+    predictions = []
+    for clf in des_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+
+    predicted_label = des_test.classify_instance(query, np.array(predictions))
     assert predicted_label == 0.0
 
 
@@ -43,20 +47,25 @@ def test_classify_instance_selection():
 # though there is four classifiers giving label 0 and only classifiers 2 giving label 1, the prediction should
 # be 1 due to the classifiers weights
 def test_classify_instance_weighting():
-    query = np.array([-1, 1])
+    query = np.atleast_2d([-1, 1])
+
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
     des_test = DES(pool_classifiers, mode='weighting')
     competences = np.array([0.55, 1.0, 0.2, 0.60, 0.75, 0.3])
     des_test.estimate_competence = MagicMock(return_value=competences)
 
-    predicted_label = des_test.classify_instance(query)
+    predictions = []
+    for clf in des_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+    predicted_label = des_test.classify_instance(query, np.array(predictions))
     assert predicted_label == 1.0
 
 
 # Same example of test_classify_instance_selection, however, since the weights are also used in the hybrid scheme,
 # the function should return 1 instead of 0.
 def test_classify_instance_hybrid():
-    query = np.array([-1, 1])
+    query = np.atleast_2d([-1, 1])
+
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
     des_test = DES(pool_classifiers, mode='hybrid')
     selected_indices = [0, 1, 5]
@@ -64,7 +73,11 @@ def test_classify_instance_hybrid():
     des_test.estimate_competence = MagicMock(return_value=competences)
     des_test.select = MagicMock(return_value=selected_indices)
 
-    predicted_label = des_test.classify_instance(query)
+    predictions = []
+    for clf in des_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+
+    predicted_label = des_test.classify_instance(query, np.array(predictions))
     assert predicted_label == 1.0
 
 # ------------------------ Testing predict_proba -----------------

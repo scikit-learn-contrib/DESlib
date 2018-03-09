@@ -66,7 +66,7 @@ class DESP(DES):
 
         self.name = 'DES-Performance (DES-P)'
 
-    def estimate_competence(self, query):
+    def estimate_competence(self, query, predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample base on its local performance.
 
@@ -76,6 +76,9 @@ class DESP(DES):
         ----------
         query : array of shape = [n_features]
                 The test sample
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------

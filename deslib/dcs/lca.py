@@ -82,7 +82,7 @@ class LCA(DCS):
 
             self.name = 'Local Classifier Accuracy (LCA)'
 
-    def estimate_competence(self, query):
+    def estimate_competence(self, query, predictions):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the local class accuracy method.
 
@@ -108,6 +108,7 @@ class LCA(DCS):
         competences : array of shape = [n_classifiers]
                       The competence level estimated for each base classifier
         """
+
         dists, idx_neighbors = self._get_region_competence(query)
         competences = np.zeros(self.n_classifiers)
 
@@ -115,7 +116,7 @@ class LCA(DCS):
             # Check if the dynamic frienemy pruning (DFP) should be used used
             if self.DFP_mask[clf_index]:
                 result = []
-                predicted_label = clf.predict(query)[0]
+                predicted_label = predictions[clf_index]
                 for index in idx_neighbors:
                     # Get only neighbors from the same class as predicted by the
                     # classifier (clf) to form the region of competence

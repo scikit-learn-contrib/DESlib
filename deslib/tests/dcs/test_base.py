@@ -77,7 +77,10 @@ def test_classify_instance():
     dcs_test.estimate_competence = MagicMock(return_value=competences)
     expected = pool_classifiers[np.argmax(competences)].predict(query)[0]
 
-    predicted_label = dcs_test.classify_instance(query)
+    predictions = []
+    for clf in dcs_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+    predicted_label = dcs_test.classify_instance(query, np.array(predictions))
     assert predicted_label == expected
 
 
@@ -88,7 +91,11 @@ def test_classify_instance_all(competences, expected):
     pool_classifiers = create_pool_classifiers()
     dcs_test = DCS(pool_classifiers, selection_method='all')
     dcs_test.estimate_competence = MagicMock(return_value=competences)
-    predicted_label = dcs_test.classify_instance(query)
+
+    predictions = []
+    for clf in dcs_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+    predicted_label = dcs_test.classify_instance(query, np.array(predictions))
     assert predicted_label == expected
 
 

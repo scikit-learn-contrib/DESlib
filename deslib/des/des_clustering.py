@@ -9,7 +9,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import accuracy_score
 
 from deslib.des.base import DES
-from deslib.util.aggregation import majority_voting
+from deslib.util.aggregation import majority_voting_rule
 from deslib.util.diversity import Q_statistic, ratio_errors, negative_double_fault
 
 
@@ -179,7 +179,7 @@ class DESClustering(DES):
                 diversity[clf_index2] += this_diversity
         return diversity
 
-    def estimate_competence(self, query):
+    def estimate_competence(self, query, predictions=None):
         """Get the competence estimates of each base classifier :math:`c_{i}`
         for the classification of the query sample.
 
@@ -191,6 +191,9 @@ class DESClustering(DES):
         ----------
         query : array of shape = [n_features]
                 The query sample
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------
@@ -221,7 +224,7 @@ class DESClustering(DES):
         indices = self.indices[cluster_index, :]
         return indices
 
-    def classify_instance(self, query):
+    def classify_instance(self, query, predictions):
         """Predicts the label of the corresponding query sample.
 
         Parameters
@@ -229,13 +232,18 @@ class DESClustering(DES):
         query : array of shape = [n_features]
                 The test sample
 
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
+
         Returns
         -------
         predicted_label: The predicted label of the query
         """
         indices = self.select(query)
-        classifier_ensemble = self._get_classifier_ensemble(indices)
-        predicted_label = majority_voting(classifier_ensemble, query)
+        votes = np.atleast_2d(predictions[indices])
+        predicted_label = majority_voting_rule(votes)
+        # classifier_ensemble = self._get_classifier_ensemble(indices)
+        # predicted_label = majority_voting(classifier_ensemble, query)
         return predicted_label
 
     def _validate_parameters(self):

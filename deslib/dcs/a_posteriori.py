@@ -97,7 +97,7 @@ class APosteriori(DCS):
         self.dsel_scores = self._preprocess_dsel_scores()
         return self
 
-    def estimate_competence(self, query):
+    def estimate_competence(self, query, predictions):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the A Posteriori method.
 
@@ -118,11 +118,16 @@ class APosteriori(DCS):
         ----------
         query : array cf shape  = [n_features]
                 The query sample
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
+
         Returns
         -------
         competences : array of shape = [n_classifiers]
                       The competence level estimated for each base classifier
         """
+
         dists, idx_neighbors = self._get_region_competence(query)
         dists_normalized = 1.0/dists
         competences = np.zeros(self.n_classifiers)
@@ -134,7 +139,7 @@ class APosteriori(DCS):
 
                 result = []
                 dists_temp = []
-                predicted_label = clf.predict(query)[0]
+                predicted_label = predictions[clf_index]
 
                 for counter, neighbor in enumerate(idx_neighbors):
                     # Get only neighbors from the same class as predicted by the

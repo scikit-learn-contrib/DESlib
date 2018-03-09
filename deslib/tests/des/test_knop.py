@@ -32,9 +32,14 @@ def test_classify(index, expected):
     knop_test.DFP_mask = np.ones(knop_test .n_classifiers)
     knop_test.neighbors = neighbors_ex1[index, :]
     knop_test.distances = distances_ex1[index, :]
-    prediction = knop_test.classify_instance(query)
 
-    assert prediction == expected
+    predictions = []
+    for clf in knop_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+
+    predicted_label = knop_test.classify_instance(query, np.array(predictions))
+
+    assert predicted_label == expected
 
 
 def test_weights_zero():
