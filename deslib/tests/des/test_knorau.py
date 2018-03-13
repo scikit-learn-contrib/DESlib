@@ -31,7 +31,12 @@ def test_classify(index, expected):
     knora_u_test.DFP_mask = np.ones(knora_u_test .n_classifiers)
     knora_u_test.neighbors = neighbors_ex1[index, :]
     knora_u_test.distances = distances_ex1[index, :]
-    prediction = knora_u_test.classify_instance(query)
+
+    predictions = []
+    for clf in knora_u_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+
+    prediction = knora_u_test.classify_instance(query, np.array(predictions))
 
     assert prediction == expected
 
@@ -47,7 +52,12 @@ def test_classify2(index, expected):
     knora_u_test.DFP_mask = np.ones(knora_u_test .n_classifiers)
     knora_u_test.neighbors = neighbors_ex1[index, :]
     knora_u_test.distances = distances_ex1[index, :]
-    prediction = knora_u_test.classify_instance(query)
+
+    predictions = []
+    for clf in knora_u_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+
+    prediction = knora_u_test.classify_instance(query, np.array(predictions))
 
     assert prediction == expected
 

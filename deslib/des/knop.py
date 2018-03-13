@@ -95,13 +95,15 @@ class KNOP(DES):
         -------
         self
         """
-        self._set_dsel(X, y)
+
+        y_ind = self.setup_label_encoder(y)
+        self._set_dsel(X, y_ind)
         self.dsel_scores = self._preprocess_dsel_scores()
-        self._fit_region_competence(self.dsel_scores, y, self.k)
+        self._fit_region_competence(self.dsel_scores, y_ind, self.k)
 
         return self
     
-    def estimate_competence(self, query):
+    def estimate_competence(self, query, predictions=None):
         """The competence of the base classifiers is simply estimated as the number of samples
         in the region of competence that it correctly classified.
 
@@ -111,6 +113,9 @@ class KNOP(DES):
         ----------
         query : array of shape = [n_features]
                 The test sample to be classified
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------
@@ -157,7 +162,7 @@ class KNOP(DES):
 
         return votes
 
-    def classify_instance(self, query):
+    def classify_instance(self, query, predictions):
         """Predicts the label of the corresponding query sample.
 
         The prediction is made aggregating the votes obtained by all selected base classifiers. The predicted label
@@ -168,11 +173,25 @@ class KNOP(DES):
         query : array of shape = [n_features]
                 The test sample to be classified.
 
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
+
         Returns
         -------
         predicted_label : Prediction of the ensemble for the input query.
         """
-        votes = self.select(query)
+        output_profile_query = self._output_profile_transform(query)
+        weights = self.estimate_competence(output_profile_query.reshape(1, -1))
+
+        # If all weights is equals to zero, it means that no classifier was selected. Hence, use all of them with equal
+        # weights.
+        if np.sum(weights) == 0:
+            weights = np.ones(self.n_classifiers, dtype=int)
+
+        votes = np.array([], dtype=int)
+        for clf_idx, clf in enumerate(self.pool_classifiers):
+            votes = np.hstack((votes, np.ones(weights[clf_idx], dtype=int) * predictions[clf_idx]))
+
         predicted_label = mode(votes)[0]
 
         return predicted_label

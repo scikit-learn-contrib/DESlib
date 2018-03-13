@@ -136,10 +136,12 @@ class METADES(DES):
         -------
         self
         """
-        self._set_dsel(X, y)
-        self._fit_region_competence(X, y, self.k)
+
+        y_ind = self.setup_label_encoder(y)
+        self._set_dsel(X, y_ind)
+        self._fit_region_competence(X, y_ind, self.k)
         self.dsel_scores = self._preprocess_dsel_scores()
-        self._fit_OP(self.dsel_scores, y, self.Kp)
+        self._fit_OP(self.dsel_scores, y_ind, self.Kp)
 
         # check whether the meta-classifier was already trained
         # since it could have been pre-processed before
@@ -307,7 +309,7 @@ class METADES(DES):
 
         return indices
 
-    def estimate_competence(self, query):
+    def estimate_competence(self, query, predictions=None):
         """Estimate the competence of each base classifier :math:`c_i`
         the classification of the query sample.
 
@@ -319,6 +321,9 @@ class METADES(DES):
         ----------
         query : array of shape = [n_features]
                 The test sample
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------

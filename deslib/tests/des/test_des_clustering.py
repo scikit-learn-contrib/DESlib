@@ -100,7 +100,11 @@ def test_classify_instance():
     clustering_test = DESClustering(create_pool_classifiers() * 4, k=2)
     clustering_test.select = MagicMock(return_value=[0, 1, 2, 3, 5, 6, 7, 9])
 
-    predicted = clustering_test.classify_instance(query)
+    predictions = []
+    for clf in clustering_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+
+    predicted = clustering_test.classify_instance(query, np.array(predictions))
     assert predicted == 0
 
 

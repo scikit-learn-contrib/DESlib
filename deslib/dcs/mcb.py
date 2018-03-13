@@ -95,7 +95,7 @@ class MCB(DCS):
         self.similarity_threshold = similarity_threshold
         self.name = 'Multiple Classifier Behaviour (MCB)'
 
-    def estimate_competence(self, query):
+    def estimate_competence(self, query, predictions):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the Multiple Classifier Behaviour criterion.
 
@@ -120,15 +120,21 @@ class MCB(DCS):
         ----------
         query : array cf shape  = [n_features]
                 The query sample
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
+
         Returns
         -------
         competences : array of shape = [n_classifiers]
                       The competence level estimated for each base classifier
         """
+
         dists, idx_neighbors = self._get_region_competence(query)
         competences = np.zeros(self.n_classifiers)
 
-        BKS_query = self._BKS_transform(query)
+        # Use the pre-compute decisions to transform the query to the BKS space
+        BKS_query = predictions
 
         # Use the BKS to filter the competence region
         selected_idx = []
@@ -150,23 +156,3 @@ class MCB(DCS):
                 competences[clf_index] = np.mean(np.array(clf_competence))
 
         return competences
-
-    def _BKS_transform(self, query):
-        """Transform the query sample to the decision space using the Behaviour Knowledge Space (BKS) method [4].
-
-        The BKS space is a vector = [n_classifiers], in which each position i is equals to the class label predicted
-        by the base classifier :math:`c_{i}` for the query sample :math:`x_j`.
-
-        Parameters
-        ----------
-        query : array containing the test sample = [n_features]
-
-        Returns
-        -------
-        bks_query : array = [n_classifiers] containing the transformation of the query sample to the decision space
-        """
-        BKS_query = np.zeros(self.n_classifiers)
-        for clf_index, clf in enumerate(self.pool_classifiers):
-            BKS_query[clf_index] = clf.predict(query.reshape(1, -1))[0]
-
-        return BKS_query

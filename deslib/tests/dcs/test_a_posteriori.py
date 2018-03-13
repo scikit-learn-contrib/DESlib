@@ -8,10 +8,9 @@ from deslib.tests.examples_test import *
 # Should always be 1.0 since the supports for the correct class is always 1.
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_estimate_competence_all_ones(index):
-    query = np.array([1, 1])
+    query = np.atleast_2d([1, 1])
 
     a_posteriori_test = APosteriori(create_pool_classifiers())
-
     a_posteriori_test.processed_dsel = dsel_processed_ex1
     a_posteriori_test.dsel_scores = dsel_scores_all_ones
     a_posteriori_test.DSEL_target = y_dsel_ex1
@@ -23,13 +22,17 @@ def test_estimate_competence_all_ones(index):
 
     expected = [1.0, 1.0, 1.0]
 
-    competences = a_posteriori_test.estimate_competence(query.reshape(1, -1))
+    predictions = []
+    for clf in a_posteriori_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+
+    competences = a_posteriori_test.estimate_competence(query, predictions=np.array(predictions))
     assert np.isclose(competences, expected).all()
 
 
 # Testing example from kuncheva's book (combining pattern classifiers)
 def test_estimate_competence_kuncheva_ex():
-    query = np.array([1, 1])
+    query = np.atleast_2d([1, 1])
 
     a_posteriori_test = APosteriori([create_base_classifier(return_value=1)], k=k_ex_kuncheva)
 
@@ -42,7 +45,10 @@ def test_estimate_competence_kuncheva_ex():
     a_posteriori_test.distances = distances_ex_kuncheva
     a_posteriori_test.DFP_mask = [1]
 
-    competences = a_posteriori_test.estimate_competence(query.reshape(1, -1))
+    predictions = []
+    for clf in a_posteriori_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+    competences = a_posteriori_test.estimate_competence(query, predictions=np.array(predictions))
     assert np.isclose(competences, 0.95, atol=0.01)
 
 
@@ -50,7 +56,7 @@ def test_estimate_competence_kuncheva_ex():
 # the estimation of competence should always be zero
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_estimate_competence_diff_target(index):
-    query = np.array([1, 1])
+    query = np.atleast_2d([1, 1])
 
     a_posteriori_test = APosteriori(create_pool_classifiers())
 
@@ -65,7 +71,10 @@ def test_estimate_competence_diff_target(index):
 
     expected = [0.0, 0.0, 0.0]
 
-    competences = a_posteriori_test.estimate_competence(query.reshape(1, -1))
+    predictions = []
+    for clf in a_posteriori_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+    competences = a_posteriori_test.estimate_competence(query, predictions=np.array(predictions))
     assert np.isclose(competences, expected).all()
 
 

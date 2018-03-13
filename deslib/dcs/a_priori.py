@@ -88,7 +88,7 @@ class APriori(DCS):
         self.dsel_scores = self._preprocess_dsel_scores()
         return self
 
-    def estimate_competence(self, query):
+    def estimate_competence(self, query, predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the A Priori rule:
 
@@ -108,6 +108,10 @@ class APriori(DCS):
         ----------
         query : array cf shape  = [n_features]
                 The query sample
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
+
         Returns
         -------
         competences : array of shape = [n_classifiers]

@@ -95,11 +95,13 @@ class Probabilistic(DES):
         -------
         self
         """
-        self._set_dsel(X, y)
+
+        y_ind = self.setup_label_encoder(y)
+        self._set_dsel(X, y_ind)
         if self.k is None:
             self.k = self.n_samples
 
-        self._fit_region_competence(X, y, self.n_samples)
+        self._fit_region_competence(X, y_ind, self.n_samples)
         # Pre process the scores in DSEL (it is required only for the source of competence estimation
         # Maybe I should not keep this matrix in order to reduce memory requirement.
         self.dsel_scores = self._preprocess_dsel_scores()
@@ -108,7 +110,7 @@ class Probabilistic(DES):
         self.C_src = self.source_competence()
         return self
 
-    def estimate_competence(self, query):
+    def estimate_competence(self, query, predictions=None):
         """estimate the competence of each base classifier ci using the source of competence C_src
         and the potential function model. The source of competence C_src for all data points in DSEL
         is already pre-computed in the fit() steps.
@@ -119,6 +121,9 @@ class Probabilistic(DES):
         Parameters
         ----------
         query : array containing the test sample = [n_features]
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------

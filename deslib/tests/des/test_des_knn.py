@@ -156,7 +156,11 @@ def test_classify_instance():
     des_knn_test = DESKNN(create_pool_classifiers() * 4, k=2)
     des_knn_test.select = MagicMock(return_value=[0, 1, 2, 3, 5, 6, 7, 9])
 
-    predicted = des_knn_test.classify_instance(query)
+    predictions = []
+    for clf in des_knn_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+
+    predicted = des_knn_test.classify_instance(query, predictions=np.array(predictions))
     assert predicted == 0
 
 

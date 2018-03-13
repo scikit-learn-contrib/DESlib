@@ -13,8 +13,11 @@ from sklearn.base import ClassifierMixin
 from sklearn.exceptions import NotFittedError
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.utils.validation import check_X_y, check_is_fitted
+from sklearn.preprocessing import LabelEncoder
 
 from deslib.util.aggregation import predict_proba_ensemble
+
+from sklearn.ensemble import BaseEnsemble
 
 
 class DS(ClassifierMixin):
@@ -57,6 +60,12 @@ class DS(ClassifierMixin):
         # check if the input parameters are correct. Raise an error if the generated_pool is not fitted or k < 1
         self._check_parameters()
 
+        # Check if base classifiers are not using LabelEncoder (the case for scikit-learn's ensembles):
+        if isinstance(self.pool_classifiers, BaseEnsemble):
+            self.base_already_encoded = True
+        else:
+            self.base_already_encoded = False
+
     @abstractmethod
     def select(self, query):
         """Select the most competent classifier for
@@ -77,7 +86,7 @@ class DS(ClassifierMixin):
         pass
 
     @abstractmethod
-    def estimate_competence(self, query):
+    def estimate_competence(self, query, predictions=None):
         """estimate the competence of each base classifier ci
         the classification of the query sample x.
         Returns an array containing the level of competence estimated
@@ -88,6 +97,9 @@ class DS(ClassifierMixin):
         ----------
         query : array containing the test sample = [n_features]
 
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
+
         Returns
         -------
         competences : array = [n_classifiers] containing the competence level estimated
@@ -96,13 +108,16 @@ class DS(ClassifierMixin):
         pass
 
     @abstractmethod
-    def classify_instance(self, query):
+    def classify_instance(self, query, predictions):
         """Predicts the label of the corresponding query sample.
         Returns the predicted label.
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array containing the test sample = [n_samples, n_features]
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------
@@ -140,10 +155,26 @@ class DS(ClassifierMixin):
         -------
         self
         """
-        check_X_y(X, y)
-        self._set_dsel(X, y)
-        self._fit_region_competence(X, y, self.k)
+
+        y_ind = self.setup_label_encoder(y)
+
+        check_X_y(X, y_ind)
+        self._set_dsel(X, y_ind)
+        self._fit_region_competence(X, y_ind, self.k)
         return self
+
+    def setup_label_encoder(self, y):
+        self.enc = LabelEncoder()
+        y_ind = self.enc.fit_transform(y)
+        self.classes = self.enc.classes_
+
+        return y_ind
+
+    def _encode_base_labels(self, y):
+        if self.base_already_encoded:
+            return y
+        else:
+            return self.enc.transform(y)
 
     def _fit_region_competence(self, X, y, k):
         """Fit the k-NN classifier inside the dynamic selection method.
@@ -177,7 +208,6 @@ class DS(ClassifierMixin):
         """
         self.DSEL_data = X
         self.DSEL_target = y
-        self.classes = np.unique(self.DSEL_target)
         self.n_classes = self.classes.size
         self.n_features = X.shape[1]
         self.n_samples = self.DSEL_target.size
@@ -228,15 +258,16 @@ class DS(ClassifierMixin):
         self._check_input_predict(X)
 
         n_samples = X.shape[0]
-        predicted_labels = np.zeros(n_samples)
+        predicted_labels = np.zeros(n_samples, dtype=np.intp)
+
+        base_predictions = self._predict_base(X)
+
         for index, instance in enumerate(X):
             # Do not use dynamic selection if all base classifiers agrees on the
             # same label.
             instance = instance.reshape(1, -1)
-            if self._all_classifier_agree(instance):
-
-                predicted_labels[index] = self.pool_classifiers[0].predict(instance)[0]
-
+            if self._all_classifier_agree(base_predictions[index]):
+                predicted_labels[index] = base_predictions[index, 0]
             else:
                 # proceeds with DS, calculates the region of competence of the query sample
                 if self.DFP or self.with_IH:
@@ -259,12 +290,12 @@ class DS(ClassifierMixin):
                     else:
                             self.DFP_mask = np.ones(self.n_classifiers)
 
-                    predicted_labels[index] = self.classify_instance(instance)
+                    predicted_labels[index] = self.classify_instance(instance, base_predictions[index, :])
 
                 self.neighbors = None
                 self.distances = None
 
-        return predicted_labels
+        return self.classes.take(predicted_labels)
 
     def predict_proba(self, X):
         """Estimates the posterior probabilities for sample in X.
@@ -294,7 +325,7 @@ class DS(ClassifierMixin):
             # Do not use dynamic selection if all base classifiers agrees on the
             # same label.
             instance = instance.reshape(1, -1)
-            if self._all_classifier_agree(instance):
+            if self._all_classifier_agree_query(instance):
 
                 #  since it may have better probabilities estimates
                 predicted_proba[index, :] = predict_proba_ensemble(self.pool_classifiers, instance)[0]
@@ -420,15 +451,20 @@ class DS(ClassifierMixin):
         correct label for the corresponding sample (True) or not (False).
         Used to speed-up the testing time without requiring to classify
         """
-        processed_dsel = np.zeros((self.DSEL_target.size, self.n_classifiers))
-        BKS_dsel = np.zeros((self.DSEL_target.size, self.n_classifiers))
+
+        BKS_dsel = self._predict_base(self.DSEL_data)
+        processed_dsel = BKS_dsel == self.DSEL_target[:, np.newaxis]
+
+        return processed_dsel, BKS_dsel
+
+    def _predict_base(self, X):
+        predictions = np.zeros((X.shape[0], self.n_classifiers))
 
         for index, clf in enumerate(self.pool_classifiers):
-            labels = clf.predict(self.DSEL_data)
-            hit = (labels == self.DSEL_target)
-            processed_dsel[:, index] = hit
-            BKS_dsel[:, index] = labels
-        return processed_dsel, BKS_dsel
+            labels = clf.predict(X)
+            predictions[:, index] = self._encode_base_labels(labels)
+        return predictions
+
 
     def _output_profile_transform(self, query):
         """Transform the query in an output profile. Each position of the output profiles vector
@@ -499,7 +535,23 @@ class DS(ClassifierMixin):
             scores = self.dsel_scores[sample_idx, clf_idx * self.n_classes:(clf_idx * self.n_classes) + self.n_classes]
         return scores
 
-    def _all_classifier_agree(self, query):
+    def _all_classifier_agree(self, predictions):
+        """Check whether there is a difference in opinion
+        among the classifiers in the generated_pool.
+
+        Parameters
+        ----------
+        query : Array containing the query sample
+        to be classified
+
+        Returns
+        -------
+        True : if all classifiers in the generated_pool
+        agrees on the same label. False otherwise
+        """
+        return np.all(predictions == predictions[0])
+
+    def _all_classifier_agree_query(self, query):
         """Check whether there is a difference in opinion
         among the classifiers in the generated_pool.
 
