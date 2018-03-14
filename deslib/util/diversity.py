@@ -14,9 +14,19 @@ This file contains the implementation of key diversity measures found in the ens
 - Negative Double fault
 - Q-statistics
 - Ratio of errors
+- Agreement/Disagreement
+- Classifier Correlation
 
-The implementation are made according to the specifications from the book "Combining Pattern Classifiers".
+The implementation are made according to the specifications from the book "Combining Pattern Classifiers" based on
+Oracle outputs, i.e., taking into account if the pair of classifiers made the correct/incorrect prediction:
 
+N00 : represents samples that both classifiers made a wrong prediction
+
+N10 : represents samples  that only classifier 2 predicts the wrong label.
+
+N10 : represents samples  that only classifier 1 predicts the wrong label.
+
+N11 :  represents samples  that both classifiers predicts the correct label.
 
 References
 ----------
