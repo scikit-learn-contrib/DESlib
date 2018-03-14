@@ -5,6 +5,7 @@
 # License: BSD 3 clause
 
 import sys
+import numpy as np
 
 """
 This file contains the implementation of key diversity measures found in the ensemble literature:
@@ -38,13 +39,13 @@ def _process_predictions(y, y_pred1, y_pred2):
     Parameters
     ----------
     y : array of shape = [n_samples]:
-        class labels of each sample in X.
+        class labels of each sample.
 
     y_pred1 : array of shape = [n_samples]:
-              predicted class labels by the classifier 1 for each sample in X.
+              predicted class labels by the classifier 1 for each sample.
 
     y_pred2 : array of shape = [n_samples]:
-              predicted class labels by the classifier 2 for each sample in X.
+              predicted class labels by the classifier 2 for each sample.
 
     Returns
     -------
@@ -82,13 +83,13 @@ def double_fault(y, y_pred1, y_pred2):
     Parameters
     ----------
     y : array of shape = [n_samples]:
-        class labels of each sample in X.
+        class labels of each sample.
 
     y_pred1 : array of shape = [n_samples]:
-              predicted class labels by the classifier 1 for each sample in X.
+              predicted class labels by the classifier 1 for each sample.
 
     y_pred2 : array of shape = [n_samples]:
-              predicted class labels by the classifier 2 for each sample in X.
+              predicted class labels by the classifier 2 for each sample.
 
     Returns
     -------
@@ -110,13 +111,13 @@ def negative_double_fault(y, y_pred1, y_pred2):
     Parameters
     ----------
     y : array of shape = [n_samples]:
-        class labels of each sample in X.
+        class labels of each sample.
 
     y_pred1 : array of shape = [n_samples]:
-              predicted class labels by the classifier 1 for each sample in X.
+              predicted class labels by the classifier 1 for each sample.
 
     y_pred2 : array of shape = [n_samples]:
-              predicted class labels by the classifier 2 for each sample in X.
+              predicted class labels by the classifier 2 for each sample.
 
     Returns
     -------
@@ -138,13 +139,13 @@ def Q_statistic(y, y_pred1, y_pred2):
     Parameters
     ----------
     y : array of shape = [n_samples]:
-        class labels of each sample in X.
+        class labels of each sample.
 
     y_pred1 : array of shape = [n_samples]:
-              predicted class labels by the classifier 1 for each sample in X.
+              predicted class labels by the classifier 1 for each sample.
 
     y_pred2 : array of shape = [n_samples]:
-              predicted class labels by the classifier 2 for each sample in X.
+              predicted class labels by the classifier 2 for each sample.
 
     Returns
     -------
@@ -162,13 +163,13 @@ def ratio_errors(y, y_pred1, y_pred2):
     Parameters
     ----------
     y : array of shape = [n_samples]:
-        class labels of each sample in X.
+        class labels of each sample.
 
     y_pred1 : array of shape = [n_samples]:
-              predicted class labels by the classifier 1 for each sample in X.
+              predicted class labels by the classifier 1 for each sample.
 
     y_pred2 : array of shape = [n_samples]:
-              predicted class labels by the classifier 2 for each sample in X.
+              predicted class labels by the classifier 2 for each sample.
 
     Returns
     -------
@@ -186,3 +187,75 @@ def ratio_errors(y, y_pred1, y_pred2):
         ratio = (N01 + N10) / N00
     return ratio
 
+
+def disagreement_measure(y, y_pred1, y_pred2):
+    """Calculates the disagreement measure between a pair of classifiers. This measure is calculated by the frequency
+    that only one classifier makes the correct prediction.
+
+    Parameters
+    ----------
+    y : array of shape = [n_samples]:
+        class labels of each sample.
+
+    y_pred1 : array of shape = [n_samples]:
+              predicted class labels by the classifier 1 for each sample.
+
+    y_pred2 : array of shape = [n_samples]:
+              predicted class labels by the classifier 2 for each sample.
+
+    Returns
+    -------
+    disagreement : The frequency at which both classifiers disagrees
+    """
+    _, N10, N01, _ = _process_predictions(y, y_pred1, y_pred2)
+    disagreement = N10 + N01
+    return disagreement
+
+
+def agreement_measure(y, y_pred1, y_pred2):
+    """Calculates the agreement measure between a pair of classifiers. This measure is calculated by the frequency
+    that both classifiers either obtained the correct or incorrect prediction for any given sample
+
+    Parameters
+    ----------
+    y : array of shape = [n_samples]:
+        class labels of each sample.
+
+    y_pred1 : array of shape = [n_samples]:
+              predicted class labels by the classifier 1 for each sample.
+
+    y_pred2 : array of shape = [n_samples]:
+              predicted class labels by the classifier 2 for each sample.
+
+    Returns
+    -------
+    agreement : The frequency at which both classifiers agrees
+    """
+    N00, _, _, N11 = _process_predictions(y, y_pred1, y_pred2)
+    agreement = N00 + N11
+    return agreement
+
+
+def correlation_coefficient(y, y_pred1, y_pred2):
+    """Calculates the correlation  between two classifiers using oracle outputs.
+     coefficient is a value in a range [-1, 1].
+
+    Parameters
+    ----------
+    y : array of shape = [n_samples]:
+        class labels of each sample.
+
+    y_pred1 : array of shape = [n_samples]:
+              predicted class labels by the classifier 1 for each sample.
+
+    y_pred2 : array of shape = [n_samples]:
+              predicted class labels by the classifier 2 for each sample.
+
+    Returns
+    -------
+    rho : The correlation coefficient measured between two classifiers
+    """
+    N00, N10, N01, N11 = _process_predictions(y, y_pred1, y_pred2)
+    tmp = (N11 * N00) - (N10 * N01)
+    rho = tmp/np.sqrt((N11 + N01) * (N10 + N00) * (N11 + N10) * (N01 + N00))
+    return rho
