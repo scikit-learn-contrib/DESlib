@@ -17,7 +17,22 @@ def test_estimate_competence(index, expected):
     knora_e_test.neighbors = neighbors_ex1[index, :]
     knora_e_test.distances = distances_ex1[index, :]
     competences = knora_e_test.estimate_competence(query)
-    assert np.isclose(competences, expected, atol=0.01).all()
+    assert np.isclose(competences, expected).all()
+
+
+def test_estimate_competence_batch():
+    query = np.ones((3, 2))
+    expected = np.array([[1.0, 0.0, 1.0],
+                         [2.0, 0.0, 2.0],
+                         [0.0, 3.0, 0.0]])
+
+    knora_e_test = KNORAE(create_pool_classifiers())
+    knora_e_test.fit(X_dsel_ex1, y_dsel_ex1)
+    knora_e_test.DFP_mask = np.ones(knora_e_test .n_classifiers)
+    knora_e_test.neighbors = neighbors_ex1
+    knora_e_test.distances = distances_ex1
+    competences = knora_e_test.estimate_competence(query)
+    assert np.allclose(competences, expected)
 
 
 @pytest.mark.parametrize('index, expected', [(0, [0, 2]),

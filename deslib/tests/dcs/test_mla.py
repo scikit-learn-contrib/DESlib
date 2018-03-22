@@ -31,7 +31,6 @@ def test_estimate_competence_all_ones(index):
     assert np.isclose(competences, expected).all()
 
 
-# Should always be 1.0 since the supports for the correct class is always 1.
 @pytest.mark.parametrize('index, expected', [(0, [0.75000,  0.66666,  0.75000]),
                                              (1, [0.80000,  1.00000,  0.80000]),
                                              (2, [1.00000,  0.60000,  0.50000])])
@@ -48,6 +47,55 @@ def test_estimate_competence(index, expected):
     mla_test.neighbors = neighbors_ex1[index, :]
     mla_test.distances = distances_all_ones[index, :]
     mla_test.DFP_mask = [1, 1, 1]
+
+    predictions = []
+    for clf in mla_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+    competences = mla_test.estimate_competence(query, predictions=np.array(predictions))
+
+    assert np.isclose(competences, expected).all()
+
+
+def test_estimate_competence_batch():
+    query = np.array([[1, 1], [1, 1], [1, 1]])
+    expected = np.array([[0.750,  0.666,  0.750],
+                         [0.800,  1.000,  0.800],
+                         [1.000,  0.600,  0.500]])
+
+    mla_test = MLA(create_pool_classifiers())
+    mla_test.processed_dsel = dsel_processed_ex1
+    mla_test.dsel_scores = dsel_scores_all_ones
+    mla_test.DSEL_target = y_dsel_ex1
+    mla_test.n_classes = 2
+
+    mla_test.neighbors = neighbors_ex1
+    mla_test.distances = distances_all_ones
+    mla_test.DFP_mask = np.ones((3, 3))
+
+    predictions = []
+    for clf in mla_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+    competences = mla_test.estimate_competence(query, predictions=np.array(predictions))
+
+    assert np.allclose(competences, expected)
+
+
+# in this test case, the target of the neighbors is always different than the predicted. So
+# the estimation of competence should always be zero
+@pytest.mark.parametrize('index', [0, 1, 2])
+def test_estimate_competence_diff_target(index):
+    query = np.atleast_2d([1, 1])
+
+    mla_test = MLA(create_pool_classifiers())
+
+    mla_test.processed_dsel = dsel_processed_ex1
+    mla_test.DSEL_target = np.ones(15, dtype=int) * 3
+
+    mla_test.neighbors = neighbors_ex1[index, :]
+    mla_test.distances = distances_ex1[index, :]
+    mla_test.DFP_mask = [1, 1, 1]
+
+    expected = [0.0, 0.0, 0.0]
 
     predictions = []
     for clf in mla_test.pool_classifiers:
@@ -79,30 +127,6 @@ def test_estimate_competence_kuncheva_ex():
 
     assert np.isclose(competences, 0.95, atol=0.01)
 
-
-# in this test case, the target of the neighbors is always different than the predicted. So
-# the estimation of competence should always be zero
-@pytest.mark.parametrize('index', [0, 1, 2])
-def test_estimate_competence_diff_target(index):
-    query = np.atleast_2d([1, 1])
-
-    mla_test = MLA(create_pool_classifiers())
-
-    mla_test.processed_dsel = dsel_processed_ex1
-    mla_test.DSEL_target = np.ones(15, dtype=int) * 3
-
-    mla_test.neighbors = neighbors_ex1[index, :]
-    mla_test.distances = distances_ex1[index, :]
-    mla_test.DFP_mask = [1, 1, 1]
-
-    expected = [0.0, 0.0, 0.0]
-
-    predictions = []
-    for clf in mla_test.pool_classifiers:
-        predictions.append(clf.predict(query)[0])
-    competences = mla_test.estimate_competence(query, predictions=np.array(predictions))
-
-    assert np.isclose(competences, expected).all()
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
 # In this case the test should not raise an error since this class does not require base classifiers that

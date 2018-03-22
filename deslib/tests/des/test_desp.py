@@ -20,6 +20,22 @@ def test_estimate_competence(index, expected):
     assert np.isclose(competences, expected, atol=0.01).all()
 
 
+# Test the estimate competence method receiving n samples as input
+def test_estimate_competence_batch():
+    query = np.ones((3, 2))
+    expected = np.array([[0.57142857, 0.4285714, 0.57142857],
+                        [0.71428571, 0.2857142, 0.71428571],
+                        [0.2857142, 0.71428571, 0.2857142]])
+
+    des_p_test = DESP(create_pool_classifiers())
+    des_p_test.fit(X_dsel_ex1, y_dsel_ex1)
+    des_p_test.DFP_mask = np.ones((3, des_p_test.n_classifiers))
+    des_p_test.neighbors = neighbors_ex1
+    des_p_test.distances = distances_ex1
+    competences = des_p_test.estimate_competence(query)
+    assert np.allclose(competences, expected, atol=0.01)
+
+
 @pytest.mark.parametrize('index, expected', [(0, [0, 2]),
                                              (1, [0, 2]),
                                              (2, [1])])
@@ -63,7 +79,7 @@ def test_select_three_classes(index, expected):
 # In this example, since the number of classes is 3, the competence level expected to be selected is > 0.1. All base
 # Classifiers should be selected in this example
 @pytest.mark.parametrize('index', [0, 1, 2])
-def test_select_ten_classes(index,):
+def test_select_ten_classes(index, ):
     query = np.atleast_2d([1, 1])
 
     des_p_test = DESP(create_pool_classifiers())

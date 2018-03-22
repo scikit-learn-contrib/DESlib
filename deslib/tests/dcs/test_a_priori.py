@@ -67,6 +67,29 @@ def test_estimate_competence2(index, expected):
     assert np.isclose(competences, expected).all()
 
 
+# Test the estimate competence method receiving n samples as input
+def test_estimate_competence_batch():
+    query = np.ones((3, 2))
+    expected = np.array([[0.333333,  0.50000,  0.40000],
+                         [0.666666, 0.50000, 0.60000],
+                         [0.000000, 0.50000, 0.20000]])
+
+    # Using 3 neighbors to facilitate the calculations
+    a_priori_test = APriori(create_pool_classifiers(), 3)
+
+    a_priori_test.processed_dsel = dsel_processed_ex1
+    a_priori_test.dsel_scores = dsel_scores_ex1
+    a_priori_test.DSEL_target = y_dsel_ex1
+    a_priori_test.n_classes = 2
+
+    a_priori_test.neighbors = neighbors_ex1
+    a_priori_test.distances = distances_all_ones
+    a_priori_test.DFP_mask = np.ones((3, 3))
+
+    competences = a_priori_test.estimate_competence(query)
+    assert np.allclose(competences, expected)
+
+
 def test_fit():
     a_priori_test = APriori(create_pool_classifiers())
     a_priori_test.fit(X_dsel_ex1, y_dsel_ex1)

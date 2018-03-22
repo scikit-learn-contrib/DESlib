@@ -93,6 +93,26 @@ def test_estimate_competence3(index, expected):
     assert np.isclose(competences, expected).all()
 
 
+def test_estimate_competence_batch():
+    query = np.ones((3, 2))
+    expected = np.array([[0.57142857,  0.71428571,  0.71428571],
+                         [0.71428571, 0.85714286, 0.71428571],
+                         [0.57142857, 0.71428571, 0.57142857]])
+    mcb_test = MCB(create_pool_classifiers())
+    mcb_test.processed_dsel = dsel_processed_ex1
+    mcb_test.neighbors = neighbors_ex1
+    mcb_test.distances = distances_ex1
+    mcb_test.DFP_mask = np.ones(3, 3)
+    # Only changing the pre-processed BKS to see if the filter works.
+    mcb_test.BKS_dsel = bks_dsel_ex3
+
+    predictions = []
+    for clf in mcb_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+    competences = mcb_test.estimate_competence(query, predictions=np.array(predictions))
+    assert np.isclose(competences, expected).all()
+
+
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
 # In this case the test should not raise an error since this class does not require base classifiers that
 # can estimate probabilities

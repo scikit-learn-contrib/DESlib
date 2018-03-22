@@ -3,6 +3,7 @@ from sklearn.linear_model import Perceptron
 from deslib.des.probabilistic import Probabilistic, RRC, DESKL, Logarithmic, Exponential, MinimumDifference
 from deslib.tests.examples_test import *
 
+
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
 # Should raise an exception when the base classifier cannot estimate posterior probabilities (predict_proba)
 # Using Perceptron classifier as it does not implements the predict_proba method.

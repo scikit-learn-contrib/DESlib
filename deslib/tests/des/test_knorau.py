@@ -20,6 +20,21 @@ def test_estimate_competence(index, expected):
     assert np.isclose(competences, expected, atol=0.01).all()
 
 
+# Test the estimate competence method receiving n samples as input
+def test_estimate_competence_batch():
+    query = np.ones((3, 2))
+    expected = np.array([[4.0, 3.0, 4.0],
+                         [5.0, 2.0, 5.0],
+                         [2.0, 5.0, 2.0]])
+    knora_u_test = KNORAU(create_pool_classifiers())
+    knora_u_test.fit(X_dsel_ex1, y_dsel_ex1)
+    knora_u_test.DFP_mask = np.ones((3, knora_u_test.n_classifiers))
+    knora_u_test.neighbors = neighbors_ex1
+    knora_u_test.distances = distances_ex1
+    competences = knora_u_test.estimate_competence(query)
+    assert np.allclose(competences, expected, atol=0.01)
+
+
 @pytest.mark.parametrize('index, expected', [(0, 0),
                                              (1, 0),
                                              (2, 1)])

@@ -17,7 +17,24 @@ def test_estimate_competence(index, expected):
     knop_test.neighbors = neighbors_ex1[index, :]
     knop_test.distances = distances_ex1[index, :]
     competences = knop_test.estimate_competence(query)
-    assert np.isclose(competences, expected, atol=0.01).all()
+    assert np.allclose(competences, expected, atol=0.01)
+
+
+# Test the estimate competence method receiving n samples as input
+def test_estimate_competence_batch():
+    query = np.ones((3, 2))
+    expected = np.array([[4.0, 3.0, 4.0],
+                          [5.0, 2.0, 5.0],
+                          [2.0, 5.0, 2.0]])
+
+    knop_test = KNOP(create_pool_classifiers())
+    knop_test.fit(X_dsel_ex1, y_dsel_ex1)
+
+    knop_test.DFP_mask = np.ones(knop_test .n_classifiers)
+    knop_test.neighbors = neighbors_ex1
+    knop_test.distances = distances_ex1
+    competences = knop_test.estimate_competence(query)
+    assert np.allclose(competences, expected, atol=0.01)
 
 
 @pytest.mark.parametrize('index, expected', [(0, 0),
@@ -40,6 +57,26 @@ def test_classify(index, expected):
     predicted_label = knop_test.classify_instance(query, np.array(predictions))
 
     assert predicted_label == expected
+
+
+# Test the classify method receiving multiple samples as input
+def test_classify_batch():
+    query = np.ones((3, 2))
+    expected = np.array([0, 0, 1])
+    knop_test = KNOP(create_pool_classifiers())
+    knop_test.fit(X_dsel_ex1, y_dsel_ex1)
+
+    knop_test.DFP_mask = np.ones(knop_test .n_classifiers)
+    knop_test.neighbors = neighbors_ex1
+    knop_test.distances = distances_ex1
+
+    predictions = []
+    for clf in knop_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+
+    predicted_label = knop_test.classify_instance(query, np.array(predictions))
+
+    assert np.equal(predicted_label, expected)
 
 
 def test_weights_zero():
