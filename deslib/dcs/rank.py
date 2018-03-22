@@ -103,20 +103,32 @@ class Rank(DCS):
         competences : array of shape = [n_classifiers]
                      The competence level estimated for each base classifier
         """
-        dists, idx_neighbors = self._get_region_competence(query)
-        competences = np.zeros(self.n_classifiers)
+        _, idx_neighbors = self._get_region_competence(query)
+        idx_neighbors = np.atleast_2d(idx_neighbors)
+        results_neighbors = self.processed_dsel[idx_neighbors, :]
 
-        for clf_index in range(self.n_classifiers):
+        # Get the shape of the vector in order to know the number of samples, base classifiers and neighbors considered.
+        shape = results_neighbors.shape
 
-            # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.DFP_mask[clf_index]:
-                # count the number of correctly classified samples in the
-                # neighborhood.
-                for counter, index in enumerate(idx_neighbors):
-                    if self.processed_dsel[index][clf_index]:
-                        continue
-                    else:
-                        competences[clf_index] = counter
-                        break
+        # add an row with zero for the case where the base classifier correctly classifies the whole neighborhood.
+        # That way the search will always find a zero after comparing to self.K + 1
+        addition = np.zeros((shape[0], shape[2]))
+        results_neighbors = np.insert(results_neighbors, shape[1], addition, axis=1)
+        competences = np.argmax(results_neighbors == 0, axis=1)
+
+        # competences = np.zeros(self.n_classifiers)
+        #
+        # for clf_index in range(self.n_classifiers):
+        #
+        #     # Check if the dynamic frienemy pruning (DFP) should be used used
+        #     if self.DFP_mask[clf_index]:
+        #         # count the number of correctly classified samples in the
+        #         # neighborhood.
+        #         for counter, index in enumerate(idx_neighbors):
+        #             if self.processed_dsel[index][clf_index]:
+        #                 continue
+        #             else:
+        #                 competences[clf_index] = counter
+        #                 break
 
         return competences

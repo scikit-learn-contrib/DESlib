@@ -83,13 +83,16 @@ class KNORAU(DES):
         competences : array of shape = [n_classifiers] containing the competence level estimated
                      for each base classifier
         """
-        dists, idx_neighbors = self._get_region_competence(query)
-        competences = np.zeros(self.n_classifiers)
+        _, idx_neighbors = self._get_region_competence(query)
+        idx_neighbors = np.atleast_2d(idx_neighbors)
+        competences = np.sum(self.processed_dsel[idx_neighbors, :], axis=1)
 
-        for clf_index in range(self.n_classifiers):
-            # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.DFP_mask[clf_index]:
-                competences[clf_index] = np.sum(self.processed_dsel[idx_neighbors, clf_index])
+        # competences = np.zeros(self.n_classifiers)
+        #
+        # for clf_index in range(self.n_classifiers):
+        #     # Check if the dynamic frienemy pruning (DFP) should be used used
+        #     if self.DFP_mask[clf_index]:
+        #         competences[clf_index] = np.sum(self.processed_dsel[idx_neighbors, clf_index])
 
         return competences.astype(dtype=int)
 
