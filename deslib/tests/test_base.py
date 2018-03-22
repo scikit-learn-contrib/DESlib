@@ -1,6 +1,5 @@
 import pytest
 from sklearn.exceptions import NotFittedError
-from sklearn.linear_model import Perceptron
 from unittest.mock import Mock
 
 from deslib.base import DS
@@ -112,7 +111,7 @@ def test_input_shape_fit():
     with pytest.raises(ValueError):
         ds_test.fit(X, y)
 
-
+# -----------------------Test routines for the Instance Hardness calculation--------------------
 @pytest.mark.parametrize('index, expected', [(0, 0.42),
                                              (1, 0.28),
                                              (2, 0.28)])
@@ -135,6 +134,25 @@ def test_instance_hardness_region_all_same():
     IH = ds_test._hardness_region_competence(neighbors)
     assert IH == 0.0
 
+
+@pytest.mark.parametrize('index, expected', [(0, 0), (1, 0), (2, 1)])
+def test_IH_is_used(index, expected):
+    query = np.atleast_2d([1, 0])
+    ds_test = DS(create_pool_classifiers(), with_IH=True, IH_rate=0.5)
+    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+
+    ds_test.processed_dsel = dsel_processed_ex1
+    ds_test.DSEL_target = y_dsel_ex1
+    ds_test.DSEL_data = X_dsel_ex1
+
+    ds_test.neighbors = neighbors_ex1[index, :]
+    ds_test.distances = distances_ex1[index, :]
+
+    predicted = ds_test.predict(query)
+
+    assert predicted == expected
+
+# -----------------------Test routines for the DFP (fire DS)--------------------
 
 # Since no classifier crosses the region of competence, all of them must be selected
 def test_frienemy_no_classifier_crosses():
@@ -170,6 +188,18 @@ def test_frienemy_not_all_classifiers_crosses():
     assert np.array_equal(result, np.array([1, 1, 0]))
 
 
+# Check if the batch processing is working by passing multiple samples at the same time.
+def test_frienemy_not_all_classifiers_crosses_batch():
+    ds_test = DS(create_pool_classifiers(), safe_k=3)
+    ds_test.processed_dsel = dsel_processed_ex1
+    ds_test.DSEL_target = y_dsel_ex1
+    ds_test.DSEL_data = X_dsel_ex1
+    # passing three samples to compute the DFP at the same time
+    ds_test.neighbors = neighbors_ex1
+    result = ds_test._frienemy_pruning()
+    assert np.array_equal(result, np.array([1, 1, 0]))
+
+# Test the case where the sample is located in a safe region (i.e., all neighbors comes from the same class)
 def test_frienemy_safe_region():
     ds_test = DS(create_pool_classifiers(), safe_k=3)
     ds_test.processed_dsel = dsel_processed_ex1
@@ -179,6 +209,47 @@ def test_frienemy_safe_region():
     result = ds_test._frienemy_pruning()
     assert np.array_equal(result, np.array([1, 1, 1]))
 
+# Check if the batch processing is working by passing multiple samples at the same time. Testing sample in a safe region
+def test_frienemy_safe_region_batch():
+    ds_test = DS(create_pool_classifiers(), safe_k=3)
+    ds_test.processed_dsel = dsel_processed_ex1
+    ds_test.DSEL_target = y_dsel_ex1
+    ds_test.DSEL_data = X_dsel_ex1
+    ds_test.neighbors = np.tile(np.array([0, 1, 2, 6, 7, 8, 14]), (10, 1))
+    result = ds_test._frienemy_pruning()
+    assert np.array_equal(result, np.array([1, 1, 1]))
+
+
+def test_DFP_is_used():
+    query = np.atleast_2d([1, 0])
+    ds_test = DS(create_pool_classifiers(), DFP=True, safe_k=3)
+    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+    ds_test.processed_dsel = dsel_processed_ex1
+    ds_test.DSEL_target = y_dsel_ex1
+    ds_test.DSEL_data = X_dsel_ex1
+    ds_test.neighbors = neighbors_ex1[0, :]
+    ds_test.distances = distances_ex1[0, :]
+    ds_test.classify_instance = MagicMock(return_value=0)
+    ds_test.predict(query)
+    assert np.array_equal(ds_test.DFP_mask, np.array([1, 1, 0]))
+
+
+# In this test, the frienemy pruning is used. So, the value of self.DFP_mask should change.
+def test_predict_proba_DFP():
+    query = np.atleast_2d([1, 1])
+    ds_test = DS(create_pool_classifiers(), DFP=True, safe_k=3)
+    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+
+    # change the state of the system
+    ds_test.processed_dsel = dsel_processed_ex1
+    ds_test.DSEL_target = y_dsel_ex1
+    ds_test.DSEL_data = X_dsel_ex1
+    ds_test.neighbors = neighbors_ex1[0, :]
+    ds_test.distances = distances_ex1[0, :]
+
+    ds_test.predict_proba_instance = MagicMock(return_value=np.atleast_2d([0.25, 0.75]))
+    ds_test.predict_proba(query)
+    assert np.array_equal(ds_test.DFP_mask, np.array([1, 1, 0]))
 
 @pytest.mark.parametrize('X', [None, [[0.1, 0.2], [0.5, np.nan]]])
 def test_bad_input_X(X):
@@ -226,38 +297,6 @@ def test_get_dsel_scores_not_processed():
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     with pytest.raises(NotFittedError):
         ds_test._get_scores_dsel(0)
-
-
-def test_DFP_is_used():
-    query = np.atleast_2d([1, 0])
-    ds_test = DS(create_pool_classifiers(), DFP=True, safe_k=3)
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-    ds_test.processed_dsel = dsel_processed_ex1
-    ds_test.DSEL_target = y_dsel_ex1
-    ds_test.DSEL_data = X_dsel_ex1
-    ds_test.neighbors = neighbors_ex1[0, :]
-    ds_test.distances = distances_ex1[0, :]
-    ds_test.classify_instance = MagicMock(return_value=0)
-    ds_test.predict(query)
-    assert np.array_equal(ds_test.DFP_mask, np.array([1, 1, 0]))
-
-
-@pytest.mark.parametrize('index, expected', [(0, 0), (1, 0), (2, 1)])
-def test_IH_is_used(index, expected):
-    query = np.atleast_2d([1, 0])
-    ds_test = DS(create_pool_classifiers(), with_IH=True, IH_rate=0.5)
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-
-    ds_test.processed_dsel = dsel_processed_ex1
-    ds_test.DSEL_target = y_dsel_ex1
-    ds_test.DSEL_data = X_dsel_ex1
-
-    ds_test.neighbors = neighbors_ex1[index, :]
-    ds_test.distances = distances_ex1[index, :]
-
-    predicted = ds_test.predict(query)
-
-    assert predicted == expected
 
 
 @pytest.mark.parametrize('IH_rate', [None, -1, 'abc', 0.75, 1])
@@ -310,23 +349,7 @@ def test_predict_proba_instance_called(index):
     assert np.isclose(proba, np.atleast_2d([0.25, 0.75])).all()
 
 
-# In this test, the frienemy pruning is used. So, the value of self.DFP_mask should change.
-def test_predict_proba_DFP():
-    query = np.atleast_2d([1, 1])
-    ds_test = DS(create_pool_classifiers(), DFP=True, safe_k=3)
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-
-    # change the state of the system
-    ds_test.processed_dsel = dsel_processed_ex1
-    ds_test.DSEL_target = y_dsel_ex1
-    ds_test.DSEL_data = X_dsel_ex1
-    ds_test.neighbors = neighbors_ex1[0, :]
-    ds_test.distances = distances_ex1[0, :]
-
-    ds_test.predict_proba_instance = MagicMock(return_value=np.atleast_2d([0.25, 0.75]))
-    ds_test.predict_proba(query)
-    assert np.array_equal(ds_test.DFP_mask, np.array([1, 1, 0]))
-
+#----------------------------------------- Testing label encoder-------------------------------------
 
 def create_pool_classifiers_dog_cat_plane():
     clf_0 = create_base_classifier(return_value='cat', return_prob=np.atleast_2d([0.5, 0.5]))
@@ -341,7 +364,6 @@ def create_pool_classifiers_dog():
     pool_classifiers = [clf_0, clf_0, clf_0]
     return pool_classifiers
 
-
 def test_label_encoder_only_dsel_allagree():
     X_dsel_ex1 = np.array([[-1, 1], [-0.75, 0.5], [-1.5, 1.5]])
     y_dsel_ex1 = np.array(['cat', 'dog', 'plane'])
@@ -353,7 +375,6 @@ def test_label_encoder_only_dsel_allagree():
     ds_test.distances = distances_ex1[0, :]
     predictions = ds_test.predict(query)
     assert np.array_equal(predictions, ['dog', 'dog'])
-
 
 
 def test_label_encoder_only_dsel():
