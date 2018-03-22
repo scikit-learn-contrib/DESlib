@@ -4,7 +4,8 @@ import numpy as np
 import pytest
 
 from deslib.tests.examples_test import y_dsel_ex1
-from deslib.util.diversity import _process_predictions, double_fault, Q_statistic, ratio_errors
+from deslib.util.diversity import _process_predictions, double_fault, Q_statistic, ratio_errors, agreement_measure, \
+    disagreement_measure, correlation_coefficient
 
 y_pred_ones = np.ones(15)
 y_pred_zeros = np.zeros(15)
@@ -114,3 +115,18 @@ def test_ratio_order():
 def test_ratio_errors_diff_classifiers():
     ratio = ratio_errors(y_real, y_pred_classifier1, y_pred_classifier2)
     assert np.isclose(ratio, 1.66, atol=0.01)
+
+
+def test_agreement():
+    agreement = agreement_measure(y_real, y_pred_classifier1, y_pred_classifier2)
+    assert np.isclose(agreement, 0.5)
+
+
+def test_disagreement():
+    disagreement = disagreement_measure(y_real, y_pred_classifier1, y_pred_classifier2)
+    assert np.isclose(disagreement, 0.5)
+
+
+def test_coefficient_correlation():
+    coefficient = correlation_coefficient(y_real, y_pred_classifier1, y_pred_classifier2)
+    assert np.isclose(coefficient, 0.0)
