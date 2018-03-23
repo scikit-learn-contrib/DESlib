@@ -148,7 +148,7 @@ class DES(DS):
 
         return predicted_label
 
-    def predict_proba_instance(self, query):
+    def predict_proba_instance(self, query, predictions):
         """Predicts the posterior probabilities of the corresponding query sample.
 
         If self.mode == "selection", the selected ensemble is used to estimate the probabilities. The average rule is
@@ -166,11 +166,15 @@ class DES(DS):
         ----------
         query : array of shape = [n_features]
                 The test sample
+
+       predictions : array of shape = [n_samples, n_classifiers]
+                      The predictions of all base classifier for all samples in the query array
+
         Returns
         -------
         predicted_proba : array = [n_classes] with the probability estimates for all classes
         """
-        competences = self.estimate_competence(query)
+        competences = self.estimate_competence(query, predictions)
         if self.mode == "selection":
             indices = self.select(competences)
             classifier_ensemble = self._get_classifier_ensemble(indices)

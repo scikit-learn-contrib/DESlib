@@ -201,7 +201,7 @@ class DCS(DS):
 
         return predicted_label
 
-    def predict_proba_instance(self, query):
+    def predict_proba_instance(self, query, predictions):
         """Predicts the posterior probabilities of the corresponding query sample.
 
         If self.mode == "all", get the probability estimates of the selected ensemble. Otherwise,
@@ -211,11 +211,14 @@ class DCS(DS):
         ----------
         query : array containing the test sample = [n_features]
 
+        predictions : array of shape = [n_samples, n_classifiers]
+                      The predictions of all base classifier for all samples in the query array
+
         Returns
         -------
         predicted_proba : array = [n_classes] with the probability estimates for all classes
         """
-        competences = self.estimate_competence(query)
+        competences = self.estimate_competence(query, predictions)
         if self.selection_method != 'all':
             # only one classifier is selected
             clf_index = self.select(competences)
