@@ -272,7 +272,7 @@ def test_predict_proba_all_agree():
     ds_test = DS(create_pool_classifiers())
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     ds_test.dsel_scores = dsel_scores_ex1
-    ds_test._all_classifier_agree_query = MagicMock(return_value=True)
+    ds_test._all_classifier_agree = MagicMock(return_value=True)
     proba = ds_test.predict_proba(query)
     assert np.isclose(proba, np.atleast_2d([0.61, 0.39])).all()
 

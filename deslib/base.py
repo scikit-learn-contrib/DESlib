@@ -117,7 +117,7 @@ class DS(ClassifierMixin):
         query : array containing the test sample = [n_samples, n_features]
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      The predictions of all base classifier for all samples in the query array
 
         Returns
         -------
@@ -126,13 +126,16 @@ class DS(ClassifierMixin):
         pass
 
     @abstractmethod
-    def predict_proba_instance(self, query):
+    def predict_proba_instance(self, query, predictions):
         """Predicts the posterior probabilities of the corresponding query sample.
         Returns the probability estimates of each class.
 
         Parameters
         ----------
         query : array containing the test sample = [n_features]
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      The predictions of all base classifier for all samples in the query array
 
         Returns
         -------
@@ -274,10 +277,9 @@ class DS(ClassifierMixin):
                     self.distances, self.neighbors = self._get_region_competence(instance)
 
                 # If Instance hardness (IH) is used, check the IH of the region of competence to decide between
-                # DS or the roc_algorithm classifier
+                # DS or the K-NN to perform the prediction
                 if self.with_IH and (self._hardness_region_competence(self.neighbors) <= self.IH_rate):
-                    # use the KNN for prediction if the sample is located in a safe region.
-                    # predicted_labels[index] = self.roc_algorithm.predict(instance)
+                    # Use the KNN for prediction if the sample is located in a safe region.
                     # Using the pre-calculated set of neighbors to perform the decision
                     y_neighbors = self.DSEL_target[self.neighbors[:self.safe_k]]
                     predicted_labels[index], _ = mode(y_neighbors)
@@ -316,18 +318,23 @@ class DS(ClassifierMixin):
         # Check if X is a valid input
         self._check_input_predict(X)
 
-        # Check if the base classifiers are able to estimate posterior probabilities (implements predict_proba).
+        # Check if the base classifiers are able to estimate posterior probabilities (implements predict_proba method).
         self._check_predict_proba()
 
         n_samples = X.shape[0]
         predicted_proba = np.zeros((n_samples, self.n_classes))
+
+        # pre-calculate the predictions of the base classifiers
+        # TODO: Change this part to pre-calculate the posterior probabilities and use argmax to get the classification.
+        base_predictions = self._predict_base(X)
+
         for index, instance in enumerate(X):
             # Do not use dynamic selection if all base classifiers agrees on the
             # same label.
             instance = instance.reshape(1, -1)
-            if self._all_classifier_agree_query(instance):
+            if self._all_classifier_agree(base_predictions[index]):
 
-                #  since it may have better probabilities estimates
+                # Use the whole pool to predict probabilities since it may have better probabilities estimates
                 predicted_proba[index, :] = predict_proba_ensemble(self.pool_classifiers, instance)[0]
 
             else:
@@ -351,7 +358,7 @@ class DS(ClassifierMixin):
                     else:
                             self.DFP_mask = np.ones(self.n_classifiers)
 
-                    predicted_proba[index, :] = self.predict_proba_instance(instance)
+                    predicted_proba[index, :] = self.predict_proba_instance(instance, base_predictions[index, :])
 
         # Reset the neighbors and the distances as they are specific to a given query.
         self.neighbors = None

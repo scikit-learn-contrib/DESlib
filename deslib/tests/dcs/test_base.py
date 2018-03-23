@@ -110,7 +110,11 @@ def test_predict_proba_instance():
     dcs_test.estimate_competence = MagicMock(return_value=competences)
     expected = pool_classifiers[np.argmax(competences)].predict_proba(query)
 
-    predicted_proba = dcs_test.predict_proba_instance(query)
+    predictions = []
+    for clf in dcs_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+
+    predicted_proba = dcs_test.predict_proba_instance(query, predictions)
     assert np.array_equal(predicted_proba, expected)
 
 
@@ -123,5 +127,10 @@ def test_predict_proba_instance_all(competences, expected):
     dcs_test.n_classes = 2
 
     dcs_test.estimate_competence = MagicMock(return_value=competences)
-    predicted_proba = dcs_test.predict_proba_instance(query)
+
+    predictions = []
+    for clf in dcs_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+
+    predicted_proba = dcs_test.predict_proba_instance(query, predictions)
     assert np.isclose(predicted_proba, expected).all()
