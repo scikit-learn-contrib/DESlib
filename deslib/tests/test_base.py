@@ -200,25 +200,9 @@ def test_preprocess_dsel_scores():
     ds_test = DS(create_pool_classifiers())
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     dsel_scores = ds_test._preprocess_dsel_scores()
-    expected = np.ones((15, 6)) * np.array([0.5, 0.5, 1.0, 0.0, 0.33, 0.67])
+    expected = np.array([[0.5, 0.5], [1.0, 0.0], [0.33, 0.67]])
+    expected = np.tile(expected, (15, 1, 1))
     assert np.array_equal(dsel_scores, expected)
-
-
-def test_get_dsel_scores():
-    ds_test = DS(create_pool_classifiers())
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-    ds_test.dsel_scores = dsel_scores_ex1
-    assert np.array_equal(ds_test._get_scores_dsel(0, 0), np.array([1.0, 0.0]))
-    assert np.array_equal(ds_test._get_scores_dsel(1, 0), np.array([0.5, 0.5]))
-    assert np.array_equal(ds_test._get_scores_dsel(2, 0), np.array([0.8, 0.2]))
-
-
-def test_get_dsel_scores_all_samples():
-    ds_test = DS(create_pool_classifiers())
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-    ds_test.dsel_scores = dsel_scores_ex1
-    expected = np.ones((15, 2)) * 0.5
-    assert np.array_equal(ds_test._get_scores_dsel(1), expected)
 
 
 def test_get_dsel_scores_not_processed():
@@ -274,7 +258,7 @@ def test_predict_proba_all_agree():
     ds_test.dsel_scores = dsel_scores_ex1
     ds_test._all_classifier_agree = MagicMock(return_value=True)
     proba = ds_test.predict_proba(query)
-    assert np.isclose(proba, np.atleast_2d([0.61, 0.39])).all()
+    assert np.allclose(proba, np.atleast_2d([0.61, 0.39]))
 
 
 # In this test, the three neighborhoods have an hardness level lower than the parameter IH_rate (0.5). Thus, the KNN
@@ -291,7 +275,7 @@ def test_predict_proba_IH_knn(index):
 
     ds_test.roc_algorithm.predict_proba = MagicMock(return_value=np.atleast_2d([0.45, 0.55]))
     proba = ds_test.predict_proba(query)
-    assert np.isclose(proba, np.atleast_2d([0.45, 0.55])).all()
+    assert np.allclose(proba, np.atleast_2d([0.45, 0.55]))
 
 
 # In this test, the three neighborhoods have an hardness level higher than the parameter IH_rate. Thus, the prediction
@@ -307,7 +291,7 @@ def test_predict_proba_instance_called(index):
 
     ds_test.predict_proba_instance = MagicMock(return_value=np.atleast_2d([0.25, 0.75]))
     proba = ds_test.predict_proba(query)
-    assert np.isclose(proba, np.atleast_2d([0.25, 0.75])).all()
+    assert np.allclose(proba, np.atleast_2d([0.25, 0.75]))
 
 
 # In this test, the frienemy pruning is used. So, the value of self.DFP_mask should change.

@@ -25,21 +25,7 @@ neighbors_ex1 = np.array([[8, 11,  4,  7, 13, 10,  1],
                          [5,  3,  4,  8, 10, 11,  7]])
 
 # Scores obtained for the two classes. This information is used by the techniques based on posterior probabilities
-dsel_scores_ex1 = np.array([[1.0, 0.0, 0.5, 0.5, 0.8, 0.2],
-                            [1.0, 0.0, 0.5, 0.5, 0.8, 0.2],
-                            [1.0, 0.0, 0.5, 0.5, 0.8, 0.2],
-                            [1.0, 0.0, 0.5, 0.5, 0.8, 0.2],
-                            [1.0, 0.0, 0.5, 0.5, 0.8, 0.2],
-                            [1.0, 0.0, 0.5, 0.5, 0.8, 0.2],
-                            [1.0, 0.0, 0.5, 0.5, 0.8, 0.2],
-                            [1.0, 0.0, 0.5, 0.5, 0.8, 0.2],
-                            [1.0, 0.0, 0.5, 0.5, 0.8, 0.2],
-                            [1.0, 0.0, 0.5, 0.5, 0.8, 0.2],
-                            [1.0, 0.0, 0.5, 0.5, 0.8, 0.2],
-                            [1.0, 0.0, 0.5, 0.5, 0.8, 0.2],
-                            [1.0, 0.0, 0.5, 0.5, 0.8, 0.2],
-                            [1.0, 0.0, 0.5, 0.5, 0.8, 0.2],
-                            [1.0, 0.0, 0.5, 0.5, 0.8, 0.2]])
+dsel_scores_ex1 = np.tile(np.array([[1.0, 0.0], [0.5, 0.5], [0.8, 0.2]]), (15, 1, 1))
 
 # Distance information is used by the probabilistic techniques (des.probabilistic) as well as the MLA, A Priori and
 # A Posteriori methods. Three values are considered: all zeros, all ones and the real distances calculated on the toy
@@ -53,7 +39,7 @@ distances_ex1 = np.array([[0.35355339, 0.35355339, 0.55901699, 0.79056942, 0.790
 
 dsel_processed_all_ones = np.ones((15, 3))
 
-dsel_scores_all_ones = np.ones((15, 6))
+dsel_scores_all_ones = np.ones((15, 3, 2))
 
 distances_all_ones = np.ones((3, 7))
 
@@ -61,7 +47,7 @@ distances_all_ones = np.ones((3, 7))
 
 dsel_processed_all_zeros = np.zeros((15, 3))
 
-dsel_scores_all_zeros = np.zeros((15, 6))
+dsel_scores_all_zeros = np.zeros((15, 3, 2))
 
 distances_all_zeros = np.zeros((3, 7))
 
@@ -89,7 +75,7 @@ dsel_processed_kuncheva = np.transpose(np.array([[1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 
 
 # scores obtained by each class by the base classifier ci. In this example we consider that the posteriori is always 1
 # fo the predicted class
-dsel_scores_ex_kuncheva = np.array([[0.0, 1.0, 0.0],
+dsel_scores_ex_kuncheva = np.array([[[0.0, 1.0, 0.0],
                                    [0.0, 0.0, 1.0],
                                    [0.0, 1.0, 0.0],
                                    [0.0, 1.0, 0.0],
@@ -103,7 +89,7 @@ dsel_scores_ex_kuncheva = np.array([[0.0, 1.0, 0.0],
                                    [0.0, 1.0, 0.0],
                                    [0.0, 1.0, 0.0],
                                    [0.0, 1.0, 0.0],
-                                   [1.0, 0.0, 0.0]])
+                                   [1.0, 0.0, 0.0]]]).reshape(15, 1, 3)  # 15 samples, 1 classifier, 3 classes
 
 k_ex_kuncheva = 15
 
