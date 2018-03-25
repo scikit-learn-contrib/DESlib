@@ -129,7 +129,9 @@ class APriori(DCS):
                 for counter, index in enumerate(idx_neighbors):
                     target = self.DSEL_target[index]
                     # get the post_prob for the correct class
-                    post_prob = self._get_scores_dsel(clf_index, index)[target]
+                    #post_prob = self._get_scores_dsel(clf_index, index)[target]
+                    post_prob = self.dsel_scores[index, clf_index, target]
+
                     result[counter] = (post_prob * dists_normalized[counter])
 
                 competences[clf_index] = sum(result)/sum(dists_normalized)
