@@ -263,9 +263,9 @@ class Logarithmic(Probabilistic):
         """
         C_src = np.zeros((self.n_samples, self.n_classifiers))
         for clf_index in range(self.n_classifiers):
-            supports = self._get_scores_dsel(clf_index)
-            support_correct = [supports[sample_idx, i] for sample_idx, i in enumerate(self.DSEL_target)]
-            support_correct = np.array(support_correct)
+            supports = self.dsel_scores[:, clf_index, :]
+            support_correct = supports[np.arange(self.n_samples), self.DSEL_target]
+
             C_src[:, clf_index] = log_func(self.n_classes, support_correct)
 
         return C_src
@@ -340,9 +340,9 @@ class Exponential(Probabilistic):
         """
         C_src = np.zeros((self.n_samples, self.n_classifiers))
         for clf_index in range(self.n_classifiers):
-            supports = self._get_scores_dsel(clf_index)
-            support_correct = [supports[sample_idx, i] for sample_idx, i in enumerate(self.DSEL_target)]
-            support_correct = np.array(support_correct)
+            supports = self.dsel_scores[:, clf_index, :]
+            support_correct = supports[np.arange(self.n_samples), self.DSEL_target]
+
             C_src[:, clf_index] = exponential_func(self.n_classes, support_correct)
         return C_src
 
@@ -415,7 +415,7 @@ class RRC(Probabilistic):
 
         for clf_index in range(self.n_classifiers):
             # Get supports for all samples in DSEL
-            supports = self._get_scores_dsel(clf_index)
+            supports = self.dsel_scores[:, clf_index, :]
             c_src[:, clf_index] = ccprmod(supports, self.DSEL_target)
 
         return c_src
@@ -494,7 +494,7 @@ class DESKL(Probabilistic):
 
         C_src = np.zeros((self.n_samples, self.n_classifiers))
         for clf_index in range(self.n_classifiers):
-            supports = self._get_scores_dsel(clf_index)
+            supports = self.dsel_scores[:, clf_index, :]
             is_correct = self.processed_dsel[:, clf_index]
             C_src[:, clf_index] = entropy_func(self.n_classes, supports, is_correct)
 
@@ -570,7 +570,7 @@ class MinimumDifference(Probabilistic):
         """
         C_src = np.zeros((self.n_samples, self.n_classifiers))
         for clf_index in range(self.n_classifiers):
-            supports = self._get_scores_dsel(clf_index)
+            supports = self.dsel_scores[:, clf_index, :]
             C_src[:, clf_index] = min_difference(supports, self.DSEL_target)
 
         return C_src
