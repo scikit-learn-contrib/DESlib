@@ -136,7 +136,7 @@ class DCS(DS):
 
         """
         selected_clf = []
-        best_index = np.argmax(competences)
+        best_index = np.argmax(competences, axis=1)
 
         if self.selection_method == 'best':
             # Select the classifier with highest competence level
@@ -146,12 +146,12 @@ class DCS(DS):
             """Selects a base classifier if its competence level is significant better than the rest. 
             If there is no such classifier, select randomly a base model.
 
-
              the best classifier will always have diff < diff_thresh. In a case it is
              superior than all others, it will be the only member selected. Otherwise,
              a random classifier from this list is selected
             """
-            best_competence = np.max(competences)
+            best_competence = competences[np.arange(competences.shape[0]), best_index]
+            # best_competence = np.max(competences)
             diff = best_competence - competences
             indices = [idx for idx, _ in enumerate(diff) if diff[idx] < self.diff_thresh]
             if len(indices) == 0:
@@ -192,7 +192,7 @@ class DCS(DS):
         if self.selection_method != 'all':
             # only one classifier is selected
             clf_index = self.select(competences)
-            predicted_label = predictions[clf_index]
+            predicted_label = predictions[np.arange(predictions.shape[0]), clf_index]
         else:
             # Selected ensemble of classifiers is combined using Majority Voting
             indices = self.select(competences)
