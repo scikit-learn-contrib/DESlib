@@ -231,7 +231,7 @@ class DS(ClassifierMixin):
             if k is None:
                 k = self.k
 
-            [dists], [idx] = self.roc_algorithm.kneighbors(query, n_neighbors=k, return_distance=True)
+            dists, idx = self.roc_algorithm.kneighbors(query, n_neighbors=k, return_distance=True)
 
         else:
             dists = self.distances
@@ -258,44 +258,106 @@ class DS(ClassifierMixin):
         self._check_input_predict(X)
 
         n_samples = X.shape[0]
-        predicted_labels = np.zeros(n_samples, dtype=np.intp)
-
+        #predicted_labels = np.zeros(n_samples, dtype=np.intp)
+        predicted_labels = np.empty(n_samples)
+        predicted_labels[:] = np.nan
         base_predictions = self._predict_base(X)
+        all_agree_vector = self._all_classifier_agree(base_predictions)
+        ind_all_agree = np.where(all_agree_vector)[0]
 
-        for index, instance in enumerate(X):
-            # Do not use dynamic selection if all base classifiers agrees on the
-            # same label.
-            instance = instance.reshape(1, -1)
-            if self._all_classifier_agree(base_predictions[index]):
-                predicted_labels[index] = base_predictions[index, 0]
-            else:
-                # proceeds with DS, calculates the region of competence of the query sample
-                if self.DFP or self.with_IH:
-                    self.distances, self.neighbors = self._get_region_competence(instance)
+        # Since the predictions are always the same, get the predictions of the first base classifier.
+        predicted_labels[ind_all_agree] = base_predictions[ind_all_agree, 0]
 
-                # If Instance hardness (IH) is used, check the IH of the region of competence to decide between
-                # DS or the roc_algorithm classifier
-                if self.with_IH and (self._hardness_region_competence(self.neighbors) <= self.IH_rate):
-                    # use the KNN for prediction if the sample is located in a safe region.
-                    # predicted_labels[index] = self.roc_algorithm.predict(instance)
-                    # Using the pre-calculated set of neighbors to perform the decision
-                    y_neighbors = self.DSEL_target[self.neighbors[:self.safe_k]]
-                    predicted_labels[index], _ = mode(y_neighbors)
+        # For the samples with disagreement, perform the dynamic selection steps. First step is to collect the samples
+        # with disagreement between base classifiers
+        ind_disagreement = np.where(~all_agree_vector)[0]
+        X_DS = X[ind_disagreement, :]
 
-                # Otherwise, use DS for classification
-                else:
-                    # Check if the dynamic frienemy pruning should be used
-                    if self.DFP:
-                            self.DFP_mask = self._frienemy_pruning()
-                    else:
-                            self.DFP_mask = np.ones(self.n_classifiers)
+        # Then, we estimate the nearest neighbors for all samples that we need to call DS routines
+        self.distances, self.neighbors = self._get_region_competence(X_DS)
 
-                    predicted_labels[index] = self.classify_instance(instance, base_predictions[index, :])
+        if self.with_IH:
+            # if IH is used, calculate the hardness level associated with each sample
+            hardness = self._hardness_region_competence(self.neighbors)
+            # Get the index associated with the low and hard samples. Samples with low hardness are passed down to the
+            # knn classifier while samples with high hardness are passed down to the DS methods. So, here we split the
+            # samples that are passed to down to each stage by calculating their indices.
+            # TODO check how to do this part without needing two np.where (like one being complements of other)
+            ind_knn_classifier = np.where(hardness <= self.IH_rate)[0]
+            ind_ds_classifier = np.where(hardness > self.IH_rate)[0]
 
-                self.neighbors = None
-                self.distances = None
+            if ind_knn_classifier.size:
+                # all samples with low hardness should be classified by the knn method here: First get the class associated
+                # with each neighbor
+                y_neighbors = self.DSEL_target[self.neighbors[ind_knn_classifier, :self.safe_k]]
+
+                # Accessing which samples in the original matrix are associated with the low instance hardness indices.
+                # This is important since the low hardness indices ind_knn_classifier was estimated based on a subset of
+                # samples
+                ind_knn_original_matrix = ind_disagreement[ind_knn_classifier]
+                prediction_knn, _ = mode(y_neighbors, axis=1)
+                predicted_labels[ind_knn_original_matrix] = prediction_knn.reshape(-1,)
+
+                # Remove from the neighbors and distance matrices the samples that were classified using the KNN
+                self.neighbors = np.delete(self.neighbors, ind_knn_classifier, axis=0)
+                self.distances = np.delete(self.distances, ind_knn_classifier, axis=0)
+
+        else:
+            ind_ds_classifier = ind_disagreement
+
+        # At this stage the samples which all base classifiers agrees or that are associated with low hardness
+        # Were already classified. The remaining samples are now passed down to the DS techniques for classification
+        # IF the DFP pruning is considered, calculate the DFP mask for all samples in X
+        if self.DFP:
+             self.DFP_mask = self._frienemy_pruning()
+        else:
+            self.DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers))
+
+        # Get the real indices of the samples that will be classified using a DS algorithm.
+        ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
+
+        pred_ds = self.classify_instance(X_DS[ind_ds_classifier, :], base_predictions[ind_ds_original_matrix, :])
+
+        predicted_labels[ind_ds_original_matrix] = pred_ds
+        self.neighbors = None
+        self.distances = None
 
         return self.classes.take(predicted_labels)
+
+        # for index, instance in enumerate(X):
+        #     # Do not use dynamic selection if all base classifiers agrees on the
+        #     # same label.
+        #     instance = instance.reshape(1, -1)
+        #     if self._all_classifier_agree(base_predictions[index]):
+        #         predicted_labels[index] = base_predictions[index, 0]
+        #     else:
+        #         # proceeds with DS, calculates the region of competence of the query sample
+        #         if self.DFP or self.with_IH:
+        #             self.distances, self.neighbors = self._get_region_competence(instance)
+        #
+        #         # If Instance hardness (IH) is used, check the IH of the region of competence to decide between
+        #         # DS or the roc_algorithm classifier
+        #         if self.with_IH and (self._hardness_region_competence(self.neighbors) <= self.IH_rate):
+        #             # use the KNN for prediction if the sample is located in a safe region.
+        #             # predicted_labels[index] = self.roc_algorithm.predict(instance)
+        #             # Using the pre-calculated set of neighbors to perform the decision
+        #             y_neighbors = self.DSEL_target[self.neighbors[:self.safe_k]]
+        #             predicted_labels[index], _ = mode(y_neighbors)
+        #
+        #         # Otherwise, use DS for classification
+        #         else:
+        #             # Check if the dynamic frienemy pruning should be used
+        #             if self.DFP:
+        #                     self.DFP_mask = self._frienemy_pruning()
+        #             else:
+        #                     self.DFP_mask = np.ones(self.n_classifiers)
+
+        #             predicted_labels[index] = self.classify_instance(instance, base_predictions[index, :])
+        #
+        #         self.neighbors = None
+        #         self.distances = None
+        #
+        # return self.classes.take(predicted_labels)
 
     def predict_proba(self, X):
         """Estimates the posterior probabilities for sample in X.
@@ -358,17 +420,12 @@ class DS(ClassifierMixin):
         self.distances = None
         return predicted_proba
 
-    def _hardness_region_competence(self, region_competence):
+    def _hardness_region_competence(self):
         """Calculate the Instance hardness of the sample based on its neighborhood. The sample is deemed hard to
         classify when there is overlap between different classes in the region of competence.
 
         This hardness measure is used to select
         whether use DS or use the KNN for the classification of a given query sample
-
-        Parameters
-        ----------
-        region_competence : list of shape = [k]
-                            The indices of the samples belonging to the region of competence
 
         Returns
         -------
@@ -379,11 +436,16 @@ class DS(ClassifierMixin):
         Smith, M.R., Martinez, T. and Giraud-Carrier, C., 2014. An instance level analysis of data complexity.
         Machine learning, 95(2), pp.225-256
         """
-        neighbors_y = [self.DSEL_target[index] for index in region_competence[:self.safe_k]]
 
-        _, num_majority_class = mode(neighbors_y)
-        # Get the number of examples of the majority class in the region of competence
-        hardness = (self.k - num_majority_class) / self.k
+        neighbors_y = self.DSEL_target[self.neighbors[:, :self.safe_k]]
+        _, num_majority_class = mode(neighbors_y, axis=1)
+        hardness = ((self.safe_k - num_majority_class) / self.safe_k).reshape(-1, )
+
+        # neighbors_y = [self.DSEL_target[index] for index in region_competence[:self.safe_k]]
+        #
+        # _, num_majority_class = mode(neighbors_y)
+        # # Get the number of examples of the majority class in the region of competence
+        # hardness = (self.k - num_majority_class) / self.k
 
         return hardness
 
@@ -401,31 +463,40 @@ class DS(ClassifierMixin):
         Oliveira, D.V.R., Cavalcanti, G.D.C. and Sabourin, R., Online Pruning of Base Classifiers for Dynamic
         Ensemble Selection, Pattern Recognition, vol. 72, December 2017, pp 44-58.
         """
-        # Check if query is in a indecision region
-        neighbors_y = self.DSEL_target[self.neighbors[:self.safe_k]]
-        if len(set(neighbors_y)) > 1:
-            # There are more than on class in the region of competence (So it is an indecision region).
-            mask = np.zeros(self.n_classifiers)
+        # using a for loop for processing a batch of samples temporarily. Change later to numpy processing
+        n_samples, n_neighbors = self.neighbors.shape
+        mask = np.zeros((n_samples, self.n_classifiers))
 
-            # Check if the base classifier predict the correct label for a sample belonging to each class.
-            for clf_index in range(self.n_classifiers):
-                predictions = self.processed_dsel[self.neighbors[:self.safe_k], clf_index]
-                correct_class_pred = [self.DSEL_target[index] for count, index in enumerate(self.neighbors[:self.safe_k])
-                                      if predictions[count] == 1]
-                """
-                # If that is true, it means that it correctly classified at least one neighbor for each class in 
-                the region of competence
-                """
-                if np.unique(correct_class_pred).size > 1:
-                    mask[clf_index] = 1
-            # Check if all classifiers were pruned
-            if not np.count_nonzero(mask):
-                # Do not apply the pruning mechanism.
-                mask = np.ones(self.n_classifiers)
-            return mask
-        else:
-            # The sample is located in a safe region. All base classifiers can predict the label
-            mask = np.ones(self.n_classifiers)
+        for sample_idx in enumerate(n_samples):
+            # Check if query is in a indecision region
+            neighbors_y = self.DSEL_target[self.neighbors[sample_idx, :self.safe_k]]
+
+            if len(set(neighbors_y)) > 1:
+                # There are more than on class in the region of competence (So it is an indecision region).
+                #mask = np.zeros(self.n_classifiers)
+
+                # Check if the base classifier predict the correct label for a sample belonging to each class.
+                for clf_index in range(self.n_classifiers):
+                    predictions = self.processed_dsel[self.neighbors[sample_idx, :self.safe_k], clf_index]
+                    correct_class_pred = [self.DSEL_target[index] for count, index in
+                                          enumerate(self.neighbors[sample_idx, :self.safe_k])
+                                          if predictions[count] == 1]
+                    """
+                    # If that is true, it means that it correctly classified at least one neighbor for each class in 
+                    the region of competence
+                    """
+                    if np.unique(correct_class_pred).size > 1:
+                        mask[sample_idx, clf_index] = 1
+                # Check if all classifiers were pruned
+                if not np.count_nonzero(mask):
+                    # Do not apply the pruning mechanism.
+                    mask[sample_idx, clf_index, :] = 1
+                    #mask = np.ones(self.n_classifiers)
+                return mask
+            else:
+                # The sample is located in a safe region. All base classifiers can predict the label
+                mask[sample_idx, :] = 1
+                # mask = np.ones(self.n_classifiers)
         return mask
 
     def _get_classifier_ensemble(self, indices):
@@ -458,7 +529,7 @@ class DS(ClassifierMixin):
         return processed_dsel, BKS_dsel
 
     def _predict_base(self, X):
-        predictions = np.zeros((X.shape[0], self.n_classifiers))
+        predictions = np.zeros((X.shape[0], self.n_classifiers), dtype=np.intp)
 
         for index, clf in enumerate(self.pool_classifiers):
             labels = clf.predict(X)
@@ -541,15 +612,14 @@ class DS(ClassifierMixin):
 
         Parameters
         ----------
-        query : Array containing the query sample
-        to be classified
-
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Matrix with the predictions of each base classifier for each sample.
         Returns
         -------
-        True : if all classifiers in the generated_pool
-        agrees on the same label. False otherwise
+        array of shape = [n_samples] containing True if all classifiers in the generated_pool
+        agrees on the same label, otherwise False for all samples
         """
-        return np.all(predictions == predictions[0])
+        return np.all(predictions == predictions[:, 0].reshape(-1,1), axis=1)
 
     def _all_classifier_agree_query(self, query):
         """Check whether there is a difference in opinion
