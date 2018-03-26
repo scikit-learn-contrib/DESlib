@@ -259,7 +259,7 @@ class DS(ClassifierMixin):
 
         n_samples = X.shape[0]
         #predicted_labels = np.zeros(n_samples, dtype=np.intp)
-        predicted_labels = np.empty(n_samples)
+        predicted_labels = np.empty(n_samples, dtype=np.intp)
         predicted_labels[:] = np.nan
         base_predictions = self._predict_base(X)
         all_agree_vector = self._all_classifier_agree(base_predictions)
@@ -278,7 +278,7 @@ class DS(ClassifierMixin):
 
         if self.with_IH:
             # if IH is used, calculate the hardness level associated with each sample
-            hardness = self._hardness_region_competence(self.neighbors)
+            hardness = self._hardness_region_competence()
             # Get the index associated with the low and hard samples. Samples with low hardness are passed down to the
             # knn classifier while samples with high hardness are passed down to the DS methods. So, here we split the
             # samples that are passed to down to each stage by calculating their indices.
