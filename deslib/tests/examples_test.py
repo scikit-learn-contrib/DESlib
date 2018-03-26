@@ -77,7 +77,7 @@ neighbors_ex_kuncheva = np.linspace(0, 14, num=15, dtype=int)
 # target class of each example. independent means that it should be used by the a priori technique
 y_dsel_ex_kuncheva_independent = np.array([2, 1, 2, 2, 3, 1, 2, 1, 3, 3, 2, 1, 2, 2, 1]) - 1
 
-# dependent means that it should be used by the a priori technique
+# dependent means that it should be used by the a posteriori technique
 y_dsel_ex_kuncheva_dependent = np.array([1, 0, 1, 1, 2, 0, 1, 0, 0, 2, 1, 2, 1, 1, 0])
 
 
