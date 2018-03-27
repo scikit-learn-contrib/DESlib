@@ -133,8 +133,9 @@ class DES(DS):
         """
         competences = self.estimate_competence(query)
         if self.mode == "selection":
+            # The indices matrix is used as a mask to remove the predictions of certain base classifiers.
             indices = self.select(competences)
-            votes = np.atleast_2d(predictions[indices])
+            votes = np.ma.MaskedArray(predictions, ~indices)
             predicted_label = majority_voting_rule(votes)
 
         elif self.mode == "weighting":
@@ -142,9 +143,8 @@ class DES(DS):
             predicted_label = weighted_majority_voting_rule(votes, competences)
         else:
             indices = self.select(competences)
-            competences_ensemble = competences[indices]
-            votes = np.atleast_2d(predictions[indices])
-            predicted_label = weighted_majority_voting_rule(votes, competences_ensemble)
+            votes = np.ma.MaskedArray(predictions, ~indices)
+            predicted_label = weighted_majority_voting_rule(votes, competences)
 
         return predicted_label
 
