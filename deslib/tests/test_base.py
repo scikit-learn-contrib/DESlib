@@ -111,33 +111,28 @@ def test_input_shape_fit():
     with pytest.raises(ValueError):
         ds_test.fit(X, y)
 
-# -----------------------Test routines for the Instance Hardness calculation--------------------
-@pytest.mark.parametrize('index, expected', [(0, 0.42),
-                                             (1, 0.28),
-                                             (2, 0.28)])
-def test_instance_hardness_region(index, expected):
-    X = X_dsel_ex1
-    y = y_dsel_ex1
+
+def test_input_X_1D():
+
+    X = np.ones(10)
     ds_test = DS(create_pool_classifiers())
-    ds_test.fit(X, y)
-    neighbors = neighbors_ex1[index, :]
-    IH = ds_test._hardness_region_competence(neighbors)
-    assert np.isclose(IH, expected, atol=0.01)
+    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+    with pytest.raises(Warning):
+        ds_test.predict(X)
 
 
-def test_instance_hardness_region_all_same():
-    X = X_dsel_ex1
-    y = y_dsel_ex1
+def test_input_X_3D():
+    X = np.ones((10, 10, 10))
     ds_test = DS(create_pool_classifiers())
-    ds_test.fit(X, y)
-    neighbors = [0, 1, 2, 6, 7, 8, 13]
-    IH = ds_test._hardness_region_competence(neighbors)
-    assert IH == 0.0
+    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+    with pytest.raises(ValueError):
+        ds_test.predict(X)
 
 
-@pytest.mark.parametrize('index, expected', [(0, 0), (1, 0), (2, 1)])
-def test_IH_is_used(index, expected):
-    query = np.atleast_2d([1, 0])
+def test_IH_is_used():
+
+    expected = np.array([0, 0, 1])
+    query = np.ones((3, 2))
     ds_test = DS(create_pool_classifiers(), with_IH=True, IH_rate=0.5)
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
 
@@ -145,16 +140,15 @@ def test_IH_is_used(index, expected):
     ds_test.DSEL_target = y_dsel_ex1
     ds_test.DSEL_data = X_dsel_ex1
 
-    ds_test.neighbors = neighbors_ex1[index, :]
-    ds_test.distances = distances_ex1[index, :]
+    ds_test.neighbors = neighbors_ex1
+    ds_test.distances = distances_ex1
 
     predicted = ds_test.predict(query)
 
-    assert predicted == expected
-
+    assert np.allclose(predicted, expected)
 # -----------------------Test routines for the DFP (fire DS)--------------------
 
-# Since no classifier crosses the region of competence, all of them must be selected
+#Since no classifier crosses the region of competence, all of them must be selected
 def test_frienemy_no_classifier_crosses():
     X = X_dsel_ex1
     y = y_dsel_ex1
@@ -162,7 +156,7 @@ def test_frienemy_no_classifier_crosses():
     ds_test.fit(X, y)
     ds_test.neighbors = neighbors_ex1[0, :]
     mask = ds_test._frienemy_pruning()
-    assert mask.size == 3 and mask.all() == 1
+    assert mask.shape == (1, 3) and np.allclose(mask, 1)
 
 
 # In this example, all base classifier should be considered crossing the region of competence since they always
@@ -185,11 +179,12 @@ def test_frienemy_not_all_classifiers_crosses():
     ds_test.DSEL_data = X_dsel_ex1
     ds_test.neighbors = neighbors_ex1[0, :]
     result = ds_test._frienemy_pruning()
-    assert np.array_equal(result, np.array([1, 1, 0]))
+    assert np.array_equal(result, np.array([[1, 1, 0]]))
 
 
 # Check if the batch processing is working by passing multiple samples at the same time.
 def test_frienemy_not_all_classifiers_crosses_batch():
+    expected = np.array([[1, 1, 0], [0, 1, 0], [1, 1, 1]])
     ds_test = DS(create_pool_classifiers(), safe_k=3)
     ds_test.processed_dsel = dsel_processed_ex1
     ds_test.DSEL_target = y_dsel_ex1
@@ -197,7 +192,7 @@ def test_frienemy_not_all_classifiers_crosses_batch():
     # passing three samples to compute the DFP at the same time
     ds_test.neighbors = neighbors_ex1
     result = ds_test._frienemy_pruning()
-    assert np.array_equal(result, np.array([1, 1, 0]))
+    assert np.array_equal(result, expected)
 
 # Test the case where the sample is located in a safe region (i.e., all neighbors comes from the same class)
 def test_frienemy_safe_region():
@@ -207,17 +202,21 @@ def test_frienemy_safe_region():
     ds_test.DSEL_data = X_dsel_ex1
     ds_test.neighbors = np.array([0, 1, 2, 6, 7, 8, 14])
     result = ds_test._frienemy_pruning()
-    assert np.array_equal(result, np.array([1, 1, 1]))
+    assert np.array_equal(result, np.array([[1, 1, 1]]))
 
 # Check if the batch processing is working by passing multiple samples at the same time. Testing sample in a safe region
 def test_frienemy_safe_region_batch():
+    n_samples = 10
+    n_classifiers = 3
+    expected = np.ones((n_samples, n_classifiers))
     ds_test = DS(create_pool_classifiers(), safe_k=3)
     ds_test.processed_dsel = dsel_processed_ex1
     ds_test.DSEL_target = y_dsel_ex1
     ds_test.DSEL_data = X_dsel_ex1
-    ds_test.neighbors = np.tile(np.array([0, 1, 2, 6, 7, 8, 14]), (10, 1))
+    ds_test.neighbors = np.tile(np.array([0, 1, 2, 6, 7, 8, 14]), (n_samples, 1))
     result = ds_test._frienemy_pruning()
-    assert np.array_equal(result, np.array([1, 1, 1]))
+
+    assert np.array_equal(result, expected)
 
 
 def test_DFP_is_used():
@@ -231,7 +230,7 @@ def test_DFP_is_used():
     ds_test.distances = distances_ex1[0, :]
     ds_test.classify_instance = MagicMock(return_value=0)
     ds_test.predict(query)
-    assert np.array_equal(ds_test.DFP_mask, np.array([1, 1, 0]))
+    assert np.array_equal(ds_test.DFP_mask, np.array([[1, 1, 0]]))
 
 
 # In this test, the frienemy pruning is used. So, the value of self.DFP_mask should change.
@@ -249,7 +248,7 @@ def test_predict_proba_DFP():
 
     ds_test.predict_proba_instance = MagicMock(return_value=np.atleast_2d([0.25, 0.75]))
     ds_test.predict_proba(query)
-    assert np.array_equal(ds_test.DFP_mask, np.array([1, 1, 0]))
+    assert np.array_equal(ds_test.DFP_mask, np.array([[1, 1, 0]]))
 
 @pytest.mark.parametrize('X', [None, [[0.1, 0.2], [0.5, np.nan]]])
 def test_bad_input_X(X):
@@ -387,7 +386,7 @@ def test_label_encoder_only_dsel():
     ds_test.neighbors = neighbors_ex1[0, :]
     ds_test.distances = distances_ex1[0, :]
     ds_test.classify_instance = Mock()
-    ds_test.classify_instance.side_effect = [1, 0]
+    ds_test.classify_instance.return_value = [1, 0]  # changed here due to batch processing
     predictions = ds_test.predict(query)
     assert np.array_equal(predictions, ['dog', 'cat'])
 
