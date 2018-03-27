@@ -116,19 +116,4 @@ class Rank(DCS):
         results_neighbors = np.insert(results_neighbors, shape[1], addition, axis=1)
         competences = np.argmax(results_neighbors == 0, axis=1)
 
-        # competences = np.zeros(self.n_classifiers)
-        #
-        # for clf_index in range(self.n_classifiers):
-        #
-        #     # Check if the dynamic frienemy pruning (DFP) should be used used
-        #     if self.DFP_mask[clf_index]:
-        #         # count the number of correctly classified samples in the
-        #         # neighborhood.
-        #         for counter, index in enumerate(idx_neighbors):
-        #             if self.processed_dsel[index][clf_index]:
-        #                 continue
-        #             else:
-        #                 competences[clf_index] = counter
-        #                 break
-
         return competences
