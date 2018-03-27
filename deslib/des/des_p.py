@@ -110,5 +110,5 @@ class DESP(DES):
         indices = (competences > RC)
 
         # For the rows that are all False (i.e., no base classifier was selected, select all classifiers (set all True)
-        indices[~np.alltrue(indices, axis=1), :] = True
+        indices[~np.any(indices, axis=1), :] = True
         return indices
