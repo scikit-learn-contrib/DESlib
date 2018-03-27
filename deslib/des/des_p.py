@@ -89,12 +89,6 @@ class DESP(DES):
         idx_neighbors = np.atleast_2d(idx_neighbors)
         competences = np.mean(self.processed_dsel[idx_neighbors, :], axis=1)
 
-        # competences = np.zeros(self.n_classifiers)
-        # for clf_index in range(self.n_classifiers):
-        #     # Check if the dynamic frienemy pruning (DFP) should be used used
-        #     if self.DFP_mask[clf_index]:
-        #         competences[clf_index] = np.mean(self.processed_dsel[idx_neighbors, clf_index])
-
         return competences
 
     def select(self, competences):
@@ -113,11 +107,8 @@ class DESP(DES):
 
         """
         RC = 1.0 / self.n_classes
-        indices = np.where(competences > RC)
-        # Select classifiers with local accuracy superior than the random classifier rc.
-        indices = [clf_index for clf_index, clf_competence in enumerate(competences)
-                   if clf_competence > RC]
+        indices = (competences > RC)
 
-        if len(indices) == 0:
-            indices = list(range(self.n_classifiers))
+        # For the rows that are all False (i.e., no base classifier was selected, select all classifiers (set all True)
+        indices[~np.alltrue(indices, axis=1), :] = True
         return indices

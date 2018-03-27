@@ -94,20 +94,11 @@ class KNORAE(DES):
         # That way the search will always find a zero after comparing to self.K + 1
         addition = np.zeros((shape[0], shape[2]))
         results_neighbors = np.insert(results_neighbors, shape[1], addition, axis=1)
+
+        # This function can be used here since in case of multiple occurrences of the maximum values, the indices
+        # corresponding to the first occurrence are returned.
         competences = np.argmax(results_neighbors == 0, axis=1)
 
-        # indices_errors = np.where(results_neighbors == 0)[0]
-        # competences = np.zeros(self.n_classifiers)
-        #
-        # for clf_index in range(self.n_classifiers):
-        #     # Check if the dynamic frienemy pruning (DFP) should be used used
-        #     if self.DFP_mask[clf_index]:
-        #         results_neighbors = self.processed_dsel[idx_neighbors, clf_index]
-        #         indices_errors = np.where(results_neighbors == 0)[0]
-        #         if indices_errors.size != 0:
-        #             competences[clf_index] = np.min(indices_errors)
-        #         else:
-        #             competences[clf_index] = self.k
         return competences
 
     def select(self, competences):
@@ -134,12 +125,7 @@ class KNORAE(DES):
         indices : List with the indices of the selected base classifiers
 
         """
-        max_value = np.max(competences)
-        if max_value > 0:
-            indices = [clf_index for clf_index, clf_competence in enumerate(
-                competences) if clf_competence == max_value]
-        else:
-            # use the whole pool if no classifier was deemed competent
-            indices = list(range(self.n_classifiers))
+        max_value = np.max(competences, axis=1)
+        indices = (competences == max_value.reshape(competences.shape[0], -1))
 
         return indices
