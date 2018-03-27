@@ -36,9 +36,9 @@ def test_estimate_competence_batch():
     assert np.allclose(competences, expected, atol=0.01)
 
 
-@pytest.mark.parametrize('index, expected', [(0, [0, 2]),
-                                             (1, [0, 2]),
-                                             (2, [1])])
+@pytest.mark.parametrize('index, expected', [(0, [[True, False, True]]),
+                                             (1, [[True, False, True]]),
+                                             (2, [[False, True, False]])])
 def test_select_two_classes(index, expected):
     query = np.atleast_2d([1, 1])
 
@@ -52,13 +52,13 @@ def test_select_two_classes(index, expected):
     competences = des_p_test.estimate_competence(query)
     selected = des_p_test.select(competences)
 
-    assert selected == expected
+    assert np.array_equal(selected, expected)
 
 
 # In this example, since the number of classes is 3, the competence level expected to be selected is > 0.33
-@pytest.mark.parametrize('index, expected', [(0, [0, 1, 2]),
-                                             (1, [0, 2]),
-                                             (2, [1])])
+@pytest.mark.parametrize('index, expected', [(0, [[True, True, True]]),
+                                             (1, [[True, False, True]]),
+                                             (2, [[False, True, False]])])
 def test_select_three_classes(index, expected):
     query = np.atleast_2d([1, 1])
 
@@ -73,35 +73,16 @@ def test_select_three_classes(index, expected):
     competences = des_p_test.estimate_competence(query)
     selected = des_p_test.select(competences)
 
-    assert selected == expected
-
-
-# In this example, since the number of classes is 3, the competence level expected to be selected is > 0.1. All base
-# Classifiers should be selected in this example
-@pytest.mark.parametrize('index', [0, 1, 2])
-def test_select_ten_classes(index, ):
-    query = np.atleast_2d([1, 1])
-
-    des_p_test = DESP(create_pool_classifiers())
-    des_p_test.fit(X_dsel_ex1, y_dsel_ex1)
-
-    des_p_test.n_classes = 10
-    des_p_test.DFP_mask = np.ones(des_p_test.n_classifiers)
-    des_p_test.neighbors = neighbors_ex1[index, :]
-    des_p_test.distances = distances_ex1[index, :]
-
-    competences = des_p_test.estimate_competence(query)
-    selected = des_p_test.select(competences)
-
-    assert selected == list(range(des_p_test.n_classifiers))
+    assert np.array_equal(selected, expected)
 
 
 def test_select_none_competent():
     des_p_test = DESP(create_pool_classifiers())
     des_p_test.n_classes = 2
     competences = np.ones(des_p_test.n_classifiers) * 0.49
-    indices = des_p_test.select(competences)
-    assert indices == list(range(des_p_test.n_classifiers))
+    indices = des_p_test.select(competences.reshape(1, -1))
+    expected = np.array([[True, True, True]])
+    assert np.array_equal(expected, indices)
 
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.

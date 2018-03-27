@@ -35,9 +35,9 @@ def test_estimate_competence_batch():
     assert np.allclose(competences, expected)
 
 
-@pytest.mark.parametrize('index, expected', [(0, [0, 2]),
-                                             (1, [0, 2]),
-                                             (2, [1])])
+@pytest.mark.parametrize('index, expected', [(0, [[True, False, True]]),
+                                             (1, [[True, False, True]]),
+                                             (2, [[False, True, False]])])
 def test_select(index, expected):
     query = np.atleast_2d([1, 1])
 
@@ -49,7 +49,7 @@ def test_select(index, expected):
     competences = knora_e_test.estimate_competence(query)
     selected = knora_e_test.select(competences)
 
-    assert selected == expected
+    assert np.array_equal(selected, expected)
 
 
 # No classifier here is selected, since the always predict class 2 where there are only samples labeled as class 0 and 1
@@ -68,9 +68,10 @@ def test_select_none_competent():
     knora_e_test.DFP_mask = np.ones(knora_e_test.n_classifiers)
 
     competences = knora_e_test.estimate_competence(query)
-    indices = knora_e_test.select(competences)
+    selected = knora_e_test.select(competences)
+    expected = np.atleast_2d([True] * 100)
 
-    assert indices == list(range(knora_e_test.n_classifiers))
+    assert np.array_equal(expected, selected)
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
 # In this case the test should not raise an error since this class does not require base classifiers that
