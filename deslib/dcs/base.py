@@ -135,6 +135,9 @@ class DCS(DS):
         selected_clf : index of the selected base classifier(s)
 
         """
+        if competences.ndim < 2:
+            competences = competences.reshape(1, -1)
+
         selected_clf = []
         best_index = np.argmax(competences, axis=1)
 
@@ -152,21 +155,33 @@ class DCS(DS):
             """
             best_competence = competences[np.arange(competences.shape[0]), best_index]
             # best_competence = np.max(competences)
-            diff = best_competence - competences
-            indices = [idx for idx, _ in enumerate(diff) if diff[idx] < self.diff_thresh]
-            if len(indices) == 0:
-                indices = range(self.n_classifiers)
+            diff = best_competence.reshape(-1, 1) - competences
+            # TODO: I believe this code here can be improved
+            selected_clf = np.zeros(diff.shape[0], dtype=np.int)
+            for row in range(diff.shape[0]):
+                diff_list = list(diff[row, :])
+                indices = [idx for idx, _ in enumerate(diff_list) if diff_list[idx] < self.diff_thresh]
+                if len(indices) == 0:
+                    indices = range(self.n_classifiers)
 
-            selected_clf = self.rng.choice(indices)
+                selected_clf[row] = self.rng.choice(indices)
 
         elif self.selection_method == 'random':
-            # Select a random classifier among all with same competence level
-            indices = [idx for idx, competence in enumerate(competences) if competence == competences[best_index]]
-            selected_clf = self.rng.choice(indices)
+            # TODO: I believe this code here can be improved
+            selected_clf = np.zeros(competences.shape[0], dtype=np.int)
+            best_competence = competences[np.arange(competences.shape[0]), best_index]
+            for row in range(competences.shape[0]):
+                competence_list = list(competences[row, :])
+                # Select a random classifier among all with same competence level
+                indices = [idx for idx, _ in enumerate(competence_list) if competence_list[idx] == best_competence[row]]
+
+                selected_clf[row] = self.rng.choice(indices)
 
         elif self.selection_method == 'all':
             # select all base classifiers with max competence estimates.
-            selected_clf = [idx for idx, competence in enumerate(competences) if competence == competences[best_index]]
+            max_value = np.max(competences, axis=1)
+            selected_clf = (competences == max_value.reshape(competences.shape[0], -1))
+            # selected_clf = [idx for idx, competence in enumerate(competences) if competence == competences[best_index]]
 
         return selected_clf
 
@@ -187,6 +202,14 @@ class DCS(DS):
         -------
         The predicted label of the query
         """
+        if query.ndim != predictions.ndim:
+            raise ValueError('The arrays query and predictions must have the same shape. query.shape is {}'
+                             'and predictions.shape is {}' .format(query.shape, predictions.shape))
+
+        if query.ndim < 2:
+            query = query.reshape(1, -1)
+            predictions = predictions.reshape(1, -1)
+
         competences = self.estimate_competence(query, predictions=predictions)
 
         if self.selection_method != 'all':
@@ -196,7 +219,7 @@ class DCS(DS):
         else:
             # Selected ensemble of classifiers is combined using Majority Voting
             indices = self.select(competences)
-            votes = np.atleast_2d(predictions[indices])
+            votes = np.ma.MaskedArray(predictions, ~indices)
             predicted_label = majority_voting_rule(votes)
 
         return predicted_label
@@ -209,11 +232,11 @@ class DCS(DS):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array containing the test sample = [n_samples, n_features]
 
         Returns
         -------
-        predicted_proba : array = [n_classes] with the probability estimates for all classes
+        predicted_proba : array = [n_samples, n_classes] with the probability estimates for all classes
         """
         competences = self.estimate_competence(query)
         if self.selection_method != 'all':
