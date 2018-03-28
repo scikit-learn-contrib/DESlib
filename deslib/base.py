@@ -36,14 +36,14 @@ class DS(ClassifierMixin):
         self.pool_classifiers = pool_classifiers
         self.n_classifiers = len(self.pool_classifiers)
         self.k = k
-        self.DFP = DFP              # Dynamic Frienemy Pruning
-        self.with_IH = with_IH      # Whether to use hardness to switch between DS and KNN
-        self.safe_k = safe_k          # K value used for defining a safe region
-        self.IH_rate = IH_rate
+        self.DFP = DFP                      # Dynamic Frienemy Pruning
+        self.with_IH = with_IH              # Whether to use hardness to switch between DS and KNN
+        self.safe_k = safe_k                # K value used for defining a safe region
+        self.IH_rate = IH_rate              # Hardness threshold use to decide between DS and KNN
         self.processed_dsel = None
         self.BKS_dsel = None
         self.dsel_scores = None
-        self.roc_algorithm = None   # Algorithm used to define the region of competence
+        self.roc_algorithm = None           # Algorithm used to define the region of competence
         self.DSEL_data = None
         self.DSEL_target = None
         self.classes = None
@@ -52,7 +52,7 @@ class DS(ClassifierMixin):
         self.n_features = None
         self.neighbors = None
         self.distances = None
-        self.DFP_mask = None       # Mask used to apply the classifier pruning
+        self.DFP_mask = None                # Mask used to apply the classifier pruning
 
         if self.with_IH and self.safe_k is None:
             self.safe_k = self.k
@@ -117,7 +117,7 @@ class DS(ClassifierMixin):
         query : array containing the test sample = [n_samples, n_features]
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      The predictions of all base classifier for all samples in the query array
 
         Returns
         -------
@@ -126,13 +126,16 @@ class DS(ClassifierMixin):
         pass
 
     @abstractmethod
-    def predict_proba_instance(self, query):
+    def predict_proba_instance(self, query, predictions):
         """Predicts the posterior probabilities of the corresponding query sample.
         Returns the probability estimates of each class.
 
         Parameters
         ----------
         query : array containing the test sample = [n_features]
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      The predictions of all base classifier for all samples in the query array
 
         Returns
         -------
@@ -383,18 +386,23 @@ class DS(ClassifierMixin):
         # Check if X is a valid input
         self._check_input_predict(X)
 
-        # Check if the base classifiers are able to estimate posterior probabilities (implements predict_proba).
+        # Check if the base classifiers are able to estimate posterior probabilities (implements predict_proba method).
         self._check_predict_proba()
 
         n_samples = X.shape[0]
         predicted_proba = np.zeros((n_samples, self.n_classes))
+
+        # pre-calculate the predictions of the base classifiers
+        # TODO: Change this part to pre-calculate the posterior probabilities and use argmax to get the classification.
+        base_predictions = self._predict_base(X)
+
         for index, instance in enumerate(X):
             # Do not use dynamic selection if all base classifiers agrees on the
             # same label.
             instance = instance.reshape(1, -1)
-            if self._all_classifier_agree_query(instance):
+            if self._all_classifier_agree(base_predictions[index]):
 
-                #  since it may have better probabilities estimates
+                # Use the whole pool to predict probabilities since it may have better probabilities estimates
                 predicted_proba[index, :] = predict_proba_ensemble(self.pool_classifiers, instance)[0]
 
             else:
@@ -419,7 +427,7 @@ class DS(ClassifierMixin):
                     else:
                             self.DFP_mask = np.ones(self.n_classifiers)
 
-                    predicted_proba[index, :] = self.predict_proba_instance(instance)
+                    predicted_proba[index, :] = self.predict_proba_instance(instance, base_predictions[index, :])
 
         # Reset the neighbors and the distances as they are specific to a given query.
         self.neighbors = None
@@ -516,7 +524,6 @@ class DS(ClassifierMixin):
             predictions[:, index] = self._encode_base_labels(labels)
         return predictions
 
-
     def _output_profile_transform(self, query):
         """Transform the query in an output profile. Each position of the output profiles vector
         is the score obtained by a base classifier ci for the classes of the query.
@@ -546,12 +553,10 @@ class DS(ClassifierMixin):
         obtained by each base classifier in the generated_pool for each sample in DSEL.
         """
 
-        dsel_scores = np.zeros(
-            (self.DSEL_target.size, self.n_classifiers * self.n_classes))
-
+        dsel_scores = np.empty((self.n_samples, self.n_classifiers, self.n_classes))
         for index, clf in enumerate(self.pool_classifiers):
-            scores = clf.predict_proba(self.DSEL_data)
-            dsel_scores[:, index * self.n_classes:(index * self.n_classes) + self.n_classes] = scores
+            dsel_scores[:, index, :] = clf.predict_proba(self.DSEL_data)
+
         return dsel_scores
 
     def _check_predict_proba(self):
@@ -559,32 +564,6 @@ class DS(ClassifierMixin):
             check_is_fitted(clf, "classes_")
             if "predict_proba" not in dir(clf):
                 raise ValueError("All base classifiers should output probability estimates")
-
-    def _get_scores_dsel(self, clf_idx, sample_idx=None):
-        """Get the outputs (scores) obtained by the base classifier
-        for the selected samples in dsel
-
-        Parameters
-        ----------
-        clf_idx : index of the base classifier
-
-        sample_idx : index of the sample belonging to dsel.
-        if sample_idx is not specified (None), the scores
-        obtained for the whole dsel is returned
-
-        Returns
-        -------
-        scores : scores obtained for the corresponding sample
-        """
-        if self.dsel_scores is None:
-            raise NotFittedError('dsel_scores was not fitted yet. Call "_pre_process_dsel_scores" '
-                                 'to pre-process the classification scores before its use.')
-
-        if sample_idx is None:
-            scores = self.dsel_scores[:, clf_idx * self.n_classes:(clf_idx * self.n_classes) + self.n_classes]
-        else:
-            scores = self.dsel_scores[sample_idx, clf_idx * self.n_classes:(clf_idx * self.n_classes) + self.n_classes]
-        return scores
 
     def _all_classifier_agree(self, predictions):
         """Check whether there is a difference in opinion

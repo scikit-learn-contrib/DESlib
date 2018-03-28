@@ -96,7 +96,9 @@ class KNOP(DES):
         y_ind = self.setup_label_encoder(y)
         self._set_dsel(X, y_ind)
         self.dsel_scores = self._preprocess_dsel_scores()
-        self._fit_region_competence(self.dsel_scores, y_ind, self.k)
+        # Reshape dsel_scores as a 2-D array for nearest neighbor calculations
+        dsel_output_profiles = self.dsel_scores.reshape(self.n_samples, self.n_classifiers * self.n_classes)
+        self._fit_region_competence(dsel_output_profiles, y_ind, self.k)
 
         return self
     

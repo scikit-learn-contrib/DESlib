@@ -93,7 +93,9 @@ def test_estimate_competence_batch():
 def test_fit():
     a_priori_test = APriori(create_pool_classifiers())
     a_priori_test.fit(X_dsel_ex1, y_dsel_ex1)
-    assert np.isclose(a_priori_test.dsel_scores, [0.5, 0.5, 1.0, 0.0, 0.33, 0.67]).all()
+    expected = np.array([[0.5, 0.5], [1.0, 0.0], [0.33, 0.67]])
+    expected = np.tile(expected, (15, 1, 1))
+    assert np.array_equal(a_priori_test.dsel_scores, expected)
 
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.

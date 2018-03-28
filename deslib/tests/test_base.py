@@ -270,32 +270,41 @@ def test_preprocess_dsel_scores():
     ds_test = DS(create_pool_classifiers())
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     dsel_scores = ds_test._preprocess_dsel_scores()
-    expected = np.ones((15, 6)) * np.array([0.5, 0.5, 1.0, 0.0, 0.33, 0.67])
+    expected = np.array([[0.5, 0.5], [1.0, 0.0], [0.33, 0.67]])
+    expected = np.tile(expected, (15, 1, 1))
     assert np.array_equal(dsel_scores, expected)
 
 
-def test_get_dsel_scores():
-    ds_test = DS(create_pool_classifiers())
+def test_DFP_is_used():
+    query = np.atleast_2d([1, 0])
+    ds_test = DS(create_pool_classifiers(), DFP=True, safe_k=3)
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-    ds_test.dsel_scores = dsel_scores_ex1
-    assert np.array_equal(ds_test._get_scores_dsel(0, 0), np.array([1.0, 0.0]))
-    assert np.array_equal(ds_test._get_scores_dsel(1, 0), np.array([0.5, 0.5]))
-    assert np.array_equal(ds_test._get_scores_dsel(2, 0), np.array([0.8, 0.2]))
+    ds_test.processed_dsel = dsel_processed_ex1
+    ds_test.DSEL_target = y_dsel_ex1
+    ds_test.DSEL_data = X_dsel_ex1
+    ds_test.neighbors = neighbors_ex1[0, :]
+    ds_test.distances = distances_ex1[0, :]
+    ds_test.classify_instance = MagicMock(return_value=0)
+    ds_test.predict(query)
+    assert np.array_equal(ds_test.DFP_mask, np.array([1, 1, 0]))
 
 
-def test_get_dsel_scores_all_samples():
-    ds_test = DS(create_pool_classifiers())
+@pytest.mark.parametrize('index, expected', [(0, 0), (1, 0), (2, 1)])
+def test_IH_is_used(index, expected):
+    query = np.atleast_2d([1, 0])
+    ds_test = DS(create_pool_classifiers(), with_IH=True, IH_rate=0.5)
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-    ds_test.dsel_scores = dsel_scores_ex1
-    expected = np.ones((15, 2)) * 0.5
-    assert np.array_equal(ds_test._get_scores_dsel(1), expected)
 
+    ds_test.processed_dsel = dsel_processed_ex1
+    ds_test.DSEL_target = y_dsel_ex1
+    ds_test.DSEL_data = X_dsel_ex1
 
-def test_get_dsel_scores_not_processed():
-    ds_test = DS(create_pool_classifiers())
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-    with pytest.raises(NotFittedError):
-        ds_test._get_scores_dsel(0)
+    ds_test.neighbors = neighbors_ex1[index, :]
+    ds_test.distances = distances_ex1[index, :]
+
+    predicted = ds_test.predict(query)
+
+    assert predicted == expected
 
 
 @pytest.mark.parametrize('IH_rate', [None, -1, 'abc', 0.75, 1])
@@ -310,9 +319,9 @@ def test_predict_proba_all_agree():
     ds_test = DS(create_pool_classifiers())
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     ds_test.dsel_scores = dsel_scores_ex1
-    ds_test._all_classifier_agree_query = MagicMock(return_value=True)
+    ds_test._all_classifier_agree = MagicMock(return_value=True)
     proba = ds_test.predict_proba(query)
-    assert np.isclose(proba, np.atleast_2d([0.61, 0.39])).all()
+    assert np.allclose(proba, np.atleast_2d([0.61, 0.39]))
 
 
 # In this test, the three neighborhoods have an hardness level lower than the parameter IH_rate (0.5). Thus, the KNN
@@ -329,7 +338,7 @@ def test_predict_proba_IH_knn(index):
 
     ds_test.roc_algorithm.predict_proba = MagicMock(return_value=np.atleast_2d([0.45, 0.55]))
     proba = ds_test.predict_proba(query)
-    assert np.isclose(proba, np.atleast_2d([0.45, 0.55])).all()
+    assert np.allclose(proba, np.atleast_2d([0.45, 0.55]))
 
 
 # In this test, the three neighborhoods have an hardness level higher than the parameter IH_rate. Thus, the prediction
@@ -345,7 +354,7 @@ def test_predict_proba_instance_called(index):
 
     ds_test.predict_proba_instance = MagicMock(return_value=np.atleast_2d([0.25, 0.75]))
     proba = ds_test.predict_proba(query)
-    assert np.isclose(proba, np.atleast_2d([0.25, 0.75])).all()
+    assert np.allclose(proba, np.atleast_2d([0.25, 0.75]))
 
 
 #----------------------------------------- Testing label encoder-------------------------------------

@@ -94,10 +94,15 @@ def test_weights_zero():
 def test_fit():
     knop_test = KNOP(create_pool_classifiers())
     knop_test.fit(X_dsel_ex1, y_dsel_ex1)
-    expected_scores = np.ones((15, 6)) * np.array([0.5, 0.5, 1.0, 0.0, 0.33, 0.67])
+    expected_scores = np.array([[0.5, 0.5], [1.0, 0.0], [0.33, 0.67]])
+    expected_scores = np.tile(expected_scores, (15, 1, 1))
+
     assert np.array_equal(expected_scores, knop_test.dsel_scores)
+
     # Assert the roc_algorithm is fitted to the scores (decision space) rather than the features (feature space)
-    assert np.array_equal(knop_test.roc_algorithm._fit_X, knop_test.dsel_scores)
+    expected_roc_data = knop_test.dsel_scores.reshape(knop_test.n_samples,
+                                                      knop_test.n_classifiers * knop_test.n_classes)
+    assert np.array_equal(knop_test.roc_algorithm._fit_X, expected_roc_data)
 
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.

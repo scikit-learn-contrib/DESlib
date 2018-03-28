@@ -141,7 +141,10 @@ class METADES(DES):
         self._set_dsel(X, y_ind)
         self._fit_region_competence(X, y_ind, self.k)
         self.dsel_scores = self._preprocess_dsel_scores()
-        self._fit_OP(self.dsel_scores, y_ind, self.Kp)
+
+        # Reshape dsel_scores as a 2-D array for nearest neighbor calculations
+        dsel_output_profiles = self.dsel_scores.reshape(self.n_samples, self.n_classifiers * self.n_classes)
+        self._fit_OP(dsel_output_profiles, y_ind, self.Kp)
 
         # check whether the meta-classifier was already trained
         # since it could have been pre-processed before
@@ -211,7 +214,7 @@ class METADES(DES):
         """
         # Meta-Features computation
         f1 = [self.processed_dsel[idx][clf_index] for idx in idx_neighbors]
-        f2 = [self._get_scores_dsel(clf_index, idx)[self.DSEL_target[idx]] for idx in idx_neighbors]
+        f2 = [self.dsel_scores[idx, clf_index, self.DSEL_target[idx]] for idx in idx_neighbors]
         f3 = np.mean(f1)
         f4 = [self.processed_dsel[idx][clf_index] for idx in idx_neighbors_op]
         # check with the classifier model how to compute f5

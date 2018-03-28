@@ -9,11 +9,6 @@ import numpy as np
 from deslib.dcs.base import DCS
 
 
-#    This method works similarly to the LCA technique. The only difference is that it uses
-#    the scores obtained by the base classifiers as well as the distance between the test sample
-#    and each pattern in the region of competence are also considered in the competence estimation.
-
-
 class APosteriori(DCS):
     """A Posteriori Dynamic classifier selection.
 
@@ -147,7 +142,7 @@ class APosteriori(DCS):
                     target = self.DSEL_target[neighbor]
                     if target == predicted_label:
                         # get the posterior probability for the target class
-                        post_prob = self._get_scores_dsel(clf_index, neighbor)[target]
+                        post_prob = self.dsel_scores[neighbor, clf_index, target]
                         # weight by distance
                         result.append(post_prob * dists_normalized[counter])
                         # keep the distance for normalization

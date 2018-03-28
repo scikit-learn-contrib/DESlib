@@ -156,9 +156,13 @@ def test_predict_proba_selection():
     des_test.select = MagicMock(return_value=selected_indices)
 
     des_test.n_classes = 2
-
     expected = np.array([0.61, 0.39])
-    predicted_proba = des_test.predict_proba_instance(query)
+
+    predictions = []
+    for clf in des_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+
+    predicted_proba = des_test.predict_proba_instance(query, predictions)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
 
 
@@ -169,9 +173,15 @@ def test_predict_proba_weighting():
     des_test = DES(pool_classifiers, mode='weighting')
     competences = np.array([0.5, 1.0, 0.2])
     des_test.estimate_competence = MagicMock(return_value=competences)
+
     des_test.n_classes = 2
     expected = np.array([0.5769, 0.4231])
-    predicted_proba = des_test.predict_proba_instance(query)
+
+    predictions = []
+    for clf in des_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+
+    predicted_proba = des_test.predict_proba_instance(query, predictions)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
 
 
@@ -190,5 +200,9 @@ def test_predict_proba_hybrid():
     des_test.estimate_competence = MagicMock(return_value=competences)
     des_test.select = MagicMock(return_value=selected_indices)
 
-    predicted_proba = des_test.predict_proba_instance(query)
+    predictions = []
+    for clf in des_test.pool_classifiers:
+        predictions.append(clf.predict(query)[0])
+
+    predicted_proba = des_test.predict_proba_instance(query, predictions)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()

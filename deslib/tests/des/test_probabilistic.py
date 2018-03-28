@@ -123,7 +123,10 @@ The expected value should be: an np.array (4,1) with the values = [[0.7849], [0.
 
 def test_source_competence_rrc():
     rrc_test = RRC([create_base_classifier(return_value=1, return_prob=1.0)])
-    rrc_test.dsel_scores = np.array([[0.3, 0.6, 0.1], [1.0 / 3, 1.0 / 3, 1.0 / 3], [0.5, 0.2, 0.3], [0.5, 0.2, 0.3]])
+    rrc_test.dsel_scores = np.array([[[0.3, 0.6, 0.1],
+                                      [1.0 / 3, 1.0 / 3, 1.0 / 3],
+                                      [0.5, 0.2, 0.3],
+                                      [0.5, 0.2, 0.3]]]).reshape(4, 1, 3)  # 4 samples, 1 classifier and 3 classes
     rrc_test.DSEL_target = [1, 0, 0, 1]
     rrc_test.n_classes = 3
     rrc_test.n_samples = 4
@@ -132,19 +135,21 @@ def test_source_competence_rrc():
     assert np.allclose(C_src, expected, atol=0.01)
 
 
-""" Test the source_competence using the kullback leibler divergence method. Here we consider the same values 
-applied in the test_prob_functions.py to assert if the source_competence function call the ccprmod correctly
-and fill the competence source (C_src) with the correct results.
+""" Test the source_competence estimation for the Kullback-Leibler method. Here we consider the same values 
+applied in the test_prob_functions.py to assert if the source_competence function fill the competence source
+(C_src) with the correct results.
 
-The scores used are: [[0.3, 0.6, 0.1], [1.0 / 3, 1.0 / 3, 1.0 / 3], [0.5, 0.2, 0.3], [0.5, 0.2, 0.3]]
-The correct labels are: [1, 0, 0, 1]
-The expected value should be: an np.array (4,1) with the values = [[0.7849], [0.3328], [0.6428], [0.1194]]
+The scores used are: [[0.33, 0.33, 0.33], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]]
+The matrix with correct predictions is: [False, True, False]
+The expected value should be: an np.array (3,1) with the values = [[0.0], [1.0], [-1.0]]
 """
 
 
 def test_source_competence_kl():
     entropy_test = DESKL([create_base_classifier(return_value=1, return_prob=1.0)])
-    entropy_test.dsel_scores = np.array([[0.33, 0.33, 0.33], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]])
+    entropy_test.dsel_scores = np.array([[[0.33, 0.33, 0.33],
+                                         [1.0, 0.0, 0.0],
+                                         [1.0, 0.0, 0.0]]]).reshape(3, 1, 3)  # 3 Samples, 1 classifier, 3 classes
     entropy_test.processed_dsel = np.array([[False], [True], [False]])
     entropy_test.n_classes = 3
     entropy_test.n_samples = 3
@@ -153,9 +158,9 @@ def test_source_competence_kl():
     assert np.allclose(C_src, expected, atol=0.01)
 
 
-""" Test the source_competence using the kullback leibler divergence method. Here we consider the same values 
-applied in the test_prob_functions.py to assert if the source_competence function call the ccprmod correctly
-and fill the competence source (C_src) with the correct results.
+""" Test the source_competence estimation for the Minimum difference  method. Here we consider the same values 
+applied in the test_prob_functions.py to assert if the source_competence function fill the competence source
+(C_src) with the correct results.
 
 The scores used are: [[0.3, 0.6, 0.1], [1.0 / 3, 1.0 / 3, 1.0 / 3], [0.5, 0.2, 0.3], [0.5, 0.2, 0.3]]
 The correct labels are: [1, 0, 0, 1]
@@ -165,18 +170,22 @@ The expected value should be: an np.array (4,1) with the values = [[0.7849], [0.
 
 def test_source_competence_minimum_difference():
     md_test = MinimumDifference([create_base_classifier(return_value=1, return_prob=1.0)])
-    md_test .dsel_scores = np.array([[0.3, 0.6, 0.1], [1.0 / 3, 1.0 / 3, 1.0 / 3], [0.5, 0.2, 0.3], [0.5, 0.2, 0.3]])
-    md_test .DSEL_target = [1, 0, 0, 1]
-    md_test .n_classes = 3
-    md_test .n_samples = 4
-    C_src = md_test .source_competence()
+    md_test.dsel_scores = np.array([[[0.3, 0.6, 0.1],
+                                    [1.0 / 3, 1.0 / 3, 1.0 / 3],
+                                    [0.5, 0.2, 0.3],
+                                    [0.5, 0.2, 0.3]]]).reshape(4, 1, 3)  # 4 samples, 1 classifier, 3 classes
+
+    md_test.DSEL_target = [1, 0, 0, 1]
+    md_test.n_classes = 3
+    md_test.n_samples = 4
+    C_src = md_test.source_competence()
     expected = np.array([[0.3], [0.0], [0.2], [-0.3]])
     assert np.allclose(C_src, expected, atol=0.01)
 
 
 """ Test the source_competence using the logarithmic method. Here we consider the same values 
-applied in the test_prob_functions.py to assert if the source_competence function call the ccprmod correctly
-and fill the competence source (C_src) with the correct results.
+applied in the test_prob_functions.py to assert if the source_competence function fill the competence source
+(C_src) with the correct results.
 
 The scores used are: [[0.67, 0.33, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
 The correct labels are: [1, 1, 1], so the supports for the correct class are: [0.33, 0.0, 1.0]
@@ -186,7 +195,10 @@ The expected value should be: an np.array (3,1) with the values = [[0.0], [-1.0]
 
 def test_source_competence_logarithmic():
     log_test = Logarithmic([create_base_classifier(return_value=1, return_prob=1.0)])
-    log_test.dsel_scores = np.array([[0.67, 0.33, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    log_test.dsel_scores = np.array([[[0.67, 0.33, 0.0],
+                                     [1.0, 0.0, 0.0],
+                                     [0.0, 1.0, 0.0]]]).reshape(3, 1, 3)  # 3 sample, 1 classifier, 3 classes
+
     log_test.DSEL_target = [1, 1, 1]
     log_test.n_classes = 3
     log_test.n_samples = 3
@@ -196,8 +208,8 @@ def test_source_competence_logarithmic():
 
 
 """ Test the source_competence using the exponential method. Here we consider the same values 
-applied in the test_prob_functions.py to assert if the source_competence function call the ccprmod correctly
-and fill the competence source (C_src) with the correct results.
+applied in the test_prob_functions.py to assert if the source_competence function fill the competence source
+(C_src) with the correct results. 
 
 Only two classes are considered in this example.
 The scores used are: [[0.5, 0.5], [1.0, 0.0], [0.0, 1.0]].
@@ -208,7 +220,10 @@ The expected value should be: an np.array (3,1) with the values = [[0.0], [-1.0]
 
 def test_source_competence_exponential():
     exp_test = Exponential([create_base_classifier(return_value=1, return_prob=1.0)])
-    exp_test.dsel_scores = np.array([[0.5, 0.5], [1.0, 0.0], [0.0, 1.0]])
+    exp_test.dsel_scores = np.array([[[0.5, 0.5],
+                                     [1.0, 0.0],
+                                     [0.0, 1.0]]]).reshape(3, 1, 2)  # 3 samples, 1 classifier, 2 classes
+
     exp_test.DSEL_target = [1, 1, 1]
     exp_test.n_classes = 2
     exp_test.n_samples = 3
