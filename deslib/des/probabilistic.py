@@ -130,6 +130,7 @@ class Probabilistic(DES):
         competences : array of shape = [n_classifiers]
                       The competence level estimated for each base classifier
         """
+        # TODO: Adapt this function to batch processing
         dists, idx_neighbors = self._get_region_competence(query)
         dists_organized = np.array([dists[index] for index in np.argsort(idx_neighbors)])
 
@@ -163,11 +164,9 @@ class Probabilistic(DES):
         if self.selection_threshold is None:
             self.selection_threshold = 1.0/self.n_classes
 
-        indices = [clf_index for clf_index, clf_competence in enumerate(competences)
-                   if clf_competence > self.selection_threshold]
-
-        if len(indices) == 0:
-            indices = list(range(self.n_classifiers))
+        indices = (competences > self.selection_threshold)
+        # For the rows that are all False (i.e., no base classifier was selected, select all classifiers (all True)
+        indices[~np.any(indices, axis=1), :] = True
 
         return indices
 
