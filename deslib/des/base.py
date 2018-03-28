@@ -131,6 +131,14 @@ class DES(DS):
         -------
         predicted_label: The predicted label of the query
         """
+        if query.ndim != predictions.ndim:
+            raise ValueError('The arrays query and predictions must have the same shape. query.shape is {}'
+                             'and predictions.shape is {}' .format(query.shape, predictions.shape))
+
+        if query.ndim < 2:
+            query = query.reshape(1, -1)
+            predictions = predictions.reshape(1, -1)
+
         competences = self.estimate_competence(query)
         if self.mode == "selection":
             # The indices matrix is used as a mask to remove the predictions of certain base classifiers.
@@ -140,11 +148,11 @@ class DES(DS):
 
         elif self.mode == "weighting":
             votes = np.atleast_2d(predictions)
-            predicted_label = weighted_majority_voting_rule(votes, competences)
+            predicted_label = weighted_majority_voting_rule(votes, competences, np.arange(self.n_classes))
         else:
             indices = self.select(competences)
             votes = np.ma.MaskedArray(predictions, ~indices)
-            predicted_label = weighted_majority_voting_rule(votes, competences)
+            predicted_label = weighted_majority_voting_rule(votes, competences, np.arange(self.n_classes))
 
         return predicted_label
 
