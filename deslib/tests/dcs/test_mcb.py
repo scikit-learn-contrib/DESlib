@@ -43,7 +43,7 @@ def test_estimate_competence(index, expected):
     predictions = []
     for clf in mcb_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    competences = mcb_test.estimate_competence(query, predictions=np.array(predictions))
+    competences = mcb_test.estimate_competence(query, predictions=np.atleast_2d(predictions))
     assert np.isclose(competences, expected).all()
 
 # This second test case uses a different KS matrix to filter out some neighbors.
@@ -65,7 +65,7 @@ def test_estimate_competence2(index, expected):
     predictions = []
     for clf in mcb_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    competences = mcb_test.estimate_competence(query, predictions=np.array(predictions))
+    competences = mcb_test.estimate_competence(query, predictions=np.atleast_2d(predictions))
     assert np.isclose(competences, expected).all()
 
 
@@ -89,7 +89,7 @@ def test_estimate_competence3(index, expected):
     predictions = []
     for clf in mcb_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    competences = mcb_test.estimate_competence(query, predictions=np.array(predictions))
+    competences = mcb_test.estimate_competence(query, predictions=np.atleast_2d(predictions))
     assert np.isclose(competences, expected).all()
 
 
@@ -102,14 +102,14 @@ def test_estimate_competence_batch():
     mcb_test.processed_dsel = dsel_processed_ex1
     mcb_test.neighbors = neighbors_ex1
     mcb_test.distances = distances_ex1
-    mcb_test.DFP_mask = np.ones(3, 3)
+    mcb_test.DFP_mask = np.ones((3, 3))
     # Only changing the pre-processed BKS to see if the filter works.
     mcb_test.BKS_dsel = bks_dsel_ex3
 
     predictions = []
     for clf in mcb_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    competences = mcb_test.estimate_competence(query, predictions=np.array(predictions))
+    competences = mcb_test.estimate_competence(query, predictions=np.tile(predictions, (3, 1)))
     assert np.isclose(competences, expected).all()
 
 
