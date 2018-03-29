@@ -82,12 +82,12 @@ def test_estimate_competence_batch():
     a_priori_test.DSEL_target = y_dsel_ex1
     a_priori_test.n_classes = 2
 
-    a_priori_test.neighbors = neighbors_ex1
-    a_priori_test.distances = distances_all_ones
+    a_priori_test.neighbors = neighbors_ex1[:, 0:3]
+    a_priori_test.distances = distances_all_ones[:, 0:3]
     a_priori_test.DFP_mask = np.ones((3, 3))
 
     competences = a_priori_test.estimate_competence(query)
-    assert np.allclose(competences, expected)
+    assert np.allclose(competences, expected, atol=0.01)
 
 
 def test_fit():
