@@ -16,28 +16,28 @@ def test_not_predict_proba():
         Probabilistic([clf1, clf1])
 
 
-# Being all zeros, no base classifier is deemed competent, so the system selects all of them
+# Being all ones, all base classifiers are deemed competent
 def test_select_all_ones():
-    competences = np.ones(100)
+    competences = np.ones((1, 100))
     probabilistic_test = Probabilistic(create_pool_all_agree(1, 100))
     probabilistic_test.n_classes = 2
-    indices = probabilistic_test.select(competences)
-    assert indices == list(range(100))
+    selected_matrix = probabilistic_test.select(competences)
+    assert selected_matrix.all()
 
 
 # Being all zeros, no base classifier is deemed competent, so the system selects all of them
 def test_select_all_zeros():
-    competences = np.zeros(100)
+    competences = np.zeros((1, 100))
     probabilistic_test = Probabilistic(create_pool_all_agree(1, 100))
     probabilistic_test.n_classes = 2
-    indices = probabilistic_test.select(competences)
-    assert indices == list(range(100))
+    selected_matrix = probabilistic_test.select(competences)
+    assert selected_matrix.all()
 
 
 # Being all zeros, no base classifier is deemed competent, so the system selects all of them
 def test_select_random_classifier():
-    competences = np.random.rand(100)
-    expected = np.where(competences > 0.25)[0]
+    competences = np.random.rand(1, 100)
+    expected = (competences > 0.25)
     probabilistic_test = Probabilistic(create_pool_all_agree(1, 100))
     probabilistic_test.n_classes = 4
     indices = probabilistic_test.select(competences)
@@ -46,8 +46,8 @@ def test_select_random_classifier():
 
 # Being all zeros, no base classifier is deemed competent, so the system selects all of them
 def test_select_threshold():
-    competences = np.random.rand(100)
-    expected = np.where(competences > 0.5)[0]
+    competences = np.random.rand(1, 100)
+    expected =(competences > 0.5)
 
     probabilistic_test = Probabilistic(create_pool_all_agree(1, 100))
     probabilistic_test.selection_threshold = 0.5
