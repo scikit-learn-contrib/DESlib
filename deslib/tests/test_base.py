@@ -8,21 +8,17 @@ from deslib.tests.examples_test import *
 
 def test_all_classifiers_agree():
     # 10 classifiers that return 1
-    pool_classifiers = [create_base_classifier(return_value=1)] * 10
-    ds = DS(pool_classifiers)
+    predictions = np.ones((1, 10))
 
-    x = np.ones((1, 10))
-    assert ds._all_classifier_agree_query(x)
+    assert np.all(DS._all_classifier_agree(predictions))
 
 
 def test_not_all_classifiers_agree():
     # 10 classifiers that return 1, and one that returns 2
-    pool_classifiers = [create_base_classifier(return_value=1)] * 10
-    pool_classifiers.append(create_base_classifier(return_value=2))
-    ds = DS(pool_classifiers)
+    predictions = np.ones((10, 11))
+    predictions[:, -1] = 2
 
-    x = np.ones((1, 10))
-    assert not ds._all_classifier_agree_query(x)
+    assert not np.all(DS._all_classifier_agree(predictions))
 
 
 @pytest.mark.parametrize('query', [None, [np.nan, 1.0]])
@@ -248,7 +244,7 @@ def test_predict_proba_DFP():
 
     ds_test.predict_proba_instance = MagicMock(return_value=np.atleast_2d([0.25, 0.75]))
     ds_test.predict_proba(query)
-    assert np.array_equal(ds_test.DFP_mask, np.array([[1, 1, 0]]))
+    assert np.array_equal(ds_test.DFP_mask, np.atleast_2d([[1, 1, 0]]))
 
 @pytest.mark.parametrize('X', [None, [[0.1, 0.2], [0.5, np.nan]]])
 def test_bad_input_X(X):
@@ -286,12 +282,12 @@ def test_DFP_is_used():
     ds_test.distances = distances_ex1[0, :]
     ds_test.classify_instance = MagicMock(return_value=0)
     ds_test.predict(query)
-    assert np.array_equal(ds_test.DFP_mask, np.array([1, 1, 0]))
+    assert np.array_equal(ds_test.DFP_mask, np.atleast_2d([1, 1, 0]))
 
 
-@pytest.mark.parametrize('index, expected', [(0, 0), (1, 0), (2, 1)])
-def test_IH_is_used(index, expected):
-    query = np.atleast_2d([1, 0])
+def test_IH_is_used():
+    expected = [0, 0, 1]
+    query = np.ones((3, 2))
     ds_test = DS(create_pool_classifiers(), with_IH=True, IH_rate=0.5)
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
 
@@ -299,12 +295,12 @@ def test_IH_is_used(index, expected):
     ds_test.DSEL_target = y_dsel_ex1
     ds_test.DSEL_data = X_dsel_ex1
 
-    ds_test.neighbors = neighbors_ex1[index, :]
-    ds_test.distances = distances_ex1[index, :]
+    ds_test.neighbors = neighbors_ex1
+    ds_test.distances = distances_ex1
 
     predicted = ds_test.predict(query)
 
-    assert predicted == expected
+    assert np.array_equal(predicted, expected)
 
 
 @pytest.mark.parametrize('IH_rate', [None, -1, 'abc', 0.75, 1])

@@ -67,7 +67,7 @@ class DS(ClassifierMixin):
             self.base_already_encoded = False
 
     @abstractmethod
-    def select(self, query):
+    def select(self, competences):
         """Select the most competent classifier for
         the classification of the query sample x.
         The most competent classifier (dcs) or an ensemble
@@ -75,13 +75,13 @@ class DS(ClassifierMixin):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        competences : array of shape = [n_samples, n_classifiers]
+                      The estimated competence level of each base classifier for test example
 
         Returns
         -------
-        indices : list with the indices of the selected base classifier(s)
+        selected_classifiers : array containing the selected base classifiers for each test sample
 
-        competences: array with competence estimates for all base classifier
         """
         pass
 
@@ -263,7 +263,7 @@ class DS(ClassifierMixin):
         n_samples = X.shape[0]
         predicted_labels = np.empty(n_samples, dtype=np.intp)
         base_predictions = self._predict_base(X)
-        all_agree_vector = self._all_classifier_agree(base_predictions)
+        all_agree_vector = DS._all_classifier_agree(base_predictions)
         ind_all_agree = np.where(all_agree_vector)[0]
 
         # Since the predictions are always the same, get the predictions of the first base classifier.
@@ -565,7 +565,8 @@ class DS(ClassifierMixin):
             if "predict_proba" not in dir(clf):
                 raise ValueError("All base classifiers should output probability estimates")
 
-    def _all_classifier_agree(self, predictions):
+    @staticmethod
+    def _all_classifier_agree(predictions):
         """Check whether there is a difference in opinion
         among the classifiers in the generated_pool.
 
@@ -578,34 +579,7 @@ class DS(ClassifierMixin):
         array of shape = [n_samples] containing True if all classifiers in the generated_pool
         agrees on the same label, otherwise False for all samples
         """
-        return np.all(predictions == predictions[:, 0].reshape(-1,1), axis=1)
-
-    def _all_classifier_agree_query(self, query):
-        """Check whether there is a difference in opinion
-        among the classifiers in the generated_pool.
-
-        Parameters
-        ----------
-        query : Array containing the query sample
-        to be classified
-
-        Returns
-        -------
-        True : if all classifiers in the generated_pool
-        agrees on the same label. False otherwise
-        """
-        target = None
-        for clf in self.pool_classifiers:
-            [temp] = clf.predict(query)
-            if target is None:
-                target = temp
-
-            if target != temp:
-                return False
-
-            target = temp
-
-        return True
+        return np.all(predictions == predictions[:, 0].reshape(-1, 1), axis=1)
 
     def _check_parameters(self):
         """Verify if the input parameters are correct (generated_pool and k)
