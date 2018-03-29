@@ -37,58 +37,14 @@ def test_estimate_competence_batch():
     assert np.allclose(competences, expected, atol=0.01)
 
 
-@pytest.mark.parametrize('index, expected', [(0, 0),
-                                             (1, 0),
-                                             (2, 1)])
-def test_classify(index, expected):
-    query = np.atleast_2d([1, 1])
-
-    knop_test = KNOP(create_pool_classifiers())
-    knop_test.fit(X_dsel_ex1, y_dsel_ex1)
-
-    knop_test.DFP_mask = np.ones(knop_test .n_classifiers)
-    knop_test.neighbors = neighbors_ex1[index, :]
-    knop_test.distances = distances_ex1[index, :]
-
-    predictions = []
-    for clf in knop_test.pool_classifiers:
-        predictions.append(clf.predict(query)[0])
-
-    predicted_label = knop_test.classify_instance(query, np.array(predictions))
-
-    assert predicted_label == expected
-
-
-# Test the classify method receiving multiple samples as input
-def test_classify_batch():
-    query = np.ones((3, 2))
-    expected = np.array([0, 0, 1])
-    knop_test = KNOP(create_pool_classifiers())
-    knop_test.fit(X_dsel_ex1, y_dsel_ex1)
-
-    knop_test.DFP_mask = np.ones(knop_test .n_classifiers)
-    knop_test.neighbors = neighbors_ex1
-    knop_test.distances = distances_ex1
-
-    predictions = []
-    for clf in knop_test.pool_classifiers:
-        predictions.append(clf.predict(query)[0])
-
-    predicted_label = knop_test.classify_instance(query, np.array(predictions))
-
-    assert np.equal(predicted_label, expected)
-
-
 def test_weights_zero():
-    query = np.atleast_2d([1, 1])
 
     knop_test = KNOP(create_pool_classifiers())
     knop_test.fit(X_dsel_ex1, y_dsel_ex1)
+    competences = np.zeros((1, 3))
+    result = knop_test.select(competences)
 
-    knop_test.estimate_competence = MagicMock(return_value=np.zeros(3))
-
-    result = knop_test.select(query)
-    assert np.array_equal(result, np.array([0, 1, 0]))
+    assert np.all(result)
 
 
 def test_fit():
