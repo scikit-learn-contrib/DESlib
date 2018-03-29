@@ -128,22 +128,23 @@ class DCS(DS):
 
         Parameters
         ----------
-        competences : array = [n_classifiers] containing the estimated competence level for the base classifiers
+        competences : array of shape = [n_samples, n_classifiers]
+                      The estimated competence level of each base classifier for test example
 
         Returns
         -------
-        selected_clf : index of the selected base classifier(s)
+        selected_classifiers : array containing the selected base classifier(s)
 
         """
         if competences.ndim < 2:
             competences = competences.reshape(1, -1)
 
-        selected_clf = []
+        selected_classifiers = []
         best_index = np.argmax(competences, axis=1)
 
         if self.selection_method == 'best':
             # Select the classifier with highest competence level
-            selected_clf = best_index
+            selected_classifiers = best_index
 
         elif self.selection_method == 'diff':
             """Selects a base classifier if its competence level is significant better than the rest. 
@@ -157,33 +158,33 @@ class DCS(DS):
             # best_competence = np.max(competences)
             diff = best_competence.reshape(-1, 1) - competences
             # TODO: I believe this code here can be improved
-            selected_clf = np.zeros(diff.shape[0], dtype=np.int)
+            selected_classifiers = np.zeros(diff.shape[0], dtype=np.int)
             for row in range(diff.shape[0]):
                 diff_list = list(diff[row, :])
                 indices = [idx for idx, _ in enumerate(diff_list) if diff_list[idx] < self.diff_thresh]
                 if len(indices) == 0:
                     indices = range(self.n_classifiers)
 
-                selected_clf[row] = self.rng.choice(indices)
+                selected_classifiers[row] = self.rng.choice(indices)
 
         elif self.selection_method == 'random':
             # TODO: I believe this code here can be improved
-            selected_clf = np.zeros(competences.shape[0], dtype=np.int)
+            selected_classifiers = np.zeros(competences.shape[0], dtype=np.int)
             best_competence = competences[np.arange(competences.shape[0]), best_index]
             for row in range(competences.shape[0]):
                 competence_list = list(competences[row, :])
                 # Select a random classifier among all with same competence level
                 indices = [idx for idx, _ in enumerate(competence_list) if competence_list[idx] == best_competence[row]]
 
-                selected_clf[row] = self.rng.choice(indices)
+                selected_classifiers[row] = self.rng.choice(indices)
 
         elif self.selection_method == 'all':
             # select all base classifiers with max competence estimates.
             max_value = np.max(competences, axis=1)
-            selected_clf = (competences == max_value.reshape(competences.shape[0], -1))
-            # selected_clf = [idx for idx, competence in enumerate(competences) if competence == competences[best_index]]
+            selected_classifiers = (competences == max_value.reshape(competences.shape[0], -1))
+            # selected_classifiers = [idx for idx, competence in enumerate(competences) if competence == competences[best_index]]
 
-        return selected_clf
+        return selected_classifiers
 
     def classify_instance(self, query, predictions):
         """Predicts the class label of the corresponding query sample.
@@ -239,7 +240,8 @@ class DCS(DS):
 
         Returns
         -------
-        predicted_proba : array = [n_samples, n_classes] with the probability estimates for all classes
+        predicted_proba : array = [n_samples, n_classes]
+                          The probability estimates for all classes
         """
         competences = self.estimate_competence(query, predictions)
         if self.selection_method != 'all':

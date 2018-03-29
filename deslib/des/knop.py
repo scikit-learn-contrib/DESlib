@@ -125,16 +125,10 @@ class KNOP(DES):
         _, idx_neighbors = self._get_region_competence(output_profile_query)
         idx_neighbors = np.atleast_2d(idx_neighbors)
         competences = np.sum(self.processed_dsel[idx_neighbors, :], axis=1)
-        # competences = np.zeros(self.n_classifiers)
-        #
-        # for clf_index in range(self.n_classifiers):
-        #     # Check if the dynamic frienemy pruning (DFP) should be used used
-        #     if self.DFP_mask[clf_index]:
-        #         competences[clf_index] = np.sum(self.processed_dsel[idx_neighbors, clf_index])
 
         return competences.astype(dtype=int)
 
-    def select(self, competence):
+    def select(self, competences):
         """Select the base classifiers for the classification of the query sample.
 
         Each base classifier can be selected more than once. The number of times a base classifier is selected (votes)
@@ -142,65 +136,21 @@ class KNOP(DES):
 
         Parameters
         ----------
-        query : array of shape = [n_features]
-                The test sample to be classified
+        competences : array of shape = [n_samples, n_classifiers]
+                      The estimated competence level of each base classifier for each test example
 
         Returns
         -------
-        indices : array containing the votes of the ensemble for each class
+        selected_classifiers : array of shape = [n_samples, n_classifiers]
+                               Boolean matrix containing True if the base classifier is select, False otherwise
         """
+        if competences.ndim < 2:
+            competences = competences.reshape(1, -1)
 
         # Select classifier if it correctly classified at least one sample
-        indices = (competence > 0)
+        selected_classifiers = (competences > 0)
 
         # For the rows that are all False (i.e., no base classifier was selected, select all classifiers (set all True)
-        indices[~np.any(indices, axis=1), :] = True
-        #
-        # output_profile_query = self._output_profile_transform(query)
-        # weights = self.estimate_competence(output_profile_query.reshape(1, -1))
-        #
-        # # If all weights is equals to zero, it means that no classifier was selected. Hence, use all of them with equal
-        # # weights.
-        # if np.sum(weights) == 0:
-        #     weights = np.ones(self.n_classifiers, dtype=int)
-        #
-        # votes = np.array([], dtype=int)
-        # for clf_idx, clf in enumerate(self.pool_classifiers):
-        #     votes = np.hstack(
-        #         (votes, np.ones(weights[clf_idx], dtype=int) * clf.predict(query)[0]))
-        #
-        return indices
+        selected_classifiers[~np.any(selected_classifiers, axis=1), :] = True
 
-    # def classify_instance(self, query, predictions):
-    #     """Predicts the label of the corresponding query sample.
-    #
-    #     The prediction is made aggregating the votes obtained by all selected base classifiers. The predicted label
-    #     is the class that obtained the highest number of votes
-    #
-    #     Parameters
-    #     ----------
-    #     query : array of shape = [n_features]
-    #             The test sample to be classified.
-    #
-    #     predictions : array of shape = [n_samples, n_classifiers]
-    #                   Contains the predictions of all base classifier for all samples in the query array
-    #
-    #     Returns
-    #     -------
-    #     predicted_label : Prediction of the ensemble for the input query.
-    #     """
-    #     output_profile_query = self._output_profile_transform(query)
-    #     weights = self.estimate_competence(output_profile_query.reshape(1, -1))
-    #
-    #     # If all weights is equals to zero, it means that no classifier was selected. Hence, use all of them with equal
-    #     # weights.
-    #     if np.sum(weights) == 0:
-    #         weights = np.ones(self.n_classifiers, dtype=int)
-    #
-    #     votes = np.array([], dtype=int)
-    #     for clf_idx, clf in enumerate(self.pool_classifiers):
-    #         votes = np.hstack((votes, np.ones(weights[clf_idx], dtype=int) * predictions[clf_idx]))
-    #
-    #     predicted_label = mode(votes)[0]
-    #
-    #     return predicted_label
+        return selected_classifiers

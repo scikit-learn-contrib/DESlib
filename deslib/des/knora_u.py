@@ -88,16 +88,9 @@ class KNORAU(DES):
         idx_neighbors = np.atleast_2d(idx_neighbors)
         competences = np.sum(self.processed_dsel[idx_neighbors, :], axis=1)
 
-        # competences = np.zeros(self.n_classifiers)
-        #
-        # for clf_index in range(self.n_classifiers):
-        #     # Check if the dynamic frienemy pruning (DFP) should be used used
-        #     if self.DFP_mask[clf_index]:
-        #         competences[clf_index] = np.sum(self.processed_dsel[idx_neighbors, clf_index])
-
         return competences.astype(dtype=int)
 
-    def select(self, competence):
+    def select(self, competences):
         """Select the base classifiers for the classification of the query sample.
 
         Each base classifier can be selected more than once. The number of times a base classifier is selected (votes)
@@ -105,55 +98,21 @@ class KNORAU(DES):
 
         Parameters
         ----------
-        competence : array of shape = [n_features] containing the test sample
+        competences : array of shape = [n_samples, n_classifiers]
+                      The estimated competence level of each base classifier for each test example
 
         Returns
         -------
-        votes : the number of votes for each class
-        # """
+        selected_classifiers : array of shape = [n_samples, n_classifiers]
+                               Boolean matrix containing True if the base classifier is select, False otherwise
+        """
+        if competences.ndim < 2:
+            competences = competences.reshape(1, -1)
+
         # Select classifier if it correctly classified at least one sample
-        indices = (competence > 0)
+        selected_classifiers = (competences > 0)
 
         # For the rows that are all False (i.e., no base classifier was selected, select all classifiers (set all True)
-        indices[~np.any(indices, axis=1), :] = True
+        selected_classifiers[~np.any(selected_classifiers, axis=1), :] = True
 
-        # weights = self.estimate_competence(query)
-        # if np.sum(weights) == 0:
-        #     weights = np.ones(self.n_classifiers, dtype=int)
-        #
-        # votes = np.array([], dtype=int)
-        # for clf_idx, clf in enumerate(self.pool_classifiers):
-        #     votes = np.hstack((votes, np.ones(weights[clf_idx], dtype=int) * clf.predict(query)[0]))
-
-        return indices
-
-    # def classify_instance(self, query, predictions):
-    #     """Predicts the label of the corresponding query sample.
-    #
-    #     The prediction is made by aggregating the votes obtained by all selected base classifiers. The class with
-    #     the highest number of votes is the predicted label.
-    #
-    #     Parameters
-    #     ----------
-    #     query : array of shape = [n_features]
-    #             The test sample
-    #
-    #     predictions : array of shape = [n_samples, n_classifiers]
-    #                   Contains the predictions of all base classifier for all samples in the query array
-    #
-    #     Returns
-    #     -------
-    #     predicted_label : Prediction of the ensemble for the input query.
-    #     """
-    #
-    #     weights = self.estimate_competence(query)
-    #
-    #     if np.sum(weights) == 0:
-    #         weights = np.ones(self.n_classifiers, dtype=int)
-    #
-    #     votes = np.array([], dtype=int)
-    #     for clf_idx, clf in enumerate(self.pool_classifiers):
-    #         votes = np.hstack((votes, np.ones(weights[clf_idx], dtype=int) * predictions[clf_idx]))
-    #
-    #     predicted_label = mode(votes)[0]
-    #     return predicted_label
+        return selected_classifiers

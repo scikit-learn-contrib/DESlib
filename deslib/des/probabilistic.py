@@ -157,18 +157,22 @@ class Probabilistic(DES):
 
         Returns
         -------
-        indices : the indices of the selected base classifiers
+        selected_classifiers : array of shape = [n_samples, n_classifiers]
+                               Boolean matrix containing True if the base classifier is select, False otherwise
 
         """
+        if competences.ndim < 2:
+            competences = competences.reshape(1, -1)
+
         # Set the threshold as the performance of the random classifier
         if self.selection_threshold is None:
             self.selection_threshold = 1.0/self.n_classes
 
-        indices = (competences > self.selection_threshold)
+        selected_classifiers = (competences > self.selection_threshold)
         # For the rows that are all False (i.e., no base classifier was selected, select all classifiers (all True)
-        indices[~np.any(indices, axis=1), :] = True
+        selected_classifiers[~np.any(selected_classifiers, axis=1), :] = True
 
-        return indices
+        return selected_classifiers
 
     @staticmethod
     def potential_func(dist):

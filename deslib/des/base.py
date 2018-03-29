@@ -96,13 +96,13 @@ class DES(DS):
 
         Parameters
         ----------
-        competences : array of shape = [n_classifiers]
-                      The estimated competence level for the base classifiers
+        competences : array of shape = [n_samples, n_classifiers]
+                      The estimated competence level of each base classifier for each test example
 
         Returns
         -------
-        indices : List of index of the selected base classifier(s)
-
+        selected_classifiers : array of shape = [n_samples, n_classifiers]
+                               Boolean matrix containing True if the base classifier is select, False otherwise
         """
         pass
 
@@ -122,7 +122,8 @@ class DES(DS):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_samples, n_features]
+        query : array of shape = [n_samples, n_features]
+                The test examples
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Contains the predictions of all base classifier for all samples in the query array
@@ -172,15 +173,16 @@ class DES(DS):
 
         Parameters
         ----------
-        query : array of shape = [n_features]
-                The test sample
+        query : array of shape = [n_samples, n_features]
+                The test examples
 
        predictions : array of shape = [n_samples, n_classifiers]
-                      The predictions of all base classifier for all samples in the query array
+                     The predictions of all base classifier for all samples in the query array
 
         Returns
         -------
-        predicted_proba : array = [n_classes] with the probability estimates for all classes
+        predicted_proba : array = [n_samples, n_classes]
+                          The probability estimates for all classes
         """
         competences = self.estimate_competence(query, predictions)
         if self.mode == "selection":

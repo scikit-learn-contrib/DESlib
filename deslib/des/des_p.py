@@ -98,17 +98,21 @@ class DESP(DES):
 
         Parameters
         ----------
-        competences : array of shape = [n_classifiers] containing the competence level estimated
-                      for each base classifier.
+        competences : array of shape = [n_samples, n_classifiers]
+                      The estimated competence level of each base classifier for each test example
 
         Returns
         -------
-        indices : List with the indices of the selected base classifiers.
+        selected_classifiers : array of shape = [n_samples, n_classifiers]
+                               Boolean matrix containing True if the base classifier is select, False otherwise
 
         """
+        if competences.ndim < 2:
+            competences = competences.reshape(1, -1)
+
         RC = 1.0 / self.n_classes
-        indices = (competences > RC)
+        selected_classifiers = (competences > RC)
 
         # For the rows that are all False (i.e., no base classifier was selected, select all classifiers (set all True)
-        indices[~np.any(indices, axis=1), :] = True
-        return indices
+        selected_classifiers[~np.any(selected_classifiers, axis=1), :] = True
+        return selected_classifiers
