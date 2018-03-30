@@ -109,23 +109,20 @@ class LCA(DCS):
                       The competence level estimated for each base classifier
         """
 
-        dists, idx_neighbors = self._get_region_competence(query)
-        competences = np.zeros(self.n_classifiers)
+        _, idx_neighbors = self._get_region_competence(query)
+        idx_neighbors = np.atleast_2d(idx_neighbors)
+        predictions = np.atleast_2d(predictions)
 
-        for clf_index, clf in enumerate(self.pool_classifiers):
-            # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.DFP_mask[clf_index]:
-                result = []
-                predicted_label = predictions[clf_index]
-                for index in idx_neighbors:
-                    # Get only neighbors from the same class as predicted by the
-                    # classifier (clf) to form the region of competence
-                    if self.DSEL_target[index] == predicted_label:
-                        result.append(self.processed_dsel[index][clf_index])
+        # Expanding the dimensions of the predictions and target arrays in order to compare both.
+        predictions_3d = np.expand_dims(predictions, axis=1)
+        target_3d = np.expand_dims(self.DSEL_target[idx_neighbors], axis=2)
+        # Create a mask to remove the neighbors belonging to a different class than the predicted by the base classifier
+        mask = (predictions_3d != target_3d)
+        masked_preprocessed = np.ma.MaskedArray(self.processed_dsel[idx_neighbors, :], mask=mask)
 
-                if len(result) == 0:
-                    competences[clf_index] = 0.0
-                else:
-                    competences[clf_index] = np.mean(result)
+        competences_masked = np.mean(masked_preprocessed, axis=1)
+        # Fill 0 to the masked values in the resulting array (when no neighbors belongs to the class predicted by
+        # the corresponding base classifier)
+        competences = np.ma.filled(competences_masked, 0)
 
         return competences
