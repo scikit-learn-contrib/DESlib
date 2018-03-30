@@ -77,7 +77,7 @@ def test_estimate_competence_batch():
         predictions.append(clf.predict(query)[0])
     competences = mla_test.estimate_competence(query, predictions=np.array(predictions))
 
-    assert np.allclose(competences, expected)
+    assert np.allclose(competences, expected, atol=0.01)
 
 
 # in this test case, the target of the neighbors is always different than the predicted. So
@@ -109,23 +109,23 @@ def test_estimate_competence_diff_target(index):
 def test_estimate_competence_kuncheva_ex():
     query = np.atleast_2d([1, 1])
 
-    mla_test = MLA([create_base_classifier(return_value=1)], k=k_ex_kuncheva)
+    mla_test = MLA([create_base_classifier(return_value=1)]*2, k=k_ex_kuncheva)
 
-    mla_test.processed_dsel = dsel_processed_kuncheva
+    mla_test.processed_dsel = np.repeat(dsel_processed_kuncheva, 2, axis=1)
     mla_test.dsel_scores = dsel_scores_ex_kuncheva
     mla_test.DSEL_target = y_dsel_ex_kuncheva_dependent
     mla_test.n_classes = n_classes_ex_kuncheva
 
     mla_test.neighbors = neighbors_ex_kuncheva
     mla_test.distances = distances_ex_kuncheva
-    mla_test.DFP_mask = [1]
+    mla_test.DFP_mask = [1, 1]
 
     predictions = []
     for clf in mla_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
     competences = mla_test.estimate_competence(query, predictions=np.array(predictions))
 
-    assert np.isclose(competences, 0.95, atol=0.01)
+    assert np.allclose(competences, [0.95, 0.95], atol=0.01)
 
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.

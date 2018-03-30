@@ -86,8 +86,8 @@ def test_estimate_competence_diff_target(index):
     a_posteriori_test = APosteriori(create_pool_classifiers())
 
     a_posteriori_test.processed_dsel = dsel_processed_ex1
-    a_posteriori_test.dsel_scores = dsel_scores_all_ones
-    a_posteriori_test.DSEL_target = np.ones(15, dtype=int) * 3
+    a_posteriori_test.dsel_scores = np.ones((15, 3, 3))
+    a_posteriori_test.DSEL_target = np.ones(15, dtype=int) * 2
     a_posteriori_test.n_classes = 2
 
     a_posteriori_test.neighbors = neighbors_ex1[index, :]

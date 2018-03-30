@@ -22,7 +22,7 @@ def test_estimate_competence_woods(index, expected):
         predictions.append(clf.predict(query)[0])
     competences = lca_test.estimate_competence(query, predictions=np.array(predictions))
 
-    assert np.isclose(competences, expected).all()
+    assert np.allclose(competences, expected)
 
 
 def test_estimate_competence_batch():
@@ -33,7 +33,7 @@ def test_estimate_competence_batch():
     lca_test.processed_dsel = dsel_processed_ex1
     lca_test.neighbors = neighbors_ex1
     lca_test.distances = distances_ex1
-    lca_test.DFP_mask = np.ones(3, 3)
+    lca_test.DFP_mask = np.ones((3, 3))
     lca_test.DSEL_target = y_dsel_ex1
 
     query = np.ones((3, 2))
