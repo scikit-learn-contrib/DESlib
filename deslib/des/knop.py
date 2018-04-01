@@ -102,7 +102,7 @@ class KNOP(DES):
 
         return self
     
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, predictions):
         """The competence of the base classifiers is simply estimated as the number of samples
         in the region of competence that it correctly classified.
 
@@ -110,16 +110,16 @@ class KNOP(DES):
 
         Parameters
         ----------
-        query : array of shape = [n_features]
-                The test sample to be classified
+        query : array of shape = [n_samples, n_features]
+                The test examples
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      The predictions of all base classifier for all samples in the query array
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
-                      The competence level estimated for each base classifier
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
         """
         output_profile_query = self._output_profile_transform(query)
         _, idx_neighbors = self._get_region_competence(output_profile_query)
@@ -137,7 +137,7 @@ class KNOP(DES):
         Parameters
         ----------
         competences : array of shape = [n_samples, n_classifiers]
-                      The estimated competence level of each base classifier for each test example
+                      The competence level estimated for each base classifier and test example
 
         Returns
         -------

@@ -63,7 +63,7 @@ class KNORAE(DES):
 
         self.name = 'k-Nearest Oracles Eliminate (KNORA-E)'
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, predictions):
         """Estimate the competence of the base classifiers. In the case of the KNORA-E technique, the classifiers
         are only considered competent when they achieve a 100% accuracy in the region of competence. For each base,
         we estimate the maximum size of the region of competence that it is a local oracle. The
@@ -72,16 +72,16 @@ class KNORAE(DES):
 
         Parameters
         ----------
-        query : array of shape = [n_features]
-                The test sample
+        query : array of shape = [n_samples, n_features]
+                The test examples
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      The predictions of all base classifier for all samples in the query array
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
-                      The competence level estimated for each base classifier in the pool
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
         """
         _, idx_neighbors = self._get_region_competence(query)
         idx_neighbors = np.atleast_2d(idx_neighbors)
@@ -120,7 +120,7 @@ class KNORAE(DES):
         Parameters
         ----------
          competences : array of shape = [n_samples, n_classifiers]
-                      The estimated competence level of each base classifier for each test example
+                       The competence level estimated for each base classifier and test example
 
         Returns
         -------

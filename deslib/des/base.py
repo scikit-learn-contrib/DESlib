@@ -1,7 +1,8 @@
 from abc import ABCMeta
 
-from deslib.base import DS
 import numpy as np
+
+from deslib.base import DS
 from deslib.util.aggregation import weighted_majority_voting_rule, majority_voting_rule, predict_proba_ensemble, \
     predict_proba_ensemble_weighted
 
@@ -67,7 +68,7 @@ class DES(DS):
 
         self.mode = mode
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, predictions):
         """Estimate the competence of each base classifier ci
         the classification of the query sample x.
         Returns an array containing the level of competence estimated
@@ -76,15 +77,15 @@ class DES(DS):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array containing the test sample = [n_samples, n_features]
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
-                      The competence level estimated for each base classifier
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
         """
         pass
 
@@ -140,7 +141,7 @@ class DES(DS):
             query = query.reshape(1, -1)
             predictions = predictions.reshape(1, -1)
 
-        competences = self.estimate_competence(query)
+        competences = self.estimate_competence(query, predictions)
         if self.mode == "selection":
             # The indices matrix is used as a mask to remove the predictions of certain base classifiers.
             indices = self.select(competences)
@@ -176,8 +177,8 @@ class DES(DS):
         query : array of shape = [n_samples, n_features]
                 The test examples
 
-       predictions : array of shape = [n_samples, n_classifiers]
-                     The predictions of all base classifier for all samples in the query array
+        predictions : array of shape = [n_samples, n_classifiers]
+                      The predictions of all base classifier for all samples in the query array
 
         Returns
         -------

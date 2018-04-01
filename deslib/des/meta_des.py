@@ -153,25 +153,29 @@ class METADES(DES):
 
         return self
 
-    def _fit_OP(self, X, y, kp):
-        """Fit the set of output profiles.
-        -------
-        query_idx : int containing the index of the query sample in DSEL
+    def _fit_OP(self, X_op, y_op, kp):
+        """ Fit the set of output profiles.
 
-        Returns
-        -------
-        agreement : float with the percentage of the base classifier that predicted the correct label
-        for the query sample.
+        Parameters
+        ----------
+        X_op : array of shape = [n_samples, n_features]
+               The output profiles of the Input data. n_features is equals to (n_classifiers x n_classes)
+
+        y_op : array of shape = [n_samples]
+               class labels of each sample in X_op.
+
+        kp : int (Default=self.k)
+             Number of output profiles used in the estimation.
 
         """
         self.op_knn = KNeighborsClassifier(n_neighbors=kp, n_jobs=-1, algorithm='auto')
 
         if self.n_classes == 2:
             # Get only the scores for one class since they are complementary
-            X_temp = X[:, ::2]
-            self.op_knn.fit(X_temp, y)
+            X_temp = X_op[:, ::2]
+            self.op_knn.fit(X_temp, y_op)
         else:
-            self.op_knn.fit(X, y)
+            self.op_knn.fit(X_op, y_op)
 
     def _sample_selection_agreement(self):
         """Check the number of base classifier that predict the correct label for the query sample.
@@ -282,7 +286,7 @@ class METADES(DES):
 
         Parameters
         ----------
-        query : array of shape = [n_features]
+        query : array of shape = [n_samples, n_features]
                 The test sample
 
         kp : int
@@ -350,7 +354,7 @@ class METADES(DES):
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
+        competences : array of shape = [n_samples, n_classifiers]
                       The competence level estimated for each base classifier and test example
         """
         # TODO: Have this information pre-processed on the _predict_base function (pass as the predictions)

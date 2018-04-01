@@ -97,15 +97,15 @@ class MLA(DCS):
 
         Parameters
         ----------
-        query : array cf shape  = [n_features]
+        query : array cf shape  = [n_samples, n_features]
                 The query sample
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      The competence level estimated for each base classifier and test example
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
+        competences : array of shape = [n_samples, n_classifiers]
                       The competence level estimated for each base classifier
         """
 

@@ -10,14 +10,14 @@ from abc import abstractmethod, ABCMeta
 import numpy as np
 from scipy.stats import mode
 from sklearn.base import ClassifierMixin
+from sklearn.ensemble import BaseEnsemble
 from sklearn.exceptions import NotFittedError
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.preprocessing import LabelEncoder
-from deslib.util.instance_harndess import hardness_region_competence
-from deslib.util.aggregation import predict_proba_ensemble
+from sklearn.utils.validation import check_X_y, check_is_fitted
 
-from sklearn.ensemble import BaseEnsemble
+from deslib.util.aggregation import predict_proba_ensemble
+from deslib.util.instance_harndess import hardness_region_competence
 
 
 class DS(ClassifierMixin):
@@ -50,6 +50,8 @@ class DS(ClassifierMixin):
         self.n_classes = None
         self.n_samples = None
         self.n_features = None
+
+        # TODO: remove these as class variables
         self.neighbors = None
         self.distances = None
         self.DFP_mask = None                # Mask used to apply the classifier pruning
@@ -86,7 +88,7 @@ class DS(ClassifierMixin):
         pass
 
     @abstractmethod
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, predictions):
         """estimate the competence of each base classifier ci
         the classification of the query sample x.
         Returns an array containing the level of competence estimated
@@ -95,7 +97,8 @@ class DS(ClassifierMixin):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array cf shape  = [n_samples, n_features]
+                The query sample
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Contains the predictions of all base classifier for all samples in the query array
@@ -114,7 +117,8 @@ class DS(ClassifierMixin):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_samples, n_features]
+        query : array cf shape  = [n_samples, n_features]
+                The query sample
 
         predictions : array of shape = [n_samples, n_classifiers]
                       The predictions of all base classifier for all samples in the query array
@@ -132,7 +136,8 @@ class DS(ClassifierMixin):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array cf shape  = [n_samples, n_features]
+                The query sample
 
         predictions : array of shape = [n_samples, n_classifiers]
                       The predictions of all base classifier for all samples in the query array
@@ -148,7 +153,7 @@ class DS(ClassifierMixin):
         pre-processing the information required to apply the DS
         methods
 
-         Parameters
+        Parameters
         ----------
         X : matrix of shape = [n_samples, n_features] with the data.
 
@@ -164,6 +169,7 @@ class DS(ClassifierMixin):
         check_X_y(X, y_ind)
         self._set_dsel(X, y_ind)
         self._fit_region_competence(X, y_ind, self.k)
+
         return self
 
     def setup_label_encoder(self, y):
@@ -181,7 +187,8 @@ class DS(ClassifierMixin):
 
     def _fit_region_competence(self, X, y, k):
         """Fit the k-NN classifier inside the dynamic selection method.
-         Parameters
+
+        Parameters
         ----------
         X : array of shape = [n_samples, n_features]
             The Input data.
@@ -196,10 +203,8 @@ class DS(ClassifierMixin):
         self.roc_algorithm.fit(X, y)
 
     def _set_dsel(self, X, y):
-        """Pre-Process the input X and y data into the
-         dynamic selection dataset(DSEL). Also
-         get information about the structure of the
-         data (n_classes, N_samples, classes)
+        """Pre-Process the input X and y data into the dynamic selection dataset(DSEL) and
+         get information about the structure of the data (e.g., n_classes, N_samples, classes)
 
         Parameters
         ----------
@@ -220,13 +225,21 @@ class DS(ClassifierMixin):
         """Compute the region of competence of the query sample
         using the data belonging to DSEL.
 
+        Parameters
+        ----------
+        query : array of shape = [n_samples, n_features]
+                The test examples
+
+        k : int (Default = self.k)
+            The number of neighbors used to in the region of competence.
+
         Returns
         -------
-        dists : list of shape = [k]
+        dists : list of shape = [n_samples, k]
                 The distances between the query and each sample in the region of competence. The vector is ordered
                 in an ascending fashion.
 
-        idx : list of shape = [k]
+        idx : list of shape = [n_samples, k]
               Indices of the instances belonging to the region of competence of the given query sample.
         """
         # Check if the neighborhood was already estimated to avoid unnecessary calculations.
@@ -462,7 +475,6 @@ class DS(ClassifierMixin):
 
             if len(set(neighbors_y)) > 1:
                 # There are more than on class in the region of competence (So it is an indecision region).
-                #mask = np.zeros(self.n_classifiers)
 
                 # Check if the base classifier predict the correct label for a sample belonging to each class.
                 for clf_index in range(self.n_classifiers):
@@ -470,21 +482,20 @@ class DS(ClassifierMixin):
                     correct_class_pred = [self.DSEL_target[index] for count, index in
                                           enumerate(self.neighbors[sample_idx, :self.safe_k])
                                           if predictions[count] == 1]
-                    """
-                    # If that is true, it means that it correctly classified at least one neighbor for each class in 
-                    the region of competence
-                    """
+
+                    #If that is true, it means that it correctly classified at least one neighbor for each class in
+                    #the region of competence
                     if np.unique(correct_class_pred).size > 1:
                         mask[sample_idx, clf_index] = 1.0
                 # Check if all classifiers were pruned
                 if not np.count_nonzero(mask[sample_idx, :]):
                     # Do not apply the pruning mechanism.
                     mask[sample_idx, :] = 1.0
-                    #mask = np.ones(self.n_classifiers)
+
             else:
                 # The sample is located in a safe region. All base classifiers can predict the label
                 mask[sample_idx, :] = 1.0
-                # mask = np.ones(self.n_classifiers)
+
         return mask
 
     def _get_classifier_ensemble(self, indices):
@@ -505,10 +516,12 @@ class DS(ClassifierMixin):
 
         Returns
         -------
-        processed_dsel : A matrix of size [num_samples, num_classifiers].
-        Each element indicates whether the base classifier predicted the
-        correct label for the corresponding sample (True) or not (False).
-        Used to speed-up the testing time without requiring to classify
+        processed_dsel : array of shape = [n_samples, n_classifiers].
+                         Each element indicates whether the base classifier predicted the correct label for the
+                         corresponding sample (True), otherwise (False).
+
+        BKS_dsel : array of shape = [n_samples, n_classifiers]
+                   Predicted labels of each base classifier for all samples in DSEL.
         """
 
         BKS_dsel = self._predict_base(self.DSEL_data)
@@ -517,6 +530,18 @@ class DS(ClassifierMixin):
         return processed_dsel, BKS_dsel
 
     def _predict_base(self, X):
+        """ Get the predictions of each base classifier in the pool for all samples in X.
+
+        Parameters
+        ----------
+        X : array of shape = [n_samples, n_features]
+            The test examples
+
+        Returns
+        -------
+        predictions : array of shape = [n_samples, n_classifiers]
+                      The predictions of each base classifier for all samples.
+        """
         predictions = np.zeros((X.shape[0], self.n_classifiers), dtype=np.intp)
 
         for index, clf in enumerate(self.pool_classifiers):
@@ -528,52 +553,53 @@ class DS(ClassifierMixin):
         """Transform the query in an output profile. Each position of the output profiles vector
         is the score obtained by a base classifier ci for the classes of the query.
 
+        Parameters
+        ----------
+        query : array of shape = [n_samples, n_features]
+                The test examples
+
         Returns
         -------
         output_profile_query : The output profiles of the query data
         """
-        output_profile_query = np.zeros(self.n_classifiers * self.n_classes)
+        if query.ndim < 2:
+            query = query.reshape(1, -1)
+
+        output_profile_query = np.zeros((query.shape[0], self.n_classifiers * self.n_classes))
 
         for index, clf in enumerate(self.pool_classifiers):
 
             scores = clf.predict_proba(query)
-            output_profile_query[index * self.n_classes:(index * self.n_classes) + self.n_classes] = scores
+            output_profile_query[:, index * self.n_classes:(index * self.n_classes) + self.n_classes] = scores
 
         return output_profile_query
 
     def _preprocess_dsel_scores(self):
         """Compute the output profiles of the dynamic selection dataset (DSEL)
-         Each position of the output profiles vector is the score obtained by a base classifier ci
-         for the classes of the query.
+         Each position of the output profiles vector is the score obtained by a base classifier :math:`c_{i}`
+         for the classes of the input sample.
 
         Returns
         -------
-        dsel_scores : A matrix of size [num_samples, num_classifiers * num_class]
-        containing the scores (probabilities) for each class
-        obtained by each base classifier in the generated_pool for each sample in DSEL.
+        scores : array of shape = [n_samples, n_classifiers, n_classes]
+                 Scores (probabilities) for each class obtained by each base classifier in the generated_pool
+                 for each sample in X.
         """
-
-        dsel_scores = np.empty((self.n_samples, self.n_classifiers, self.n_classes))
+        scores = np.empty((self.n_samples, self.n_classifiers, self.n_classes))
         for index, clf in enumerate(self.pool_classifiers):
-            dsel_scores[:, index, :] = clf.predict_proba(self.DSEL_data)
+            scores[:, index, :] = clf.predict_proba(self.DSEL_data)
 
-        return dsel_scores
-
-    def _check_predict_proba(self):
-        for clf in self.pool_classifiers:
-            check_is_fitted(clf, "classes_")
-            if "predict_proba" not in dir(clf):
-                raise ValueError("All base classifiers should output probability estimates")
+        return scores
 
     @staticmethod
     def _all_classifier_agree(predictions):
-        """Check whether there is a difference in opinion
-        among the classifiers in the generated_pool.
+        """Check whether there is a difference in opinion among the classifiers in the generated_pool.
 
         Parameters
         ----------
         predictions : array of shape = [n_samples, n_classifiers]
                       Matrix with the predictions of each base classifier for each sample.
+
         Returns
         -------
         array of shape = [n_samples] containing True if all classifiers in the generated_pool
@@ -615,23 +641,46 @@ class DS(ClassifierMixin):
         self._validate_pool()
 
     def _check_is_fitted(self):
-        """Verify if the dynamic selection algorithm was fitted.
-        Raises an error if it is not fitted.
+        """ Verify if the dynamic selection algorithm was fitted. Raises an error if it is not fitted.
+
+        Raises
+        -------
+        NotFittedError
+            If the DS method is was not fitted, i.e., `self.roc_algorithm` or `self.processed_dsel`
+             were not pre-processed
+
         """
         if self.roc_algorithm is None or self.processed_dsel is None:
             raise NotFittedError("DS method not fitted, "
                                  "call `fit` before exploiting the model.")
 
     def _validate_pool(self):
-        """Check the estimator and the n_estimator attribute, set the
-        `base_estimator_` attribute."""
+        """ Check the estimator and the n_estimator attribute, set the
+        `base_estimator_` attribute.
+
+        Raises
+        -------
+        ValueError
+            If the pool of classifiers is empty
+        """
+
         if self.n_classifiers <= 0:
             raise ValueError("n_classifiers must be greater than zero, "
                              "got {}.".format(self.n_classifiers))
 
     def _check_num_features(self, X):
-        """Verify if the number of features (n_features) of X is equals to the number
+        """ Verify if the number of features (n_features) of X is equals to the number
         of features used to fit the model. Raises an error if n_features is different.
+
+        Parameters
+        ----------
+        X : array of shape = [n_samples, n_features]
+            The input data.
+
+        Raises
+        -------
+        ValueError
+            If X has a different dimensionality than the training data
         """
         n_features = X.shape[1]
         if self.n_features != n_features:
@@ -640,7 +689,18 @@ class DS(ClassifierMixin):
                              "input n_features is {} " .format(self.n_features, n_features))
 
     def _check_input_predict(self, X):
+        """ Validates the input to the predict and predict_proba methods.
 
+        Parameters
+        ----------
+        X : array of shape = [n_samples, n_features]
+            The input data.
+
+        Raises
+        -------
+        ValueError
+            If the input data contains NaN or has an invalid shape (more than 2 dimensions)
+        """
         if X is None or np.isnan(X).any():
             raise ValueError('The input argument X is invalid! X = {}' .format(X))
 
@@ -652,3 +712,15 @@ class DS(ClassifierMixin):
 
         self._check_num_features(X)
 
+    def _check_predict_proba(self):
+        """ Checks if each base classifier in the pool implements the predict_proba method.
+
+        Raises
+        -------
+        ValueError
+            If the base classifiers do not implements the predict_proba method
+        """
+        for clf in self.pool_classifiers:
+            check_is_fitted(clf, "classes_")
+            if "predict_proba" not in dir(clf):
+                raise ValueError("All base classifiers should output probability estimates")

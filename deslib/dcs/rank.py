@@ -84,7 +84,7 @@ class Rank(DCS):
 
         self.name = 'Modified Classifier Rank'
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, predictions):
         """estimate the competence level of each base classifier :math:`c_{i}` for
         the classification of the query sample using the modified ranking scheme.
         The rank of the base classifier is estimated by the number of consecutive correctly classified samples
@@ -92,16 +92,16 @@ class Rank(DCS):
 
         Parameters
         ----------
-        query : array of shape = [n_features]
-                The test sample
+        query : array of shape = [n_samples, n_features]
+                The test examples
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
-                     The competence level estimated for each base classifier
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
         """
         _, idx_neighbors = self._get_region_competence(query)
         idx_neighbors = np.atleast_2d(idx_neighbors)

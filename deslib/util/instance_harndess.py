@@ -1,5 +1,11 @@
-from scipy.stats import mode
+# coding=utf-8
+
+# Author: Rafael Menelau Oliveira e Cruz <rafaelmenelau@gmail.com>
+#
+# License: BSD 3 clause
+
 import numpy as np
+from scipy.stats import mode
 
 """
 This file contains the implementation of different functions to measure instance hardness. Instance hardness can be

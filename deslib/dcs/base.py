@@ -91,19 +91,20 @@ class DCS(DS):
         self.diff_thresh = diff_thresh
         self.rng = rng
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, predictions):
         """estimate the competence of each base classifier for the classification of the query sample.
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_features]
+                The test examples
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
+        competences : array of shape = [n_samples, n_classifiers]
                       The competence level estimated for each base classifier in the pool
         """
         pass
@@ -129,7 +130,7 @@ class DCS(DS):
         Parameters
         ----------
         competences : array of shape = [n_samples, n_classifiers]
-                      The estimated competence level of each base classifier for test example
+                      The competence level estimated for each base classifier and test example
 
         Returns
         -------
@@ -194,7 +195,8 @@ class DCS(DS):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_samples, n_features]
+        query : array of shape = [n_samples, n_features]
+                The test examples
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Contains the predictions of all base classifier for all samples in the query array
@@ -233,7 +235,8 @@ class DCS(DS):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_samples, n_features]
+        query : array of shape  = [n_samples, n_features]
+                The test example
 
         predictions : array of shape = [n_samples, n_classifiers]
                       The predictions of all base classifier for all samples in the query array
@@ -241,7 +244,7 @@ class DCS(DS):
         Returns
         -------
         predicted_proba : array = [n_samples, n_classes]
-                          The probability estimates for all classes
+                          The probability estimates for all test examples
         """
         competences = self.estimate_competence(query, predictions)
         if self.selection_method != 'all':
