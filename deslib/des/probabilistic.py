@@ -111,8 +111,8 @@ class Probabilistic(DES):
         return self
 
     def estimate_competence(self, query, predictions=None):
-        """estimate the competence of each base classifier ci using the source of competence C_src
-        and the potential function model. The source of competence C_src for all data points in DSEL
+        """estimate the competence of each base classifier :math:`c_{i}` using the source of competence :math:`C_{src}`
+        and the potential function model. The source of competence :math:`C_{src}` for all data points in DSEL
         is already pre-computed in the fit() steps.
 
         .. math:: \\delta_{i,j} = \\frac{\\sum_{k=1}^{N}C_{src} \\: exp( -d (\\mathbf{x}_{k}, \\mathbf{x}_{q})^{2} )}
@@ -120,30 +120,38 @@ class Probabilistic(DES):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_samples, n_features]
+                The test examples
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      The predictions of all base classifier for all samples in the query array
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
-                      The competence level estimated for each base classifier
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
         """
         # TODO: Adapt this function to batch processing
         dists, idx_neighbors = self._get_region_competence(query)
-        dists_organized = np.array([dists[index] for index in np.argsort(idx_neighbors)])
+        idx_neighbors = np.atleast_2d(idx_neighbors)
+        dists = np.atleast_2d(dists)
+        dists_organized = np.take(dists, idx_neighbors)
 
+        #dists_organized = np.array([dists[index] for index in np.argsort(idx_neighbors)])
         potential_dists = self.potential_func(dists_organized)
-        sum_potential = np.sum(potential_dists)
-        competences = np.zeros(self.n_classifiers)
+        sum_potential = np.sum(potential_dists, axis=1)
 
-        for clf_index in range(self.n_classifiers):
-            # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.DFP_mask[clf_index]:
-                temp_competence = np.multiply(self.C_src[:, clf_index], potential_dists)
-                competences[clf_index] = np.sum(temp_competence)/sum_potential
+        competences = np.einsum('ijk,ij->ik', self.C_src[np.newaxis, :, :], potential_dists)
+        competences = competences/sum_potential.reshape(-1, 1)
 
+        # competences = np.zeros(self.n_classifiers)
+        # for clf_index in range(self.n_classifiers):
+        #     # Check if the dynamic frienemy pruning (DFP) should be used used
+        #     if self.DFP_mask[clf_index]:
+        #         temp_competence = np.multiply(self.C_src[:, clf_index], potential_dists)
+        #         competences[clf_index] = np.sum(temp_competence)/sum_potential
+        #
+        # return competences
         return competences
 
     def select(self, competences):
@@ -152,8 +160,8 @@ class Probabilistic(DES):
 
         Parameters
         ----------
-        competences : array of shape = [n_classifiers]
-                      The estimated competence level for the base classifiers
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
 
         Returns
         -------
