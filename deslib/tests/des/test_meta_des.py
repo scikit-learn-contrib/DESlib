@@ -23,10 +23,10 @@ def test_parameter_Hc(Hc):
         METADES(create_pool_classifiers(), Hc=Hc)
 
 
-@pytest.mark.parametrize('gamma', ['a', None, 0, -1, 0.45])
-def test_parameter_gamma(gamma):
+@pytest.mark.parametrize('selection_threshold', ['a', None, 0, -1, 0.45])
+def test_parameter_gamma(selection_threshold):
     with pytest.raises((ValueError, TypeError)):
-        METADES(create_pool_classifiers(), gamma=gamma)
+        METADES(create_pool_classifiers(), selection_threshold=selection_threshold)
 
 #-------------------------------------- Testing Methods -----------------------
 def test_compute_meta_features():
