@@ -1,6 +1,7 @@
+from unittest.mock import Mock
+
 import pytest
 from sklearn.exceptions import NotFittedError
-from unittest.mock import Mock
 
 from deslib.base import DS
 from deslib.tests.examples_test import *
@@ -259,7 +260,7 @@ def test_output_profiles_transform():
     ds_test = DS(create_pool_classifiers())
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     profile = ds_test._output_profile_transform(query)
-    assert np.array_equal(profile, np.array([0.5, 0.5, 1.0, 0.0, 0.33, 0.67]))
+    assert np.array_equal(profile, np.array([[0.5, 0.5, 1.0, 0.0, 0.33, 0.67]]))
 
 
 def test_preprocess_dsel_scores():
