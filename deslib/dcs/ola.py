@@ -78,7 +78,7 @@ class OLA(DCS):
                                   rng=rng)
         self.name = 'Overall Local Accuracy (OLA)'
 
-    def estimate_competence(self, query, predictions):
+    def estimate_competence(self, query, predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}` for
         the classification of the query sample.
 

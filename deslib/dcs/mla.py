@@ -79,7 +79,7 @@ class MLA(DCS):
                                   rng=rng)
         self.name = 'Modified Local Accuracy (MLA)'
 
-    def estimate_competence(self, query, predictions):
+    def estimate_competence(self, query, predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the Modified Local Accuracy (MLA) method.
 

@@ -158,7 +158,7 @@ class DES(DS):
 
         return predicted_label
 
-    def predict_proba_instance(self, query, predictions):
+    def predict_proba_instance(self, query, predictions=None):
         """Predicts the posterior probabilities of the corresponding query sample.
 
         If self.mode == "selection", the selected ensemble is used to estimate the probabilities. The average rule is

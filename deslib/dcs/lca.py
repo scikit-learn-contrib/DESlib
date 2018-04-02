@@ -82,7 +82,7 @@ class LCA(DCS):
 
             self.name = 'Local Classifier Accuracy (LCA)'
 
-    def estimate_competence(self, query, predictions):
+    def estimate_competence(self, query, predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the local class accuracy method.
 

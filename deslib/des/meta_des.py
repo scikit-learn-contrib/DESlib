@@ -336,7 +336,7 @@ class METADES(DES):
 
         return selected_classifiers
 
-    def estimate_competence(self, query, predictions):
+    def estimate_competence(self, query, predictions=None):
         """Estimate the competence of each base classifier :math:`c_i`
         the classification of the query sample.
 

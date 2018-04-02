@@ -124,29 +124,36 @@ class DESKNN(DES):
         diversity : array of shape = [n_classifiers]
                     The diversity estimated for each base classifier
         """
-        dists, idx_neighbors = self._get_region_competence(query)
-        competences = np.zeros(self.n_classifiers)
-        predicted_matrix = np.zeros((self.k, self.n_classifiers))
-        for clf_index in range(self.n_classifiers):
-            hit_result = self.processed_dsel[idx_neighbors, clf_index]
-            predictions = self.BKS_dsel[idx_neighbors, clf_index]
-            predicted_matrix[:, clf_index] = predictions
-            # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.DFP_mask[clf_index]:
-                competences[clf_index] = np.mean(hit_result)
+        _, idx_neighbors = self._get_region_competence(query)
+        idx_neighbors = idx_neighbors.reshape(1, -1)
+        hit_result = self.processed_dsel[idx_neighbors, :]
+        predicted_matrix = self.BKS_dsel[idx_neighbors, :]
+        # calculate the classifiers mean accuracy for all samples
+        competences = np.mean(hit_result, axis=1)
+        # competences = np.zeros(self.n_classifiers)
+        # predicted_matrix = np.zeros((self.k, self.n_classifiers))
+        # for clf_index in range(self.n_classifiers):
+        #     hit_result = self.processed_dsel[idx_neighbors, clf_index]
+        #     predictions = self.BKS_dsel[idx_neighbors, clf_index]
+        #     predicted_matrix[:, clf_index] = predictions
+        #     # Check if the dynamic frienemy pruning (DFP) should be used used
+        #     if self.DFP_mask[clf_index]:
+        #         competences[clf_index] = np.mean(hit_result)
 
         # Calculate the more_diverse matrix. It becomes computationally expensive
-        # When the region of competence is high
+        # # When the region of competence is high
         targets = self.DSEL_target[idx_neighbors]
-        diversity = np.zeros(self.n_classifiers)
 
-        for clf_index in range(self.n_classifiers):
-            for clf_index2 in range(clf_index + 1, self.n_classifiers):
-                this_diversity = self.diversity_func(targets,
-                                                     predicted_matrix[:, clf_index],
-                                                     predicted_matrix[:, clf_index2])
-                diversity[clf_index] += this_diversity
-                diversity[clf_index2] += this_diversity
+        # TODO: try to optimize this part with numpy instead of for
+        diversity = np.zeros((query.shape[0], self.n_classifiers))
+        for sample_idx in range(query.shape[0]):
+            for clf_index in range(self.n_classifiers):
+                for clf_index2 in range(clf_index + 1, self.n_classifiers):
+                    this_diversity = self.diversity_func(targets,
+                                                         predicted_matrix[sample_idx, :, clf_index],
+                                                         predicted_matrix[sample_idx, :, clf_index2])
+                    diversity[sample_idx, clf_index] += this_diversity
+                    diversity[sample_idx, clf_index2] += this_diversity
 
         return competences, diversity
 

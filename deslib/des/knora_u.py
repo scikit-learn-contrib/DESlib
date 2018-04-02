@@ -66,7 +66,7 @@ class KNORAU(DES):
         self.name = 'k-Nearest Oracles Union (KNORA-U)'
 
 
-    def estimate_competence(self, query, predictions):
+    def estimate_competence(self, query, predictions=None):
         """The competence of the base classifiers is simply estimated as the number of samples
         in the region of competence that it correctly classified.
 

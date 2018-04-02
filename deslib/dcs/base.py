@@ -91,7 +91,7 @@ class DCS(DS):
         self.diff_thresh = diff_thresh
         self.rng = rng
 
-    def estimate_competence(self, query, predictions):
+    def estimate_competence(self, query, predictions=None):
         """estimate the competence of each base classifier for the classification of the query sample.
 
         Parameters

@@ -2,9 +2,11 @@ import numpy as np
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.datasets import load_breast_cancer
 from sklearn.ensemble import BaggingClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import Perceptron
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
 
 from deslib.dcs.a_posteriori import APosteriori
 # DCS techniques
@@ -27,9 +29,6 @@ from deslib.des.probabilistic import RRC, MinimumDifference, DESKL
 from deslib.static.oracle import Oracle
 from deslib.static.single_best import SingleBest
 from deslib.static.static_selection import StaticSelection
-
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
 
 
 def test_label_encoder_integration_list_classifiers():
@@ -156,7 +155,7 @@ def test_rank():
 
     rank = Rank(pool_classifiers)
     rank.fit(X_dsel, y_dsel)
-    assert np.isclose(rank.score(X_test, y_test), 0.96276595744680848)
+    assert np.isclose(rank.score(X_test, y_test), 0.973404255319149)
 
 
 def test_aposteriori():
@@ -173,7 +172,7 @@ def test_meta():
 
     meta_des = METADES(pool_classifiers)
     meta_des.fit(X_dsel, y_dsel)
-    assert np.isclose(meta_des.score(X_test, y_test), 0.97872340425531912)
+    assert np.isclose(meta_des.score(X_test, y_test), 0.973404255319149)
 
 
 def test_rrc():
