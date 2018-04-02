@@ -7,7 +7,6 @@
 import numpy as np
 
 from deslib.des.base import DES
-from deslib.util.aggregation import majority_voting_rule
 from deslib.util.diversity import negative_double_fault, Q_statistic, ratio_errors
 
 
@@ -118,6 +117,9 @@ class DESKNN(DES):
 
         Returns
         -------
+        competences : Dictionary containing the accuracy and diversity estimates of all base classifiers for all
+                      samples.
+
         competences : array of shape = [n_classifiers]
                       The competence level estimated for each base classifier
 
@@ -125,87 +127,71 @@ class DESKNN(DES):
                     The diversity estimated for each base classifier
         """
         _, idx_neighbors = self._get_region_competence(query)
-        idx_neighbors = idx_neighbors.reshape(1, -1)
-        hit_result = self.processed_dsel[idx_neighbors, :]
-        predicted_matrix = self.BKS_dsel[idx_neighbors, :]
-        # calculate the classifiers mean accuracy for all samples
-        competences = np.mean(hit_result, axis=1)
-        # competences = np.zeros(self.n_classifiers)
-        # predicted_matrix = np.zeros((self.k, self.n_classifiers))
-        # for clf_index in range(self.n_classifiers):
-        #     hit_result = self.processed_dsel[idx_neighbors, clf_index]
-        #     predictions = self.BKS_dsel[idx_neighbors, clf_index]
-        #     predicted_matrix[:, clf_index] = predictions
-        #     # Check if the dynamic frienemy pruning (DFP) should be used used
-        #     if self.DFP_mask[clf_index]:
-        #         competences[clf_index] = np.mean(hit_result)
+        # calculate the classifiers mean accuracy for all samples/base classifier
+        accuracy = np.mean(self.processed_dsel[idx_neighbors, :], axis=1)
 
-        # Calculate the more_diverse matrix. It becomes computationally expensive
-        # # When the region of competence is high
+        predicted_matrix = self.BKS_dsel[idx_neighbors, :]
         targets = self.DSEL_target[idx_neighbors]
 
         # TODO: try to optimize this part with numpy instead of for
+        # Calculate the more_diverse matrix. It becomes computationally expensive
+        # When the region of competence is high
         diversity = np.zeros((query.shape[0], self.n_classifiers))
         for sample_idx in range(query.shape[0]):
             for clf_index in range(self.n_classifiers):
                 for clf_index2 in range(clf_index + 1, self.n_classifiers):
-                    this_diversity = self.diversity_func(targets,
+                    this_diversity = self.diversity_func(targets[sample_idx, :],
                                                          predicted_matrix[sample_idx, :, clf_index],
                                                          predicted_matrix[sample_idx, :, clf_index2])
                     diversity[sample_idx, clf_index] += this_diversity
                     diversity[sample_idx, clf_index2] += this_diversity
 
-        return competences, diversity
+        competences = {'accuracy' : accuracy, 'diversity' : diversity}
 
-    def select(self, query):
+        return competences
+
+    def select(self, competences):
         """Select an ensemble containing the N most accurate ant the J most diverse classifiers for the classification
         of the query sample.
 
         Parameters
         ----------
-        query : array of shape = [n_features]
-                The test sample
+        competences : Dictionary containing the accuracy and diversity estimates of all base classifiers for all
+                      samples.
 
         Returns
         -------
-        indices : the indices of the selected base classifiers
+        selected_classifiers : array of shape = [n_samples, n_classifiers]
+                               Boolean matrix containing True if the base classifier is select, False otherwise
 
         """
-        # sort the array to remove the most accurate classifiers
-        competences, diversity = self.estimate_competence(query)
-        competent_indices = np.argsort(competences)[::-1][0:self.N]
+        accuracy = competences['accuracy']
+        diversity = competences['diversity']
+        # Check if the accuracy and diversity arrays have the correct dimensionality.
+        if accuracy.ndim < 2:
+            accuracy = accuracy.reshape(1, -1)
 
-        diversity_of_selected = diversity[competent_indices]
+        if diversity.ndim < 2:
+            diversity = diversity.reshape(1, -1)
+
+        # sort the array to remove the most accurate classifiers
+        competent_indices = np.argsort(accuracy)[:, ::-1][:, 0:self.N]
+        diversity_of_selected = diversity.take(competent_indices)
 
         # sort the remaining classifiers to select the most diverse ones
         if self.more_diverse:
-            diversity_indices = np.argsort(diversity_of_selected)[::-1][0:self.J]
+            diversity_indices = np.argsort(diversity_of_selected, axis=1)[:, ::-1][:, 0:self.J]
         else:
-            diversity_indices = np.argsort(diversity_of_selected)[0:self.J]
+            diversity_indices = np.argsort(diversity_of_selected, axis=1)[:, 0:self.J]
 
-        indices = competent_indices[diversity_indices]
-        return indices
+        # indices = competent_indices[diversity_indices]
+        indices = competent_indices.take(diversity_indices)
+        selected_classifiers = np.zeros(accuracy.shape, dtype=np.bool)
+        # Setting the elements in indices (selected classifiers) to True
+        selected_classifiers[np.arange(indices.shape[0])[:, None], indices] = True
 
-    def classify_instance(self, query, predictions):
-        """Predicts the label of the corresponding query sample.
-        Returns the predicted label.
+        return selected_classifiers
 
-        Parameters
-        ----------
-        query : array of shape = [n_features]
-                The test sample
-
-        predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
-
-        Returns
-        -------
-        predicted_label: The predicted label of the query
-        """
-        indices = self.select(query)
-        votes = np.atleast_2d(predictions[indices])
-        predicted_label = majority_voting_rule(votes)
-        return predicted_label
 
     def _validate_parameters(self):
         """Check if the parameters passed as argument are correct.
