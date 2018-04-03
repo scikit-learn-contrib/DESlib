@@ -16,7 +16,14 @@ def test_estimate_competence(index, expected):
     knop_test.DFP_mask = np.ones(knop_test .n_classifiers)
     knop_test.neighbors = neighbors_ex1[index, :]
     knop_test.distances = distances_ex1[index, :]
-    competences = knop_test.estimate_competence(query)
+
+    probabilities = []
+    for clf in knop_test.pool_classifiers:
+        probabilities.append(clf.predict_proba(query))
+
+    probabilities = np.array(probabilities).transpose((1, 0, 2))
+
+    competences = knop_test.estimate_competence_from_proba(query, probabilities)
     assert np.allclose(competences, expected, atol=0.01)
 
 
@@ -33,7 +40,10 @@ def test_estimate_competence_batch():
     knop_test.DFP_mask = np.ones(knop_test .n_classifiers)
     knop_test.neighbors = neighbors_ex1
     knop_test.distances = distances_ex1
-    competences = knop_test.estimate_competence(query)
+
+    probabilities = np.zeros((3, 6)) # not used in this test
+
+    competences = knop_test.estimate_competence_from_proba(query, probabilities)
     assert np.allclose(competences, expected, atol=0.01)
 
 

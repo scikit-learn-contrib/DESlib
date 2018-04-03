@@ -19,7 +19,7 @@ def test_selection_method_type(mode):
         DES(create_pool_classifiers(), mode=mode)
 
 
-# ------------------------ Testing classify_instance -----------------
+# ------------------------ Testing classify_with_ds -----------------
 """Example considering a pool composed of 6 base classifiers. The classifiers with index 0, 2, 3 and 5 predicts class 0
 while classifiers with indices 1 and 4 predicts class 1.
 """
@@ -38,7 +38,7 @@ def test_classify_instance_selection():
     for clf in des_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
 
-    predicted_label = des_test.classify_instance(query, np.array(predictions))
+    predicted_label = des_test.classify_with_ds(query, np.array(predictions))
     assert predicted_label == 0.0
 
 
@@ -56,7 +56,7 @@ def test_classify_instance_selection_batch():
     for clf in des_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
 
-    predicted_label = des_test.classify_instance(query, np.tile(predictions, (n_samples, 1)))
+    predicted_label = des_test.classify_with_ds(query, np.tile(predictions, (n_samples, 1)))
     assert np.allclose(predicted_label, 0) and predicted_label.size == 3
 
 
@@ -77,7 +77,7 @@ def test_classify_instance_weighting():
     predictions = []
     for clf in des_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    predicted_label = des_test.classify_instance(query, np.array(predictions))
+    predicted_label = des_test.classify_with_ds(query, np.array(predictions))
     assert predicted_label == 1.0
 
 
@@ -95,7 +95,7 @@ def test_classify_instance_weighting_batch():
     predictions = []
     for clf in des_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    predicted_label = des_test.classify_instance(query, np.tile(predictions, (3, 1)))
+    predicted_label = des_test.classify_with_ds(query, np.tile(predictions, (3, 1)))
     assert np.allclose(predicted_label, 1) and predicted_label.size == 3
 
 # Same example of test_classify_instance_selection, however, since the weights are also used in the hybrid scheme,
@@ -117,7 +117,7 @@ def test_classify_instance_hybrid():
     for clf in des_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
 
-    predicted_label = des_test.classify_instance(query, np.array(predictions))
+    predicted_label = des_test.classify_with_ds(query, np.array(predictions))
     assert expected == predicted_label
 
 
@@ -140,7 +140,7 @@ def test_classify_instance_hybrid_batch():
     for clf in des_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
 
-    predicted_label = des_test.classify_instance(query, np.tile(predictions, (3, 1)))
+    predicted_label = des_test.classify_with_ds(query, np.tile(predictions, (3, 1)))
     assert np.allclose(predicted_label, expected)
 
 # ------------------------ Testing predict_proba -----------------
@@ -162,7 +162,7 @@ def test_predict_proba_selection():
     for clf in des_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
 
-    predicted_proba = des_test.predict_proba_instance(query, predictions)
+    predicted_proba = des_test.predict_proba_with_ds(query, predictions)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
 
 
@@ -181,7 +181,7 @@ def test_predict_proba_weighting():
     for clf in des_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
 
-    predicted_proba = des_test.predict_proba_instance(query, predictions)
+    predicted_proba = des_test.predict_proba_with_ds(query, predictions)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
 
 
@@ -204,5 +204,5 @@ def test_predict_proba_hybrid():
     for clf in des_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
 
-    predicted_proba = des_test.predict_proba_instance(query, predictions)
+    predicted_proba = des_test.predict_proba_with_ds(query, predictions)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()

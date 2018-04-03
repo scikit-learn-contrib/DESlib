@@ -31,7 +31,7 @@ class DS(ClassifierMixin):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30):
+    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, needs_proba=False):
 
         self.pool_classifiers = pool_classifiers
         self.n_classifiers = len(self.pool_classifiers)
@@ -67,6 +67,8 @@ class DS(ClassifierMixin):
             self.base_already_encoded = True
         else:
             self.base_already_encoded = False
+
+        self.needs_proba = needs_proba
 
     @abstractmethod
     def select(self, competences):
@@ -111,7 +113,7 @@ class DS(ClassifierMixin):
         pass
 
     @abstractmethod
-    def classify_instance(self, query, predictions):
+    def classify_with_ds(self, query, predictions, probabilities=None):
         """Predicts the label of the corresponding query sample.
         Returns the predicted label.
 
@@ -123,6 +125,10 @@ class DS(ClassifierMixin):
         predictions : array of shape = [n_samples, n_classifiers]
                       The predictions of all base classifier for all samples in the query array
 
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                      The predictions of each base classifier for all samples. (For methods that
+                      always require probabilities from the base classifiers.)
+
         Returns
         -------
         The predicted label of the query
@@ -130,7 +136,7 @@ class DS(ClassifierMixin):
         pass
 
     @abstractmethod
-    def predict_proba_instance(self, query, predictions):
+    def predict_proba_with_ds(self, query, predictions):
         """Predicts the posterior probabilities of the corresponding query sample.
         Returns the probability estimates of each class.
 
@@ -275,7 +281,14 @@ class DS(ClassifierMixin):
 
         n_samples = X.shape[0]
         predicted_labels = np.empty(n_samples, dtype=np.intp)
-        base_predictions = self._predict_base(X)
+
+        if self.needs_proba:
+            base_probabilities = self._predict_proba_base(X)
+            base_predictions = base_probabilities.argmax(axis=2)
+        else:
+            base_probabilities = None
+            base_predictions = self._predict_base(X)
+
         all_agree_vector = DS._all_classifier_agree(base_predictions)
         ind_all_agree = np.where(all_agree_vector)[0]
 
@@ -336,8 +349,15 @@ class DS(ClassifierMixin):
 
                 # Get the real indices of the samples that will be classified using a DS algorithm.
                 ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
-                pred_ds = self.classify_instance(X_DS[ind_ds_classifier, :],
-                                                 base_predictions[ind_ds_original_matrix, :])
+
+                if self.needs_proba:
+                    selected_probabilities = base_probabilities[ind_ds_original_matrix]
+                else:
+                    selected_probabilities = None
+
+                pred_ds = self.classify_with_ds(X_DS[ind_ds_classifier],
+                                                base_predictions[ind_ds_original_matrix],
+                                                selected_probabilities)
                 predicted_labels[ind_ds_original_matrix] = pred_ds
 
         self.neighbors = None
@@ -373,7 +393,7 @@ class DS(ClassifierMixin):
         #             else:
         #                     self.DFP_mask = np.ones(self.n_classifiers)
 
-        #             predicted_labels[index] = self.classify_instance(instance, base_predictions[index, :])
+        #             predicted_labels[index] = self.classify_with_ds(instance, base_predictions[index, :])
         #
         #         self.neighbors = None
         #         self.distances = None
@@ -440,7 +460,7 @@ class DS(ClassifierMixin):
                     else:
                             self.DFP_mask = np.ones(self.n_classifiers)
 
-                    predicted_proba[index, :] = self.predict_proba_instance(instance, base_predictions[index, :])
+                    predicted_proba[index, :] = self.predict_proba_with_ds(instance, base_predictions[index, :])
 
         # Reset the neighbors and the distances as they are specific to a given query.
         self.neighbors = None
@@ -549,30 +569,24 @@ class DS(ClassifierMixin):
             predictions[:, index] = self._encode_base_labels(labels)
         return predictions
 
-    def _output_profile_transform(self, query):
-        """Transform the query in an output profile. Each position of the output profiles vector
-        is the score obtained by a base classifier ci for the classes of the query.
+    def _predict_proba_base(self, X):
+        """ Get the predictions (probabilities) of each base classifier in the pool for all samples in X.
 
         Parameters
         ----------
-        query : array of shape = [n_samples, n_features]
-                The test examples
+        X : array of shape = [n_samples, n_features]
+            The test examples
 
         Returns
         -------
-        output_profile_query : The output profiles of the query data
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                      The predictions of each base classifier for all samples.
         """
-        if query.ndim < 2:
-            query = query.reshape(1, -1)
-
-        output_profile_query = np.zeros((query.shape[0], self.n_classifiers * self.n_classes))
+        probabilities = np.zeros((X.shape[0], self.n_classifiers, self.n_classes))
 
         for index, clf in enumerate(self.pool_classifiers):
-
-            scores = clf.predict_proba(query)
-            output_profile_query[:, index * self.n_classes:(index * self.n_classes) + self.n_classes] = scores
-
-        return output_profile_query
+            probabilities[:, index] = clf.predict_proba(X)
+        return probabilities
 
     def _preprocess_dsel_scores(self):
         """Compute the output profiles of the dynamic selection dataset (DSEL)

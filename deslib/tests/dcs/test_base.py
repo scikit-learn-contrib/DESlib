@@ -103,7 +103,7 @@ def test_select_random_batch():
     selected_clf = dcs_test.select(competences)
     assert np.array_equal(selected_clf, expected)
 
-# ------------------------ Testing classify_instance and predict_proba -----------------
+# ------------------------ Testing classify_with_ds and predict_proba -----------------
 
 
 def test_classify_instance():
@@ -118,7 +118,7 @@ def test_classify_instance():
     predictions = []
     for clf in dcs_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    predicted_label = dcs_test.classify_instance(query, np.array(predictions))
+    predicted_label = dcs_test.classify_with_ds(query, np.array(predictions))
     assert predicted_label == expected
 
 
@@ -137,7 +137,7 @@ def test_classify_instance_batch():
     predictions = []
     for clf in dcs_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    predicted_label = dcs_test.classify_instance(query, np.tile(predictions, (3, 1)))
+    predicted_label = dcs_test.classify_with_ds(query, np.tile(predictions, (3, 1)))
     assert np.array_equal(predicted_label, expected)
 
 
@@ -152,7 +152,7 @@ def test_classify_instance_all(competences, expected):
     predictions = []
     for clf in dcs_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    predicted_label = dcs_test.classify_instance(query, np.array(predictions))
+    predicted_label = dcs_test.classify_with_ds(query, np.array(predictions))
     assert predicted_label == expected
 
 
@@ -168,7 +168,7 @@ def test_classify_instance_all_batch():
     predictions = []
     for clf in dcs_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    predicted_label = dcs_test.classify_instance(query, np.tile(predictions, (n_samples, 1)))
+    predicted_label = dcs_test.classify_with_ds(query, np.tile(predictions, (n_samples, 1)))
     assert np.array_equal(predicted_label, expected)
 
 def test_predict_proba_instance():
@@ -186,7 +186,7 @@ def test_predict_proba_instance():
     for clf in dcs_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
 
-    predicted_proba = dcs_test.predict_proba_instance(query, predictions)
+    predicted_proba = dcs_test.predict_proba_with_ds(query, predictions)
     assert np.array_equal(predicted_proba, expected)
 
 
@@ -204,5 +204,5 @@ def test_predict_proba_instance_all(competences, expected):
     for clf in dcs_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
 
-    predicted_proba = dcs_test.predict_proba_instance(query, predictions)
+    predicted_proba = dcs_test.predict_proba_with_ds(query, predictions)
     assert np.isclose(predicted_proba, expected).all()

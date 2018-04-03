@@ -70,7 +70,8 @@ class KNOP(DES):
                                    with_IH=with_IH,
                                    safe_k=safe_k,
                                    IH_rate=IH_rate,
-                                   mode='weighting')
+                                   mode='weighting',
+                                   needs_proba=True)
         self._check_predict_proba()
         self.name = 'K-Nearest Output Profiles (KNOP)'
 
@@ -102,7 +103,7 @@ class KNOP(DES):
 
         return self
     
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence_from_proba(self, query, probabilities):
         """The competence of the base classifiers is simply estimated as the number of samples
         in the region of competence that it correctly classified.
 
@@ -113,16 +114,16 @@ class KNOP(DES):
         query : array of shape = [n_samples, n_features]
                 The test examples
 
-        predictions : array of shape = [n_samples, n_classifiers]
-                      The predictions of all base classifier for all samples in the query array
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                      The predictions of each base classifier for all samples.
 
         Returns
         -------
         competences : array of shape = [n_samples, n_classifiers]
                       The competence level estimated for each base classifier and test example
         """
-        output_profile_query = self._output_profile_transform(query)
-        _, idx_neighbors = self._get_region_competence(output_profile_query)
+        probabilities = probabilities.reshape(query.shape[0], self.n_classifiers * self.n_classes)
+        _, idx_neighbors = self._get_region_competence(probabilities)
         competences = np.sum(self.processed_dsel[idx_neighbors, :], axis=1, dtype=np.float)
 
         return competences
