@@ -192,7 +192,7 @@ class DCS(DS):
 
         return selected_classifiers
 
-    def classify_instance(self, query, predictions):
+    def classify_with_ds(self, query, predictions):
         """Predicts the class label of the corresponding query sample.
 
         If self.selection_method == "all", the majority voting scheme is used to aggregate the predictions
@@ -232,7 +232,7 @@ class DCS(DS):
 
         return predicted_label
 
-    def predict_proba_instance(self, query, predictions):
+    def predict_proba_with_ds(self, query, predictions):
         """Predicts the posterior probabilities of the corresponding query sample.
 
         If self.selection_method == "all", get the probability estimates of the selected ensemble. Otherwise,

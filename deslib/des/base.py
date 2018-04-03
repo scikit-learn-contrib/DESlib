@@ -107,7 +107,7 @@ class DES(DS):
         """
         pass
 
-    def classify_instance(self, query, predictions):
+    def classify_with_ds(self, query, predictions):
         """Predicts the label of the corresponding query sample.
 
         If self.mode == "selection", the selected ensemble is combined using the
@@ -162,7 +162,7 @@ class DES(DS):
 
         return predicted_label
 
-    def predict_proba_instance(self, query, predictions=None):
+    def predict_proba_with_ds(self, query, predictions=None):
         """Predicts the posterior probabilities of the corresponding query sample.
 
         If self.mode == "selection", the selected ensemble is used to estimate the probabilities. The average rule is
@@ -189,6 +189,7 @@ class DES(DS):
         predicted_proba : array = [n_samples, n_classes]
                           The probability estimates for all classes
         """
+
         competences = self.estimate_competence(query, predictions)
         if self.mode == "selection":
             indices = self.select(competences)

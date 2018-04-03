@@ -224,7 +224,7 @@ class DESClustering(DES):
         indices = self.indices[cluster_index, :]
         return indices
 
-    def classify_instance(self, query, predictions):
+    def classify_with_ds(self, query, predictions):
         """Predicts the label of the corresponding query sample.
 
         Parameters

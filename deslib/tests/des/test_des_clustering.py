@@ -104,7 +104,7 @@ def test_classify_instance():
     for clf in clustering_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
 
-    predicted = clustering_test.classify_instance(query, np.array(predictions))
+    predicted = clustering_test.classify_with_ds(query, np.array(predictions))
     assert predicted == 0
 
 

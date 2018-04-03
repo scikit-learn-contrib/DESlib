@@ -225,7 +225,7 @@ def test_DFP_is_used():
     ds_test.DSEL_data = X_dsel_ex1
     ds_test.neighbors = neighbors_ex1[0, :]
     ds_test.distances = distances_ex1[0, :]
-    ds_test.classify_instance = MagicMock(return_value=0)
+    ds_test.classify_with_ds = MagicMock(return_value=0)
     ds_test.predict(query)
     assert np.array_equal(ds_test.DFP_mask, np.array([[1, 1, 0]]))
 
@@ -243,7 +243,7 @@ def test_predict_proba_DFP():
     ds_test.neighbors = neighbors_ex1[0, :]
     ds_test.distances = distances_ex1[0, :]
 
-    ds_test.predict_proba_instance = MagicMock(return_value=np.atleast_2d([0.25, 0.75]))
+    ds_test.predict_proba_with_ds = MagicMock(return_value=np.atleast_2d([0.25, 0.75]))
     ds_test.predict_proba(query)
     assert np.array_equal(ds_test.DFP_mask, np.atleast_2d([[1, 1, 0]]))
 
@@ -281,7 +281,7 @@ def test_DFP_is_used():
     ds_test.DSEL_data = X_dsel_ex1
     ds_test.neighbors = neighbors_ex1[0, :]
     ds_test.distances = distances_ex1[0, :]
-    ds_test.classify_instance = MagicMock(return_value=0)
+    ds_test.classify_with_ds = MagicMock(return_value=0)
     ds_test.predict(query)
     assert np.array_equal(ds_test.DFP_mask, np.atleast_2d([1, 1, 0]))
 
@@ -339,7 +339,7 @@ def test_predict_proba_IH_knn(index):
 
 
 # In this test, the three neighborhoods have an hardness level higher than the parameter IH_rate. Thus, the prediction
-# should be passed down to the predict_proba_instance function.
+# should be passed down to the predict_proba_with_ds function.
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_predict_proba_instance_called(index):
     query = np.atleast_2d([1, 1])
@@ -349,7 +349,7 @@ def test_predict_proba_instance_called(index):
     ds_test.neighbors = neighbors_ex1[index, :]
     ds_test.distances = distances_ex1[index, :]
 
-    ds_test.predict_proba_instance = MagicMock(return_value=np.atleast_2d([0.25, 0.75]))
+    ds_test.predict_proba_with_ds = MagicMock(return_value=np.atleast_2d([0.25, 0.75]))
     proba = ds_test.predict_proba(query)
     assert np.allclose(proba, np.atleast_2d([0.25, 0.75]))
 
@@ -391,8 +391,8 @@ def test_label_encoder_only_dsel():
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     ds_test.neighbors = neighbors_ex1[0, :]
     ds_test.distances = distances_ex1[0, :]
-    ds_test.classify_instance = Mock()
-    ds_test.classify_instance.return_value = [1, 0]  # changed here due to batch processing
+    ds_test.classify_with_ds = Mock()
+    ds_test.classify_with_ds.return_value = [1, 0]  # changed here due to batch processing
     predictions = ds_test.predict(query)
     assert np.array_equal(predictions, ['dog', 'cat'])
 

@@ -111,7 +111,7 @@ class DS(ClassifierMixin):
         pass
 
     @abstractmethod
-    def classify_instance(self, query, predictions):
+    def classify_with_ds(self, query, predictions):
         """Predicts the label of the corresponding query sample.
         Returns the predicted label.
 
@@ -130,7 +130,7 @@ class DS(ClassifierMixin):
         pass
 
     @abstractmethod
-    def predict_proba_instance(self, query, predictions):
+    def predict_proba_with_ds(self, query, predictions):
         """Predicts the posterior probabilities of the corresponding query sample.
         Returns the probability estimates of each class.
 
@@ -336,7 +336,7 @@ class DS(ClassifierMixin):
 
                 # Get the real indices of the samples that will be classified using a DS algorithm.
                 ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
-                pred_ds = self.classify_instance(X_DS[ind_ds_classifier, :],
+                pred_ds = self.classify_with_ds(X_DS[ind_ds_classifier, :],
                                                  base_predictions[ind_ds_original_matrix, :])
                 predicted_labels[ind_ds_original_matrix] = pred_ds
 
@@ -373,7 +373,7 @@ class DS(ClassifierMixin):
         #             else:
         #                     self.DFP_mask = np.ones(self.n_classifiers)
 
-        #             predicted_labels[index] = self.classify_instance(instance, base_predictions[index, :])
+        #             predicted_labels[index] = self.classify_with_ds(instance, base_predictions[index, :])
         #
         #         self.neighbors = None
         #         self.distances = None
@@ -440,7 +440,7 @@ class DS(ClassifierMixin):
                     else:
                             self.DFP_mask = np.ones(self.n_classifiers)
 
-                    predicted_proba[index, :] = self.predict_proba_instance(instance, base_predictions[index, :])
+                    predicted_proba[index, :] = self.predict_proba_with_ds(instance, base_predictions[index, :])
 
         # Reset the neighbors and the distances as they are specific to a given query.
         self.neighbors = None
