@@ -131,27 +131,16 @@ class Probabilistic(DES):
         competences : array of shape = [n_samples, n_classifiers]
                       The competence level estimated for each base classifier and test example
         """
-        # TODO: Adapt this function to batch processing
         dists, idx_neighbors = self._get_region_competence(query)
-        idx_neighbors = np.atleast_2d(idx_neighbors)
-        dists = np.atleast_2d(dists)
-        dists_organized = np.take(dists, idx_neighbors)
+        sorted_neighbors = np.argsort(idx_neighbors, axis=1)
+        dists_organized = np.take(dists, sorted_neighbors)
 
-        #dists_organized = np.array([dists[index] for index in np.argsort(idx_neighbors)])
         potential_dists = self.potential_func(dists_organized)
         sum_potential = np.sum(potential_dists, axis=1)
 
         competences = np.einsum('ijk,ij->ik', self.C_src[np.newaxis, :, :], potential_dists)
         competences = competences/sum_potential.reshape(-1, 1)
 
-        # competences = np.zeros(self.n_classifiers)
-        # for clf_index in range(self.n_classifiers):
-        #     # Check if the dynamic frienemy pruning (DFP) should be used used
-        #     if self.DFP_mask[clf_index]:
-        #         temp_competence = np.multiply(self.C_src[:, clf_index], potential_dists)
-        #         competences[clf_index] = np.sum(temp_competence)/sum_potential
-        #
-        # return competences
         return competences
 
     def select(self, competences):
