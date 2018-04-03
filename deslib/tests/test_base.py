@@ -255,14 +255,6 @@ def test_bad_input_X(X):
         ds_test.predict(X)
 
 
-def test_output_profiles_transform():
-    query = np.array([[1.0, 1.0]])
-    ds_test = DS(create_pool_classifiers())
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-    profile = ds_test._output_profile_transform(query)
-    assert np.array_equal(profile, np.array([[0.5, 0.5, 1.0, 0.0, 0.33, 0.67]]))
-
-
 def test_preprocess_dsel_scores():
     ds_test = DS(create_pool_classifiers())
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)

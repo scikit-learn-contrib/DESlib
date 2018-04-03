@@ -78,11 +78,14 @@ def test_estimate_competence():
     meta_test._get_similar_out_profiles = MagicMock(return_value=(None, neighbors_ex1[0, 0:meta_test.Kp]))
     meta_test.meta_classifier.predict_proba = MagicMock(return_value=np.array([[0.2, 0.8], [1.0, 0.0], [0.2, 0.8]]))
 
-    predictions = []
+    probabilities = []
     for clf in meta_test.pool_classifiers:
-        predictions.append(clf.predict(query)[0])
+        probabilities.append(clf.predict_proba(query))
+
+    probabilities = np.array(probabilities).transpose((1, 0, 2))
+
     expected = np.array([[0.8, 0.0, 0.8]])
-    competences = meta_test.estimate_competence(query, predictions)
+    competences = meta_test.estimate_competence_from_proba(query, probabilities)
     assert np.array_equal(competences, expected)
 
 
@@ -107,12 +110,14 @@ def test_estimate_competence_batch():
     meta_test.meta_classifier.predict_proba = MagicMock(return_value=np.tile([0.0, 0.8], (9, 1)))
     meta_test.DFP_mask = np.array([1, 0, 1])
 
-    predictions = []
+    probabilities = []
     for clf in meta_test.pool_classifiers:
-        predictions.append(clf.predict(query)[0])
+        probabilities.append(clf.predict_proba(query))
+
+    probabilities = np.array(probabilities).transpose((1, 0, 2))
 
     expected = np.ones((3, 3)) * 0.8
-    competences = meta_test.estimate_competence(query, predictions)
+    competences = meta_test.estimate_competence_from_proba(query, probabilities)
     assert np.array_equal(competences, expected)
 
 

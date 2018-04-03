@@ -95,7 +95,8 @@ class METADES(DES):
                  IH_rate=0.30):
 
         super(METADES, self).__init__(pool_classifiers, k, DFP=DFP,
-                                      with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate, mode=mode)
+                                      with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
+                                      mode=mode, needs_proba=True)
 
         self._check_predict_proba()
         self._check_input_parameters(Hc, selection_threshold, meta_classifier)
@@ -113,7 +114,6 @@ class METADES(DES):
 
         self.op_knn = None
         self.n_meta_features = (self.k * 2) + self.Kp + 2
-
 
     def fit(self, X, y):
         """Prepare the DS model by setting the KNN algorithm and
@@ -251,7 +251,7 @@ class METADES(DES):
         # Get the region of competence using the feature space and the decision space. Use K + 1 to later remove itself
         # from the set.
         _, idx_neighbors = self._get_region_competence(self.DSEL_data[indices_selected, :], self.k + 1)
-        _, idx_neighbors_op = self._get_similar_out_profiles(self.DSEL_data[indices_selected, :], self.Kp + 1)
+        _, idx_neighbors_op = self._get_similar_out_profiles(self.dsel_scores[indices_selected], self.Kp + 1)
         # Remove the first neighbor (itself)
         idx_neighbors = idx_neighbors[:, 1:]
         idx_neighbors_op = idx_neighbors_op[:, 1:]
@@ -285,13 +285,13 @@ class METADES(DES):
 
         self.meta_classifier.fit(X_meta, y_meta)
 
-    def _get_similar_out_profiles(self, query, kp=None):
+    def _get_similar_out_profiles(self, probabilities, kp=None):
         """Get the most similar output profiles of the query sample.
 
         Parameters
         ----------
-        query : array of shape = [n_samples, n_features]
-                The test sample
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                      The predictions of each base classifier for all samples.
 
         kp : int
              The number of output profiles (most similar) to be selected.
@@ -305,13 +305,14 @@ class METADES(DES):
         idx : list of shape = [n_samples, k]
               Indices of the instances belonging to the region of competence of the given query sample.
         """
-        query_op = self._output_profile_transform(query)
         if kp is None:
             kp = self.Kp
 
         if self.n_classes == 2:
             # Get only the scores for one class since they are complementary
-            query_op = query_op[:, ::2]
+            query_op = probabilities[:, :, 0]
+        else:
+            query_op = probabilities.reshape((probabilities.shape[0], self.n_classifiers * self.n_classes))
 
         dists, idx = self.op_knn.kneighbors(query_op, n_neighbors=kp, return_distance=True)
         return dists, idx
@@ -340,7 +341,7 @@ class METADES(DES):
 
         return selected_classifiers
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence_from_proba(self, query, probabilities):
         """Estimate the competence of each base classifier :math:`c_i`
         the classification of the query sample.
 
@@ -353,22 +354,17 @@ class METADES(DES):
         query : array of shape = [n_samples, n_features]
                 The test examples
 
-        predictions : array of shape = [n_samples, n_classifiers]
-                      The predictions of all base classifier for all samples in the query array
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                      The predictions of each base classifier for all samples.
 
         Returns
         -------
         competences : array of shape = [n_samples, n_classifiers]
                       The competence level estimated for each base classifier and test example
         """
-        # TODO: Have this information pre-processed on the _predict_base function (pass as the predictions)
-        scores = np.empty((query.shape[0], self.n_classifiers, self.n_classes))
-        for index, clf in enumerate(self.pool_classifiers):
-            scores[:, index, :] = clf.predict_proba(query)
-
         _, idx_neighbors = self._get_region_competence(query)
-        _, idx_neighbors_op = self._get_similar_out_profiles(query)
-        meta_feature_vectors = self.compute_meta_features(scores, idx_neighbors, idx_neighbors_op)
+        _, idx_neighbors_op = self._get_similar_out_profiles(probabilities)
+        meta_feature_vectors = self.compute_meta_features(probabilities, idx_neighbors, idx_neighbors_op)
 
         # Digitize the data if a Multinomial NB is used as the meta-classifier
         if isinstance(self.meta_classifier, MultinomialNB):

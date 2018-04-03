@@ -41,6 +41,9 @@ class DES(DS):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    needs_proba : Boolean (Default = False)
+                  Determines whether the method always needs base classifiers that estimate probabilities.
+
     References
     ----------
     Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection of classifiers—a comprehensive review."
@@ -52,10 +55,10 @@ class DES(DS):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False,
-                 safe_k=None, IH_rate=0.30, mode='selection'):
+                 safe_k=None, IH_rate=0.30, mode='selection', needs_proba=False):
 
         super(DES, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
-                                  safe_k=safe_k, IH_rate=IH_rate)
+                                  safe_k=safe_k, IH_rate=IH_rate, needs_proba=needs_proba)
 
         if not isinstance(mode, str):
             raise TypeError('Parameter "mode" should be a string. Currently "mode" = {}' .format(type(mode)))
@@ -89,6 +92,28 @@ class DES(DS):
         """
         pass
 
+    def estimate_competence_from_proba(self, query, probabilities):
+        """estimate the competence of each base classifier ci
+        the classification of the query sample x, for methods that require probabilities.
+        Returns an array containing the level of competence estimated
+        for each base classifier. The size of the vector is equals to
+        the size of the generated_pool of classifiers.
+
+        Parameters
+        ----------
+        query : array cf shape  = [n_samples, n_features]
+                The query sample
+
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                      The predictions of each base classifier for all samples.
+
+        Returns
+        -------
+        competences : array = [n_classifiers] containing the competence level estimated
+        for each base classifier
+        """
+        pass
+
     def select(self, competences):
         """Select the most competent classifier for
         the classification of the query sample x.
@@ -107,7 +132,7 @@ class DES(DS):
         """
         pass
 
-    def classify_with_ds(self, query, predictions):
+    def classify_with_ds(self, query, predictions, probabilities=None):
         """Predicts the label of the corresponding query sample.
 
         If self.mode == "selection", the selected ensemble is combined using the
@@ -129,6 +154,10 @@ class DES(DS):
         predictions : array of shape = [n_samples, n_classifiers]
                       Contains the predictions of all base classifier for all samples in the query array
 
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                        The predictions of each base classifier for all samples. (For methods that
+                        always require probabilities from the base classifiers.)
+
         Returns
         -------
         predicted_label: The predicted label of the query
@@ -141,7 +170,10 @@ class DES(DS):
             query = query.reshape(1, -1)
             predictions = predictions.reshape(1, -1)
 
-        competences = self.estimate_competence(query, predictions)
+        if self.needs_proba:
+            competences = self.estimate_competence_from_proba(query, probabilities)
+        else:
+            competences = self.estimate_competence(query, predictions)
 
         if self.DFP:
             competences = competences * self.DFP_mask

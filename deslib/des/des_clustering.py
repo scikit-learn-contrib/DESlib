@@ -224,7 +224,7 @@ class DESClustering(DES):
         indices = self.indices[cluster_index, :]
         return indices
 
-    def classify_with_ds(self, query, predictions):
+    def classify_with_ds(self, query, predictions, probabilities=None):
         """Predicts the label of the corresponding query sample.
 
         Parameters
@@ -234,6 +234,10 @@ class DESClustering(DES):
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Contains the predictions of all base classifier for all samples in the query array
+
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                        The predictions of each base classifier for all samples. (For methods that
+                        always require probabilities from the base classifiers.)
 
         Returns
         -------
