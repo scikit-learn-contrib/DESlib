@@ -191,7 +191,6 @@ class METADES(DES):
 
         return pct_agree
 
-
     def compute_meta_features(self, scores, idx_neighbors, idx_neighbors_op):
         """Compute the five sets of meta-features used in the META-des framework. Returns
         the meta-features vector :math:`v_{i,j}`.
@@ -214,6 +213,10 @@ class METADES(DES):
             containing the five sets of meta-features estimated for each pair (base classifier, example)
 
         """
+
+        idx_neighbors = np.atleast_2d(idx_neighbors)
+        idx_neighbors_op = np.atleast_2d(idx_neighbors_op)
+
         f1_all_classifiers = self.processed_dsel[idx_neighbors, :].swapaxes(1, 2).reshape(-1, self.k)
 
         f2_all_classifiers = self.dsel_scores[idx_neighbors, :, self.DSEL_target[idx_neighbors]].swapaxes(1, 2)
