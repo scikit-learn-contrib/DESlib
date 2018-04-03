@@ -110,8 +110,6 @@ class MLA(DCS):
         """
 
         dists, idx_neighbors = self._get_region_competence(query)
-        dists = np.atleast_2d(dists)
-        idx_neighbors = np.atleast_2d(idx_neighbors)
         predictions = np.atleast_2d(predictions)
 
         # Normalize the distances

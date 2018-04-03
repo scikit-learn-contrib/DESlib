@@ -96,7 +96,7 @@ class DCS(DS):
 
         Parameters
         ----------
-        query : array of shape = [n_features]
+        query : array of shape = [n_samples, n_features]
                 The test examples
 
         predictions : array of shape = [n_samples, n_classifiers]
@@ -134,11 +134,16 @@ class DCS(DS):
 
         Returns
         -------
-        selected_classifiers : array containing the selected base classifier(s)
+        selected_classifiers : array containing the index of the selected base classifier for each sample. If
+        the selection_method is set to 'all', a boolean matrix is returned, containing True for the selected base
+        classifiers, otherwise false.
 
         """
         if competences.ndim < 2:
             competences = competences.reshape(1, -1)
+
+        if self.DFP:
+            competences = competences * self.DFP_mask
 
         selected_classifiers = []
         best_index = np.argmax(competences, axis=1)
@@ -190,8 +195,8 @@ class DCS(DS):
     def classify_instance(self, query, predictions):
         """Predicts the class label of the corresponding query sample.
 
-        If self.mode == "all", the majority voting scheme is used to aggregate the predictions of all classifiers with
-        the max competence level estimate.
+        If self.selection_method == "all", the majority voting scheme is used to aggregate the predictions
+        of all classifiers with the max competence level estimates for each test examples.
 
         Parameters
         ----------
@@ -230,7 +235,7 @@ class DCS(DS):
     def predict_proba_instance(self, query, predictions):
         """Predicts the posterior probabilities of the corresponding query sample.
 
-        If self.mode == "all", get the probability estimates of the selected ensemble. Otherwise,
+        If self.selection_method == "all", get the probability estimates of the selected ensemble. Otherwise,
         the technique gets the probability estimates from the selected base classifier
 
         Parameters

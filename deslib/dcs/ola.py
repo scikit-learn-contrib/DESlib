@@ -106,7 +106,6 @@ class OLA(DCS):
                       The competence level estimated for each base classifier and test example
         """
         _, idx_neighbors = self._get_region_competence(query)
-        idx_neighbors = np.atleast_2d(idx_neighbors)
         competences = np.mean(self.processed_dsel[idx_neighbors, :], axis=1)
 
         return competences

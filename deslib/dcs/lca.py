@@ -113,7 +113,6 @@ class LCA(DCS):
         """
 
         _, idx_neighbors = self._get_region_competence(query)
-        idx_neighbors = np.atleast_2d(idx_neighbors)
         predictions = np.atleast_2d(predictions)
 
         # Expanding the dimensions of the predictions and target arrays in order to compare both.

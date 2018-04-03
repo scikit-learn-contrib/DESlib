@@ -84,7 +84,6 @@ class KNORAE(DES):
                       The competence level estimated for each base classifier and test example
         """
         _, idx_neighbors = self._get_region_competence(query)
-        idx_neighbors = np.atleast_2d(idx_neighbors)
         results_neighbors = self.processed_dsel[idx_neighbors, :]
 
         # Get the shape of the vector in order to know the number of samples, base classifiers and neighbors considered.
@@ -101,7 +100,7 @@ class KNORAE(DES):
         # corresponding to the first occurrence are returned.
         competences = np.argmax(results_neighbors == 0, axis=1)
 
-        return competences
+        return competences.astype(np.float)
 
     def select(self, competences):
         """Selects all base classifiers that obtained a local accuracy of 100% in the region of competence

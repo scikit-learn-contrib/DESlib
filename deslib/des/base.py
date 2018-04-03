@@ -142,18 +142,22 @@ class DES(DS):
             predictions = predictions.reshape(1, -1)
 
         competences = self.estimate_competence(query, predictions)
+
+        if self.DFP:
+            competences = competences * self.DFP_mask
+
         if self.mode == "selection":
-            # The indices matrix is used as a mask to remove the predictions of certain base classifiers.
-            indices = self.select(competences)
-            votes = np.ma.MaskedArray(predictions, ~indices)
+            # The selected_classifiers matrix is used as a mask to remove the predictions of certain base classifiers.
+            selected_classifiers = self.select(competences)
+            votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
             predicted_label = majority_voting_rule(votes)
 
         elif self.mode == "weighting":
             votes = np.atleast_2d(predictions)
             predicted_label = weighted_majority_voting_rule(votes, competences, np.arange(self.n_classes))
         else:
-            indices = self.select(competences)
-            votes = np.ma.MaskedArray(predictions, ~indices)
+            selected_classifiers = self.select(competences)
+            votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
             predicted_label = weighted_majority_voting_rule(votes, competences, np.arange(self.n_classes))
 
         return predicted_label

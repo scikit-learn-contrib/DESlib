@@ -109,22 +109,24 @@ class DESKNN(DES):
 
         Parameters
         ----------
-        query : array cf shape  = [n_features]
+        query : array cf shape  = [n_samples, n_features]
                 The query sample
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      The predictions of all base classifier for all samples in the query array
+
+        Notes
+        ------
+        This technique uses both the accuracy and diversity information to perform dynamic selection. For this
+        reason the function returns a dictionary containing these two values instead of a single ndarray containing
+        the competence level estimates for each base classifier.
 
         Returns
         -------
-        competences : Dictionary containing the accuracy and diversity estimates of all base classifiers for all
+        competences : Dictionary = {accuracy, diversity}
+                      Accuracy and diversity estimates of all base classifiers for all query
                       samples.
 
-        competences : array of shape = [n_classifiers]
-                      The competence level estimated for each base classifier
-
-        diversity : array of shape = [n_classifiers]
-                    The diversity estimated for each base classifier
         """
         _, idx_neighbors = self._get_region_competence(query)
         # calculate the classifiers mean accuracy for all samples/base classifier
@@ -133,7 +135,7 @@ class DESKNN(DES):
         predicted_matrix = self.BKS_dsel[idx_neighbors, :]
         targets = self.DSEL_target[idx_neighbors]
 
-        # TODO: try to optimize this part with numpy instead of for
+        # TODO: try to optimize this part with numpy instead of for loops
         # Calculate the more_diverse matrix. It becomes computationally expensive
         # When the region of competence is high
         diversity = np.zeros((query.shape[0], self.n_classifiers))
@@ -156,7 +158,8 @@ class DESKNN(DES):
 
         Parameters
         ----------
-        competences : Dictionary containing the accuracy and diversity estimates of all base classifiers for all
+        competences : Dictionary = {accuracy, diversity}
+                      Accuracy and diversity estimates of all base classifiers for all query
                       samples.
 
         Returns

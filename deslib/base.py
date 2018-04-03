@@ -253,7 +253,7 @@ class DS(ClassifierMixin):
             dists = self.distances
             idx = self.neighbors
 
-        return dists, idx
+        return np.atleast_2d(dists), np.atleast_2d(idx)
 
     def predict(self, X):
         """Predict the class label for each sample in X.

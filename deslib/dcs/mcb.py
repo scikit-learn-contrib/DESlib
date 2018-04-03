@@ -131,7 +131,6 @@ class MCB(DCS):
         """
 
         _, idx_neighbors = self._get_region_competence(query)
-        idx_neighbors = np.atleast_2d(idx_neighbors)
 
         # Use the pre-compute decisions to transform the query to the BKS space
         BKS_query = predictions

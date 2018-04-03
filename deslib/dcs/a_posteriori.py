@@ -124,8 +124,6 @@ class APosteriori(DCS):
         """
         dists, idx_neighbors = self._get_region_competence(query)
         # Guarantee that these arrays are view as a 2D array for the case where a single test sample is passed down.
-        dists = np.atleast_2d(dists)
-        idx_neighbors = np.atleast_2d(idx_neighbors)
         predictions = np.atleast_2d(predictions)
 
         # Normalize the distances

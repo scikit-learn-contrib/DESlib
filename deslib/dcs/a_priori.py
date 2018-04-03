@@ -118,8 +118,6 @@ class APriori(DCS):
                       The competence level estimated for each base classifier and test example
         """
         dists, idx_neighbors = self._get_region_competence(query)
-        idx_neighbors = np.atleast_2d(idx_neighbors)
-        dists = np.atleast_2d(dists)
         dists_normalized = 1.0/dists
 
         # Get the ndarray containing the scores obtained for the correct class for each neighbor (and test sample)

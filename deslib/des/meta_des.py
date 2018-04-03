@@ -214,14 +214,15 @@ class METADES(DES):
             containing the five sets of meta-features estimated for each pair (base classifier, example)
 
         """
-        idx_neighbors = np.atleast_2d(idx_neighbors)
-        idx_neighbors_op = np.atleast_2d(idx_neighbors_op)
         f1_all_classifiers = self.processed_dsel[idx_neighbors, :].swapaxes(1, 2).reshape(-1, self.k)
+
         f2_all_classifiers = self.dsel_scores[idx_neighbors, :, self.DSEL_target[idx_neighbors]].swapaxes(1, 2)
         f2_all_classifiers = f2_all_classifiers.reshape(-1, self.k)
 
         f3_all_classifiers = np.mean(self.processed_dsel[idx_neighbors, :], axis=1).reshape(-1, 1)
+
         f4_all_classifiers = self.processed_dsel[idx_neighbors_op, :].swapaxes(1, 2).reshape(-1, self.Kp)
+
         f5_all_classifiers = np.max(scores, axis=2).reshape(-1, 1)
         meta_feature_vectors = np.hstack((f1_all_classifiers, f2_all_classifiers, f3_all_classifiers,
                            f4_all_classifiers, f5_all_classifiers))

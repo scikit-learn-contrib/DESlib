@@ -123,10 +123,9 @@ class KNOP(DES):
         """
         output_profile_query = self._output_profile_transform(query)
         _, idx_neighbors = self._get_region_competence(output_profile_query)
-        idx_neighbors = np.atleast_2d(idx_neighbors)
-        competences = np.sum(self.processed_dsel[idx_neighbors, :], axis=1)
+        competences = np.sum(self.processed_dsel[idx_neighbors, :], axis=1, dtype=np.float)
 
-        return competences.astype(dtype=int)
+        return competences
 
     def select(self, competences):
         """Select the base classifiers for the classification of the query sample.
