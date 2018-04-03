@@ -118,7 +118,7 @@ def test_rank():
 
     rank = Rank(pool_classifiers, DFP=True)
     rank.fit(X_dsel, y_dsel)
-    assert np.isclose(rank.score(X_test, y_test), 0.82424242424242422)
+    assert np.isclose(rank.score(X_test, y_test), 0.8787878787878788)
 
 
 def test_aposteriori():
