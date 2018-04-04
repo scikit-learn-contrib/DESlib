@@ -198,7 +198,7 @@ def test_predict_proba_instance_all(competences, expected):
     dcs_test = DCS(pool_classifiers, selection_method='all')
     dcs_test.n_classes = 2
 
-    dcs_test.estimate_competence = MagicMock(return_value=competences)
+    dcs_test.estimate_competence = MagicMock(return_value=np.array(competences))
 
     predictions = []
     for clf in dcs_test.pool_classifiers:

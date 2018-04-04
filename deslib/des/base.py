@@ -222,15 +222,19 @@ class DES(DS):
                           The probability estimates for all classes
         """
 
+        # TODO refactor for batch processing
         competences = self.estimate_competence(query, predictions)
         if self.mode == "selection":
+            # TODO use masked array
             indices = self.select(competences)
             classifier_ensemble = self._get_classifier_ensemble(indices)
             predicted_proba = predict_proba_ensemble(classifier_ensemble, query)
 
         elif self.mode == "weighting":
+            # TODO refactor weighted probabilities
             predicted_proba = predict_proba_ensemble_weighted(self.pool_classifiers, competences, query)
         else:
+            # TODO combination of the two above
             indices = self.select(competences)
             competences_ensemble = competences[indices]
             classifier_ensemble = self._get_classifier_ensemble(indices)

@@ -258,11 +258,13 @@ class DCS(DS):
         competences = self.estimate_competence(query, predictions)
         if self.selection_method != 'all':
             # only one classifier is selected
-            clf_index = self.select(competences)
+            # TODO refactor for batch (select the probabilities)
+            clf_index = self.select(competences)[0]
             predicted_proba = self.pool_classifiers[clf_index].predict_proba(query)
         else:
-            # Selected ensemble of classifiers is combined using Majority Voting
-            indices = self.select(competences)
+            # Selected ensemble of classifiers is combined using average probability
+            # TODO refactor for batch (use masked array; perfom mean)
+            indices = self.select(competences)[0]
             classifier_ensemble = self._get_classifier_ensemble(indices)
             predicted_proba = predict_proba_ensemble(classifier_ensemble, query)
 
