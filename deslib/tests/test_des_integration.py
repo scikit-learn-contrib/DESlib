@@ -245,3 +245,44 @@ def test_static_selection():
     static_selection = StaticSelection(pool_classifiers)
     static_selection.fit(X_dsel, y_dsel)
     assert np.isclose(static_selection.score(X_test, y_test), 0.96808510638297873)
+
+
+def test_kne_proba():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    kne = KNORAE(pool_classifiers)
+    kne.fit(X_dsel, y_dsel)
+    probas = kne.predict_proba(X_test)
+    expected = np.load('./expected_values/kne_proba_integration.npy')
+    assert np.allclose(probas, expected)
+
+
+def test_desp_proba():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    desp = DESP(pool_classifiers)
+    desp.fit(X_dsel, y_dsel)
+    probas = desp.predict_proba(X_test)
+    expected = np.load('./expected_values/desp_proba_integration.npy')
+    assert np.allclose(probas, expected)
+
+
+def test_ola_proba():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    ola = OLA(pool_classifiers)
+    ola.fit(X_dsel, y_dsel)
+    probas = ola.predict_proba(X_test)
+    expected = np.load('./expected_values/ola_proba_integration.npy')
+    assert np.allclose(probas, expected)
+
+
+def test_mcb_proba():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+    rng = np.random.RandomState(123456)
+
+    mcb = MCB(pool_classifiers, rng=rng)
+    mcb.fit(X_dsel, y_dsel)
+    probas = mcb.predict_proba(X_test)
+    expected = np.load('./expected_values/mcb_proba_integration.npy')
+    assert np.allclose(probas, expected)
