@@ -236,7 +236,7 @@ class DCS(DS):
 
         return predicted_label
 
-    def predict_proba_with_ds(self, query, predictions):
+    def predict_proba_with_ds(self, query, predictions, probabilities):
         """Predicts the posterior probabilities of the corresponding query sample.
 
         If self.selection_method == "all", get the probability estimates of the selected ensemble. Otherwise,
@@ -250,6 +250,10 @@ class DCS(DS):
         predictions : array of shape = [n_samples, n_classifiers]
                       The predictions of all base classifier for all samples in the query array
 
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                      The predictions of each base classifier for all samples. (For methods that
+                      always require probabilities from the base classifiers.)
+
         Returns
         -------
         predicted_proba : array = [n_samples, n_classes]
@@ -258,14 +262,18 @@ class DCS(DS):
         competences = self.estimate_competence(query, predictions)
         if self.selection_method != 'all':
             # only one classifier is selected
-            # TODO refactor for batch (select the probabilities)
-            clf_index = self.select(competences)[0]
-            predicted_proba = self.pool_classifiers[clf_index].predict_proba(query)
+            clf_index = self.select(competences)
+            predicted_proba = probabilities[np.arange(probabilities.shape[0]),
+                                            clf_index]
         else:
             # Selected ensemble of classifiers is combined using average probability
-            # TODO refactor for batch (use masked array; perfom mean)
-            indices = self.select(competences)[0]
-            classifier_ensemble = self._get_classifier_ensemble(indices)
-            predicted_proba = predict_proba_ensemble(classifier_ensemble, query)
+            selected_classifiers = self.select(competences)
+
+            # Broadcast the selected classifiers mask (to cover the last axis (nClasses):
+            selected_classifiers = np.expand_dims(selected_classifiers, axis=2)
+            selected_classifiers = np.broadcast_to(selected_classifiers, probabilities.shape)
+            masked_proba = np.ma.MaskedArray(probabilities, ~selected_classifiers)
+
+            predicted_proba = np.mean(masked_proba, axis=1)
 
         return predicted_proba

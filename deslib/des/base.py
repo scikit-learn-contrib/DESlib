@@ -3,9 +3,8 @@ from abc import ABCMeta
 import numpy as np
 
 from deslib.base import DS
-from deslib.util.aggregation import weighted_majority_voting_rule, majority_voting_rule, predict_proba_ensemble, \
-    predict_proba_ensemble_weighted
-
+from deslib.util.aggregation import weighted_majority_voting_rule, majority_voting_rule,\
+    aggregate_proba_ensemble_weighted
 
 class DES(DS):
     """Base class for a Dynamic Ensemble Selection (DES).
@@ -194,7 +193,7 @@ class DES(DS):
 
         return predicted_label
 
-    def predict_proba_with_ds(self, query, predictions=None):
+    def predict_proba_with_ds(self, query, predictions, probabilities):
         """Predicts the posterior probabilities of the corresponding query sample.
 
         If self.mode == "selection", the selected ensemble is used to estimate the probabilities. The average rule is
@@ -216,28 +215,41 @@ class DES(DS):
         predictions : array of shape = [n_samples, n_classifiers]
                       The predictions of all base classifier for all samples in the query array
 
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                      The predictions of each base classifier for all samples. (For methods that
+                      always require probabilities from the base classifiers.)
+
         Returns
         -------
         predicted_proba : array = [n_samples, n_classes]
                           The probability estimates for all classes
         """
 
-        # TODO refactor for batch processing
-        competences = self.estimate_competence(query, predictions)
+        if self.needs_proba:
+            competences = self.estimate_competence_from_proba(query, probabilities)
+        else:
+            competences = self.estimate_competence(query, predictions)
+
         if self.mode == "selection":
-            # TODO use masked array
-            indices = self.select(competences)
-            classifier_ensemble = self._get_classifier_ensemble(indices)
-            predicted_proba = predict_proba_ensemble(classifier_ensemble, query)
+            selected_classifiers = self.select(competences)
+
+            # Broadcast the selected classifiers mask (to cover the last axis (nClasses):
+            selected_classifiers = np.expand_dims(selected_classifiers, axis=2)
+            selected_classifiers = np.broadcast_to(selected_classifiers , probabilities.shape)
+            masked_proba = np.ma.MaskedArray(probabilities, ~selected_classifiers)
+
+            predicted_proba = np.mean(masked_proba, axis=1)
 
         elif self.mode == "weighting":
-            # TODO refactor weighted probabilities
-            predicted_proba = predict_proba_ensemble_weighted(self.pool_classifiers, competences, query)
+            predicted_proba = aggregate_proba_ensemble_weighted(probabilities, competences)
         else:
-            # TODO combination of the two above
-            indices = self.select(competences)
-            competences_ensemble = competences[indices]
-            classifier_ensemble = self._get_classifier_ensemble(indices)
-            predicted_proba = predict_proba_ensemble_weighted(classifier_ensemble, competences_ensemble, query)
+            selected_classifiers = self.select(competences)
+
+            # Broadcast the selected classifiers mask (to cover the last axis (nClasses):
+            selected_classifiers = np.expand_dims(selected_classifiers, axis=2)
+            selected_classifiers = np.broadcast_to(selected_classifiers, probabilities.shape)
+            masked_proba = np.ma.MaskedArray(probabilities, ~selected_classifiers)
+
+            predicted_proba = aggregate_proba_ensemble_weighted(masked_proba, competences)
 
         return predicted_proba

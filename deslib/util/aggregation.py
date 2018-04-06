@@ -200,6 +200,15 @@ def predict_proba_ensemble(classifier_ensemble, X):
     return predicted_proba
 
 
+def aggregate_proba_ensemble_weighted(ensemble_proba, weights):
+    # TODO verify if the new implementation is correct
+    #predicted_proba = np.einsum('ijk,ij->ik', ensemble_proba, weights) / n_classifiers
+    predicted_proba = ensemble_proba * np.expand_dims(weights, axis=2)
+    predicted_proba = predicted_proba.mean(axis=1)
+
+    return softmax(predicted_proba)
+
+
 def predict_proba_ensemble_weighted(classifier_ensemble, weights, X):
     """Estimates the posterior probabilities for each sample in X.
 
@@ -229,9 +238,7 @@ def predict_proba_ensemble_weighted(classifier_ensemble, weights, X):
                          'The number of classifiers is {},'
                          ' and the number of weights is {}' .format(n_classifiers, weights.shape[1]))
 
-    predicted_proba = np.einsum('ijk,ij->ik', ensemble_proba, weights) / n_classifiers
-
-    return softmax(predicted_proba)
+    return aggregate_proba_ensemble_weighted(ensemble_proba, weights)
 
 
 def average_combiner(classifier_ensemble, X):
