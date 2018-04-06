@@ -230,6 +230,9 @@ class DES(DS):
         else:
             competences = self.estimate_competence(query, predictions)
 
+        if self.DFP:
+            competences = competences * self.DFP_mask
+
         if self.mode == "selection":
             selected_classifiers = self.select(competences)
 
