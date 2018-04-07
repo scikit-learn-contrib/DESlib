@@ -183,10 +183,17 @@ def test_predict_proba_instance():
     expected = pool_classifiers[np.argmax(competences)].predict_proba(query)
 
     predictions = []
+    probabilities = []
     for clf in dcs_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
+        probabilities.append(clf.predict_proba(query)[0])
 
-    predicted_proba = dcs_test.predict_proba_with_ds(query, predictions)
+    query = np.atleast_2d(query)
+    predictions = np.atleast_2d(predictions)
+    probabilities = np.array(probabilities)
+    probabilities = np.expand_dims(probabilities, axis=0)
+
+    predicted_proba = dcs_test.predict_proba_with_ds(query, predictions, probabilities)
     assert np.array_equal(predicted_proba, expected)
 
 
@@ -198,11 +205,18 @@ def test_predict_proba_instance_all(competences, expected):
     dcs_test = DCS(pool_classifiers, selection_method='all')
     dcs_test.n_classes = 2
 
-    dcs_test.estimate_competence = MagicMock(return_value=competences)
+    dcs_test.estimate_competence = MagicMock(return_value=np.array(competences))
 
     predictions = []
+    probabilities = []
     for clf in dcs_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
+        probabilities.append(clf.predict_proba(query)[0])
 
-    predicted_proba = dcs_test.predict_proba_with_ds(query, predictions)
+    query = np.atleast_2d(query)
+    predictions = np.atleast_2d(predictions)
+    probabilities = np.array(probabilities)
+    probabilities = np.expand_dims(probabilities, axis=0)
+
+    predicted_proba = dcs_test.predict_proba_with_ds(query, predictions, probabilities)
     assert np.isclose(predicted_proba, expected).all()
