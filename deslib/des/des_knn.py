@@ -6,11 +6,12 @@
 
 import numpy as np
 
-from deslib.des.base import DES
+from deslib.base import DS
+from deslib.util.aggregation import majority_voting_rule
 from deslib.util.diversity import negative_double_fault, Q_statistic, ratio_errors
 
 
-class DESKNN(DES):
+class DESKNN(DS):
     """Dynamic ensemble Selection KNN (DES-KNN).
 
     This method selects an ensemble of classifiers taking into account the
@@ -41,10 +42,6 @@ class DESKNN(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    mode : String (Default = "selection")
-              whether the technique will perform dynamic selection, dynamic weighting
-              or an hybrid approach for classification
-
     pct_accuracy : float (Default = 0.5)
         Percentage of base classifiers selected based on accuracy
 
@@ -72,24 +69,23 @@ class DESKNN(DES):
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
                  IH_rate=0.30,
-                 mode='selection',
                  pct_accuracy=0.5,
                  pct_diversity=0.3,
                  more_diverse=True,
                  metric='DF'):
 
         metric = metric.upper()
-        super(DESKNN, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                     mode=mode)
+        super(DESKNN, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate)
 
+        self.name = 'Dynamic Ensemble Selection-KNN (DES-KNN)'
         self.N = int(self.n_classifiers * pct_accuracy)
         self.J = int(np.ceil(self.n_classifiers * pct_diversity))
-        self.more_diverse = more_diverse
-        self.name = 'Dynamic Ensemble Selection-KNN (DES-KNN)'
-
         self.metric = metric
+
         self._validate_parameters()
 
+        # Set up the diversity metric
+        self.more_diverse = more_diverse
         if metric == 'DF':
             self.diversity_func = negative_double_fault
         elif metric == 'Q':
@@ -124,8 +120,7 @@ class DESKNN(DES):
         Returns
         -------
         competences : Dictionary = {accuracy, diversity}
-                      Accuracy and diversity estimates of all base classifiers for all query
-                      samples.
+                      Accuracy and diversity estimates of all base classifiers for all query samples.
 
         """
         _, idx_neighbors = self._get_region_competence(query)
@@ -140,6 +135,7 @@ class DESKNN(DES):
         # When the region of competence is high
         diversity = np.zeros((query.shape[0], self.n_classifiers))
         for sample_idx in range(query.shape[0]):
+
             for clf_index in range(self.n_classifiers):
                 for clf_index2 in range(clf_index + 1, self.n_classifiers):
                     this_diversity = self.diversity_func(targets[sample_idx, :],
@@ -148,28 +144,25 @@ class DESKNN(DES):
                     diversity[sample_idx, clf_index] += this_diversity
                     diversity[sample_idx, clf_index2] += this_diversity
 
-        competences = {'accuracy' : accuracy, 'diversity' : diversity}
+        return accuracy, diversity
 
-        return competences
-
-    def select(self, competences):
+    def select(self, accuracy, diversity):
         """Select an ensemble containing the N most accurate ant the J most diverse classifiers for the classification
         of the query sample.
 
         Parameters
         ----------
-        competences : Dictionary = {accuracy, diversity}
-                      Accuracy and diversity estimates of all base classifiers for all query
-                      samples.
+        accuracy : array of shape = [n_samples, n_classifiers]
+                   Local Accuracy estimates (competence) of each base classifiers for all query samples.
+
+        diversity : array of shape = [n_samples, n_classifiers]
+                    Average pairwise diversity of each base classifiers for all test examples.
 
         Returns
         -------
-        selected_classifiers : array of shape = [n_samples, n_classifiers]
-                               Boolean matrix containing True if the base classifier is select, False otherwise
-
+        selected_classifiers : array of shape = [n_samples, self.J]
+                               Matrix containing the indices of the J selected base classifier for each test example.
         """
-        accuracy = competences['accuracy']
-        diversity = competences['diversity']
         # Check if the accuracy and diversity arrays have the correct dimensionality.
         if accuracy.ndim < 2:
             accuracy = accuracy.reshape(1, -1)
@@ -178,8 +171,9 @@ class DESKNN(DES):
             diversity = diversity.reshape(1, -1)
 
         # sort the array to remove the most accurate classifiers
-        competent_indices = np.argsort(accuracy)[:, ::-1][:, 0:self.N]
-        diversity_of_selected = diversity.take(competent_indices)
+        competent_indices = np.argsort(accuracy, axis=1)[:, ::-1][:, 0:self.N]
+        diversity_of_selected = diversity[np.arange(diversity.shape[0])[:, None], competent_indices]
+        # diversity_of_selected = diversity.take(competent_indices)
 
         # sort the remaining classifiers to select the most diverse ones
         if self.more_diverse:
@@ -187,14 +181,96 @@ class DESKNN(DES):
         else:
             diversity_indices = np.argsort(diversity_of_selected, axis=1)[:, 0:self.J]
 
-        # indices = competent_indices[diversity_indices]
-        indices = competent_indices.take(diversity_indices)
-        selected_classifiers = np.zeros(accuracy.shape, dtype=np.bool)
-        # Setting the elements in indices (selected classifiers) to True
-        selected_classifiers[np.arange(indices.shape[0])[:, None], indices] = True
+        # Getting the index of all selected base classifiers.
+        selected_classifiers = competent_indices[np.arange(competent_indices.shape[0])[:, None], diversity_indices]
 
         return selected_classifiers
 
+    def classify_with_ds(self, query, predictions, probabilities=None):
+        """Predicts the label of the corresponding query sample.
+
+        Parameters
+        ----------
+        query : array of shape = [n_samples, n_features]
+                The test examples
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Contains the predictions of all base classifier for all samples in the query array
+
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                        The predictions of each base classifier for all samples. (For methods that
+                        always require probabilities from the base classifiers.)
+
+        Notes
+        ------
+        Different than other DES techniques, this method is based on a two stage selection, where
+        first the most accurate classifier are selected, then the diversity information is used to get the most
+        diverse ensemble for the probability estimation. Hence, the weighting mode is not defined.
+
+        Returns
+        -------
+        predicted_label : array of shape = [n_samples
+                          The predicted label for each query
+        """
+
+        if query.ndim != predictions.ndim:
+            raise ValueError('The arrays query and predictions must have the same shape. query.shape is {}'
+                             'and predictions.shape is {}' .format(query.shape, predictions.shape))
+
+        if query.ndim < 2:
+            query = query.reshape(1, -1)
+            predictions = predictions.reshape(1, -1)
+
+        accuracy, diversity = self.estimate_competence(query, predictions)
+
+        if self.DFP:
+            accuracy = accuracy * self.DFP_mask
+
+        selected_classifiers = self.select(accuracy, diversity)
+        votes = predictions[np.arange(predictions.shape[0])[:, None], selected_classifiers]
+        predicted_label = majority_voting_rule(votes)
+
+        return predicted_label
+
+    def predict_proba_with_ds(self, query, predictions, probabilities):
+        """Predicts the posterior probabilities of the corresponding query sample.
+
+        Parameters
+        ----------
+        query : array of shape = [n_samples, n_features]
+                The test examples
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      The predictions of all base classifier for all samples in the query array
+
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                      The predictions of each base classifier for all samples. (For methods that
+                      always require probabilities from the base classifiers.)
+
+        Notes
+        ------
+        Different than other DES techniques, this method is based on a two stage selection, where
+        first the most accurate classifier are selected, then the diversity information is used to get the most
+        diverse ensemble for the probability estimation. Hence, the weighting mode is not defined.
+
+        Returns
+        -------
+        predicted_proba : array = [n_samples, n_classes]
+                          The probability estimates for all classes
+        """
+
+        accuracy, diversity = self.estimate_competence(query, predictions)
+
+        if self.DFP:
+            accuracy = accuracy * self.DFP_mask
+
+        # This method always performs selection. There is no weighted version.
+        selected_classifiers = self.select(accuracy, diversity)
+        ensemble_proba = probabilities[np.arange(probabilities.shape[0])[:, None], selected_classifiers, :]
+
+        predicted_proba = np.mean(ensemble_proba, axis=1)
+
+        return predicted_proba
 
     def _validate_parameters(self):
         """Check if the parameters passed as argument are correct.

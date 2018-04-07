@@ -42,9 +42,9 @@ def test_estimate_competence():
     target.DFP_mask = np.ones(target.n_classifiers)
     target._get_region_competence = lambda x: (None, np.array([[0, 1, 2, 3, 4, 5, 6]]))
 
-    competences = target.estimate_competence(query)
-    assert np.allclose(competences['accuracy'], [2./7, 4./7, 5./7])
-    assert np.allclose(competences['diversity'], [-5./7, -4./7, -3./7])
+    competences, diversity = target.estimate_competence(query)
+    assert np.allclose(competences, [2./7, 4./7, 5./7])
+    assert np.allclose(diversity, [-5./7, -4./7, -3./7])
 
 
 def test_estimate_competence_batch():
@@ -83,9 +83,9 @@ def test_estimate_competence_batch():
     target.DFP_mask = np.ones(target.n_classifiers)
     target._get_region_competence = lambda x: (None, np.tile([0, 1, 2, 3, 4, 5, 6], (10, 1)))
 
-    competences = target.estimate_competence(query)
-    assert np.allclose(competences['accuracy'], [2./7, 4./7, 5./7])
-    assert np.allclose(competences['diversity'], [-5./7, -4./7, -3./7])
+    competences, diversity = target.estimate_competence(query)
+    assert np.allclose(competences, [2./7, 4./7, 5./7])
+    assert np.allclose(diversity, [-5./7, -4./7, -3./7])
 
 
 def test_estimate_competence_Q():
@@ -105,9 +105,9 @@ def test_estimate_competence_Q():
     target.DFP_mask = np.ones(target.n_classifiers)
     target._get_region_competence = lambda x: (None, np.array([[0, 1, 2, 3, 4, 5, 6]]))
 
-    competences = target.estimate_competence(query)
-    assert np.allclose(competences['accuracy'], [2./7, 4./7, 5./7])
-    assert np.allclose(competences['diversity'], [2, 1.2, 1.2])
+    competences, diversity = target.estimate_competence(query)
+    assert np.allclose(competences, [2./7, 4./7, 5./7])
+    assert np.allclose(diversity, [2, 1.2, 1.2])
 
 
 def test_estimate_competence_Q_batch():
@@ -128,9 +128,9 @@ def test_estimate_competence_Q_batch():
     target.DFP_mask = np.ones(target.n_classifiers)
     target._get_region_competence = lambda x: (None, np.tile([0, 1, 2, 3, 4, 5, 6], (n_samples, 1)))
 
-    competences = target.estimate_competence(query)
-    assert np.allclose(competences['accuracy'], [2./7, 4./7, 5./7])
-    assert np.allclose(competences['diversity'], [2, 1.2, 1.2])
+    competences, diversity = target.estimate_competence(query)
+    assert np.allclose(competences, [2./7, 4./7, 5./7])
+    assert np.allclose(diversity, [2, 1.2, 1.2])
 
 
 def test_estimate_competence_ratio():
@@ -151,9 +151,9 @@ def test_estimate_competence_ratio():
     target.DFP_mask = np.ones(target.n_classifiers)
     target._get_region_competence = lambda x: (None, np.array([[0, 1, 2, 3, 4, 5, 6]]))
 
-    competences = target.estimate_competence(query)
-    assert np.allclose(competences['accuracy'], [2./7, 4./7, 5./7])
-    assert np.allclose(competences['diversity'], [2.166, 3.666, 4.500], atol=0.01)
+    competences, diversity = target.estimate_competence(query)
+    assert np.allclose(competences, [2./7, 4./7, 5./7])
+    assert np.allclose(diversity, [2.166, 3.666, 4.500], atol=0.01)
 
 
 def test_estimate_competence_ratio_batch():
@@ -175,9 +175,9 @@ def test_estimate_competence_ratio_batch():
     target.DFP_mask = np.ones(target.n_classifiers)
     target._get_region_competence = lambda x: (None, np.tile([0, 1, 2, 3, 4, 5, 6], (n_samples, 1)))
 
-    competences = target.estimate_competence(query)
-    assert np.allclose(competences['accuracy'], [2./7, 4./7, 5./7])
-    assert np.allclose(competences['diversity'], [2.166, 3.666, 4.500], atol=0.01)
+    competences, diversity = target.estimate_competence(query)
+    assert np.allclose(competences, [2./7, 4./7, 5./7])
+    assert np.allclose(diversity, [2.166, 3.666, 4.500], atol=0.01)
 
 
 def test_select():
@@ -191,13 +191,12 @@ def test_select():
 
     accuracies = np.array([4, 6, 1, 2, 9, 8, 7, 9, 3, 2]) / 10.
     diversity = np.array([0, 8, 0, 0, 1, 6, 7, 2, 0, 0])
-    competences = {'accuracy' : accuracies, 'diversity' : diversity}
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=5./10, pct_diversity=3./10)
 
-    selected_classifiers = target.select(competences)
-    expected = np.array([[False, True, False, False, False, True, True, False, False, False]])
+    selected_classifiers = target.select(accuracies, diversity)
+    expected = np.array([[1, 5, 6]])
 
-    assert np.array_equal(selected_classifiers, expected)
+    assert np.array_equal(np.unique(selected_classifiers), np.unique(expected))
 
 
 def test_select_batch():
@@ -212,33 +211,31 @@ def test_select_batch():
 
     accuracies = np.tile([4, 6, 1, 2, 9, 8, 7, 9, 3, 2], (n_samples, 1)) / 10.
     diversity = np.tile([0, 8, 0, 0, 1, 6, 7, 2, 0, 0], (n_samples, 1))
-    competences = {'accuracy' : accuracies, 'diversity' : diversity}
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=5./10, pct_diversity=3./10)
 
-    selected_classifiers = target.select(competences)
-    expected = np.tile([False, True, False, False, False, True, True, False, False, False], (n_samples, 1))
+    selected_classifiers = target.select(accuracies, diversity)
+    expected = np.tile([1, 5, 6], (n_samples, 1))
 
-    assert np.array_equal(selected_classifiers, expected)
+    assert np.array_equal(np.unique(selected_classifiers), np.unique(expected))
 
 
 def test_select_less_diverse():
     """
     Test case: 10 base classifiers; select 5 based on accuracy, then the 3 less diverse
     accuracies (/10): 4 6 1 2 9 8 7 9 3 2   (should select indices 1, 4, 5, 6, 7)
-    diversity:        0 8 0 0 1 6 7 2 0 0   (should select indices 1, 5, 6 as most diverse)
+    diversity:        0 8 0 0 1 6 7 2 0 0   (should select indices 4, 5, 7 as most diverse)
 
     """
     pool_classifiers = [create_base_classifier(1) for _ in range(10)]
 
     accuracies = np.array([[4, 6, 1, 2, 9, 8, 7, 9, 3, 2]]) / 10.
     diversity = np.array([[0, 8, 0, 0, 1, 6, 7, 2, 0, 0]])
-    competences = {'accuracy' : accuracies, 'diversity' : diversity}
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=5./10, pct_diversity=3./10, more_diverse=False)
 
-    selected_classifiers = target.select(competences)
-    expected = np.array([[False, False, False, False, True, True, False, True, False, False]])
+    selected_classifiers = target.select(accuracies, diversity)
+    expected = np.array([[4, 5, 7]])
 
-    assert np.array_equal(selected_classifiers, expected)
+    assert np.array_equal(np.unique(selected_classifiers), np.unique(expected))
 
 
 def test_input_diversity_parameter():
