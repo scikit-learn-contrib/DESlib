@@ -8,7 +8,7 @@ import numpy as np
 
 from deslib.base import DS
 from deslib.util.aggregation import majority_voting_rule
-from deslib.util.diversity import negative_double_fault, Q_statistic, ratio_errors
+from deslib.util.diversity import negative_double_fault, Q_statistic, ratio_errors, compute_pairwise_diversity
 
 
 class DESKNN(DS):
@@ -135,14 +135,10 @@ class DESKNN(DS):
         # When the region of competence is high
         diversity = np.zeros((query.shape[0], self.n_classifiers))
         for sample_idx in range(query.shape[0]):
+            this_diversity = compute_pairwise_diversity(targets[sample_idx, :],
+                                                      predicted_matrix[sample_idx, :, :], self.diversity_func)
 
-            for clf_index in range(self.n_classifiers):
-                for clf_index2 in range(clf_index + 1, self.n_classifiers):
-                    this_diversity = self.diversity_func(targets[sample_idx, :],
-                                                         predicted_matrix[sample_idx, :, clf_index],
-                                                         predicted_matrix[sample_idx, :, clf_index2])
-                    diversity[sample_idx, clf_index] += this_diversity
-                    diversity[sample_idx, clf_index2] += this_diversity
+            diversity[sample_idx, :] = this_diversity
 
         return accuracy, diversity
 
@@ -205,7 +201,8 @@ class DESKNN(DS):
         ------
         Different than other DES techniques, this method is based on a two stage selection, where
         first the most accurate classifier are selected, then the diversity information is used to get the most
-        diverse ensemble for the probability estimation. Hence, the weighting mode is not defined.
+        diverse ensemble for the probability estimation. Hence, the weighting mode is not defined. Also, the
+        selected ensemble size is fixed (self.J), so there is no need to use masked arrays in this class.
 
         Returns
         -------
