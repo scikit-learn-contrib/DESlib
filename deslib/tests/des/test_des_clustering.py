@@ -88,15 +88,15 @@ def test_select():
     clustering_test = DESClustering(create_pool_classifiers() * 2, k=2)
     clustering_test.roc_algorithm.predict = MagicMock(return_value=[0])
     clustering_test.indices = np.array([[0, 2], [1, 4]])
-    assert np.array_equal(clustering_test.select(query), [0, 2])
+    assert np.array_equal(clustering_test.select(query), [[0, 2]])
 
     clustering_test.roc_algorithm.predict = MagicMock(return_value=[1])
-    assert np.array_equal(clustering_test.select(query), [1, 4])
+    assert np.array_equal(clustering_test.select(query), [[1, 4]])
 
 
 # Since the majority of the base classifiers selected predicts class 0, the final decision of the ensemble should be 0.
 def test_classify_instance():
-    query = np.atleast_2d([1, -1])
+    query = np.ones((1, 2))
     clustering_test = DESClustering(create_pool_classifiers() * 4, k=2)
     clustering_test.select = MagicMock(return_value=[0, 1, 2, 3, 5, 6, 7, 9])
 
