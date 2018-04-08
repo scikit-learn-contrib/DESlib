@@ -16,7 +16,6 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import check_X_y, check_is_fitted
 
-from deslib.util.aggregation import predict_proba_ensemble
 from deslib.util.instance_harndess import hardness_region_competence
 
 
@@ -131,8 +130,8 @@ class DS(ClassifierMixin):
 
         Returns
         -------
-        The predicted label of the query
-        """
+        predicted_label : array of shape = [n_samples
+                          The predicted label for each query        """
         pass
 
     @abstractmethod
@@ -149,12 +148,13 @@ class DS(ClassifierMixin):
                       The predictions of all base classifier for all samples in the query array
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                      The predictions of each base classifier for all samples. (For methods that
-                      always require probabilities from the base classifiers.)
+                        The predictions of each base classifier for all samples. (For methods that
+                        always require probabilities from the base classifiers.)
 
         Returns
         -------
-        predicted_proba : array = [n_classes] with the probability estimates for all classes
+        predicted_proba: array of shape = [n_samples, n_classes]
+                         Posterior probabilities estimates for each test example
         """
         pass
 
@@ -307,29 +307,31 @@ class DS(ClassifierMixin):
 
             X_DS = X[ind_disagreement, :]
 
-            # TODO: calculate this only if IH or DFP is used
-            # Then, we estimate the nearest neighbors for all samples that we need to call DS routines
-            self.distances, self.neighbors = self._get_region_competence(X_DS)
+            # Estimate the neighbors at this stage if either the DFP or the IH is used during classification
+            if self.DFP or self.with_IH:
+                # Then, we estimate the nearest neighbors for all samples that we need to call DS routines
+                self.distances, self.neighbors = self._get_region_competence(X_DS)
 
             if self.with_IH:
                 # if IH is used, calculate the hardness level associated with each sample
                 hardness = hardness_region_competence(self.neighbors, self.DSEL_target, self.safe_k)
 
-                # Get the index associated with the easy and hard samples. Samples with low hardness are passed down to the
-                # knn classifier while samples with high hardness are passed down to the DS methods. So, here we split the
-                # samples that are passed to down to each stage by calculating their indices.
+                # Get the index associated with the easy and hard samples. Samples with low hardness are
+                # passed down to the knn classifier while samples with high hardness are passed down to
+                # the DS methods. So, here we split the samples that are passed to down to each stage by
+                # calculating their indices.
                 easy_samples_mask = hardness <= self.IH_rate
                 ind_knn_classifier = np.where(easy_samples_mask)[0]
                 ind_ds_classifier = np.where(~easy_samples_mask)[0]
 
                 if ind_knn_classifier.size:
-                    # all samples with low hardness should be classified by the knn method here: First get the class associated
-                    # with each neighbor
+                    # all samples with low hardness should be classified by the knn method here:
+                    # First get the class associated with each neighbor
                     y_neighbors = self.DSEL_target[self.neighbors[ind_knn_classifier, :self.safe_k]]
 
-                    # Accessing which samples in the original matrix are associated with the low instance hardness indices.
-                    # This is important since the low hardness indices ind_knn_classifier was estimated based on a subset of
-                    # samples
+                    # Accessing which samples in the original matrix are associated with the low
+                    # instance hardness indices. This is important since the low hardness indices
+                    # ind_knn_classifier was estimated based on a subset of samples
                     ind_knn_original_matrix = ind_disagreement[ind_knn_classifier]
                     prediction_knn, _ = mode(y_neighbors, axis=1)
                     predicted_labels[ind_knn_original_matrix] = prediction_knn.reshape(-1,)
@@ -342,8 +344,10 @@ class DS(ClassifierMixin):
                 ind_ds_classifier = np.arange(ind_disagreement.size)
 
             # At this stage the samples which all base classifiers agrees or that are associated with low hardness
-            # Were already classified. The remaining samples are now passed down to the DS techniques for classification.
-            # First check whether there are still samples to be classified.
+            # Were already classified. The remaining samples are now passed down to the DS techniques
+            # for classification.
+
+            #  First check whether there are still samples to be classified.
             if ind_ds_classifier.size:
 
                 # IF the DFP pruning is considered, calculate the DFP mask for all samples in X
@@ -369,41 +373,6 @@ class DS(ClassifierMixin):
         self.distances = None
 
         return self.classes.take(predicted_labels)
-
-        # for index, instance in enumerate(X):
-        #     # Do not use dynamic selection if all base classifiers agrees on the
-        #     # same label.
-        #     instance = instance.reshape(1, -1)
-        #     if self._all_classifier_agree(base_predictions[index]):
-        #         predicted_labels[index] = base_predictions[index, 0]
-        #     else:
-        #         # proceeds with DS, calculates the region of competence of the query sample
-        #         if self.DFP or self.with_IH:
-        #             self.distances, self.neighbors = self._get_region_competence(instance)
-        #
-        #         # If Instance hardness (IH) is used, check the IH of the region of competence to decide between
-        #         # DS or the roc_algorithm classifier
-        #         if self.with_IH and (self._hardness_region_competence(self.neighbors) <= self.IH_rate):
-        #             # use the KNN for prediction if the sample is located in a safe region.
-        #             # predicted_labels[index] = self.roc_algorithm.predict(instance)
-        #             # Using the pre-calculated set of neighbors to perform the decision
-        #             y_neighbors = self.DSEL_target[self.neighbors[:self.safe_k]]
-        #             predicted_labels[index], _ = mode(y_neighbors)
-        #
-        #         # Otherwise, use DS for classification
-        #         else:
-        #             # Check if the dynamic frienemy pruning should be used
-        #             if self.DFP:
-        #                     self.DFP_mask = self._frienemy_pruning()
-        #             else:
-        #                     self.DFP_mask = np.ones(self.n_classifiers)
-
-        #             predicted_labels[index] = self.classify_with_ds(instance, base_predictions[index, :])
-        #
-        #         self.neighbors = None
-        #         self.distances = None
-        #
-        # return self.classes.take(predicted_labels)
 
     def predict_proba(self, X):
         """Estimates the posterior probabilities for sample in X.
@@ -451,21 +420,24 @@ class DS(ClassifierMixin):
                 # if IH is used, calculate the hardness level associated with each sample
                 hardness = hardness_region_competence(self.neighbors, self.DSEL_target, self.safe_k)
 
-                # Get the index associated with the easy and hard samples. Samples with low hardness are passed down to the
-                # knn classifier while samples with high hardness are passed down to the DS methods. So, here we split the
-                # samples that are passed to down to each stage by calculating their indices.
+                # Get the index associated with the easy and hard samples. Samples with low hardness are
+                # passed down to the knn classifier while samples with high hardness are passed down to
+                # the DS methods. So, here we split the samples that are passed to down to each stage by
+                # calculating their indices.
                 easy_samples_mask = hardness <= self.IH_rate
                 ind_knn_classifier = np.where(easy_samples_mask)[0]
                 ind_ds_classifier = np.where(~easy_samples_mask)[0]
 
                 if ind_knn_classifier.size:
-                    # all samples with low hardness should be classified by the knn method here: First get the class associated
-                    # with each neighbor
+                    # all samples with low hardness should be classified by the knn method here:
+                    # First get the class associated with each neighbor
 
-                    # Accessing which samples in the original matrix are associated with the low instance hardness indices.
+                    # Accessing which samples in the original matrix are associated with the
+                    # low instance hardness indices.
                     ind_knn_original_matrix = ind_disagreement[ind_knn_classifier]
 
-                    predicted_proba[ind_knn_original_matrix] = self.roc_algorithm.predict_proba(X_DS[ind_knn_classifier])
+                    predicted_proba[ind_knn_original_matrix] = \
+                        self.roc_algorithm.predict_proba(X_DS[ind_knn_classifier])
 
                     # Remove from the neighbors and distance matrices the samples that were classified using the KNN
                     self.neighbors = np.delete(self.neighbors, ind_knn_classifier, axis=0)
@@ -493,7 +465,6 @@ class DS(ClassifierMixin):
         self.neighbors = None
         self.distances = None
         return predicted_proba
-
 
     def _frienemy_pruning(self):
         """Implements the Online Pruning method (frienemy) to remove base classifiers that do not cross the
@@ -530,8 +501,8 @@ class DS(ClassifierMixin):
                                           enumerate(self.neighbors[sample_idx, :self.safe_k])
                                           if predictions[count] == 1]
 
-                    #If that is true, it means that it correctly classified at least one neighbor for each class in
-                    #the region of competence
+                    # If that is true, it means that it correctly classified at least one neighbor for each class in
+                    # the region of competence
                     if np.unique(correct_class_pred).size > 1:
                         mask[sample_idx, clf_index] = 1.0
                 # Check if all classifiers were pruned
