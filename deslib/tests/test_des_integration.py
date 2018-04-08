@@ -254,7 +254,7 @@ def test_kne_proba():
     kne = KNORAE(pool_classifiers)
     kne.fit(X_dsel, y_dsel)
     probas = kne.predict_proba(X_test)
-    expected = np.load('./expected_values/kne_proba_integration.npy')
+    expected = np.load('./tests/expected_values/kne_proba_integration.npy')
     assert np.allclose(probas, expected)
 
 
@@ -264,7 +264,7 @@ def test_desp_proba():
     desp = DESP(pool_classifiers)
     desp.fit(X_dsel, y_dsel)
     probas = desp.predict_proba(X_test)
-    expected = np.load('./expected_values/desp_proba_integration.npy')
+    expected = np.load('./tests/expected_values/desp_proba_integration.npy')
     assert np.allclose(probas, expected)
 
 
@@ -274,7 +274,7 @@ def test_ola_proba():
     ola = OLA(pool_classifiers)
     ola.fit(X_dsel, y_dsel)
     probas = ola.predict_proba(X_test)
-    expected = np.load('./expected_values/ola_proba_integration.npy')
+    expected = np.load('./tests/expected_values/ola_proba_integration.npy')
     assert np.allclose(probas, expected)
 
 
@@ -285,7 +285,7 @@ def test_mcb_proba():
     mcb = MCB(pool_classifiers, rng=rng)
     mcb.fit(X_dsel, y_dsel)
     probas = mcb.predict_proba(X_test)
-    expected = np.load('./expected_values/mcb_proba_integration.npy')
+    expected = np.load('./tests/expected_values/mcb_proba_integration.npy')
     assert np.allclose(probas, expected)
 
 
@@ -295,7 +295,7 @@ def test_desknn_proba():
     desknn = DESKNN(pool_classifiers)
     desknn.fit(X_dsel, y_dsel)
     probas = desknn.predict_proba(X_test)
-    expected = np.load('./expected_values/desknn_proba_integration.npy')
+    expected = np.load('./tests/expected_values/desknn_proba_integration.npy')
     assert np.allclose(probas, expected)
 
 
@@ -306,5 +306,5 @@ def test_desclustering_proba():
     des_clustering = DESClustering(pool_classifiers, rng=rng)
     des_clustering.fit(X_dsel, y_dsel)
     probas = des_clustering.predict_proba(X_test)
-    expected = np.load('./expected_values/des_clustering_proba_integration.npy')
+    expected = np.load('./tests/expected_values/des_clustering_proba_integration.npy')
     assert np.allclose(probas, expected)
