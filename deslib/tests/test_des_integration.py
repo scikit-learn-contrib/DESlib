@@ -247,6 +247,7 @@ def test_static_selection():
     assert np.isclose(static_selection.score(X_test, y_test), 0.96808510638297873)
 
 
+# ------------------------------------------ Testing predict_proba -----------------------------------
 def test_kne_proba():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
@@ -285,4 +286,25 @@ def test_mcb_proba():
     mcb.fit(X_dsel, y_dsel)
     probas = mcb.predict_proba(X_test)
     expected = np.load('./expected_values/mcb_proba_integration.npy')
+    assert np.allclose(probas, expected)
+
+
+def test_desknn_proba():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    desknn = DESKNN(pool_classifiers)
+    desknn.fit(X_dsel, y_dsel)
+    probas = desknn.predict_proba(X_test)
+    expected = np.load('./expected_values/desknn_proba_integration.npy')
+    assert np.allclose(probas, expected)
+
+
+def test_desclustering_proba():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+    rng = np.random.RandomState(123456)
+
+    des_clustering = DESClustering(pool_classifiers, rng=rng)
+    des_clustering.fit(X_dsel, y_dsel)
+    probas = des_clustering.predict_proba(X_test)
+    expected = np.load('./expected_values/des_clustering_proba_integration.npy')
     assert np.allclose(probas, expected)
