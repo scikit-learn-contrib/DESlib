@@ -138,8 +138,8 @@ class Probabilistic(DES):
         potential_dists = self.potential_func(dists_organized)
         sum_potential = np.sum(potential_dists, axis=1)
 
-        competences = np.einsum('ijk,ij->ik', self.C_src[np.newaxis, :, :], potential_dists)
-        competences = competences/sum_potential.reshape(-1, 1)
+        competences = self.C_src[np.newaxis, :, :] * potential_dists[:, :, np.newaxis]
+        competences = competences.sum(axis=1)/sum_potential.reshape(-1, 1)
 
         return competences
 
