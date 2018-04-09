@@ -195,7 +195,7 @@ def test_kne_proba():
     kne = KNORAE(pool_classifiers, DFP=True)
     kne.fit(X_dsel, y_dsel)
     probas = kne.predict_proba(X_test)
-    expected = np.load('./tests/expected_values/kne_proba_DFP.npy')
+    expected = np.load('deslib/tests/expected_values/kne_proba_DFP.npy')
     assert np.allclose(probas, expected)
 
 
@@ -205,7 +205,7 @@ def test_desp_proba():
     desp = DESP(pool_classifiers, DFP=True)
     desp.fit(X_dsel, y_dsel)
     probas = desp.predict_proba(X_test)
-    expected = np.load('./tests/expected_values/desp_proba_DFP.npy')
+    expected = np.load('deslib/tests/expected_values/desp_proba_DFP.npy')
     assert np.allclose(probas, expected)
 
 
@@ -215,7 +215,7 @@ def test_ola_proba():
     ola = OLA(pool_classifiers, DFP=True)
     ola.fit(X_dsel, y_dsel)
     probas = ola.predict_proba(X_test)
-    expected = np.load('./tests/expected_values/ola_proba_DFP.npy')
+    expected = np.load('deslib/tests/expected_values/ola_proba_DFP.npy')
     assert np.allclose(probas, expected)
 
 
@@ -226,7 +226,7 @@ def test_mcb_proba():
     mcb = MCB(pool_classifiers, rng=rng, DFP=True)
     mcb.fit(X_dsel, y_dsel)
     probas = mcb.predict_proba(X_test)
-    expected = np.load('./tests/expected_values/mcb_proba_DFP.npy')
+    expected = np.load('deslib/tests/expected_values/mcb_proba_DFP.npy')
     assert np.allclose(probas, expected)
 
 
@@ -236,5 +236,5 @@ def test_desknn_proba():
     desknn = DESKNN(pool_classifiers, DFP=True)
     desknn.fit(X_dsel, y_dsel)
     probas = desknn.predict_proba(X_test)
-    expected = np.load('./tests/expected_values/desknn_probas_DFP.npy')
+    expected = np.load('deslib/tests/expected_values/desknn_probas_DFP.npy')
     assert np.allclose(probas, expected)
