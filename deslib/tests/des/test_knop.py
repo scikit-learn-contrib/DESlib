@@ -2,6 +2,7 @@ import pytest
 from sklearn.linear_model import Perceptron
 from deslib.des.knop import KNOP
 from deslib.tests.examples_test import *
+from unittest.mock import Mock
 
 
 @pytest.mark.parametrize('index, expected', [(0, [4.0, 3.0, 4.0]),
@@ -15,6 +16,7 @@ def test_estimate_competence(index, expected):
 
     knop_test.DFP_mask = np.ones(knop_test .n_classifiers)
     knop_test.neighbors = neighbors_ex1[index, :]
+    knop_test._get_similar_out_profiles = Mock(return_value=(None, np.atleast_2d(neighbors_ex1[index, :])))
     knop_test.distances = distances_ex1[index, :]
 
     probabilities = []
@@ -39,6 +41,7 @@ def test_estimate_competence_batch():
 
     knop_test.DFP_mask = np.ones(knop_test .n_classifiers)
     knop_test.neighbors = neighbors_ex1
+    knop_test._get_similar_out_profiles = Mock(return_value=(None, neighbors_ex1))
     knop_test.distances = distances_ex1
 
     probabilities = np.zeros((3, 6)) # not used in this test
@@ -66,9 +69,8 @@ def test_fit():
     assert np.array_equal(expected_scores, knop_test.dsel_scores)
 
     # Assert the roc_algorithm is fitted to the scores (decision space) rather than the features (feature space)
-    expected_roc_data = knop_test.dsel_scores.reshape(knop_test.n_samples,
-                                                      knop_test.n_classifiers * knop_test.n_classes)
-    assert np.array_equal(knop_test.roc_algorithm._fit_X, expected_roc_data)
+    expected_roc_data = knop_test.dsel_scores[:, :, 0]
+    assert np.array_equal(knop_test.op_knn._fit_X, expected_roc_data)
 
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.

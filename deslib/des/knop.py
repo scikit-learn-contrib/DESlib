@@ -7,6 +7,7 @@
 import numpy as np
 
 from deslib.des.base import DES
+from sklearn.neighbors import KNeighborsClassifier
 
 
 class KNOP(DES):
@@ -97,12 +98,65 @@ class KNOP(DES):
         y_ind = self.setup_label_encoder(y)
         self._set_dsel(X, y_ind)
         self.dsel_scores = self._preprocess_dsel_scores()
+        self._fit_region_competence(X, y_ind, self.k)
+
         # Reshape dsel_scores as a 2-D array for nearest neighbor calculations
         dsel_output_profiles = self.dsel_scores.reshape(self.n_samples, self.n_classifiers * self.n_classes)
-        self._fit_region_competence(dsel_output_profiles, y_ind, self.k)
+        self._fit_OP(dsel_output_profiles, y_ind, self.k)
 
         return self
-    
+
+    def _fit_OP(self, X_op, y_op, k):
+        """ Fit the set of output profiles.
+
+        Parameters
+        ----------
+        X_op : array of shape = [n_samples, n_features]
+               The output profiles of the Input data. n_features is equals to (n_classifiers x n_classes)
+
+        y_op : array of shape = [n_samples]
+               class labels of each sample in X_op.
+
+        k : int
+             Number of output profiles used in the estimation.
+
+        """
+        self.op_knn = KNeighborsClassifier(n_neighbors=k, n_jobs=-1, algorithm='auto')
+
+        if self.n_classes == 2:
+            # Get only the scores for one class since they are complementary
+            X_temp = X_op[:, ::2]
+            self.op_knn.fit(X_temp, y_op)
+        else:
+            self.op_knn.fit(X_op, y_op)
+
+    def _get_similar_out_profiles(self, probabilities):
+        """Get the most similar output profiles of the query sample.
+
+        Parameters
+        ----------
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                      The predictions of each base classifier for all samples.
+
+        Returns
+        -------
+        dists : list of shape = [n_samples, k]
+                The distances between the query and each sample in the region of competence. The vector is ordered
+                in an ascending fashion.
+
+        idx : list of shape = [n_samples, k]
+              Indices of the instances belonging to the region of competence of the given query sample.
+        """
+
+        if self.n_classes == 2:
+            # Get only the scores for one class since they are complementary
+            query_op = probabilities[:, :, 0]
+        else:
+            query_op = probabilities.reshape((probabilities.shape[0], self.n_classifiers * self.n_classes))
+
+        dists, idx = self.op_knn.kneighbors(query_op, n_neighbors=self.k, return_distance=True)
+        return dists, np.atleast_2d(idx)
+
     def estimate_competence_from_proba(self, query, probabilities):
         """The competence of the base classifiers is simply estimated as the number of samples
         in the region of competence that it correctly classified.
@@ -122,8 +176,7 @@ class KNOP(DES):
         competences : array of shape = [n_samples, n_classifiers]
                       The competence level estimated for each base classifier and test example
         """
-        probabilities = probabilities.reshape(query.shape[0], self.n_classifiers * self.n_classes)
-        _, idx_neighbors = self._get_region_competence(probabilities)
+        _, idx_neighbors = self._get_similar_out_profiles(probabilities)
         competences = np.sum(self.processed_dsel[idx_neighbors, :], axis=1, dtype=np.float)
 
         return competences

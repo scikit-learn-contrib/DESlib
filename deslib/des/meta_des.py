@@ -164,7 +164,7 @@ class METADES(DES):
         y_op : array of shape = [n_samples]
                class labels of each sample in X_op.
 
-        kp : int (Default=self.k)
+        kp : int
              Number of output profiles used in the estimation.
 
         """

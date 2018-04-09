@@ -238,3 +238,13 @@ def test_desknn_proba():
     probas = desknn.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/desknn_probas_DFP.npy')
     assert np.allclose(probas, expected)
+
+
+def test_knop():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    kne = KNOP(pool_classifiers, DFP=True)
+    kne.fit(X_dsel, y_dsel)
+
+    assert np.isclose(kne.score(X_test, y_test), 0.9030303030303031)
+
