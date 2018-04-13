@@ -74,23 +74,19 @@ class DESP(DES):
 
         Parameters
         ----------
-        query : array of shape = [n_features]
-                The test sample
+        query : array of shape = [n_samples, n_features]
+                The test examples
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      The predictions of all base classifier for all samples in the query array
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
-                      The competence level estimated for each base classifier
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
         """
-        dists, idx_neighbors = self._get_region_competence(query)
-        competences = np.zeros(self.n_classifiers)
-        for clf_index in range(self.n_classifiers):
-            # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.DFP_mask[clf_index]:
-                competences[clf_index] = np.mean(self.processed_dsel[idx_neighbors, clf_index])
+        _, idx_neighbors = self._get_region_competence(query)
+        competences = np.mean(self.processed_dsel[idx_neighbors, :], axis=1)
 
         return competences
 
@@ -101,19 +97,21 @@ class DESP(DES):
 
         Parameters
         ----------
-        competences : array of shape = [n_classifiers] containing the competence level estimated
-                      for each base classifier.
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
 
         Returns
         -------
-        indices : List with the indices of the selected base classifiers.
+        selected_classifiers : array of shape = [n_samples, n_classifiers]
+                               Boolean matrix containing True if the base classifier is select, False otherwise
 
         """
-        RC = (1.0 / self.n_classes)
-        # Select classifiers with local accuracy superior than the random classifier rc.
-        indices = [clf_index for clf_index, clf_competence in enumerate(competences)
-                   if clf_competence > RC]
+        if competences.ndim < 2:
+            competences = competences.reshape(1, -1)
 
-        if len(indices) == 0:
-            indices = list(range(self.n_classifiers))
-        return indices
+        RC = 1.0 / self.n_classes
+        selected_classifiers = (competences > RC)
+
+        # For the rows that are all False (i.e., no base classifier was selected, select all classifiers (set all True)
+        selected_classifiers[~np.any(selected_classifiers, axis=1), :] = True
+        return selected_classifiers

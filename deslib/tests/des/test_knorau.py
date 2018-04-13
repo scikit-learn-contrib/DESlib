@@ -20,56 +20,29 @@ def test_estimate_competence(index, expected):
     assert np.isclose(competences, expected, atol=0.01).all()
 
 
-@pytest.mark.parametrize('index, expected', [(0, 0),
-                                             (1, 0),
-                                             (2, 1)])
-def test_classify(index, expected):
-    query = np.atleast_2d([1, 1])
-
+# Test the estimate competence method receiving n samples as input
+def test_estimate_competence_batch():
+    query = np.ones((3, 2))
+    expected = np.array([[4.0, 3.0, 4.0],
+                         [5.0, 2.0, 5.0],
+                         [2.0, 5.0, 2.0]])
     knora_u_test = KNORAU(create_pool_classifiers())
     knora_u_test.fit(X_dsel_ex1, y_dsel_ex1)
-    knora_u_test.DFP_mask = np.ones(knora_u_test .n_classifiers)
-    knora_u_test.neighbors = neighbors_ex1[index, :]
-    knora_u_test.distances = distances_ex1[index, :]
-
-    predictions = []
-    for clf in knora_u_test.pool_classifiers:
-        predictions.append(clf.predict(query)[0])
-
-    prediction = knora_u_test.classify_instance(query, np.array(predictions))
-
-    assert prediction == expected
-
-
-@pytest.mark.parametrize('index, expected', [(0, 0),
-                                             (1, 0),
-                                             (2, 0)])
-def test_classify2(index, expected):
-    query = np.atleast_2d([1, 1])
-
-    knora_u_test = KNORAU(create_pool_classifiers()+create_pool_all_agree(0, 1))
-    knora_u_test.fit(X_dsel_ex1, y_dsel_ex1)
-    knora_u_test.DFP_mask = np.ones(knora_u_test .n_classifiers)
-    knora_u_test.neighbors = neighbors_ex1[index, :]
-    knora_u_test.distances = distances_ex1[index, :]
-
-    predictions = []
-    for clf in knora_u_test.pool_classifiers:
-        predictions.append(clf.predict(query)[0])
-
-    prediction = knora_u_test.classify_instance(query, np.array(predictions))
-
-    assert prediction == expected
+    knora_u_test.DFP_mask = np.ones((3, knora_u_test.n_classifiers))
+    knora_u_test.neighbors = neighbors_ex1
+    knora_u_test.distances = distances_ex1
+    competences = knora_u_test.estimate_competence(query)
+    assert np.allclose(competences, expected, atol=0.01)
 
 
 def test_weights_zero():
-    query = np.atleast_2d([1, 1])
 
-    knora_u_test = KNORAU(create_pool_classifiers())
-    knora_u_test.estimate_competence = MagicMock(return_value=np.zeros(3))
+    knorau_test = KNORAU(create_pool_classifiers())
+    knorau_test.fit(X_dsel_ex1, y_dsel_ex1)
+    competences = np.zeros((1, 3))
+    result = knorau_test.select(competences)
 
-    result = knora_u_test.select(query)
-    assert np.array_equal(result, np.array([0, 1, 0]))
+    assert np.all(result)
 
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.

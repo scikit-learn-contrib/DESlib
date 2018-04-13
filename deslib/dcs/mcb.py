@@ -95,7 +95,7 @@ class MCB(DCS):
         self.similarity_threshold = similarity_threshold
         self.name = 'Multiple Classifier Behaviour (MCB)'
 
-    def estimate_competence(self, query, predictions):
+    def estimate_competence(self, query, predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the Multiple Classifier Behaviour criterion.
 
@@ -118,41 +118,34 @@ class MCB(DCS):
 
         Parameters
         ----------
-        query : array cf shape  = [n_features]
-                The query sample
+        query : array cf shape  = [n_samples, n_features]
+                The test samples
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
-                      The competence level estimated for each base classifier
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
         """
 
-        dists, idx_neighbors = self._get_region_competence(query)
-        competences = np.zeros(self.n_classifiers)
+        _, idx_neighbors = self._get_region_competence(query)
 
         # Use the pre-compute decisions to transform the query to the BKS space
         BKS_query = predictions
 
-        # Use the BKS to filter the competence region
-        selected_idx = []
-        for sample_index in idx_neighbors:
-            T = (self.BKS_dsel[sample_index][:] == BKS_query)
-            S = sum(T) / self.n_classifiers
-            if S > self.similarity_threshold:
-                selected_idx.append(sample_index)
+        T = (self.BKS_dsel[idx_neighbors] == BKS_query.reshape(BKS_query.shape[0], -1, BKS_query.shape[1]))
+        S = np.sum(T, axis=2) / self.n_classifiers
 
-        # Use the whole neighborhood if no sample is selected to form the region of competence
-        if len(selected_idx) == 0:
-            selected_idx = idx_neighbors
-        # Estimate the classifier competence for the filtered region of competence
-        for clf_index in range(self.n_classifiers):
+        # get a mask with the neighbors that will be considered for the competence estimation for all samples.
+        boolean_mask = (S > self.similarity_threshold)
+        boolean_mask[~np.any(boolean_mask, axis=1), :] = True
+        # Expanding this mask to the third axis (n_classifiers) since it is the same for each classifier.
+        boolean_mask = np.repeat(np.expand_dims(boolean_mask, axis=2), self.n_classifiers, axis=2)
 
-            # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.DFP_mask[clf_index]:
-                clf_competence = [self.processed_dsel[sample_idx][clf_index] for sample_idx in selected_idx]
-                competences[clf_index] = np.mean(np.array(clf_competence))
+        # Use the masked array mean to take into account the removed neighbors
+        processed_pred = np.ma.MaskedArray(self.processed_dsel[idx_neighbors, :], mask=~boolean_mask)
+        competences = np.ma.mean(processed_pred, axis=1)
 
         return competences

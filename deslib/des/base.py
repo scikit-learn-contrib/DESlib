@@ -1,10 +1,10 @@
 from abc import ABCMeta
 
-from deslib.base import DS
 import numpy as np
-from deslib.util.aggregation import weighted_majority_voting_rule, majority_voting_rule, predict_proba_ensemble, \
-    predict_proba_ensemble_weighted
 
+from deslib.base import DS
+from deslib.util.aggregation import weighted_majority_voting_rule, majority_voting_rule,\
+    aggregate_proba_ensemble_weighted
 
 class DES(DS):
     """Base class for a Dynamic Ensemble Selection (DES).
@@ -40,6 +40,9 @@ class DES(DS):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    needs_proba : Boolean (Default = False)
+                  Determines whether the method always needs base classifiers that estimate probabilities.
+
     References
     ----------
     Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection of classifiers—a comprehensive review."
@@ -51,10 +54,10 @@ class DES(DS):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False,
-                 safe_k=None, IH_rate=0.30, mode='selection'):
+                 safe_k=None, IH_rate=0.30, mode='selection', needs_proba=False):
 
         super(DES, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
-                                  safe_k=safe_k, IH_rate=IH_rate)
+                                  safe_k=safe_k, IH_rate=IH_rate, needs_proba=needs_proba)
 
         if not isinstance(mode, str):
             raise TypeError('Parameter "mode" should be a string. Currently "mode" = {}' .format(type(mode)))
@@ -67,7 +70,7 @@ class DES(DS):
 
         self.mode = mode
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, predictions):
         """Estimate the competence of each base classifier ci
         the classification of the query sample x.
         Returns an array containing the level of competence estimated
@@ -76,15 +79,37 @@ class DES(DS):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array containing the test sample = [n_samples, n_features]
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
-                      The competence level estimated for each base classifier
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
+        """
+        pass
+
+    def estimate_competence_from_proba(self, query, probabilities):
+        """estimate the competence of each base classifier ci
+        the classification of the query sample x, for methods that require probabilities.
+        Returns an array containing the level of competence estimated
+        for each base classifier. The size of the vector is equals to
+        the size of the generated_pool of classifiers.
+
+        Parameters
+        ----------
+        query : array cf shape  = [n_samples, n_features]
+                The query sample
+
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                      The predictions of each base classifier for all samples.
+
+        Returns
+        -------
+        competences : array = [n_classifiers] containing the competence level estimated
+        for each base classifier
         """
         pass
 
@@ -96,17 +121,17 @@ class DES(DS):
 
         Parameters
         ----------
-        competences : array of shape = [n_classifiers]
-                      The estimated competence level for the base classifiers
+        competences : array of shape = [n_samples, n_classifiers]
+                      The estimated competence level of each base classifier for each test example
 
         Returns
         -------
-        indices : List of index of the selected base classifier(s)
-
+        selected_classifiers : array of shape = [n_samples, n_classifiers]
+                               Boolean matrix containing True if the base classifier is select, False otherwise
         """
         pass
 
-    def classify_instance(self, query, predictions):
+    def classify_with_ds(self, query, predictions, probabilities=None):
         """Predicts the label of the corresponding query sample.
 
         If self.mode == "selection", the selected ensemble is combined using the
@@ -122,33 +147,53 @@ class DES(DS):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_samples, n_features]
+        query : array of shape = [n_samples, n_features]
+                The test examples
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Contains the predictions of all base classifier for all samples in the query array
+
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                        The predictions of each base classifier for all samples. (For methods that
+                        always require probabilities from the base classifiers.)
 
         Returns
         -------
         predicted_label: The predicted label of the query
         """
-        competences = self.estimate_competence(query)
+        if query.ndim != predictions.ndim:
+            raise ValueError('The arrays query and predictions must have the same shape. query.shape is {}'
+                             'and predictions.shape is {}' .format(query.shape, predictions.shape))
+
+        if query.ndim < 2:
+            query = query.reshape(1, -1)
+            predictions = predictions.reshape(1, -1)
+
+        if self.needs_proba:
+            competences = self.estimate_competence_from_proba(query, probabilities)
+        else:
+            competences = self.estimate_competence(query, predictions)
+
+        if self.DFP:
+            competences = competences * self.DFP_mask
+
         if self.mode == "selection":
-            indices = self.select(competences)
-            votes = np.atleast_2d(predictions[indices])
+            # The selected_classifiers matrix is used as a mask to remove the predictions of certain base classifiers.
+            selected_classifiers = self.select(competences)
+            votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
             predicted_label = majority_voting_rule(votes)
 
         elif self.mode == "weighting":
             votes = np.atleast_2d(predictions)
-            predicted_label = weighted_majority_voting_rule(votes, competences)
+            predicted_label = weighted_majority_voting_rule(votes, competences, np.arange(self.n_classes))
         else:
-            indices = self.select(competences)
-            competences_ensemble = competences[indices]
-            votes = np.atleast_2d(predictions[indices])
-            predicted_label = weighted_majority_voting_rule(votes, competences_ensemble)
+            selected_classifiers = self.select(competences)
+            votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
+            predicted_label = weighted_majority_voting_rule(votes, competences, np.arange(self.n_classes))
 
         return predicted_label
 
-    def predict_proba_instance(self, query, predictions):
+    def predict_proba_with_ds(self, query, predictions, probabilities):
         """Predicts the posterior probabilities of the corresponding query sample.
 
         If self.mode == "selection", the selected ensemble is used to estimate the probabilities. The average rule is
@@ -164,28 +209,50 @@ class DES(DS):
 
         Parameters
         ----------
-        query : array of shape = [n_features]
-                The test sample
+        query : array of shape = [n_samples, n_features]
+                The test examples
 
-       predictions : array of shape = [n_samples, n_classifiers]
+        predictions : array of shape = [n_samples, n_classifiers]
                       The predictions of all base classifier for all samples in the query array
+
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                      The predictions of each base classifier for all samples. (For methods that
+                      always require probabilities from the base classifiers.)
 
         Returns
         -------
-        predicted_proba : array = [n_classes] with the probability estimates for all classes
+        predicted_proba : array = [n_samples, n_classes]
+                          The probability estimates for all classes
         """
-        competences = self.estimate_competence(query, predictions)
+
+        if self.needs_proba:
+            competences = self.estimate_competence_from_proba(query, probabilities)
+        else:
+            competences = self.estimate_competence(query, predictions)
+
+        if self.DFP:
+            competences = competences * self.DFP_mask
+
         if self.mode == "selection":
-            indices = self.select(competences)
-            classifier_ensemble = self._get_classifier_ensemble(indices)
-            predicted_proba = predict_proba_ensemble(classifier_ensemble, query)
+            selected_classifiers = self.select(competences)
+
+            # Broadcast the selected classifiers mask (to cover the last axis (nClasses):
+            selected_classifiers = np.expand_dims(selected_classifiers, axis=2)
+            selected_classifiers = np.broadcast_to(selected_classifiers , probabilities.shape)
+            masked_proba = np.ma.MaskedArray(probabilities, ~selected_classifiers)
+
+            predicted_proba = np.mean(masked_proba, axis=1)
 
         elif self.mode == "weighting":
-            predicted_proba = predict_proba_ensemble_weighted(self.pool_classifiers, competences, query)
+            predicted_proba = aggregate_proba_ensemble_weighted(probabilities, competences)
         else:
-            indices = self.select(competences)
-            competences_ensemble = competences[indices]
-            classifier_ensemble = self._get_classifier_ensemble(indices)
-            predicted_proba = predict_proba_ensemble_weighted(classifier_ensemble, competences_ensemble, query)
+            selected_classifiers = self.select(competences)
+
+            # Broadcast the selected classifiers mask (to cover the last axis (nClasses):
+            selected_classifiers = np.expand_dims(selected_classifiers, axis=2)
+            selected_classifiers = np.broadcast_to(selected_classifiers, probabilities.shape)
+            masked_proba = np.ma.MaskedArray(probabilities, ~selected_classifiers)
+
+            predicted_proba = aggregate_proba_ensemble_weighted(masked_proba, competences)
 
         return predicted_proba

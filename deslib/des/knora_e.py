@@ -72,30 +72,35 @@ class KNORAE(DES):
 
         Parameters
         ----------
-        query : array of shape = [n_features]
-                The test sample
+        query : array of shape = [n_samples, n_features]
+                The test examples
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      The predictions of all base classifier for all samples in the query array
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
-                      The competence level estimated for each base classifier in the pool
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
         """
         _, idx_neighbors = self._get_region_competence(query)
-        competences = np.zeros(self.n_classifiers)
+        results_neighbors = self.processed_dsel[idx_neighbors, :]
 
-        for clf_index in range(self.n_classifiers):
-            # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.DFP_mask[clf_index]:
-                results_neighbors = self.processed_dsel[idx_neighbors, clf_index]
-                indices_errors = np.where(results_neighbors == 0)[0]
-                if indices_errors.size != 0:
-                    competences[clf_index] = np.min(indices_errors)
-                else:
-                    competences[clf_index] = self.k
-        return competences
+        # Get the shape of the vector in order to know the number of samples, base classifiers and neighbors considered.
+        shape = results_neighbors.shape
+
+        # add an row with zero for the case where the base classifier correctly classifies the whole neighborhood.
+        # That way the search will always find a zero after comparing to self.K + 1 and will return self.K as the
+        # Competence level estimate (correctly classified the whole neighborhood)
+        addition = np.zeros((shape[0], shape[2]))
+        results_neighbors = np.insert(results_neighbors, shape[1], addition, axis=1)
+
+        # Look for the first occurrence of a zero in the processed predictions (first misclassified. The np.argmax
+        # Can be used here, since in case of multiple occurrences of the maximum values, the indices
+        # corresponding to the first occurrence are returned.
+        competences = np.argmax(results_neighbors == 0, axis=1)
+
+        return competences.astype(np.float)
 
     def select(self, competences):
         """Selects all base classifiers that obtained a local accuracy of 100% in the region of competence
@@ -113,20 +118,22 @@ class KNORAE(DES):
 
         Parameters
         ----------
-        competences : array of shape = [n_classifiers]
-                      The competence level estimated for each base classifier
+         competences : array of shape = [n_samples, n_classifiers]
+                       The competence level estimated for each base classifier and test example
 
         Returns
         -------
-        indices : List with the indices of the selected base classifiers
+        selected_classifiers : array of shape = [n_samples, n_classifiers]
+                               Boolean matrix containing True if the base classifier is select, False otherwise
 
         """
-        max_value = np.max(competences)
-        if max_value > 0:
-            indices = [clf_index for clf_index, clf_competence in enumerate(
-                competences) if clf_competence == max_value]
-        else:
-            # use the whole pool if no classifier was deemed competent
-            indices = list(range(self.n_classifiers))
+        if competences.ndim < 2:
+            competences = competences.reshape(1, -1)
 
-        return indices
+        # Checks which was the max value for each sample (i.e., the maximum number of consecutive predictions)
+        max_value = np.max(competences, axis=1)
+
+        # Select all base classifiers with the maximum number of consecutive correct predictions for each sample.
+        selected_classifiers = (competences == max_value.reshape(competences.shape[0], -1))
+
+        return selected_classifiers

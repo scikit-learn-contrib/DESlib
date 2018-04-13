@@ -5,7 +5,6 @@
 # License: BSD 3 clause
 
 import numpy as np
-from scipy.stats import mode
 
 from deslib.des.base import DES
 
@@ -42,10 +41,6 @@ class KNORAU(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-
-    aknn : Boolean (Default = False)
-           Determines the type of KNN algorithm that is used. set to true for the A-KNN method.
-
     References
     ----------
     Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr. "From dynamic classifier selection to dynamic ensemble
@@ -61,9 +56,15 @@ class KNORAU(DES):
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
                  IH_rate=0.30):
 
-        super(KNORAU, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate)
+        super(KNORAU, self).__init__(pool_classifiers, k,
+                                     DFP=DFP,
+                                     with_IH=with_IH,
+                                     safe_k=safe_k,
+                                     IH_rate=IH_rate,
+                                     mode='weighting')
 
         self.name = 'k-Nearest Oracles Union (KNORA-U)'
+
 
     def estimate_competence(self, query, predictions=None):
         """The competence of the base classifiers is simply estimated as the number of samples
@@ -73,27 +74,23 @@ class KNORAU(DES):
 
         Parameters
         ----------
-        query : array of shape = [n_features] containing the test sample
+        query : array of shape = [n_samples, n_features] containing the test sample
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      The predictions of all base classifier for all samples in the query array
 
         Returns
         -------
-        competences : array of shape = [n_classifiers] containing the competence level estimated
-                     for each base classifier
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
+
         """
-        dists, idx_neighbors = self._get_region_competence(query)
-        competences = np.zeros(self.n_classifiers)
+        _, idx_neighbors = self._get_region_competence(query)
+        competences = np.sum(self.processed_dsel[idx_neighbors, :], axis=1, dtype=np.float)
 
-        for clf_index in range(self.n_classifiers):
-            # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.DFP_mask[clf_index]:
-                competences[clf_index] = np.sum(self.processed_dsel[idx_neighbors, clf_index])
+        return competences
 
-        return competences.astype(dtype=int)
-
-    def select(self, query):
+    def select(self, competences):
         """Select the base classifiers for the classification of the query sample.
 
         Each base classifier can be selected more than once. The number of times a base classifier is selected (votes)
@@ -101,49 +98,21 @@ class KNORAU(DES):
 
         Parameters
         ----------
-        query : array of shape = [n_features] containing the test sample
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
 
         Returns
         -------
-        votes : the number of votes for each class
+        selected_classifiers : array of shape = [n_samples, n_classifiers]
+                               Boolean matrix containing True if the base classifier is select, False otherwise
         """
-        weights = self.estimate_competence(query)
-        if np.sum(weights) == 0:
-            weights = np.ones(self.n_classifiers, dtype=int)
+        if competences.ndim < 2:
+            competences = competences.reshape(1, -1)
 
-        votes = np.array([], dtype=int)
-        for clf_idx, clf in enumerate(self.pool_classifiers):
-            votes = np.hstack((votes, np.ones(weights[clf_idx], dtype=int) * clf.predict(query)[0]))
+        # Select classifier if it correctly classified at least one sample
+        selected_classifiers = (competences > 0)
 
-        return votes
+        # For the rows that are all False (i.e., no base classifier was selected, select all classifiers (set all True)
+        selected_classifiers[~np.any(selected_classifiers, axis=1), :] = True
 
-    def classify_instance(self, query, predictions):
-        """Predicts the label of the corresponding query sample.
-
-        The prediction is made by aggregating the votes obtained by all selected base classifiers. The class with
-        the highest number of votes is the predicted label.
-
-        Parameters
-        ----------
-        query : array of shape = [n_features]
-                The test sample
-
-        predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
-
-        Returns
-        -------
-        predicted_label : Prediction of the ensemble for the input query.
-        """
-
-        weights = self.estimate_competence(query)
-
-        if np.sum(weights) == 0:
-            weights = np.ones(self.n_classifiers, dtype=int)
-
-        votes = np.array([], dtype=int)
-        for clf_idx, clf in enumerate(self.pool_classifiers):
-            votes = np.hstack((votes, np.ones(weights[clf_idx], dtype=int) * predictions[clf_idx]))
-
-        predicted_label = mode(votes)[0]
-        return predicted_label
+        return selected_classifiers

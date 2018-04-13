@@ -96,14 +96,15 @@ class DCS(DS):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape = [n_samples, n_features]
+                The test examples
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
+        competences : array of shape = [n_samples, n_classifiers]
                       The competence level estimated for each base classifier in the pool
         """
         pass
@@ -128,105 +129,151 @@ class DCS(DS):
 
         Parameters
         ----------
-        competences : array = [n_classifiers] containing the estimated competence level for the base classifiers
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
 
         Returns
         -------
-        selected_clf : index of the selected base classifier(s)
+        selected_classifiers : array containing the index of the selected base classifier for each sample. If
+        the selection_method is set to 'all', a boolean matrix is returned, containing True for the selected base
+        classifiers, otherwise false.
 
         """
-        selected_clf = []
-        best_index = np.argmax(competences)
+        if competences.ndim < 2:
+            competences = competences.reshape(1, -1)
+
+        if self.DFP:
+            competences = competences * self.DFP_mask
+
+        selected_classifiers = []
+        best_index = np.argmax(competences, axis=1)
 
         if self.selection_method == 'best':
             # Select the classifier with highest competence level
-            selected_clf = best_index
+            selected_classifiers = best_index
 
         elif self.selection_method == 'diff':
             """Selects a base classifier if its competence level is significant better than the rest. 
             If there is no such classifier, select randomly a base model.
 
-
              the best classifier will always have diff < diff_thresh. In a case it is
              superior than all others, it will be the only member selected. Otherwise,
              a random classifier from this list is selected
             """
-            best_competence = np.max(competences)
-            diff = best_competence - competences
-            indices = [idx for idx, _ in enumerate(diff) if diff[idx] < self.diff_thresh]
-            if len(indices) == 0:
-                indices = range(self.n_classifiers)
+            best_competence = competences[np.arange(competences.shape[0]), best_index]
+            # best_competence = np.max(competences)
+            diff = best_competence.reshape(-1, 1) - competences
+            # TODO: I believe this code here can be improved
+            selected_classifiers = np.zeros(diff.shape[0], dtype=np.int)
+            for row in range(diff.shape[0]):
+                diff_list = list(diff[row, :])
+                indices = [idx for idx, _ in enumerate(diff_list) if diff_list[idx] < self.diff_thresh]
+                if len(indices) == 0:
+                    indices = range(self.n_classifiers)
 
-            selected_clf = self.rng.choice(indices)
+                selected_classifiers[row] = self.rng.choice(indices)
 
         elif self.selection_method == 'random':
-            # Select a random classifier among all with same competence level
-            indices = [idx for idx, competence in enumerate(competences) if competence == competences[best_index]]
-            selected_clf = self.rng.choice(indices)
+            # TODO: I believe this code here can be improved
+            selected_classifiers = np.zeros(competences.shape[0], dtype=np.int)
+            best_competence = competences[np.arange(competences.shape[0]), best_index]
+            for row in range(competences.shape[0]):
+                competence_list = list(competences[row, :])
+                # Select a random classifier among all with same competence level
+                indices = [idx for idx, _ in enumerate(competence_list) if competence_list[idx] == best_competence[row]]
+
+                selected_classifiers[row] = self.rng.choice(indices)
 
         elif self.selection_method == 'all':
             # select all base classifiers with max competence estimates.
-            selected_clf = [idx for idx, competence in enumerate(competences) if competence == competences[best_index]]
+            max_value = np.max(competences, axis=1)
+            selected_classifiers = (competences == max_value.reshape(competences.shape[0], -1))
+            # selected_classifiers = [idx for idx, competence in enumerate(competences) if competence == competences[best_index]]
 
-        return selected_clf
+        return selected_classifiers
 
-    def classify_instance(self, query, predictions):
+    def classify_with_ds(self, query, predictions, probabilities=None):
         """Predicts the class label of the corresponding query sample.
 
-        If self.mode == "all", the majority voting scheme is used to aggregate the predictions of all classifiers with
-        the max competence level estimate.
+        If self.selection_method == "all", the majority voting scheme is used to aggregate the predictions
+        of all classifiers with the max competence level estimates for each test examples.
 
         Parameters
         ----------
-        query : array containing the test sample = [n_samples, n_features]
+        query : array of shape = [n_samples, n_features]
+                The test examples
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Contains the predictions of all base classifier for all samples in the query array
+
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                        The predictions of each base classifier for all samples. (For methods that
+                        always require probabilities from the base classifiers.)
 
         Returns
         -------
         The predicted label of the query
         """
+        if query.ndim != predictions.ndim:
+            raise ValueError('The arrays query and predictions must have the same shape. query.shape is {}'
+                             'and predictions.shape is {}' .format(query.shape, predictions.shape))
+
+        if query.ndim < 2:
+            query = query.reshape(1, -1)
+            predictions = predictions.reshape(1, -1)
+
         competences = self.estimate_competence(query, predictions=predictions)
 
         if self.selection_method != 'all':
             # only one classifier is selected
             clf_index = self.select(competences)
-            predicted_label = predictions[clf_index]
+            predicted_label = predictions[np.arange(predictions.shape[0]), clf_index]
         else:
             # Selected ensemble of classifiers is combined using Majority Voting
             indices = self.select(competences)
-            votes = np.atleast_2d(predictions[indices])
+            votes = np.ma.MaskedArray(predictions, ~indices)
             predicted_label = majority_voting_rule(votes)
 
         return predicted_label
 
-    def predict_proba_instance(self, query, predictions):
+    def predict_proba_with_ds(self, query, predictions, probabilities):
         """Predicts the posterior probabilities of the corresponding query sample.
 
-        If self.mode == "all", get the probability estimates of the selected ensemble. Otherwise,
+        If self.selection_method == "all", get the probability estimates of the selected ensemble. Otherwise,
         the technique gets the probability estimates from the selected base classifier
 
         Parameters
         ----------
-        query : array containing the test sample = [n_features]
+        query : array of shape  = [n_samples, n_features]
+                The test example
 
         predictions : array of shape = [n_samples, n_classifiers]
                       The predictions of all base classifier for all samples in the query array
 
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                      The predictions of each base classifier for all samples. (For methods that
+                      always require probabilities from the base classifiers.)
+
         Returns
         -------
-        predicted_proba : array = [n_classes] with the probability estimates for all classes
+        predicted_proba : array = [n_samples, n_classes]
+                          The probability estimates for all test examples
         """
         competences = self.estimate_competence(query, predictions)
         if self.selection_method != 'all':
             # only one classifier is selected
             clf_index = self.select(competences)
-            predicted_proba = self.pool_classifiers[clf_index].predict_proba(query)
+            predicted_proba = probabilities[np.arange(probabilities.shape[0]),
+                                            clf_index]
         else:
-            # Selected ensemble of classifiers is combined using Majority Voting
-            indices = self.select(competences)
-            classifier_ensemble = self._get_classifier_ensemble(indices)
-            predicted_proba = predict_proba_ensemble(classifier_ensemble, query)
+            # Selected ensemble of classifiers is combined using average probability
+            selected_classifiers = self.select(competences)
+
+            # Broadcast the selected classifiers mask (to cover the last axis (nClasses):
+            selected_classifiers = np.expand_dims(selected_classifiers, axis=2)
+            selected_classifiers = np.broadcast_to(selected_classifiers, probabilities.shape)
+            masked_proba = np.ma.MaskedArray(probabilities, ~selected_classifiers)
+
+            predicted_proba = np.mean(masked_proba, axis=1)
 
         return predicted_proba

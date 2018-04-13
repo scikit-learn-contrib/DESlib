@@ -4,7 +4,7 @@
 # License: BSD 3 clause
 
 import numpy as np
-from scipy.stats import mode
+from scipy.stats.mstats import mode
 
 from deslib.util.prob_functions import softmax
 
@@ -110,10 +110,11 @@ def majority_voting_rule(votes):
     predicted_label : array of shape = [n_samples]
                       The label of each query sample predicted using the majority voting rule
     """
+    # Omitting nan value in the predictions as they comes from removed classifiers
     return mode(votes, axis=1)[0][:, 0]
 
 
-def weighted_majority_voting_rule(votes, weights):
+def weighted_majority_voting_rule(votes, weights, labels_set=None):
     """Applies the weighted majority voting rule based on the votes obtained by each base classifier and their
     respective weights.
 
@@ -125,20 +126,24 @@ def weighted_majority_voting_rule(votes, weights):
     weights : array of shape = [n_samples, n_classifiers]
               Weights associated to each base classifier for each sample
 
+    labels_set : (Default=None) set with the possible classes in the problem
+
     Returns
     -------
     predicted_label : array of shape = [n_samples]
                       The label of each query sample predicted using the majority voting rule
     """
+    # TODO: optimize this calculation using numpy
     if weights.ndim == 1:
         weights = np.atleast_2d(weights)
 
     if weights.size != votes.size:
         raise ValueError('The size of the arrays votes and weights should be the same. weights = {} '
                          'while votes = {}'.format(weights.size, votes.size))
+    if labels_set is None:
+        labels_set = np.unique(votes)
 
     n_samples = votes.shape[0]
-    labels_set = np.unique(votes)
     w_votes = np.zeros((n_samples, len(labels_set)))
     for idx in range(n_samples):
 
@@ -195,6 +200,15 @@ def predict_proba_ensemble(classifier_ensemble, X):
     return predicted_proba
 
 
+def aggregate_proba_ensemble_weighted(ensemble_proba, weights):
+    # TODO verify if the new implementation is correct
+    #predicted_proba = np.einsum('ijk,ij->ik', ensemble_proba, weights) / n_classifiers
+    predicted_proba = ensemble_proba * np.expand_dims(weights, axis=2)
+    predicted_proba = predicted_proba.mean(axis=1)
+
+    return softmax(predicted_proba)
+
+
 def predict_proba_ensemble_weighted(classifier_ensemble, weights, X):
     """Estimates the posterior probabilities for each sample in X.
 
@@ -224,9 +238,7 @@ def predict_proba_ensemble_weighted(classifier_ensemble, weights, X):
                          'The number of classifiers is {},'
                          ' and the number of weights is {}' .format(n_classifiers, weights.shape[1]))
 
-    predicted_proba = np.einsum('ijk,ij->ik', ensemble_proba, weights) / n_classifiers
-
-    return softmax(predicted_proba)
+    return aggregate_proba_ensemble_weighted(ensemble_proba, weights)
 
 
 def average_combiner(classifier_ensemble, X):

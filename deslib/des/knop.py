@@ -5,9 +5,9 @@
 # License: BSD 3 clause
 
 import numpy as np
-from scipy.stats import mode
 
 from deslib.des.base import DES
+from sklearn.neighbors import KNeighborsClassifier
 
 
 class KNOP(DES):
@@ -64,17 +64,16 @@ class KNOP(DES):
     """
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30,
-                 weighted=False):
+                 IH_rate=0.30):
 
         super(KNOP, self).__init__(pool_classifiers, k,
                                    DFP=DFP,
                                    with_IH=with_IH,
                                    safe_k=safe_k,
-                                   IH_rate=IH_rate)
+                                   IH_rate=IH_rate,
+                                   mode='weighting',
+                                   needs_proba=True)
         self._check_predict_proba()
-
-        self.weighted = weighted
         self.name = 'K-Nearest Output Profiles (KNOP)'
 
     def fit(self, X, y):
@@ -99,13 +98,66 @@ class KNOP(DES):
         y_ind = self.setup_label_encoder(y)
         self._set_dsel(X, y_ind)
         self.dsel_scores = self._preprocess_dsel_scores()
+        self._fit_region_competence(X, y_ind, self.k)
+
         # Reshape dsel_scores as a 2-D array for nearest neighbor calculations
         dsel_output_profiles = self.dsel_scores.reshape(self.n_samples, self.n_classifiers * self.n_classes)
-        self._fit_region_competence(dsel_output_profiles, y_ind, self.k)
+        self._fit_OP(dsel_output_profiles, y_ind, self.k)
 
         return self
-    
-    def estimate_competence(self, query, predictions=None):
+
+    def _fit_OP(self, X_op, y_op, k):
+        """ Fit the set of output profiles.
+
+        Parameters
+        ----------
+        X_op : array of shape = [n_samples, n_features]
+               The output profiles of the Input data. n_features is equals to (n_classifiers x n_classes)
+
+        y_op : array of shape = [n_samples]
+               class labels of each sample in X_op.
+
+        k : int
+             Number of output profiles used in the estimation.
+
+        """
+        self.op_knn = KNeighborsClassifier(n_neighbors=k, n_jobs=-1, algorithm='auto')
+
+        if self.n_classes == 2:
+            # Get only the scores for one class since they are complementary
+            X_temp = X_op[:, ::2]
+            self.op_knn.fit(X_temp, y_op)
+        else:
+            self.op_knn.fit(X_op, y_op)
+
+    def _get_similar_out_profiles(self, probabilities):
+        """Get the most similar output profiles of the query sample.
+
+        Parameters
+        ----------
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                      The predictions of each base classifier for all samples.
+
+        Returns
+        -------
+        dists : list of shape = [n_samples, k]
+                The distances between the query and each sample in the region of competence. The vector is ordered
+                in an ascending fashion.
+
+        idx : list of shape = [n_samples, k]
+              Indices of the instances belonging to the region of competence of the given query sample.
+        """
+
+        if self.n_classes == 2:
+            # Get only the scores for one class since they are complementary
+            query_op = probabilities[:, :, 0]
+        else:
+            query_op = probabilities.reshape((probabilities.shape[0], self.n_classifiers * self.n_classes))
+
+        dists, idx = self.op_knn.kneighbors(query_op, n_neighbors=self.k, return_distance=True)
+        return dists, np.atleast_2d(idx)
+
+    def estimate_competence_from_proba(self, query, probabilities):
         """The competence of the base classifiers is simply estimated as the number of samples
         in the region of competence that it correctly classified.
 
@@ -113,28 +165,23 @@ class KNOP(DES):
 
         Parameters
         ----------
-        query : array of shape = [n_features]
-                The test sample to be classified
+        query : array of shape = [n_samples, n_features]
+                The test examples
 
-        predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                      The predictions of each base classifier for all samples.
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
-                      The competence level estimated for each base classifier
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
         """
-        dists, idx_neighbors = self._get_region_competence(query)
-        competences = np.zeros(self.n_classifiers)
+        _, idx_neighbors = self._get_similar_out_profiles(probabilities)
+        competences = np.sum(self.processed_dsel[idx_neighbors, :], axis=1, dtype=np.float)
 
-        for clf_index in range(self.n_classifiers):
-            # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.DFP_mask[clf_index]:
-                competences[clf_index] = np.sum(self.processed_dsel[idx_neighbors, clf_index])
+        return competences
 
-        return competences.astype(dtype=int)
-
-    def select(self, query):
+    def select(self, competences):
         """Select the base classifiers for the classification of the query sample.
 
         Each base classifier can be selected more than once. The number of times a base classifier is selected (votes)
@@ -142,58 +189,21 @@ class KNOP(DES):
 
         Parameters
         ----------
-        query : array of shape = [n_features]
-                The test sample to be classified
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
 
         Returns
         -------
-        votes : array containing the votes of the ensemble for each class
+        selected_classifiers : array of shape = [n_samples, n_classifiers]
+                               Boolean matrix containing True if the base classifier is select, False otherwise
         """
-        output_profile_query = self._output_profile_transform(query)
-        weights = self.estimate_competence(output_profile_query.reshape(1, -1))
+        if competences.ndim < 2:
+            competences = competences.reshape(1, -1)
 
-        # If all weights is equals to zero, it means that no classifier was selected. Hence, use all of them with equal
-        # weights.
-        if np.sum(weights) == 0:
-            weights = np.ones(self.n_classifiers, dtype=int)
+        # Select classifier if it correctly classified at least one sample
+        selected_classifiers = (competences > 0)
 
-        votes = np.array([], dtype=int)
-        for clf_idx, clf in enumerate(self.pool_classifiers):
-            votes = np.hstack(
-                (votes, np.ones(weights[clf_idx], dtype=int) * clf.predict(query)[0]))
+        # For the rows that are all False (i.e., no base classifier was selected, select all classifiers (set all True)
+        selected_classifiers[~np.any(selected_classifiers, axis=1), :] = True
 
-        return votes
-
-    def classify_instance(self, query, predictions):
-        """Predicts the label of the corresponding query sample.
-
-        The prediction is made aggregating the votes obtained by all selected base classifiers. The predicted label
-        is the class that obtained the highest number of votes
-
-        Parameters
-        ----------
-        query : array of shape = [n_features]
-                The test sample to be classified.
-
-        predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
-
-        Returns
-        -------
-        predicted_label : Prediction of the ensemble for the input query.
-        """
-        output_profile_query = self._output_profile_transform(query)
-        weights = self.estimate_competence(output_profile_query.reshape(1, -1))
-
-        # If all weights is equals to zero, it means that no classifier was selected. Hence, use all of them with equal
-        # weights.
-        if np.sum(weights) == 0:
-            weights = np.ones(self.n_classifiers, dtype=int)
-
-        votes = np.array([], dtype=int)
-        for clf_idx, clf in enumerate(self.pool_classifiers):
-            votes = np.hstack((votes, np.ones(weights[clf_idx], dtype=int) * predictions[clf_idx]))
-
-        predicted_label = mode(votes)[0]
-
-        return predicted_label
+        return selected_classifiers

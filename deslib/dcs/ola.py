@@ -94,24 +94,19 @@ class OLA(DCS):
 
         Parameters
         ----------
-        query : array cf shape  = [n_features]
-                The query sample
+        query : array cf shape  = [m_samples, n_features]
+                The test examples
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Contains the predictions of all base classifier for all samples in the query array
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
-                      The competence level estimated for each base classifier
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
         """
-        dists, idx_neighbors = self._get_region_competence(query)
-        competences = np.zeros(self.n_classifiers)
-
-        for clf_index in range(self.n_classifiers):
-            # Check if the dynamic frienemy pruning (DFP) should be used
-            if self.DFP_mask[clf_index]:
-                competences[clf_index] = np.mean(self.processed_dsel[idx_neighbors, clf_index])
+        _, idx_neighbors = self._get_region_competence(query)
+        competences = np.mean(self.processed_dsel[idx_neighbors, :], axis=1)
 
         return competences
 

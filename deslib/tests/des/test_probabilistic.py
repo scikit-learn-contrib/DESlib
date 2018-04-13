@@ -16,28 +16,28 @@ def test_not_predict_proba():
         Probabilistic([clf1, clf1])
 
 
-# Being all zeros, no base classifier is deemed competent, so the system selects all of them
+# Being all ones, all base classifiers are deemed competent
 def test_select_all_ones():
-    competences = np.ones(100)
+    competences = np.ones((1, 100))
     probabilistic_test = Probabilistic(create_pool_all_agree(1, 100))
     probabilistic_test.n_classes = 2
-    indices = probabilistic_test.select(competences)
-    assert indices == list(range(100))
+    selected_matrix = probabilistic_test.select(competences)
+    assert selected_matrix.all()
 
 
 # Being all zeros, no base classifier is deemed competent, so the system selects all of them
 def test_select_all_zeros():
-    competences = np.zeros(100)
+    competences = np.zeros((1, 100))
     probabilistic_test = Probabilistic(create_pool_all_agree(1, 100))
     probabilistic_test.n_classes = 2
-    indices = probabilistic_test.select(competences)
-    assert indices == list(range(100))
+    selected_matrix = probabilistic_test.select(competences)
+    assert selected_matrix.all()
 
 
 # Being all zeros, no base classifier is deemed competent, so the system selects all of them
 def test_select_random_classifier():
-    competences = np.random.rand(100)
-    expected = np.where(competences > 0.25)[0]
+    competences = np.random.rand(1, 100)
+    expected = (competences > 0.25)
     probabilistic_test = Probabilistic(create_pool_all_agree(1, 100))
     probabilistic_test.n_classes = 4
     indices = probabilistic_test.select(competences)
@@ -46,8 +46,8 @@ def test_select_random_classifier():
 
 # Being all zeros, no base classifier is deemed competent, so the system selects all of them
 def test_select_threshold():
-    competences = np.random.rand(100)
-    expected = np.where(competences > 0.5)[0]
+    competences = np.random.rand(1, 100)
+    expected =(competences > 0.5)
 
     probabilistic_test = Probabilistic(create_pool_all_agree(1, 100))
     probabilistic_test.selection_threshold = 0.5
@@ -69,6 +69,13 @@ def test_potential_function():
     assert np.allclose(value, [0.3679, 0.7788, 0.0183, 0.8968], atol=0.001)
 
 
+# Test the potential function calculation. Higher values for distances should obtain a lower value in the results
+def test_potential_function_batch():
+    dists = np.tile([1.0, 0.5, 2, 0.33], (10, 1))
+    value = Probabilistic.potential_func(dists)
+    expected = np.tile([0.3679, 0.7788, 0.0183, 0.8968], (10, 1))
+    assert np.allclose(value, expected, atol=0.001)
+
 # Test the estimate_competence method using a pre-calculated source of competence matrix. The final competence is
 # a result of the competence source and the result of the potential function model at each data point.
 def test_estimate_competence():
@@ -85,6 +92,22 @@ def test_estimate_competence():
 
     competence = probabilistic_test.estimate_competence(query)
     assert np.allclose(competence, [0.665, 0.458, 0.855], atol=0.01)
+
+
+def test_estimate_competence_batch():
+    n_samples = 10
+    query = np.ones((n_samples, 2))
+    probabilistic_test = Probabilistic(create_pool_classifiers())
+    probabilistic_test.distances = np.tile([0.5, 1.0, 2.0], (n_samples, 1))
+    probabilistic_test.neighbors = np.tile([0, 1, 2], (n_samples, 1))
+    probabilistic_test.DFP_mask = np.ones((n_samples, probabilistic_test.n_classifiers))
+
+    probabilistic_test.C_src = np.array([[0.5, 0.2, 0.8],
+                                         [1.0, 1.0, 1.0],
+                                         [1.0, 0.6, 0.3]])
+    expected = np.tile([0.665, 0.458, 0.855], (n_samples, 1))
+    competence = probabilistic_test.estimate_competence(query)
+    assert np.allclose(competence, expected, atol=0.01)
 
 
 # Test the estimate competence function when the competence source is equal to zero. The competence should also be zero.

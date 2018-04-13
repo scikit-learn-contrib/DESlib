@@ -5,6 +5,7 @@
 # License: BSD 3 clause
 
 import sys
+
 import numpy as np
 
 """
@@ -269,3 +270,38 @@ def correlation_coefficient(y, y_pred1, y_pred2):
     tmp = (N11 * N00) - (N10 * N01)
     rho = tmp/np.sqrt((N11 + N01) * (N10 + N00) * (N11 + N10) * (N01 + N00))
     return rho
+
+
+def compute_pairwise_diversity(targets, prediction_matrix, diversity_func):
+    """Computes the pairwise diversity matrix.
+
+     Parameters
+     ----------
+     targets : array of shape = [n_samples]:
+               Class labels of each sample in X.
+
+     prediction_matrix : array of shape = [n_samples, n_classifiers]:
+                         Predicted class labels for each classifier in the pool
+
+
+     diversity_func : Function used to estimate the pairwise diversity
+
+     Returns
+     -------
+     diversity : array of shape = [n_classifiers]
+                 The average pairwise diversity matrix calculated for the pool of classifiers
+
+     """
+    n_classifiers = prediction_matrix.shape[1]
+    diversity = np.zeros(n_classifiers)
+
+    for clf_index in range(n_classifiers):
+        for clf_index2 in range(clf_index + 1, n_classifiers):
+            this_diversity = diversity_func(targets,
+                                            prediction_matrix[:, clf_index],
+                                            prediction_matrix[:, clf_index2])
+
+            diversity[clf_index] += this_diversity
+            diversity[clf_index2] += this_diversity
+
+    return diversity

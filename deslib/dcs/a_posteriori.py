@@ -92,7 +92,7 @@ class APosteriori(DCS):
         self.dsel_scores = self._preprocess_dsel_scores()
         return self
 
-    def estimate_competence(self, query, predictions):
+    def estimate_competence(self, query, predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the A Posteriori method.
 
@@ -111,45 +111,45 @@ class APosteriori(DCS):
 
         Parameters
         ----------
-        query : array cf shape  = [n_features]
+        query : array cf shape  = [n_samples, n_features]
                 The query sample
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      The predictions of all base classifier for all samples in the query array
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
-                      The competence level estimated for each base classifier
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
         """
-
         dists, idx_neighbors = self._get_region_competence(query)
+        # Guarantee that these arrays are view as a 2D array for the case where a single test sample is passed down.
+        predictions = np.atleast_2d(predictions)
+
+        # Normalize the distances
         dists_normalized = 1.0/dists
-        competences = np.zeros(self.n_classifiers)
 
-        for clf_index, clf in enumerate(self.pool_classifiers):
+        # Expanding the dimensions of the predictions and target arrays in order to compare both.
+        predictions_3d = np.expand_dims(predictions, axis=1)
+        target_3d = np.expand_dims(self.DSEL_target[idx_neighbors], axis=2)
+        # Create a mask to remove the neighbors belonging to a different class than the predicted by the base classifier
+        mask = (predictions_3d != target_3d)
 
-            # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.DFP_mask[clf_index]:
+        # Broadcast the distance array to the same shape as the pre-processed information for future calculations
+        dists_normalized = np.repeat(np.expand_dims(dists_normalized, axis=2), self.n_classifiers, axis=2)
 
-                result = []
-                dists_temp = []
-                predicted_label = predictions[clf_index]
+        # Multiply the pre-processed correct predictions by the base classifiers to the distance array
+        scores_target_norm = self.dsel_scores[idx_neighbors, :, self.DSEL_target[idx_neighbors]] * dists_normalized
 
-                for counter, neighbor in enumerate(idx_neighbors):
-                    # Get only neighbors from the same class as predicted by the
-                    # classifier (clf) to form the region of competence
-                    target = self.DSEL_target[neighbor]
-                    if target == predicted_label:
-                        # get the posterior probability for the target class
-                        post_prob = self.dsel_scores[neighbor, clf_index, target]
-                        # weight by distance
-                        result.append(post_prob * dists_normalized[counter])
-                        # keep the distance for normalization
-                        dists_temp.append(dists_normalized[counter])
-                if len(result) > 0 and len(dists_temp) > 0:
-                    competences[clf_index] = sum(result)/sum(dists_temp)
-                else:
-                    competences[clf_index] = 0
+        # Create masked arrays to remove samples with different label in the calculations
+        masked_preprocessed = np.ma.MaskedArray(scores_target_norm, mask=mask)
+        masked_dist = np.ma.MaskedArray(dists_normalized, mask=mask)
+
+        # Consider only the neighbor samples where the predicted label is equals to the neighbor label
+        competences_masked = np.ma.sum(masked_preprocessed, axis=1)/ np.ma.sum(masked_dist, axis=1)
+
+        # Fill 0 to the masked values in the resulting array (when no neighbors belongs to the class predicted by
+        # the corresponding base classifier)
+        competences = np.ma.filled(competences_masked, 0)
 
         return competences

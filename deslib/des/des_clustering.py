@@ -6,14 +6,13 @@
 
 import numpy as np
 from sklearn.cluster import KMeans
-from sklearn.metrics import accuracy_score
 
-from deslib.des.base import DES
+from deslib.base import DS
 from deslib.util.aggregation import majority_voting_rule
-from deslib.util.diversity import Q_statistic, ratio_errors, negative_double_fault
+from deslib.util.diversity import Q_statistic, ratio_errors, negative_double_fault, compute_pairwise_diversity
 
 
-class DESClustering(DES):
+class DESClustering(DS):
     """Dynamic ensemble selection-Clustering (DES-Clustering).
 
     This method selects an ensemble of classifiers taking into account the
@@ -29,10 +28,6 @@ class DESClustering(DES):
 
     k : int (Default = 5)
         Number of neighbors used to estimate the competence of the base classifiers.
-
-    mode : String (Default = "selection")
-              whether the technique will perform dynamic selection, dynamic weighting
-              or an hybrid approach for classification
 
     pct_accuracy : float (Default = 0.5)
         Percentage of base classifiers selected based on accuracy
@@ -62,14 +57,14 @@ class DESClustering(DES):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers, k=5, mode='selection',
+    def __init__(self, pool_classifiers, k=5,
                  pct_accuracy=0.5,
                  pct_diversity=0.33,
                  more_diverse=True,
                  metric='DF',
                  rng=np.random.RandomState()):
 
-        super(DESClustering, self).__init__(pool_classifiers, k, mode=mode)
+        super(DESClustering, self).__init__(pool_classifiers, k)
 
         self.name = 'DES-Clustering'
         self.N = int(self.n_classifiers * pct_accuracy)
@@ -77,6 +72,7 @@ class DESClustering(DES):
         self.metric = metric.upper()
         self._validate_parameters()
 
+        self.more_diverse = more_diverse
         if metric == 'DF':
             self.diversity_func = negative_double_fault
         elif metric == 'Q':
@@ -84,17 +80,17 @@ class DESClustering(DES):
         else:
             self.diversity_func = ratio_errors
 
-        self.more_diverse = more_diverse
         self.roc_algorithm = KMeans(n_clusters=k, random_state=rng)
+
+        # Since the clusters are fixed, we can pre-compute the accuracy and diversity of each cluster as well as the
+        # selected classifiers (indices) for each one. These pre-computed information will be kept on
+        # those three variables:
         self.accuracy_cluster = np.zeros((self.k, self.n_classifiers))
         self.diversity_cluster = np.zeros((self.k, self.n_classifiers))
-
-        # Since the clusters are fixed, we can pre-compute the ensemble for each cluster
-        self.classifiers_cluster = np.zeros((self.k, self.J))
         self.indices = np.zeros((self.k, self.J),  dtype=int)
 
     def fit(self, X, y):
-        """Train the DS model by setting the Clustering algorithm and
+        """ Train the DS model by setting the Clustering algorithm and
         pre-processing the information required to apply the DS
         methods.
 
@@ -125,22 +121,19 @@ class DESClustering(DES):
             # Get the indices of the samples in the corresponding cluster.
             sample_indices = np.where(labels == cluster_index)[0]
 
-            # Get the target labels for the samples in the corresponding cluster.
-            targets = self.DSEL_target[sample_indices]
-
             # Compute accuracy of each classifier in this cluster
-            prediction_matrix = np.zeros((len(targets), self.n_classifiers))
-            for clf_index in range(self.n_classifiers):
-                predictions = self.BKS_dsel[sample_indices, clf_index]
-                prediction_matrix[:, clf_index] = predictions
-                # Check if the dynamic frienemy pruning (DFP) should be used used
-                self.accuracy_cluster[cluster_index][clf_index] = accuracy_score(np.array(targets), predictions)
+            accuracy = np.mean(self.processed_dsel[sample_indices, :], axis=0)
+            self.accuracy_cluster[cluster_index, :] = accuracy
 
             # Get the N most accurate classifiers for the corresponding cluster
-            accuracies = self.accuracy_cluster[cluster_index, :]
-            accuracy_indices = np.argsort(accuracies)[::-1][0:self.N]
+            accuracy_indices = np.argsort(accuracy)[::-1][0:self.N]
 
-            self.diversity_cluster[cluster_index, :] = self._compute_diversity(targets, prediction_matrix)
+            # Get the target labels for the samples in the corresponding cluster for the diversity calculation.
+
+            targets = self.DSEL_target[sample_indices]
+            self.diversity_cluster[cluster_index, :] = \
+                compute_pairwise_diversity(targets, self.BKS_dsel[sample_indices, :], self.diversity_func)
+
             diversity_of_selected = self.diversity_cluster[cluster_index, accuracy_indices]
 
             if self.more_diverse:
@@ -149,35 +142,6 @@ class DESClustering(DES):
                 diversity_indices = np.argsort(diversity_of_selected)[0:self.J]
 
             self.indices[cluster_index, :] = accuracy_indices[diversity_indices]
-
-    def _compute_diversity(self, targets, prediction_matrix):
-        """Computes the pairwise diversity matrix.
-
-         Parameters
-         ----------
-         targets : array of shape = [n_samples]:
-                   Class labels of each sample in X.
-
-         prediction_matrix : array of shape = [n_samples, n_classifiers]:
-                             Predicted class labels for each classifier in the pool
-
-         Returns
-         -------
-         diversity : array of shape = [n_classifiers, n_classifiers]
-                     The pairwise diversity matrix calculated for the pool of classifiers
-
-         """
-        diversity = np.zeros(self.n_classifiers)
-
-        for clf_index in range(self.n_classifiers):
-            for clf_index2 in range(clf_index + 1, self.n_classifiers):
-                this_diversity = self.diversity_func(targets,
-                                                     prediction_matrix[:, clf_index],
-                                                     prediction_matrix[:, clf_index2])
-
-                diversity[clf_index] += this_diversity
-                diversity[clf_index2] += this_diversity
-        return diversity
 
     def estimate_competence(self, query, predictions=None):
         """Get the competence estimates of each base classifier :math:`c_{i}`
@@ -189,7 +153,7 @@ class DESClustering(DES):
 
         Parameters
         ----------
-        query : array of shape = [n_features]
+        query : array of shape = [n_samples, n_features]
                 The query sample
 
         predictions : array of shape = [n_samples, n_classifiers]
@@ -197,7 +161,7 @@ class DESClustering(DES):
 
         Returns
         -------
-        competences : array = [n_classifiers]
+        competences : array = [n_samples, n_classifiers]
                       The competence level estimated for each base classifier
         """
         cluster_index = self.roc_algorithm.predict(query)
@@ -212,19 +176,20 @@ class DESClustering(DES):
 
         Parameters
         ----------
-        query : array of shape = [n_features]
-                The query sample
+        query : array of shape = [n_samples, n_features]
+                The test examples
 
         Returns
         -------
-        indices : List containing the indices of the selected base classifiers
+        selected_classifiers : array of shape = [n_samples, self.k]
+                               Indices of the selected base classifier for each test example
 
         """
-        cluster_index = self.roc_algorithm.predict(query)[0]
-        indices = self.indices[cluster_index, :]
-        return indices
+        cluster_index = self.roc_algorithm.predict(query)
+        selected_classifiers = self.indices[cluster_index, :]
+        return selected_classifiers
 
-    def classify_instance(self, query, predictions):
+    def classify_with_ds(self, query, predictions, probabilities=None):
         """Predicts the label of the corresponding query sample.
 
         Parameters
@@ -235,16 +200,52 @@ class DESClustering(DES):
         predictions : array of shape = [n_samples, n_classifiers]
                       Contains the predictions of all base classifier for all samples in the query array
 
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                        The predictions of each base classifier for all samples. (For methods that
+                        always require probabilities from the base classifiers.)
+
         Returns
         -------
-        predicted_label: The predicted label of the query
+        predicted_label : array of shape = [n_samples
+                          The predicted label for each query
         """
-        indices = self.select(query)
-        votes = np.atleast_2d(predictions[indices])
+        if query.ndim < 2:
+            query = query.reshape(1, -1)
+
+        if predictions.ndim < 2:
+            predictions = predictions.reshape(1, -1)
+
+        selected_classifiers = self.select(query)
+        votes = predictions[np.arange(predictions.shape[0])[:, None], selected_classifiers]
         predicted_label = majority_voting_rule(votes)
-        # classifier_ensemble = self._get_classifier_ensemble(indices)
-        # predicted_label = majority_voting(classifier_ensemble, query)
+
         return predicted_label
+
+    def predict_proba_with_ds(self, query, predictions, probabilities):
+        """Predicts the label of the corresponding query sample.
+
+        Parameters
+        ----------
+        query : array of shape = [n_samples, n_features]
+                The test examples
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      The predictions of all base classifier for all samples in the query array
+
+        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+                        The predictions of each base classifier for all samples. (For methods that
+                        always require probabilities from the base classifiers.)
+
+        Returns
+        -------
+        predicted_proba : array of shape = [n_samples, n_classes]
+                         Posterior probabilities estimates for each test example
+        """
+        selected_classifiers = self.select(query)
+        ensemble_proba = probabilities[np.arange(probabilities.shape[0])[:, None], selected_classifiers, :]
+        predicted_proba = np.mean(ensemble_proba, axis=1)
+
+        return predicted_proba
 
     def _validate_parameters(self):
         """Check if the parameters passed as argument are correct.

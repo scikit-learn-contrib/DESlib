@@ -106,33 +106,27 @@ class APriori(DCS):
 
         Parameters
         ----------
-        query : array cf shape  = [n_features]
-                The query sample
+        query : array cf shape  = [n_samples, n_features]
+                The test examples
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      The predictions of all base classifier for all samples in the query array
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
-                      The competence level estimated for each base classifier
+        competences : array of shape = [n_samples, n_classifiers]
+                      The competence level estimated for each base classifier and test example
         """
         dists, idx_neighbors = self._get_region_competence(query)
         dists_normalized = 1.0/dists
 
-        competences = np.zeros(self.n_classifiers)
-        for clf_index in range(self.n_classifiers):
+        # Get the ndarray containing the scores obtained for the correct class for each neighbor (and test sample)
+        scores_target_class = self.dsel_scores[idx_neighbors, :, self.DSEL_target[idx_neighbors]]
 
-            # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.DFP_mask[clf_index]:
-                result = np.zeros(self.k)
-                for counter, index in enumerate(idx_neighbors):
-                    target = self.DSEL_target[index]
-                    # get the post_prob for the correct class
-                    #post_prob = self._get_scores_dsel(clf_index, index)[target]
-                    post_prob = self.dsel_scores[index, clf_index, target]
+        # Multiply the scores obtained for the correct class to the distances of each corresponding neighbor
+        scores_target_class *= np.expand_dims(dists_normalized, axis=2)
 
-                    result[counter] = (post_prob * dists_normalized[counter])
+        # Sum the scores obtained for each neighbor and divide by the sum of all distances
+        competences = np.sum(scores_target_class, axis=1)/ np.sum(dists_normalized, axis=1, keepdims=True)
 
-                competences[clf_index] = sum(result)/sum(dists_normalized)
         return competences

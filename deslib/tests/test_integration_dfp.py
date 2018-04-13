@@ -60,7 +60,7 @@ def test_kne():
 
     kne = KNORAE(pool_classifiers, DFP=True)
     kne.fit(X_dsel, y_dsel)
-    assert np.isclose(kne.score(X_test, y_test), 0.89696969696969697)
+    assert np.isclose(kne.score(X_test, y_test), 0.9)
 
 
 def test_desp():
@@ -68,7 +68,7 @@ def test_desp():
 
     desp = DESP(pool_classifiers, DFP=True)
     desp.fit(X_dsel, y_dsel)
-    assert np.isclose(desp.score(X_test, y_test), 0.89393939393939392)
+    assert np.isclose(desp.score(X_test, y_test), 0.896969696969697)
 
 
 def test_ola():
@@ -118,7 +118,7 @@ def test_rank():
 
     rank = Rank(pool_classifiers, DFP=True)
     rank.fit(X_dsel, y_dsel)
-    assert np.isclose(rank.score(X_test, y_test), 0.82424242424242422)
+    assert np.isclose(rank.score(X_test, y_test), 0.8787878787878788)
 
 
 def test_aposteriori():
@@ -137,8 +137,8 @@ def test_meta():
 
     meta_des = METADES(pool_classifiers, DFP=True)
     meta_des.fit(X_dsel, y_dsel)
-    assert np.isclose(meta_des.score(X_test, y_test), 0.91515151515151516) or \
-        np.isclose(meta_des.score(X_test, y_test), 0.90000000000000002)
+    assert np.isclose(meta_des.score(X_test, y_test), 0.9121212121212121) or \
+        np.isclose(meta_des.score(X_test, y_test), 0.8909090909090909)
 
 
 def test_knop():
@@ -186,3 +186,65 @@ def test_static_selection():
     static_selection = StaticSelection(pool_classifiers)
     static_selection.fit(X_dsel, y_dsel)
     assert np.isclose(static_selection.score(X_test, y_test), 0.90606060606060601)
+
+
+# ------------------------------------------ Testing predict_proba -----------------------------------
+def test_kne_proba():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    kne = KNORAE(pool_classifiers, DFP=True)
+    kne.fit(X_dsel, y_dsel)
+    probas = kne.predict_proba(X_test)
+    expected = np.load('deslib/tests/expected_values/kne_proba_DFP.npy')
+    assert np.allclose(probas, expected)
+
+
+def test_desp_proba():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    desp = DESP(pool_classifiers, DFP=True)
+    desp.fit(X_dsel, y_dsel)
+    probas = desp.predict_proba(X_test)
+    expected = np.load('deslib/tests/expected_values/desp_proba_DFP.npy')
+    assert np.allclose(probas, expected)
+
+
+def test_ola_proba():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    ola = OLA(pool_classifiers, DFP=True)
+    ola.fit(X_dsel, y_dsel)
+    probas = ola.predict_proba(X_test)
+    expected = np.load('deslib/tests/expected_values/ola_proba_DFP.npy')
+    assert np.allclose(probas, expected)
+
+
+def test_mcb_proba():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+    rng = np.random.RandomState(123456)
+
+    mcb = MCB(pool_classifiers, rng=rng, DFP=True)
+    mcb.fit(X_dsel, y_dsel)
+    probas = mcb.predict_proba(X_test)
+    expected = np.load('deslib/tests/expected_values/mcb_proba_DFP.npy')
+    assert np.allclose(probas, expected)
+
+
+def test_desknn_proba():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    desknn = DESKNN(pool_classifiers, DFP=True)
+    desknn.fit(X_dsel, y_dsel)
+    probas = desknn.predict_proba(X_test)
+    expected = np.load('deslib/tests/expected_values/desknn_probas_DFP.npy')
+    assert np.allclose(probas, expected)
+
+
+def test_knop():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    kne = KNOP(pool_classifiers, DFP=True)
+    kne.fit(X_dsel, y_dsel)
+
+    assert np.isclose(kne.score(X_test, y_test), 0.9030303030303031)
+

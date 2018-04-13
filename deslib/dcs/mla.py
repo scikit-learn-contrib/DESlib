@@ -79,7 +79,7 @@ class MLA(DCS):
                                   rng=rng)
         self.name = 'Modified Local Accuracy (MLA)'
 
-    def estimate_competence(self, query, predictions):
+    def estimate_competence(self, query, predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the Modified Local Accuracy (MLA) method.
 
@@ -97,41 +97,45 @@ class MLA(DCS):
 
         Parameters
         ----------
-        query : array cf shape  = [n_features]
+        query : array cf shape  = [n_samples, n_features]
                 The query sample
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      The competence level estimated for each base classifier and test example
 
         Returns
         -------
-        competences : array of shape = [n_classifiers]
+        competences : array of shape = [n_samples, n_classifiers]
                       The competence level estimated for each base classifier
         """
 
         dists, idx_neighbors = self._get_region_competence(query)
+        predictions = np.atleast_2d(predictions)
+
+        # Normalize the distances
         dists_normalized = 1.0/dists
-        competences = np.zeros(self.n_classifiers)
 
-        for clf_index, clf in enumerate(self.pool_classifiers):
-            # Check if the dynamic frienemy pruning (DFP) should be used used
-            if self.DFP_mask[clf_index]:
+        # Expanding the dimensions of the predictions and target arrays in order to compare both.
+        predictions_3d = np.expand_dims(predictions, axis=1)
+        target_3d = np.expand_dims(self.DSEL_target[idx_neighbors], axis=2)
+        # Create a mask to remove the neighbors belonging to a different class than the predicted by the base classifier
+        mask = (predictions_3d != target_3d)
 
-                result = []
-                dists_temp = []
-                predicted_label = predictions[clf_index]
+        # Broadcast the distance array to the same shape as the pre-processed information for future calculations
+        dists_normalized = np.repeat(np.expand_dims(dists_normalized, axis=2), self.n_classifiers, axis=2)
 
-                for counter, index in enumerate(idx_neighbors):
-                    # Get only neighbors from the same class as predicted by the
-                    # classifier (clf) to form the region of competence
-                    if self.DSEL_target[index] == predicted_label:
-                        # weight by distance
-                        result.append(float(self.processed_dsel[index][clf_index]) * dists_normalized[counter])
-                        dists_temp.append(dists_normalized[counter])
+        # Multiply the pre-processed correct predictions by the base classifiers to the distance array
+        proc_norm = self.processed_dsel[idx_neighbors, :] * dists_normalized
 
-                if len(result) == 0:
-                    competences[clf_index] = 0.0
-                else:
-                    competences[clf_index] = sum(result) / sum(dists_temp)
+        # Create masked arrays to remove samples with different label in the calculations
+        masked_preprocessed = np.ma.MaskedArray(proc_norm, mask=mask)
+        masked_dist = np.ma.MaskedArray(dists_normalized, mask=mask)
+
+        # Consider only the neighbor samples where the predicted label is equals to the neighbor label
+        competences_masked = np.ma.sum(masked_preprocessed, axis=1)/ np.ma.sum(masked_dist, axis=1)
+
+        # Fill 0 to the masked values in the resulting array (when no neighbors belongs to the class predicted by
+        # the corresponding base classifier)
+        competences = np.ma.filled(competences_masked, 0)
 
         return competences
