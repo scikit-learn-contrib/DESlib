@@ -1,8 +1,10 @@
+from unittest.mock import Mock
+
 import pytest
 from sklearn.linear_model import Perceptron
+
 from deslib.des.knop import KNOP
 from deslib.tests.examples_test import *
-from unittest.mock import Mock
 
 
 @pytest.mark.parametrize('index, expected', [(0, [4.0, 3.0, 4.0]),
@@ -85,3 +87,10 @@ def test_not_predict_proba():
         KNOP([clf1, clf1])
 
 
+def test_select():
+    knop_test = KNOP(create_pool_classifiers())
+    competences = np.ones(3)
+    competences[0] = 0
+    expected = np.atleast_2d([False, True, True])
+    selected = knop_test.select(competences)
+    assert np.array_equal(expected, selected)

@@ -1,8 +1,8 @@
 import pytest
+from sklearn.linear_model import Perceptron
 
 from deslib.des.knora_e import KNORAE
 from deslib.tests.examples_test import *
-from sklearn.linear_model import Perceptron
 
 
 @pytest.mark.parametrize('index, expected', [(0, [1.0, 0.0, 1.0]),
@@ -55,23 +55,14 @@ def test_select(index, expected):
 # No classifier here is selected, since the always predict class 2 where there are only samples labeled as class 0 and 1
 # in the region of competence
 def test_select_none_competent():
-    query = np.atleast_2d([1, 1])
 
-    y_dsel = np.array([2, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0])
-    neighbors = [8, 11, 4, 7, 13, 10, 1]
-
-    knora_e_test = KNORAE(create_pool_all_agree(2, 100))
-    knora_e_test.fit(X_dsel_ex1, y_dsel)
-
-    knora_e_test.neighbors = neighbors
-    knora_e_test.distances = distances_ex1[0, :]
-    knora_e_test.DFP_mask = np.ones(knora_e_test.n_classifiers)
-
-    competences = knora_e_test.estimate_competence(query)
+    knora_e_test = KNORAE(create_pool_all_agree(1, 100))
+    competences = np.zeros(100)
     selected = knora_e_test.select(competences)
     expected = np.atleast_2d([True] * 100)
 
     assert np.array_equal(expected, selected)
+
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
 # In this case the test should not raise an error since this class does not require base classifiers that

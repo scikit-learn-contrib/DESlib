@@ -232,3 +232,23 @@ def test_predict_proba_hybrid():
 
     predicted_proba = des_test.predict_proba_with_ds(query, predictions, probabilities)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
+
+
+def test_classify_with_ds_diff_sizes():
+    query = np.ones((10, 2))
+    predictions = np.ones((5, 3))
+    des_test = DES(create_pool_classifiers())
+
+    with pytest.raises(ValueError):
+        des_test.classify_with_ds(query, predictions)
+
+
+def test_proba_with_ds_diff_sizes():
+    query = np.ones((10, 2))
+    predictions = np.ones((5, 3))
+    probabilities = np.ones((5, 3, 2))
+    des_test = DES(create_pool_classifiers())
+
+    with pytest.raises(ValueError):
+        des_test.predict_proba_with_ds(query, predictions, probabilities)
+

@@ -1,8 +1,8 @@
 import pytest
+from sklearn.linear_model import Perceptron
 
 from deslib.des.knora_u import KNORAU
 from deslib.tests.examples_test import *
-from sklearn.linear_model import Perceptron
 
 
 @pytest.mark.parametrize('index, expected', [(0, [4.0, 3.0, 4.0]),
@@ -54,6 +54,15 @@ def test_predict_proba():
     clf1 = Perceptron()
     clf1.fit(X, y)
     KNORAU([clf1, clf1])
+
+
+def test_select():
+    knorau_test = KNORAU(create_pool_classifiers())
+    competences = np.ones(3)
+    competences[0] = 0
+    expected = np.atleast_2d([False, True, True])
+    selected = knorau_test.select(competences)
+    assert np.array_equal(expected, selected)
 
 
 

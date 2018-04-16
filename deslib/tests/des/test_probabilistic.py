@@ -1,5 +1,6 @@
 import pytest
 from sklearn.linear_model import Perceptron
+
 from deslib.des.probabilistic import Probabilistic, RRC, DESKL, Logarithmic, Exponential, MinimumDifference
 from deslib.tests.examples_test import *
 
@@ -18,7 +19,7 @@ def test_not_predict_proba():
 
 # Being all ones, all base classifiers are deemed competent
 def test_select_all_ones():
-    competences = np.ones((1, 100))
+    competences = np.ones(100)
     probabilistic_test = Probabilistic(create_pool_all_agree(1, 100))
     probabilistic_test.n_classes = 2
     selected_matrix = probabilistic_test.select(competences)
@@ -27,7 +28,7 @@ def test_select_all_ones():
 
 # Being all zeros, no base classifier is deemed competent, so the system selects all of them
 def test_select_all_zeros():
-    competences = np.zeros((1, 100))
+    competences = np.zeros(100)
     probabilistic_test = Probabilistic(create_pool_all_agree(1, 100))
     probabilistic_test.n_classes = 2
     selected_matrix = probabilistic_test.select(competences)
@@ -75,6 +76,7 @@ def test_potential_function_batch():
     value = Probabilistic.potential_func(dists)
     expected = np.tile([0.3679, 0.7788, 0.0183, 0.8968], (10, 1))
     assert np.allclose(value, expected, atol=0.001)
+
 
 # Test the estimate_competence method using a pre-calculated source of competence matrix. The final competence is
 # a result of the competence source and the result of the potential function model at each data point.

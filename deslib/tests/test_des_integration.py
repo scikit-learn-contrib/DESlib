@@ -299,7 +299,7 @@ def test_desknn_proba():
     assert np.allclose(probas, expected)
 
 
-def test_desclustering_proba():
+def test_des_clustering_proba():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
@@ -307,4 +307,14 @@ def test_desclustering_proba():
     des_clustering.fit(X_dsel, y_dsel)
     probas = des_clustering.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/des_clustering_proba_integration.npy')
+    assert np.allclose(probas, expected)
+
+
+def test_knop_proba():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    knop = KNOP(pool_classifiers)
+    knop.fit(X_dsel, y_dsel)
+    probas = knop.predict_proba(X_test)
+    expected = np.load('deslib/tests/expected_values/knop_proba_integration.npy')
     assert np.allclose(probas, expected)
