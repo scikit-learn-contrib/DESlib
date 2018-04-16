@@ -210,13 +210,15 @@ class DESKNN(DS):
                           The predicted label for each query
         """
 
-        if query.ndim != predictions.ndim:
-            raise ValueError('The arrays query and predictions must have the same shape. query.shape is {}'
-                             'and predictions.shape is {}' .format(query.shape, predictions.shape))
-
         if query.ndim < 2:
             query = query.reshape(1, -1)
+
+        if predictions.ndim < 2:
             predictions = predictions.reshape(1, -1)
+
+        if query.shape[0] != predictions.shape[0]:
+            raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
+                             'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
         accuracy, diversity = self.estimate_competence(query, predictions)
 
@@ -255,6 +257,10 @@ class DESKNN(DS):
         predicted_proba : array = [n_samples, n_classes]
                           The probability estimates for all classes
         """
+
+        if query.shape[0] != probabilities.shape[0]:
+            raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
+                             'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
         accuracy, diversity = self.estimate_competence(query, predictions)
 

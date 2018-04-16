@@ -215,6 +215,10 @@ class DESClustering(DS):
         if predictions.ndim < 2:
             predictions = predictions.reshape(1, -1)
 
+        if query.shape[0] != predictions.shape[0]:
+            raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
+                             'and predictions.shape is {}' .format(query.shape, predictions.shape))
+
         selected_classifiers = self.select(query)
         votes = predictions[np.arange(predictions.shape[0])[:, None], selected_classifiers]
         predicted_label = majority_voting_rule(votes)
@@ -241,6 +245,10 @@ class DESClustering(DS):
         predicted_proba : array of shape = [n_samples, n_classes]
                          Posterior probabilities estimates for each test example
         """
+        if query.shape[0] != probabilities.shape[0]:
+            raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
+                             'and predictions.shape is {}' .format(query.shape, predictions.shape))
+
         selected_classifiers = self.select(query)
         ensemble_proba = probabilities[np.arange(probabilities.shape[0])[:, None], selected_classifiers, :]
         predicted_proba = np.mean(ensemble_proba, axis=1)
