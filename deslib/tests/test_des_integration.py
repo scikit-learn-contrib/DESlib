@@ -299,7 +299,7 @@ def test_desknn_proba():
     assert np.allclose(probas, expected)
 
 
-def test_desclustering_proba():
+def test_des_clustering_proba():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 

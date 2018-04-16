@@ -126,26 +126,9 @@ def test_input_X_3D():
         ds_test.predict(X)
 
 
-def test_IH_is_used():
-
-    expected = np.array([0, 0, 1])
-    query = np.ones((3, 2))
-    ds_test = DS(create_pool_classifiers(), with_IH=True, IH_rate=0.5)
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-
-    ds_test.processed_dsel = dsel_processed_ex1
-    ds_test.DSEL_target = y_dsel_ex1
-    ds_test.DSEL_data = X_dsel_ex1
-
-    ds_test.neighbors = neighbors_ex1
-    ds_test.distances = distances_ex1
-
-    predicted = ds_test.predict(query)
-
-    assert np.allclose(predicted, expected)
 # -----------------------Test routines for the DFP (fire DS)--------------------
 
-#Since no classifier crosses the region of competence, all of them must be selected
+# Since no classifier crosses the region of competence, all of them must be selected
 def test_frienemy_no_classifier_crosses():
     X = X_dsel_ex1
     y = y_dsel_ex1
@@ -214,20 +197,6 @@ def test_frienemy_safe_region_batch():
     result = ds_test._frienemy_pruning()
 
     assert np.array_equal(result, expected)
-
-
-def test_DFP_is_used():
-    query = np.atleast_2d([1, 0])
-    ds_test = DS(create_pool_classifiers(), DFP=True, safe_k=3)
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-    ds_test.processed_dsel = dsel_processed_ex1
-    ds_test.DSEL_target = y_dsel_ex1
-    ds_test.DSEL_data = X_dsel_ex1
-    ds_test.neighbors = neighbors_ex1[0, :]
-    ds_test.distances = distances_ex1[0, :]
-    ds_test.classify_with_ds = MagicMock(return_value=0)
-    ds_test.predict(query)
-    assert np.array_equal(ds_test.DFP_mask, np.array([[1, 1, 0]]))
 
 
 # In this test, the frienemy pruning is used. So, the value of self.DFP_mask should change.
