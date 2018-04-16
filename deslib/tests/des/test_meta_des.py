@@ -6,7 +6,7 @@ from deslib.des.meta_des import METADES
 from deslib.tests.examples_test import *
 
 
-#-------------------------------------- Testing Hyper-parameters -----------------------
+# -------------------------------------- Testing Hyper-parameters -----------------------
 def test_meta_classifier_not_predict_proba():
     with pytest.raises(ValueError):
         METADES(create_pool_classifiers(), Perceptron())
@@ -28,7 +28,8 @@ def test_parameter_gamma(selection_threshold):
     with pytest.raises((ValueError, TypeError)):
         METADES(create_pool_classifiers(), selection_threshold=selection_threshold)
 
-#-------------------------------------- Testing Methods -----------------------
+
+# -------------------------------------- Testing Methods -----------------------
 def test_compute_meta_features():
     query = np.ones((1, 2))
     pool = create_pool_classifiers()
@@ -165,6 +166,7 @@ def test_sample_selection_working():
     expected = np.asarray([1, 1/3, 1, 1/3, 1/3])
     value = meta_test._sample_selection_agreement()
     assert np.array_equal(value, expected)
+
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
 # Should raise an exception when the base classifier cannot estimate posterior probabilities (predict_proba)

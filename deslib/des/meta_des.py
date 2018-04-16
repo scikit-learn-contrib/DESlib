@@ -400,7 +400,8 @@ class METADES(DES):
         if not isinstance(gamma, float):
             raise ValueError('Parameter Hc should be either a float. Currently Hc = {}'.format(type(Hc)))
         if gamma < 0.5:
-            raise ValueError('Parameter selection_threshold should be higher than 0.5. Currently selection_threshold = {}'.format(gamma))
+            raise ValueError('Parameter selection_threshold should be higher than 0.5. '
+                             'Currently selection_threshold = {}'.format(gamma))
         if meta_classifier is not None and "predict_proba" not in dir(meta_classifier):
             raise ValueError("The meta-classifier should output probability estimates")
 
