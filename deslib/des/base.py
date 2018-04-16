@@ -3,8 +3,9 @@ from abc import ABCMeta
 import numpy as np
 
 from deslib.base import DS
-from deslib.util.aggregation import weighted_majority_voting_rule, majority_voting_rule,\
+from deslib.util.aggregation import weighted_majority_voting_rule, majority_voting_rule, \
     aggregate_proba_ensemble_weighted
+
 
 class DES(DS):
     """Base class for a Dynamic Ensemble Selection (DES).
@@ -161,13 +162,15 @@ class DES(DS):
         -------
         predicted_label: The predicted label of the query
         """
-        if query.ndim != predictions.ndim:
-            raise ValueError('The arrays query and predictions must have the same shape. query.shape is {}'
-                             'and predictions.shape is {}' .format(query.shape, predictions.shape))
-
         if query.ndim < 2:
             query = query.reshape(1, -1)
+
+        if predictions.ndim < 2:
             predictions = predictions.reshape(1, -1)
+
+        if query.shape[0] != predictions.shape[0]:
+            raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
+                             'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
         if self.needs_proba:
             competences = self.estimate_competence_from_proba(query, probabilities)
@@ -224,6 +227,10 @@ class DES(DS):
         predicted_proba : array = [n_samples, n_classes]
                           The probability estimates for all classes
         """
+
+        if query.shape[0] != probabilities.shape[0]:
+            raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
+                             'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
         if self.needs_proba:
             competences = self.estimate_competence_from_proba(query, probabilities)
