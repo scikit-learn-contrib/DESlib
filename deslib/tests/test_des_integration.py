@@ -308,3 +308,13 @@ def test_des_clustering_proba():
     probas = des_clustering.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/des_clustering_proba_integration.npy')
     assert np.allclose(probas, expected)
+
+
+def test_knop_proba():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    knop = KNOP(pool_classifiers)
+    knop.fit(X_dsel, y_dsel)
+    probas = knop.predict_proba(X_test)
+    expected = np.load('deslib/tests/expected_values/knop_proba_integration.npy')
+    assert np.allclose(probas, expected)
