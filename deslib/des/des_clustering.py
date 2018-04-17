@@ -102,9 +102,10 @@ class DESClustering(DS):
         Parameters
         ----------
         X : array of shape = [n_samples, n_features]
-            The input data.
+            Data used to fit the model.
 
-        y : class labels of each sample in X.
+        y : array of shape = [n_samples]
+            class labels of each example in X.
 
         Returns
         -------
@@ -154,15 +155,15 @@ class DESClustering(DS):
         Parameters
         ----------
         query : array of shape = [n_samples, n_features]
-                The query sample
+                The query sample.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifiers for all test examples.
 
         Returns
         -------
         competences : array = [n_samples, n_classifiers]
-                      The competence level estimated for each base classifier
+                      The competence level estimated for each base classifier.
         """
         cluster_index = self.roc_algorithm.predict(query)
         competences = self.accuracy_cluster[cluster_index][:]
@@ -177,12 +178,12 @@ class DESClustering(DS):
         Parameters
         ----------
         query : array of shape = [n_samples, n_features]
-                The test examples
+                The test examples.
 
         Returns
         -------
         selected_classifiers : array of shape = [n_samples, self.k]
-                               Indices of the selected base classifier for each test example
+                               Indices of the selected base classifier for each test example.
 
         """
         cluster_index = self.roc_algorithm.predict(query)
@@ -195,19 +196,18 @@ class DESClustering(DS):
         Parameters
         ----------
         query : array of shape = [n_features]
-                The test sample
+                The test sample.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifiers for all test examples.
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                        The predictions of each base classifier for all samples. (For methods that
-                        always require probabilities from the base classifiers.)
+                        Probabilities estimates of each base classifier for all test examples.
 
         Returns
         -------
-        predicted_label : array of shape = [n_samples
-                          The predicted label for each query
+        predicted_label : array of shape = [n_samples]
+                          Predicted class label for each test example.
         """
         if query.ndim < 2:
             query = query.reshape(1, -1)
@@ -231,19 +231,18 @@ class DESClustering(DS):
         Parameters
         ----------
         query : array of shape = [n_samples, n_features]
-                The test examples
+                The test examples.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      The predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifiers for all test examples.
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                        The predictions of each base classifier for all samples. (For methods that
-                        always require probabilities from the base classifiers.)
+                        Probabilities estimates of each base classifier for all test examples.
 
         Returns
         -------
         predicted_proba : array of shape = [n_samples, n_classes]
-                         Posterior probabilities estimates for each test example
+                          Posterior probabilities estimates for each test example
         """
         if query.shape[0] != probabilities.shape[0]:
             raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'

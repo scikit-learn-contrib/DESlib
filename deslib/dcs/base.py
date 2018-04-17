@@ -97,15 +97,15 @@ class DCS(DS):
         Parameters
         ----------
         query : array of shape = [n_samples, n_features]
-                The test examples
+                The test examples.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifiers for all test examples.
 
         Returns
         -------
         competences : array of shape = [n_samples, n_classifiers]
-                      The competence level estimated for each base classifier in the pool
+                      Competence level estimated for each base classifier and test example.
         """
         pass
 
@@ -125,18 +125,19 @@ class DCS(DS):
         Random : Selects a random base classifier among all base classifiers that achieved the same competence level.
 
         ALL : all base classifiers with the max competence level estimates are selected (note that in this case the
-        dcs technique becomes a des).
+        DCS technique becomes a DES technique).
 
         Parameters
         ----------
         competences : array of shape = [n_samples, n_classifiers]
-                      The competence level estimated for each base classifier and test example
+                      Competence level estimated for each base classifier and test example.
 
         Returns
         -------
-        selected_classifiers : array containing the index of the selected base classifier for each sample. If
-        the selection_method is set to 'all', a boolean matrix is returned, containing True for the selected base
-        classifiers, otherwise false.
+        selected_classifiers : array of shape [n_samples]
+                               Indices of the selected base classifier for each sample. If the selection_method is
+                               set to 'all', a boolean matrix is returned, containing True for the selected base
+                               classifiers, otherwise false.
 
         """
         if competences.ndim < 2:
@@ -156,14 +157,14 @@ class DCS(DS):
             """Selects a base classifier if its competence level is significant better than the rest. 
             If there is no such classifier, select randomly a base model.
 
-             the best classifier will always have diff < diff_thresh. In a case it is
-             superior than all others, it will be the only member selected. Otherwise,
-             a random classifier from this list is selected
+            the best classifier will always have diff < diff_thresh. In a case it is
+            superior than all others, it will be the only member selected. Otherwise,
+            a random classifier from this list is selected.
             """
             best_competence = competences[np.arange(competences.shape[0]), best_index]
             # best_competence = np.max(competences)
             diff = best_competence.reshape(-1, 1) - competences
-            # TODO: I believe this code here can be improved
+            # TODO: Improve this part of the code
             selected_classifiers = np.zeros(diff.shape[0], dtype=np.int)
             for row in range(diff.shape[0]):
                 diff_list = list(diff[row, :])
@@ -175,7 +176,7 @@ class DCS(DS):
                 selected_classifiers[row] = self.rng.choice(indices)
 
         elif self.selection_method == 'random':
-            # TODO: I believe this code here can be improved
+            # TODO: Improve this part of the code
             selected_classifiers = np.zeros(competences.shape[0], dtype=np.int)
             best_competence = competences[np.arange(competences.shape[0]), best_index]
             for row in range(competences.shape[0]):
@@ -201,18 +202,19 @@ class DCS(DS):
         Parameters
         ----------
         query : array of shape = [n_samples, n_features]
-                The test examples
+                The test examples.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifiers for all test examples.
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                        The predictions of each base classifier for all samples. (For methods that
-                        always require probabilities from the base classifiers.)
+                        Probabilities estimates of each base classifier for all test examples. (For methods that
+                        always require probabilities from the base classifiers).
 
         Returns
         -------
-        The predicted label of the query
+        predicted_label : array of shape = [n_samples]
+                          Predicted class label for each test example.
         """
         if query.ndim < 2:
             query = query.reshape(1, -1)
@@ -250,16 +252,15 @@ class DCS(DS):
                 The test example
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      The predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifiers for all test examples.
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                      The predictions of each base classifier for all samples. (For methods that
-                      always require probabilities from the base classifiers.)
+                        Probabilities estimates of each base classifier for all test examples.
 
         Returns
         -------
         predicted_proba : array = [n_samples, n_classes]
-                          The probability estimates for all test examples
+                          Probability estimates for all test examples.
         """
         if query.shape[0] != probabilities.shape[0]:
             raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'

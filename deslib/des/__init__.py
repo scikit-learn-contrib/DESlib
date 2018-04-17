@@ -1,6 +1,5 @@
 """
-The :mod:`deslib.des` provides a set of key dynamic ensemble selection algorithms (DES). DES techniques by default
-selects all base classifiers that attain a certain competence level.
+The :mod:`deslib.des` provides a set of key dynamic ensemble selection algorithms (DES).
 """
 
 from .base import DES

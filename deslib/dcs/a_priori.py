@@ -84,6 +84,22 @@ class APriori(DCS):
         self.name = 'A Priori'
 
     def fit(self, X, y):
+        """Prepare the DS model by setting the KNN algorithm and
+        pre-processing the information required to apply the DS
+        method.
+
+        Parameters
+        ----------
+        X : array of shape = [n_samples, n_features]
+            Data used to fit the model.
+
+        y : array of shape = [n_samples]
+            class labels of each example in X.
+
+        Returns
+        -------
+        self
+        """
         super(APriori, self).fit(X, y)
         self.dsel_scores = self._preprocess_dsel_scores()
         return self
@@ -107,15 +123,15 @@ class APriori(DCS):
         Parameters
         ----------
         query : array cf shape  = [n_samples, n_features]
-                The test examples
+                The test examples.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      The predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifiers for the test examples.
 
         Returns
         -------
         competences : array of shape = [n_samples, n_classifiers]
-                      The competence level estimated for each base classifier and test example
+                      Competence level estimated for each base classifier and test example.
         """
         dists, idx_neighbors = self._get_region_competence(query)
         dists_normalized = 1.0/dists

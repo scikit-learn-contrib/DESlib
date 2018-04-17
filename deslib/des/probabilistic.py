@@ -87,9 +87,11 @@ class Probabilistic(DES):
 
         Parameters
         ----------
-        X : matrix of shape = [n_samples, n_features] with the data.
+        X : array of shape = [n_samples, n_features]
+            Data used to fit the model.
 
-        y : class labels of each sample in X.
+        y : array of shape = [n_samples]
+            class labels of each example in X.
 
         Returns
         -------
@@ -121,15 +123,14 @@ class Probabilistic(DES):
         Parameters
         ----------
         query : array of shape = [n_samples, n_features]
-                The test examples
+                The test examples.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      The predictions of all base classifier for all samples in the query array
-
+                      Predictions of the base classifiers for all test examples.
         Returns
         -------
         competences : array of shape = [n_samples, n_classifiers]
-                      The competence level estimated for each base classifier and test example
+                      Competence level estimated for each base classifier and test example.
         """
         dists, idx_neighbors = self._get_region_competence(query)
         sorted_neighbors = np.argsort(idx_neighbors, axis=1)
@@ -150,12 +151,12 @@ class Probabilistic(DES):
         Parameters
         ----------
         competences : array of shape = [n_samples, n_classifiers]
-                      The competence level estimated for each base classifier and test example
+                      Competence level estimated for each base classifier and test example.
 
         Returns
         -------
         selected_classifiers : array of shape = [n_samples, n_classifiers]
-                               Boolean matrix containing True if the base classifier is select, False otherwise
+                               Boolean matrix containing True if the base classifier is select, False otherwise.
 
         """
         if competences.ndim < 2:

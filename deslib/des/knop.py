@@ -5,9 +5,9 @@
 # License: BSD 3 clause
 
 import numpy as np
+from sklearn.neighbors import KNeighborsClassifier
 
 from deslib.des.base import DES
-from sklearn.neighbors import KNeighborsClassifier
 
 
 class KNOP(DES):
@@ -82,13 +82,13 @@ class KNOP(DES):
         methods. In this case, the scores of the base classifiers for the dynamic selection dataset (DSEL)
         are pre-calculated to transform each sample in DSEL into an output profile.
 
-         Parameters
+        Parameters
         ----------
         X : array of shape = [n_samples, n_features]
-            containing the input data.
+            Data used to fit the model.
 
         y : array of shape = [n_samples]
-            Class labels of each sample in X.
+            class labels of each example in X.
 
         Returns
         -------
@@ -112,13 +112,13 @@ class KNOP(DES):
         Parameters
         ----------
         X_op : array of shape = [n_samples, n_features]
-               The output profiles of the Input data. n_features is equals to (n_classifiers x n_classes)
+               Output profiles of the training data. n_features is equals to (n_classifiers x n_classes).
 
         y_op : array of shape = [n_samples]
-               class labels of each sample in X_op.
+               Class labels of each sample in X_op.
 
         k : int
-             Number of output profiles used in the estimation.
+            Number of output profiles used in the region of competence estimation.
 
         """
         self.op_knn = KNeighborsClassifier(n_neighbors=k, n_jobs=-1, algorithm='auto')
@@ -136,7 +136,7 @@ class KNOP(DES):
         Parameters
         ----------
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                      The predictions of each base classifier for all samples.
+                        predictions of each base classifier for all samples.
 
         Returns
         -------
@@ -159,22 +159,23 @@ class KNOP(DES):
 
     def estimate_competence_from_proba(self, query, probabilities):
         """The competence of the base classifiers is simply estimated as the number of samples
-        in the region of competence that it correctly classified.
+        in the region of competence that it correctly classified. This method received an array with
+        the pre-calculated probability  estimates for each query.
 
         This information is later used to determine the number of votes obtained for each base classifier.
 
         Parameters
         ----------
         query : array of shape = [n_samples, n_features]
-                The test examples
+                The test examples.
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                      The predictions of each base classifier for all samples.
+                        Probabilities estimates obtained by each each base classifier for each query sample.
 
         Returns
         -------
         competences : array of shape = [n_samples, n_classifiers]
-                      The competence level estimated for each base classifier and test example
+                      Competence level estimated for each base classifier and test example.
         """
         _, idx_neighbors = self._get_similar_out_profiles(probabilities)
         competences = np.sum(self.processed_dsel[idx_neighbors, :], axis=1, dtype=np.float)
@@ -190,12 +191,12 @@ class KNOP(DES):
         Parameters
         ----------
         competences : array of shape = [n_samples, n_classifiers]
-                      The competence level estimated for each base classifier and test example
+                      Competence level estimated for each base classifier and test example.
 
         Returns
         -------
         selected_classifiers : array of shape = [n_samples, n_classifiers]
-                               Boolean matrix containing True if the base classifier is select, False otherwise
+                               Boolean matrix containing True if the base classifier is select, False otherwise.
         """
         if competences.ndim < 2:
             competences = competences.reshape(1, -1)

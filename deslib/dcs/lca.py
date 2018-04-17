@@ -101,15 +101,15 @@ class LCA(DCS):
         Parameters
         ----------
         query : array cf shape  = [n_samples, n_features]
-                The test examples
+                The test examples.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      The predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifiers for the test examples.
 
         Returns
         -------
         competences : array of shape = [n_samples, n_classifiers]
-                      The competence level estimated for each base classifier and test example
+                      The competence level estimated for each base classifier and test example.
         """
 
         _, idx_neighbors = self._get_region_competence(query)
