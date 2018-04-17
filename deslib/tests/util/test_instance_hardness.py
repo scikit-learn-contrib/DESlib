@@ -1,7 +1,8 @@
-import pytest
 import numpy as np
-from deslib.util.instance_harndess import hardness_region_competence
+import pytest
+
 from deslib.tests.examples_test import y_dsel_ex1, neighbors_ex1
+from deslib.util.instance_hardness import hardness_region_competence
 
 
 # -----------------------Test routines for the Instance Hardness calculation--------------------
