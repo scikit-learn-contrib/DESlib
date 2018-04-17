@@ -48,10 +48,10 @@ class SingleBest(ClassifierMixin):
         Parameters
         ----------
         X : array of shape = [n_samples, n_features]
-            The data to be classified
+            Data used to fit the model.
 
         y : array of shape = [n_samples]
-            Class labels of each sample in X.
+            class labels of each example in X.
 
         """
         self.classes = np.unique(y)
@@ -83,7 +83,7 @@ class SingleBest(ClassifierMixin):
 
     def predict_proba(self, X):
         """Estimates the posterior probabilities for each class for each sample in X. The returned probability
-         estimates for all classes are ordered by the label of classes.
+        estimates for all classes are ordered by the label of classes.
 
         Parameters
         ----------
