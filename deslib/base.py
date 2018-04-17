@@ -16,7 +16,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import check_X_y, check_is_fitted
 
-from deslib.util.instance_harndess import hardness_region_competence
+from deslib.util.instance_hardness import hardness_region_competence
 
 
 class DS(ClassifierMixin):
@@ -478,8 +478,8 @@ class DS(ClassifierMixin):
         DFP_mask : array of shape = [n_samples, n_classifiers]
                    Mask containing 1 for the selected base classifier and 0 otherwise.
 
-        Reference:
-        -------
+        References
+        ----------
         Oliveira, D.V.R., Cavalcanti, G.D.C. and Sabourin, R., Online Pruning of Base Classifiers for Dynamic
         Ensemble Selection, Pattern Recognition, vol. 72, December 2017, pp 44-58.
         """

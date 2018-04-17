@@ -17,6 +17,7 @@ Smith, M.R., Martinez, T. and Giraud-Carrier, C., 2014. An instance level analys
 Machine learning, 95(2), pp.225-256
 """
 
+
 def hardness_region_competence(neighbors_idx, labels, safe_k):
     """Calculate the Instance hardness of the sample based on its neighborhood. The sample is deemed hard to
     classify when there is overlap between different classes in the region of competence. This method does not
@@ -38,9 +39,10 @@ def hardness_region_competence(neighbors_idx, labels, safe_k):
 
     Returns
     -------
-    hardness : The calculated IH level of the corresponding sample
+    hardness : array of shape = [n_samples]
+               The Hardness level associated with each example.
 
-    Reference
+    References
     ----------
     Smith, M.R., Martinez, T. and Giraud-Carrier, C., 2014. An instance level analysis of data complexity.
     Machine learning, 95(2), pp.225-256

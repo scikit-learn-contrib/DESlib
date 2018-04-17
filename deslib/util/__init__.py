@@ -14,5 +14,5 @@ deslib.util.instance_hardness - Functions to measure the hardness level of a giv
 
 from .aggregation import *
 from .diversity import *
-from .instance_harndess import *
+from .instance_hardness import *
 from .prob_functions import *
