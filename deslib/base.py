@@ -16,7 +16,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import check_X_y, check_is_fitted
 
-from deslib.util.instance_harndess import hardness_region_competence
+from deslib.util.instance_hardness import hardness_region_competence
 
 
 class DS(ClassifierMixin):
@@ -102,8 +102,7 @@ class DS(ClassifierMixin):
                 The query sample
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
-
+                      Predictions of the base classifiers for all test examples
         Returns
         -------
         competences : array = [n_classifiers] containing the competence level estimated
@@ -119,19 +118,20 @@ class DS(ClassifierMixin):
         Parameters
         ----------
         query : array cf shape  = [n_samples, n_features]
-                The query sample
+                The query sample.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      The predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifiers for all test examples.
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                      The predictions of each base classifier for all samples. (For methods that
-                      always require probabilities from the base classifiers.)
+                        Probabilities estimates of each base classifier for all test examples (For methods that
+                        always require probabilities from the base classifiers).
 
         Returns
         -------
-        predicted_label : array of shape = [n_samples
-                          The predicted label for each query        """
+        predicted_label : array of shape = [n_samples]
+                          The predicted label for each query
+        """
         pass
 
     @abstractmethod
@@ -142,19 +142,19 @@ class DS(ClassifierMixin):
         Parameters
         ----------
         query : array cf shape  = [n_samples, n_features]
-                The query sample
+                The query sample.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      The predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifiers for all test examples.
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                        The predictions of each base classifier for all samples. (For methods that
-                        always require probabilities from the base classifiers.)
+                        The predictions of each base classifier for all samples (For methods that
+                        always require probabilities from the base classifiers).
 
         Returns
         -------
         predicted_proba: array of shape = [n_samples, n_classes]
-                         Posterior probabilities estimates for each test example
+                         Posterior probabilities estimates for each test example.
         """
         pass
 
@@ -165,9 +165,11 @@ class DS(ClassifierMixin):
 
         Parameters
         ----------
-        X : matrix of shape = [n_samples, n_features] with the data.
+        X : array of shape = [n_samples, n_features]
+            The input data.
 
-        y : class labels of each sample in X.
+        y : array of shape = [n_samples]
+            class labels of each example in X.
 
         Returns
         -------
@@ -207,7 +209,7 @@ class DS(ClassifierMixin):
             class labels of each sample in X.
 
         k : int (Default=self.k)
-            Number of neighbors used in the k-NN method
+            Number of neighbors used in the k-NN method.
         """
         self.roc_algorithm = KNeighborsClassifier(n_neighbors=k, n_jobs=-1, algorithm='auto')
         self.roc_algorithm.fit(X, y)
@@ -238,7 +240,7 @@ class DS(ClassifierMixin):
         Parameters
         ----------
         query : array of shape = [n_samples, n_features]
-                The test examples
+                The test examples.
 
         k : int (Default = self.k)
             The number of neighbors used to in the region of competence.
@@ -384,8 +386,8 @@ class DS(ClassifierMixin):
 
         Returns
         -------
-        predicted_proba : array of shape = [n_samples, n_classes] with the
-        probabilities estimates for each class in the classifier model.
+        predicted_proba : array of shape = [n_samples, n_classes]
+                          Probabilities estimates for each sample in X.
         """
         # Check if the DS model was trained
         self._check_is_fitted()
@@ -473,10 +475,11 @@ class DS(ClassifierMixin):
 
         Returns
         -------
-        DFP_mask : array = [n_classifiers] with the probability estimates for all classes
+        DFP_mask : array of shape = [n_samples, n_classifiers]
+                   Mask containing 1 for the selected base classifier and 0 otherwise.
 
-        Reference:
-        -------
+        References
+        ----------
         Oliveira, D.V.R., Cavalcanti, G.D.C. and Sabourin, R., Online Pruning of Base Classifiers for Dynamic
         Ensemble Selection, Pattern Recognition, vol. 72, December 2017, pp 44-58.
         """
@@ -516,17 +519,6 @@ class DS(ClassifierMixin):
 
         return mask
 
-    def _get_classifier_ensemble(self, indices):
-        """This function receive the indices of the selected classifiers and returns an ensemble with the selected
-        base classifiers
-
-        Returns
-        -------
-        classifier_ensemble : A list with the selected base classifiers
-        """
-        classifier_ensemble = [self.pool_classifiers[index] for index in indices]
-        return classifier_ensemble
-
     def _preprocess_dsel(self):
         """Compute the prediction of each base classifier for
         all samples in DSEL. Used to speed-up the test phase, by
@@ -553,12 +545,12 @@ class DS(ClassifierMixin):
         Parameters
         ----------
         X : array of shape = [n_samples, n_features]
-            The test examples
+            The test examples.
 
         Returns
         -------
         predictions : array of shape = [n_samples, n_classifiers]
-                      The predictions of each base classifier for all samples.
+                      The predictions of each base classifier for all samples in X.
         """
         predictions = np.zeros((X.shape[0], self.n_classifiers), dtype=np.intp)
 
@@ -573,12 +565,12 @@ class DS(ClassifierMixin):
         Parameters
         ----------
         X : array of shape = [n_samples, n_features]
-            The test examples
+            The test examples.
 
         Returns
         -------
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                      The predictions of each base classifier for all samples.
+                        Probabilities estimates of each base classifier for all test samples.
         """
         probabilities = np.zeros((X.shape[0], self.n_classifiers, self.n_classes))
 
@@ -610,12 +602,12 @@ class DS(ClassifierMixin):
         Parameters
         ----------
         predictions : array of shape = [n_samples, n_classifiers]
-                      Matrix with the predictions of each base classifier for each sample.
+                      Predictions of the base classifiers for the test examples.
 
         Returns
         -------
         array of shape = [n_samples] containing True if all classifiers in the generated_pool
-        agrees on the same label, otherwise False for all samples
+                          agrees on the same label, otherwise False.
         """
         return np.all(predictions == predictions[:, 0].reshape(-1, 1), axis=1)
 
@@ -659,7 +651,7 @@ class DS(ClassifierMixin):
         -------
         NotFittedError
             If the DS method is was not fitted, i.e., `self.roc_algorithm` or `self.processed_dsel`
-             were not pre-processed
+             were not pre-processed.
 
         """
         if self.roc_algorithm is None or self.processed_dsel is None:
@@ -673,7 +665,7 @@ class DS(ClassifierMixin):
         Raises
         -------
         ValueError
-            If the pool of classifiers is empty
+            If the pool of classifiers is empty.
         """
 
         if self.n_classifiers <= 0:
@@ -692,7 +684,7 @@ class DS(ClassifierMixin):
         Raises
         -------
         ValueError
-            If X has a different dimensionality than the training data
+            If X has a different dimensionality than the training data.
         """
         n_features = X.shape[1]
         if self.n_features != n_features:
@@ -711,7 +703,7 @@ class DS(ClassifierMixin):
         Raises
         -------
         ValueError
-            If the input data contains NaN or has an invalid shape (more than 2 dimensions)
+            If the input data contains NaN or has an invalid shape (more than 2 dimensions).
         """
         if X is None or np.isnan(X).any():
             raise ValueError('The input argument X is invalid! X = {}' .format(X))
@@ -730,7 +722,7 @@ class DS(ClassifierMixin):
         Raises
         -------
         ValueError
-            If the base classifiers do not implements the predict_proba method
+            If the base classifiers do not implements the predict_proba method.
         """
         for clf in self.pool_classifiers:
             check_is_fitted(clf, "classes_")

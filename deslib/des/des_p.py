@@ -75,15 +75,15 @@ class DESP(DES):
         Parameters
         ----------
         query : array of shape = [n_samples, n_features]
-                The test examples
+                The test examples.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      The predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifiers for all test examples.
 
         Returns
         -------
         competences : array of shape = [n_samples, n_classifiers]
-                      The competence level estimated for each base classifier and test example
+                      Competence level estimated for each base classifier and test example.
         """
         _, idx_neighbors = self._get_region_competence(query)
         competences = np.mean(self.processed_dsel[idx_neighbors, :], axis=1)
@@ -98,12 +98,12 @@ class DESP(DES):
         Parameters
         ----------
         competences : array of shape = [n_samples, n_classifiers]
-                      The competence level estimated for each base classifier and test example
+                      Competence level estimated for each base classifier and test example.
 
         Returns
         -------
         selected_classifiers : array of shape = [n_samples, n_classifiers]
-                               Boolean matrix containing True if the base classifier is select, False otherwise
+                               Boolean matrix containing True if the base classifier is select, False otherwise.
 
         """
         if competences.ndim < 2:

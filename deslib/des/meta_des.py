@@ -125,9 +125,11 @@ class METADES(DES):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features] with the data.
+        X : array of shape = [n_samples, n_features]
+            Data used to fit the model.
 
-        y : class labels of each sample in X.
+        y : array of shape = [n_samples]
+            class labels of each example in X.
 
         Returns
         -------
@@ -199,18 +201,18 @@ class METADES(DES):
         ----------
         scores : array of shape = [n_samples, n_classifiers, n_classes]
                  scores (posterior probabilities) obtained by the base classifiers for each sample to extract the meta
-                 features
+                 features.
 
         idx_neighbors : array of shape = [n_samples, self.K]
-                        indices of K-nearest neighbors for each example
+                        indices of K-nearest neighbors for each example.
 
         idx_neighbors_op : array of shape = [n_samples, self.Kp]
-                           Indices of the most similar output profiles for each example
+                           Indices of the most similar output profiles for each example.
 
         Returns
         -------
         meta_feature_vectors : array of shape [n_query x n_classifiers, n_meta_features]
-            containing the five sets of meta-features estimated for each pair (base classifier, example)
+                               The five sets of meta-features estimated for each pair (base classifier, example).
 
         """
 
@@ -228,12 +230,12 @@ class METADES(DES):
 
         f5_all_classifiers = np.max(scores, axis=2).reshape(-1, 1)
         meta_feature_vectors = np.hstack((f1_all_classifiers, f2_all_classifiers, f3_all_classifiers,
-                           f4_all_classifiers, f5_all_classifiers))
+                                          f4_all_classifiers, f5_all_classifiers))
 
         return meta_feature_vectors
 
     def _generate_meta_training_set(self):
-        """Routine to generate the meta-training dataset that is further used to train the meta-classifier (Lambda)
+        """Routine to generate the meta-training dataset that is further used to train the meta-classifier (Lambda).
 
         In this procedure we use a leave-one-out scheme in which
         each sample in DSEL is used as reference to generate the meta-features and all others are used to estimate the
@@ -272,10 +274,10 @@ class METADES(DES):
         Parameters
         ----------
         X_meta : array of shape = [n_meta_examples, n_meta_features]
-                 The test sample
+                 The meta-training examples.
 
         y_meta : array of shape = [n_meta_examples]
-                 class labels of each example in X_test. 1 whether the base classifier made the correct prediction,
+                 Class labels of each example in X_test. 1 whether the base classifier made the correct prediction,
                  otherwise 0.
 
         """
@@ -291,7 +293,7 @@ class METADES(DES):
         Parameters
         ----------
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                      The predictions of each base classifier for all samples.
+                        Probabilities estimates by each each base classifier for each sample.
 
         kp : int
              The number of output profiles (most similar) to be selected.
@@ -324,12 +326,12 @@ class METADES(DES):
         Parameters
         ----------
         competences : array of shape = [n_samples, n_classifiers]
-                      The competence level estimated for each base classifier and test example
+                      The competence level estimated for each base classifier and test example.
 
         Returns
         -------
         selected_classifiers : array of shape = [n_samples, n_classifiers]
-                               Boolean matrix containing True if the base classifier is select, False otherwise
+                               Boolean matrix containing True if the base classifier is select, False otherwise.
 
         """
         if competences.ndim < 2:
@@ -343,7 +345,8 @@ class METADES(DES):
 
     def estimate_competence_from_proba(self, query, probabilities):
         """Estimate the competence of each base classifier :math:`c_i`
-        the classification of the query sample.
+        the classification of the query sample. This method received an array with the pre-calculated probability
+        estimates for each query.
 
         First, the meta-features of each base classifier :math:`c_i` for the classification of the
         query sample are estimated. These meta-features are passed down to the meta-classifier :math:`\\lambda`
@@ -352,15 +355,15 @@ class METADES(DES):
         Parameters
         ----------
         query : array of shape = [n_samples, n_features]
-                The test examples
+                The test examples.
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                      The predictions of each base classifier for all samples.
+                        Probabilities estimates obtained by each each base classifier for each query sample.
 
         Returns
         -------
         competences : array of shape = [n_samples, n_classifiers]
-                      The competence level estimated for each base classifier and test example
+                      The competence level estimated for each base classifier and test example.
         """
         _, idx_neighbors = self._get_region_competence(query)
         _, idx_neighbors_op = self._get_similar_out_profiles(probabilities)

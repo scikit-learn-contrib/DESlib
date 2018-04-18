@@ -201,8 +201,6 @@ def predict_proba_ensemble(classifier_ensemble, X):
 
 
 def aggregate_proba_ensemble_weighted(ensemble_proba, weights):
-    # TODO verify if the new implementation is correct
-    #predicted_proba = np.einsum('ijk,ij->ik', ensemble_proba, weights) / n_classifiers
     predicted_proba = ensemble_proba * np.expand_dims(weights, axis=2)
     predicted_proba = predicted_proba.mean(axis=1)
 

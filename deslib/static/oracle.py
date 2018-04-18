@@ -73,7 +73,8 @@ class Oracle:
 
         Returns
         -------
-        accuracy : Classification accuracy of the Oracle model.
+        accuracy : float
+                   Classification accuracy of the Oracle model.
         """
         from sklearn.metrics import accuracy_score
         accuracy = accuracy_score(y, self.predict(X, y))

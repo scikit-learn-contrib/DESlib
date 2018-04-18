@@ -151,14 +151,12 @@ def ccprmod(supports, idx_correct_label, B=20):
     C_src : array of shape = [n_samples]
             representing the classifier competences at each data point
 
-    Example
-    -------
-    supports = [[0.3, 0.6, 0.1],[1.0/3, 1.0/3, 1.0/3]]
-    idx_correct_label = [1,0]
-
-    ccprmod(supports,idx_correct_label)
-    ans = 0.784953394056843
-          0.332872292262951
+    Examples
+    --------
+    >>> supports = [[0.3, 0.6, 0.1],[1.0/3, 1.0/3, 1.0/3]]
+    >>> idx_correct_label = [1,0]
+    >>> ccprmod(supports,idx_correct_label)
+    ans = [0.784953394056843, 0.332872292262951]
 
     References
     ----------

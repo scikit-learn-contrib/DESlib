@@ -53,7 +53,6 @@ def test_estimate_competence_kuncheva_ex():
 
 
 # Testing example from kuncheva's book (combining pattern classifiers)
-# TODO: debug this test example to ascertain it is doing what I want.
 def test_estimate_competence_kuncheva_ex_batch():
     # considering a batch composed of 10 samples
     query = np.ones((10, 2))

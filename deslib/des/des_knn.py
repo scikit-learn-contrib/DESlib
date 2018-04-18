@@ -106,10 +106,10 @@ class DESKNN(DS):
         Parameters
         ----------
         query : array cf shape  = [n_samples, n_features]
-                The query sample
+                The query sample.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      The predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifiers for all test examples.
 
         Notes
         ------
@@ -119,8 +119,11 @@ class DESKNN(DS):
 
         Returns
         -------
-        competences : Dictionary = {accuracy, diversity}
-                      Accuracy and diversity estimates of all base classifiers for all query samples.
+        accuracy : array of shape = [n_samples, n_classifiers}
+                   Local Accuracy estimates (competences) of the base classifiers for all query samples.
+
+        diversity : array of shape = [n_samples, n_classifiers}
+                    Average pairwise diversity of each base classifiers for all test examples.
 
         """
         _, idx_neighbors = self._get_region_competence(query)
@@ -130,7 +133,7 @@ class DESKNN(DS):
         predicted_matrix = self.BKS_dsel[idx_neighbors, :]
         targets = self.DSEL_target[idx_neighbors]
 
-        # TODO: try to optimize this part with numpy instead of for loops
+        # TODO: optimize this part with numpy instead of for loops
         # Calculate the more_diverse matrix. It becomes computationally expensive
         # When the region of competence is high
         diversity = np.zeros((query.shape[0], self.n_classifiers))
@@ -191,11 +194,10 @@ class DESKNN(DS):
                 The test examples
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifiers for all test examples
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                        The predictions of each base classifier for all samples. (For methods that
-                        always require probabilities from the base classifiers.)
+                        Probabilities estimates of each base classifier for all test examples.
 
         Notes
         ------
@@ -206,8 +208,8 @@ class DESKNN(DS):
 
         Returns
         -------
-        predicted_label : array of shape = [n_samples
-                          The predicted label for each query
+        predicted_label : array of shape = [n_samples]
+                          Predicted class label for each test example.
         """
 
         if query.ndim < 2:
@@ -237,14 +239,13 @@ class DESKNN(DS):
         Parameters
         ----------
         query : array of shape = [n_samples, n_features]
-                The test examples
+                The test examples.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      The predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifiers for all test examples.
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                      The predictions of each base classifier for all samples. (For methods that
-                      always require probabilities from the base classifiers.)
+                        Probabilities estimates of each base classifier for all test examples.
 
         Notes
         ------
@@ -255,7 +256,7 @@ class DESKNN(DS):
         Returns
         -------
         predicted_proba : array = [n_samples, n_classes]
-                          The probability estimates for all classes
+                          Probability estimates for all test examples.
         """
 
         if query.shape[0] != probabilities.shape[0]:
