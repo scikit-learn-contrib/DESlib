@@ -9,3 +9,4 @@ coverage
 pytest-cov
 pillow
 sphinx_gallery
+matplotlib

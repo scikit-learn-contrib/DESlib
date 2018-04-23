@@ -65,7 +65,6 @@ class KNORAU(DES):
 
         self.name = 'k-Nearest Oracles Union (KNORA-U)'
 
-
     def estimate_competence(self, query, predictions=None):
         """The competence of the base classifiers is simply estimated as the number of samples
         in the region of competence that it correctly classified.
@@ -74,15 +73,16 @@ class KNORAU(DES):
 
         Parameters
         ----------
-        query : array of shape = [n_samples, n_features] containing the test sample
+        query : array of shape = [n_samples, n_features]
+                The test examples.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      The predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifiers for all test examples.
 
         Returns
         -------
         competences : array of shape = [n_samples, n_classifiers]
-                      The competence level estimated for each base classifier and test example
+                      Competence level estimated for each base classifier and test example.
 
         """
         _, idx_neighbors = self._get_region_competence(query)
@@ -99,12 +99,12 @@ class KNORAU(DES):
         Parameters
         ----------
         competences : array of shape = [n_samples, n_classifiers]
-                      The competence level estimated for each base classifier and test example
+                     Competence level estimated for each base classifier and test example.
 
         Returns
         -------
         selected_classifiers : array of shape = [n_samples, n_classifiers]
-                               Boolean matrix containing True if the base classifier is select, False otherwise
+                               Boolean matrix containing True if the base classifier is select, False otherwise.
         """
         if competences.ndim < 2:
             competences = competences.reshape(1, -1)

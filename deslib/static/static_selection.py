@@ -57,16 +57,15 @@ class StaticSelection(ClassifierMixin):
 
     def fit(self, X, y):
         """Fit the static selection model by select an ensemble of classifier containing the base classifiers with
-         highest accuracy in the given dataset.
+        highest accuracy in the given dataset.
 
-         Parameters
+        Parameters
         ----------
         X : array of shape = [n_samples, n_features]
-            The data to be classified
+            Data used to fit the model.
 
         y : array of shape = [n_samples]
-            Class labels of each sample in X.
-
+            class labels of each example in X.
         """
         self.classes = np.unique(y)
         self.n_classes = self.classes.size
@@ -99,8 +98,7 @@ class StaticSelection(ClassifierMixin):
         return predicted_labels
 
     def _check_is_fitted(self):
-        """Verify if the estimator algorithm was fitted.
-        Raises an error if it is not fitted.
+        """Verify if the estimator algorithm was fitted. Raises an error if it is not fitted.
         """
         if self.ensemble is None:
             raise NotFittedError('Estimator not fitted. Call "fit" before exploiting the model.')

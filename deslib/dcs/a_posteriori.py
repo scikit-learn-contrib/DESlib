@@ -88,6 +88,22 @@ class APosteriori(DCS):
         self.name = 'A Posteriori'
 
     def fit(self, X, y):
+        """Prepare the DS model by setting the KNN algorithm and
+        pre-processing the information required to apply the DS
+        method.
+
+        Parameters
+        ----------
+        X : array of shape = [n_samples, n_features]
+            Data used to fit the model.
+
+        y : array of shape = [n_samples]
+            class labels of each example in X.
+
+        Returns
+        -------
+        self
+        """
         super(APosteriori, self).fit(X, y)
         self.dsel_scores = self._preprocess_dsel_scores()
         return self
@@ -112,15 +128,15 @@ class APosteriori(DCS):
         Parameters
         ----------
         query : array cf shape  = [n_samples, n_features]
-                The query sample
+                The query sample.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      The predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifiers for the test examples.
 
         Returns
         -------
         competences : array of shape = [n_samples, n_classifiers]
-                      The competence level estimated for each base classifier and test example
+                      Competence level estimated for each base classifier and test example.
         """
         dists, idx_neighbors = self._get_region_competence(query)
         # Guarantee that these arrays are view as a 2D array for the case where a single test sample is passed down.

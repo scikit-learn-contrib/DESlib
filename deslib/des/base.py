@@ -80,15 +80,16 @@ class DES(DS):
 
         Parameters
         ----------
-        query : array containing the test sample = [n_samples, n_features]
+        query : array of shape  = [n_samples, n_features]
+                The test examples
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifiers for all test examples.
 
         Returns
         -------
         competences : array of shape = [n_samples, n_classifiers]
-                      The competence level estimated for each base classifier and test example
+                      Competence level estimated for each base classifier and test example.
         """
         pass
 
@@ -102,33 +103,31 @@ class DES(DS):
         Parameters
         ----------
         query : array cf shape  = [n_samples, n_features]
-                The query sample
+                The query sample.
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                      The predictions of each base classifier for all samples.
+                        Probabilities estimates of each base classifier for all test examples.
 
         Returns
         -------
-        competences : array = [n_classifiers] containing the competence level estimated
-        for each base classifier
+        competences : array = [n_samples, n_classifiers]
+                      Competence level estimated for each base classifier and test example.
         """
         pass
 
     def select(self, competences):
-        """Select the most competent classifier for
-        the classification of the query sample x.
-        The most competent classifier (dcs) or an ensemble
-        with the most competent classifiers (des) is returned
+        """Select the most competent classifiers to compose an ensemble for
+        the classification of the query sample X.
 
         Parameters
         ----------
         competences : array of shape = [n_samples, n_classifiers]
-                      The estimated competence level of each base classifier for each test example
+                      Estimated competence level of each base classifier for each test example.
 
         Returns
         -------
         selected_classifiers : array of shape = [n_samples, n_classifiers]
-                               Boolean matrix containing True if the base classifier is select, False otherwise
+                               Boolean matrix containing True if the base classifier is select, False otherwise.
         """
         pass
 
@@ -149,18 +148,19 @@ class DES(DS):
         Parameters
         ----------
         query : array of shape = [n_samples, n_features]
-                The test examples
+                The test examples.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Contains the predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifier for all test examples.
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                        The predictions of each base classifier for all samples. (For methods that
-                        always require probabilities from the base classifiers.)
+                        Probabilities estimates of each base classifier for all test examples. (For methods that always
+                        require probabilities from the base classifiers).
 
         Returns
         -------
-        predicted_label: The predicted label of the query
+        predicted_label : array of shape = [n_samples]
+                          Predicted class label for each test example.
         """
         if query.ndim < 2:
             query = query.reshape(1, -1)
@@ -213,19 +213,18 @@ class DES(DS):
         Parameters
         ----------
         query : array of shape = [n_samples, n_features]
-                The test examples
+                The test examples.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      The predictions of all base classifier for all samples in the query array
+                      Predictions of the base classifier for all test examples.
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                      The predictions of each base classifier for all samples. (For methods that
-                      always require probabilities from the base classifiers.)
+                        Probabilities estimates of each base classifier for all test examples.
 
         Returns
         -------
         predicted_proba : array = [n_samples, n_classes]
-                          The probability estimates for all classes
+                          The probability estimates for all test examples.
         """
 
         if query.shape[0] != probabilities.shape[0]:
