@@ -43,13 +43,9 @@ def exponential_func(n_classes, support_correct):
     """
     support_correct[support_correct > 1.0] = 1.0
     support_correct[support_correct < 0.0] = 0.0
-    C_src = []
-    for idx, support in enumerate(support_correct):
-
-        temp = (1.0 - ((n_classes - 1.0) * support)/(1.0 - support))
-        C_src.append(1.0 - (2.0**temp))
-
-    return np.array(C_src)
+    temp = (1.0 - ((n_classes - 1.0) * support_correct) / (1.0 - support_correct))
+    C_src = (1.0 - (2**temp))
+    return C_src
 
 
 def log_func(n_classes, support_correct):
@@ -225,13 +221,15 @@ def min_difference(supports, idx_correct_label):
     multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197–206.
     """
     n_samples = len(idx_correct_label)
-    C_src = np.zeros(n_samples)
-    for index in range(n_samples):
-        supports_correct = supports[index][idx_correct_label[index]]
-        # removing index of the correct class
-        difference = supports_correct - supports[index, :]
-        difference = np.delete(difference, idx_correct_label[index])
-        C_src[index] = np.sort(difference)[0]
+    # Boolean mask for the correct class
+    mask = np.zeros(supports.shape, dtype=np.bool)
+    mask[np.arange(n_samples), idx_correct_label] = True
+    # Get supports for the correct class
+    supports_correct = supports[mask]
+    # Get supports for the other classes
+    supports_others = supports[~mask]
+    difference = supports_correct.reshape(-1, 1) - supports_others.reshape(supports_correct.size, -1)
+    C_src = np.sort(difference, axis=1)[:, 0]
     return C_src
 
 
@@ -254,6 +252,7 @@ def softmax(w, theta=1.0):
            respective elements in N
 
     """
+    w = np.atleast_2d(w)
     e = np.exp(np.array(w) / theta)
-    dist = e / np.sum(e)
+    dist = e / np.sum(e, axis=1).reshape(-1, 1)
     return dist

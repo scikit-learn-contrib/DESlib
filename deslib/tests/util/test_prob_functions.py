@@ -37,7 +37,7 @@ def test_ccprmod_one_support():
 
 def test_softmax_sum_to_one():
     test = np.random.rand(10)
-    assert np.isclose(sum(softmax(test)), 1.0, atol=0.001)
+    assert np.allclose(np.sum(softmax(test)), 1.0, atol=0.001)
 
 
 @pytest.mark.parametrize('vector, expected', [([0, 1, -0.5, 0.5], [0.1674, 0.4551, 0.1015, 0.2760]),
@@ -81,6 +81,14 @@ def test_exponential_func_multi_class(supports_correct, expected):
     n_classes = 3
     result = exponential_func(n_classes, supports_correct)
     assert np.isclose(result, expected, atol=0.01).all()
+
+
+def test_exponential_func_multi_class_batch():
+    supports_correct = np.array([0.33, 0.0, 1.0])
+    expected = [-0.01, -1.0, 1.0]
+    n_classes = 3
+    result = exponential_func(n_classes, supports_correct)
+    assert np.allclose(result, expected, atol=0.01)
 
 
 @pytest.mark.parametrize('supports_correct, expected', [(np.array([0.5]), 0.00),
