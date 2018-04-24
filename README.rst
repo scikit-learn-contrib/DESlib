@@ -135,6 +135,22 @@ Here we show an example using the KNORA-E method using random forest as a pool o
 The library accepts any list of classifiers (from scikit-learn) as input, including a list containing different classifier models (heterogeneous ensembles).
 More examples to use the API can be found in the documentation and im the Examples directory.
 
+Citation
+---------
+
+If you use DESLib in a scientific paper, please consider citing the following paper:
+
+Rafael M. O. Cruz, Luiz G. Hafemann, Robert Sabourin and George D. C. Cavalcanti **DESlib: A Dynamic ensemble selection library in Python.** arXiv preprint arXiv:1802.04967 (2018).
+
+.. code-block:: text
+
+    @article{cruz_deslib:2018,
+        title = {{DESlib}: {A} {Dynamic} ensemble selection library in {Python}},
+        journal = {arXiv preprint arXiv:1802.04967},
+        author = {Cruz, Rafael M. O. and Hafemann, Luiz G. and Sabourin, Robert and Cavalcanti, George D. C.},
+        year = {2018}
+    }
+
 References:
 -----------
 
