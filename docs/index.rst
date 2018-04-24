@@ -19,7 +19,7 @@ more and more works are reporting the superior performance of such techniques ov
 have achieved better classification performance especially when dealing with small-sized and imbalanced datasets. A
 comprehensive review of dynamic selection can be found in the following papers [1]_ [2]_
 
-philosophy
+Philosophy
 -----------
 DESlib was developed with two objectives in mind: to make it easy to integrate Dynamic Selection algorithms to
 machine learning projects, and to facilitate research on this topic, by providing implementations of the main
@@ -79,12 +79,22 @@ The library accepts any list of classifiers (from scikit-learn) as input, includ
 More examples to use the API can be found in the `examples page <auto_examples/index.html>`_.
 
 
-Indices and tables
+Citation
 ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+If you use DESLib in a scientific paper, please consider citing the following paper:
+
+Rafael M. O. Cruz, Luiz G. Hafemann, Robert Sabourin and George D. C. Cavalcanti **DESlib: A Dynamic ensemble selection library in Python.** arXiv preprint arXiv:1802.04967 (2018).
+
+.. code-block:: text
+
+    @article{cruz_deslib:2018,
+        title = {{DESlib}: {A} {Dynamic} ensemble selection library in {Python}},
+        journal = {arXiv preprint arXiv:1802.04967},
+        author = {Cruz, Rafael M. O. and Hafemann, Luiz G. and Sabourin, Robert and Cavalcanti, George D. C.},
+        year = {2018}
+    }
+
 
 
 References
