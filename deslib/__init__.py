@@ -22,4 +22,4 @@ util
 # list of all modules available in the library
 __all__ = ['des', 'dcs', 'static', 'util', 'tests']
 
-__version__ = '0.2'
+__version__ = '0.3.dev'
