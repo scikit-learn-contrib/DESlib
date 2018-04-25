@@ -42,4 +42,4 @@ Implemented methods:
 * Aggregation functions
 
 .. _Rafael M O Cruz: https://github.com/Menelau
-.. _Luiz G Hafemann: https://github.com/lghafemann
+.. _Luiz G Hafemann: https://github.com/luizgh
