@@ -103,7 +103,7 @@ class Probabilistic(DES):
         if self.k is None:
             self.k = self.n_samples
 
-        self._fit_region_competence(X, y_ind, self.n_samples)
+        self._fit_region_competence(X, y_ind, self.k)
         # Pre process the scores in DSEL (it is required only for the source of competence estimation
         # Maybe I should not keep this matrix in order to reduce memory requirement.
         self.dsel_scores = self._preprocess_dsel_scores()
@@ -133,13 +133,14 @@ class Probabilistic(DES):
                       Competence level estimated for each base classifier and test example.
         """
         dists, idx_neighbors = self._get_region_competence(query)
-        sorted_neighbors = np.argsort(idx_neighbors, axis=1)
-        dists_organized = np.take(dists, sorted_neighbors)
+#        sorted_neighbors = np.argsort(idx_neighbors, axis=1)
+#        dists_organized = np.take(dists, sorted_neighbors)
 
-        potential_dists = self.potential_func(dists_organized)
+        potential_dists = self.potential_func(dists)
+        del dists
         sum_potential = np.sum(potential_dists, axis=1)
 
-        competences = self.C_src[np.newaxis, :, :] * potential_dists[:, :, np.newaxis]
+        competences = self.C_src[idx_neighbors, :] * potential_dists[:, :, np.newaxis]
         competences = competences.sum(axis=1)/sum_potential.reshape(-1, 1)
 
         return competences
