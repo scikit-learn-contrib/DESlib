@@ -133,15 +133,14 @@ class Probabilistic(DES):
                       Competence level estimated for each base classifier and test example.
         """
         dists, idx_neighbors = self._get_region_competence(query)
-#        sorted_neighbors = np.argsort(idx_neighbors, axis=1)
-#        dists_organized = np.take(dists, sorted_neighbors)
 
         potential_dists = self.potential_func(dists)
-        del dists
         sum_potential = np.sum(potential_dists, axis=1)
 
-        competences = self.C_src[idx_neighbors, :] * potential_dists[:, :, np.newaxis]
-        competences = competences.sum(axis=1)/sum_potential.reshape(-1, 1)
+        # Using einsum here since it is way more memory efficient. This line is equivalent to
+        # competences = self.C_src[idx_neighbors, :] * potential_dists[:, :, np.newaxis]
+        competences = np.einsum('ijk,ij->ik', self.C_src[idx_neighbors, :], potential_dists)
+        competences = competences / sum_potential.reshape(-1, 1)
 
         return competences
 
@@ -576,3 +575,4 @@ class MinimumDifference(Probabilistic):
             C_src[:, clf_index] = min_difference(supports, self.DSEL_target)
 
         return C_src
+
