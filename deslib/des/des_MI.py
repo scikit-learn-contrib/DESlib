@@ -11,6 +11,7 @@ from deslib.util.aggregation import majority_voting_rule
 
 from sklearn.preprocessing import normalize
 
+
 class DESMI(DS):
     """Dynamic ensemble Selection for multi-class imbalanced datasets (DES-MI).
 
@@ -21,20 +22,20 @@ class DESMI(DS):
                        The generated_pool of classifiers trained for the corresponding classification problem.
                        The classifiers should support the method "predict".
 
-    k : int (Default = 5)
+    k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
 
-    pct_accuracy : float (Default = 0.5)
+    pct_accuracy : float (Default = 0.4)
         Percentage of base classifiers selected based on accuracy
 
 
     alpha : float (Default = 0.9)
-        Scaling coefficient to regulate the weight value
+            Scaling coefficient to regulate the weight value
 
     References
     ----------
     García, S.; Zhang, Z.-L.; Altalhi, A.; Alshomrani, S. & Herrera, F. "Dynamic ensemble selection for multi-class
-     imbalanced datasets." Information Sciences, 2018, 445-446, 22 - 37
+    imbalanced datasets." Information Sciences, 2018, 445-446, 22 - 37
 
     Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection of classifiers—a comprehensive review."
     Pattern Recognition 47.11 (2014): 3665-3680.
@@ -43,7 +44,7 @@ class DESMI(DS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers, k=7, pct_accuracy=0.4, alpha = 0.9):
+    def __init__(self, pool_classifiers, k=7, pct_accuracy=0.4, alpha=0.9):
 
         super(DESMI, self).__init__(pool_classifiers, k)
 
@@ -53,7 +54,7 @@ class DESMI(DS):
 
         self._alpha = alpha
 
-    def estimate_competence(self, query):
+    def estimate_competence(self, query, predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}` for
         the classification of the query sample.
 
@@ -69,6 +70,9 @@ class DESMI(DS):
         ----------
         query : array cf shape  = [n_samples, n_features]
                 The query sample.
+
+        predictions : array of shape = [n_samples, n_classifiers]
+                      Predictions of the base classifiers for all test examples.
 
         Returns
         -------
@@ -104,8 +108,8 @@ class DESMI(DS):
 
         Returns
         -------
-        selected_classifiers : array of shape = [n_samples, self.J]
-                               Matrix containing the indices of the J selected base classifier for each test example.
+        selected_classifiers : array of shape = [n_samples, self.N]
+                               Matrix containing the indices of the N selected base classifier for each test example.
         """
         # Check if the accuracy and diversity arrays have the correct dimensionality.
         if accuracy.ndim < 2:
