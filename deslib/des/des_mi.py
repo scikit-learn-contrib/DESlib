@@ -210,3 +210,8 @@ class DESMI(DS):
         if self.N <= 0:
             raise ValueError("The values of N should be higher than 0"
                              "N = {}" .format(self.N))
+        
+        # The value of Scaling coefficient (alpha) should be positive to add more weight to the minority clas
+        if self._alpha <=0:
+            raise ValueError("The values of alpha should be higher than 0"
+                             "alpha = {}".format(self._alpha))
