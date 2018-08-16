@@ -3,6 +3,8 @@ from sklearn.linear_model import Perceptron
 from deslib.tests.examples_test import *
 from deslib.des.des_mi import DESMI
 
+# TODO: create test rourtine for the estimate_competence method
+
 
 @pytest.mark.parametrize('alpha', [-1.0, -0.5, 0.0])
 def test_check_alpha_value(alpha):
@@ -38,15 +40,6 @@ def test_require_proba():
     DESMI([clf1, clf1, clf1])
 
 
-# def test_estimate_competence_single_sample():
-#     query = np.ones(2)
-#     predictions = np.array([0, 1, 0])
-#     pool_classifiers = create_pool_classifiers()
-#     des_mi = DESMI(pool_classifiers)
-#     return True
-# def test_estimate_competence_batch_samples():
-#     return True
-#
 def test_select_single_sample():
     pool_classifiers = create_pool_classifiers()
     des_mi = DESMI(pool_classifiers, pct_accuracy=0.7)
@@ -73,7 +66,8 @@ def test_classify_with_ds_single_sample():
     # simulated predictions of the pool of classifiers
     predictions = np.array([0, 1, 0])
 
-    desmi_test = DESMI(pool_classifiers)
+    desmi_test = DESMI(pool_classifiers, DFP=True)
+    desmi_test.DFP_mask = np.ones((1, 3))
     desmi_test.estimate_competence = MagicMock(return_value=(np.ones((1, 3))))
     desmi_test.select = MagicMock(return_value=np.array([[0, 2]]))
     result = desmi_test.classify_with_ds(query, predictions)
@@ -122,7 +116,8 @@ def test_proba_with_ds_diff_sizes():
 def test_predict_proba_with_ds():
     query = np.array([-1, 1])
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
-    desmi_test = DESMI(pool_classifiers)
+    desmi_test = DESMI(pool_classifiers, DFP=True)
+    desmi_test.DFP_mask = np.ones((1, 6))
     selected_indices = np.array([[0, 1, 5]])
 
     desmi_test.estimate_competence = MagicMock(return_value=np.ones(6))
