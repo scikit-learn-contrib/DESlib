@@ -100,6 +100,7 @@ class DESMI(DS):
         return accuracy
 
     def select(self, competences):
+
         """Select an ensemble containing the N most accurate classifiers for the classification of the query sample.
 
         Parameters
@@ -219,3 +220,4 @@ class DESMI(DS):
         if self._alpha <= 0.:
             raise ValueError("The values of alpha should be higher than 0.0, "
                              "alpha = {}" .format(self._alpha))
+
