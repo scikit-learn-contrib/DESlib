@@ -44,10 +44,10 @@ class DESMI(DS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers, k=7, pct_accuracy=0.4, alpha=0.9):
+    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
+                 IH_rate=0.30, pct_accuracy=0.4, alpha=0.9):
 
-        super(DESMI, self).__init__(pool_classifiers, k)
-
+        super(DESMI, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate)
         self.name = 'Dynamic Ensemble Selection for multi-class imbalanced datasets (DES-MI)'
         self.N = int(self.n_classifiers * pct_accuracy)
         self._alpha = alpha
