@@ -44,15 +44,16 @@ class DESMI(DS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers, k=7, pct_accuracy=0.4, alpha=0.9):
+    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
+                 IH_rate=0.30, pct_accuracy=0.4, alpha=0.9):
 
-        super(DESMI, self).__init__(pool_classifiers, k)
-
+        super(DESMI, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate)
         self.name = 'Dynamic Ensemble Selection for multi-class imbalanced datasets (DES-MI)'
         self.N = int(self.n_classifiers * pct_accuracy)
-        self._validate_parameters()
-
         self._alpha = alpha
+
+        # Check if the parameters are OK. Change that to the fit method.
+        self._validate_parameters()
 
     def estimate_competence(self, query, predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}` for
@@ -98,13 +99,14 @@ class DESMI(DS):
 
         return accuracy
 
-    def select(self, accuracy):
+    def select(self, competences):
+
         """Select an ensemble containing the N most accurate classifiers for the classification of the query sample.
 
         Parameters
         ----------
-        accuracy : array of shape = [n_samples, n_classifiers]
-                   Local Accuracy estimates (competence) of each base classifiers for all query samples.
+        competences : array of shape = [n_samples, n_classifiers]
+                      Competence estimates of each base classifiers for all query samples.
 
         Returns
         -------
@@ -112,13 +114,13 @@ class DESMI(DS):
                                Matrix containing the indices of the N selected base classifier for each test example.
         """
         # Check if the accuracy and diversity arrays have the correct dimensionality.
-        if accuracy.ndim < 2:
-            accuracy = accuracy.reshape(1, -1)
+        if competences.ndim < 2:
+            competences = competences.reshape(1, -1)
 
         # sort the array to remove the most accurate classifiers
-        competent_indices = np.argsort(accuracy, axis=1)[:, ::-1][:, 0:self.N]
+        selected_classifiers = np.argsort(competences, axis=1)[:, ::-1][:, 0:self.N]
 
-        return competent_indices
+        return selected_classifiers
 
     def classify_with_ds(self, query, predictions, probabilities=None):
         """Predicts the label of the corresponding query sample.
@@ -211,7 +213,11 @@ class DESMI(DS):
             raise ValueError("The values of N should be higher than 0"
                              "N = {}" .format(self.N))
         
-        # The value of Scaling coefficient (alpha) should be positive to add more weight to the minority clas
-        if self._alpha <=0:
-            raise ValueError("The values of alpha should be higher than 0"
-                             "alpha = {}".format(self._alpha))
+        # The value of Scaling coefficient (alpha) should be positive to add more weight to the minority class
+        if not isinstance(self._alpha, np.float):
+            raise TypeError("parameter alpha should be a float!")
+
+        if self._alpha <= 0.:
+            raise ValueError("The values of alpha should be higher than 0.0, "
+                             "alpha = {}" .format(self._alpha))
+
