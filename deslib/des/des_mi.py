@@ -90,14 +90,13 @@ class DESMI(DS):
         weight = 1./(1 + np.exp(self._alpha * num))
         weight = normalize(weight, norm='l1')
         correct_num = self.processed_dsel[idx_neighbors, :]
-        correct = np.zeros((query.shape[0], self.k, self.n_classifiers))
-        for i in range(self.n_classifiers):
-            correct[:, :, i] = correct_num[:, :, i] * weight
 
+        # Apply the weights to each sample for each base classifier
+        competence = correct_num * weight[:, :, np.newaxis]
         # calculate the classifiers mean accuracy for all samples/base classifier
-        accuracy = np.mean(correct, axis=1)
+        competence = np.mean(competence, axis=1)
 
-        return accuracy
+        return competence
 
     def select(self, competences):
 
