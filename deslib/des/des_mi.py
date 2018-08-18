@@ -93,8 +93,8 @@ class DESMI(DS):
 
         # Apply the weights to each sample for each base classifier
         competence = correct_num * weight[:, :, np.newaxis]
-        # calculate the classifiers mean accuracy for all samples/base classifier
-        competence = np.mean(competence, axis=1)
+        # calculate the classifiers mean competence for all samples/base classifier
+        competence = np.sum(competence, axis=1)
 
         return competence
 
