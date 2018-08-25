@@ -12,7 +12,6 @@ from deslib.des.des_mi import DESMI
 from deslib.des.des_p import DESP
 from deslib.des.knop import KNOP
 from deslib.des.meta_des import METADES
-from deslib.des.probabilistic import RRC
 
 
 def setup_classifiers(encode_labels=None):
