@@ -49,7 +49,7 @@ def test_classify_instance_selection_batch():
     query = np.ones((n_samples, 2))
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
     des_test = DES(pool_classifiers, mode='selection')
-    selected_index = np.array([[True, True, False, False, False, True]*n_samples])
+    selected_index = np.array([[True, True, False, False, False, True] * n_samples])
     des_test.select = MagicMock(return_value=selected_index)
 
     predictions = []
@@ -251,4 +251,3 @@ def test_proba_with_ds_diff_sizes():
 
     with pytest.raises(ValueError):
         des_test.predict_proba_with_ds(query, predictions, probabilities)
-
