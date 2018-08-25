@@ -21,8 +21,8 @@ dsel_processed_ex1 = np.array([[1, 1, 1], [0, 0, 1], [0, 0, 1], [1, 1, 0], [1, 1
 
 # pre-calculated indices of 7 Nearest neighbors used to estimate the competence level
 neighbors_ex1 = np.array([[8, 11,  4,  7, 13, 10,  1],
-                         [7,  1, 11, 13,  0,  8,  4],
-                         [5,  3,  4,  8, 10, 11,  7]])
+                          [7,  1, 11, 13,  0,  8,  4],
+                          [5,  3,  4,  8, 10, 11,  7]])
 
 # Scores obtained for the two classes. This information is used by the techniques based on posterior probabilities
 dsel_scores_ex1 = np.tile(np.array([[1.0, 0.0], [0.5, 0.5], [0.8, 0.2]]), (15, 1, 1))
@@ -76,20 +76,20 @@ dsel_processed_kuncheva = np.transpose(np.array([[1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 
 # scores obtained by each class by the base classifier ci. In this example we consider that the posteriori is always 1
 # fo the predicted class
 dsel_scores_ex_kuncheva = np.array([[[0.0, 1.0, 0.0],
-                                   [0.0, 0.0, 1.0],
-                                   [0.0, 1.0, 0.0],
-                                   [0.0, 1.0, 0.0],
-                                   [1.0, 0.0, 0.0],
-                                   [1.0, 0.0, 0.0],
-                                   [0.0, 1.0, 0.0],
-                                   [0.0, 1.0, 0.0],
-                                   [0.0, 0.0, 1.0],
-                                   [0.0, 0.0, 1.0],
-                                   [1.0, 0.0, 0.0],
-                                   [0.0, 1.0, 0.0],
-                                   [0.0, 1.0, 0.0],
-                                   [0.0, 1.0, 0.0],
-                                   [1.0, 0.0, 0.0]]]).reshape(15, 1, 3)  # 15 samples, 1 classifier, 3 classes
+                                     [0.0, 0.0, 1.0],
+                                     [0.0, 1.0, 0.0],
+                                     [0.0, 1.0, 0.0],
+                                     [1.0, 0.0, 0.0],
+                                     [1.0, 0.0, 0.0],
+                                     [0.0, 1.0, 0.0],
+                                     [0.0, 1.0, 0.0],
+                                     [0.0, 0.0, 1.0],
+                                     [0.0, 0.0, 1.0],
+                                     [1.0, 0.0, 0.0],
+                                     [0.0, 1.0, 0.0],
+                                     [0.0, 1.0, 0.0],
+                                     [0.0, 1.0, 0.0],
+                                     [1.0, 0.0, 0.0]]]).reshape(15, 1, 3)  # 15 samples, 1 classifier, 3 classes
 
 k_ex_kuncheva = 15
 
