@@ -87,7 +87,7 @@ class DESMI(DS):
         class_frequency = np.bincount(self.DSEL_target)
         targets = self.DSEL_target[idx_neighbors]       # [n_samples, K_neighbors]
         num = class_frequency[targets]
-        weight = 1./(1 + np.exp(self._alpha * num))
+        weight = 1. / (1 + np.exp(self._alpha * num))
         weight = normalize(weight, norm='l1')
         correct_num = self.processed_dsel[idx_neighbors, :]
 
@@ -99,7 +99,6 @@ class DESMI(DS):
         return competence
 
     def select(self, competences):
-
         """Select an ensemble containing the N most accurate classifiers for the classification of the query sample.
 
         Parameters
@@ -144,7 +143,6 @@ class DESMI(DS):
         predicted_label : array of shape = [n_samples]
                           Predicted class label for each test example.
         """
-
         if query.ndim < 2:
             query = query.reshape(1, -1)
 
@@ -185,7 +183,6 @@ class DESMI(DS):
         predicted_proba : array = [n_samples, n_classes]
                           Probability estimates for all test examples.
         """
-
         if query.shape[0] != probabilities.shape[0]:
             raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
                              'and predictions.shape is {}' .format(query.shape, predictions.shape))
@@ -211,7 +208,7 @@ class DESMI(DS):
         if self.N <= 0:
             raise ValueError("The values of N should be higher than 0"
                              "N = {}" .format(self.N))
-        
+
         # The value of Scaling coefficient (alpha) should be positive to add more weight to the minority class
         if not isinstance(self._alpha, np.float):
             raise TypeError("parameter alpha should be a float!")
@@ -219,4 +216,5 @@ class DESMI(DS):
         if self._alpha <= 0.:
             raise ValueError("The values of alpha should be higher than 0.0, "
                              "alpha = {}" .format(self._alpha))
+
 
