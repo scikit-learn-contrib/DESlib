@@ -21,7 +21,7 @@ def test_not_predict_proba():
 def test_select_all_ones():
     competences = np.ones(100)
     probabilistic_test = Probabilistic(create_pool_all_agree(1, 100))
-    probabilistic_test.n_classes = 2
+    probabilistic_test.n_classes_ = 2
     selected_matrix = probabilistic_test.select(competences)
     assert selected_matrix.all()
 
@@ -30,7 +30,7 @@ def test_select_all_ones():
 def test_select_all_zeros():
     competences = np.zeros(100)
     probabilistic_test = Probabilistic(create_pool_all_agree(1, 100))
-    probabilistic_test.n_classes = 2
+    probabilistic_test.n_classes_ = 2
     selected_matrix = probabilistic_test.select(competences)
     assert selected_matrix.all()
 
@@ -40,7 +40,7 @@ def test_select_random_classifier():
     competences = np.random.rand(1, 100)
     expected = (competences > 0.25)
     probabilistic_test = Probabilistic(create_pool_all_agree(1, 100))
-    probabilistic_test.n_classes = 4
+    probabilistic_test.n_classes_ = 4
     indices = probabilistic_test.select(competences)
     assert np.array_equal(indices, expected)
 
@@ -152,9 +152,9 @@ def test_source_competence_rrc():
                                       [1.0 / 3, 1.0 / 3, 1.0 / 3],
                                       [0.5, 0.2, 0.3],
                                       [0.5, 0.2, 0.3]]]).reshape(4, 1, 3)  # 4 samples, 1 classifier and 3 classes
-    rrc_test.DSEL_target = [1, 0, 0, 1]
-    rrc_test.n_classes = 3
-    rrc_test.n_samples = 4
+    rrc_test.DSEL_target_ = [1, 0, 0, 1]
+    rrc_test.n_classes_ = 3
+    rrc_test.n_samples_ = 4
     C_src = rrc_test.source_competence()
     expected = np.array([[0.7849], [0.3328], [0.6428], [0.1194]])
     assert np.allclose(C_src, expected, atol=0.01)
@@ -175,9 +175,9 @@ def test_source_competence_kl():
     entropy_test.dsel_scores = np.array([[[0.33, 0.33, 0.33],
                                          [1.0, 0.0, 0.0],
                                          [1.0, 0.0, 0.0]]]).reshape(3, 1, 3)  # 3 Samples, 1 classifier, 3 classes
-    entropy_test.processed_dsel = np.array([[False], [True], [False]])
-    entropy_test.n_classes = 3
-    entropy_test.n_samples = 3
+    entropy_test.DSEL_processed_ = np.array([[False], [True], [False]])
+    entropy_test.n_classes_ = 3
+    entropy_test.n_samples_ = 3
     C_src = entropy_test.source_competence()
     expected = np.array([[0.0], [1.0], [-1.0]])
     assert np.allclose(C_src, expected, atol=0.01)
@@ -200,9 +200,9 @@ def test_source_competence_minimum_difference():
                                     [0.5, 0.2, 0.3],
                                     [0.5, 0.2, 0.3]]]).reshape(4, 1, 3)  # 4 samples, 1 classifier, 3 classes
 
-    md_test.DSEL_target = [1, 0, 0, 1]
-    md_test.n_classes = 3
-    md_test.n_samples = 4
+    md_test.DSEL_target_ = [1, 0, 0, 1]
+    md_test.n_classes_ = 3
+    md_test.n_samples_ = 4
     C_src = md_test.source_competence()
     expected = np.array([[0.3], [0.0], [0.2], [-0.3]])
     assert np.allclose(C_src, expected, atol=0.01)
@@ -224,9 +224,9 @@ def test_source_competence_logarithmic():
                                      [1.0, 0.0, 0.0],
                                      [0.0, 1.0, 0.0]]]).reshape(3, 1, 3)  # 3 sample, 1 classifier, 3 classes
 
-    log_test.DSEL_target = [1, 1, 1]
-    log_test.n_classes = 3
-    log_test.n_samples = 3
+    log_test.DSEL_target_ = [1, 1, 1]
+    log_test.n_classes_ = 3
+    log_test.n_samples_ = 3
     C_src = log_test.source_competence()
     expected = np.array([[0.0], [-1.0], [1.0]])
     assert np.allclose(C_src, expected, atol=0.01)
@@ -236,7 +236,7 @@ def test_source_competence_logarithmic():
 applied in the test_prob_functions.py to assert if the source_competence function fill the competence source
 (C_src) with the correct results. 
 
-Only two classes are considered in this example.
+Only two classes_ are considered in this example.
 The scores used are: [[0.5, 0.5], [1.0, 0.0], [0.0, 1.0]].
 The correct labels are: [1, 1, 1], so the supports for the correct class are: [0.5, 0.0, 1.0].
 The expected value should be: an np.array (3,1) with the values = [[0.0], [-1.0], [1.0]]].
@@ -249,9 +249,9 @@ def test_source_competence_exponential():
                                      [1.0, 0.0],
                                      [0.0, 1.0]]]).reshape(3, 1, 2)  # 3 samples, 1 classifier, 2 classes
 
-    exp_test.DSEL_target = [1, 1, 1]
-    exp_test.n_classes = 2
-    exp_test.n_samples = 3
+    exp_test.DSEL_target_ = [1, 1, 1]
+    exp_test.n_classes_ = 2
+    exp_test.n_samples_ = 3
     C_src = exp_test.source_competence()
     expected = np.array([[0.0], [-1.0], [1.0]])
     assert np.allclose(C_src, expected, atol=0.01)

@@ -65,7 +65,7 @@ def test_select_three_classes(index, expected):
     des_p_test = DESP(create_pool_classifiers())
     des_p_test.fit(X_dsel_ex1, y_dsel_ex1)
 
-    des_p_test.n_classes = 3
+    des_p_test.n_classes_ = 3
     des_p_test.neighbors = neighbors_ex1[index, :]
     des_p_test.distances = distances_ex1[index, :]
 
@@ -77,7 +77,7 @@ def test_select_three_classes(index, expected):
 
 def test_select_none_competent():
     des_p_test = DESP(create_pool_classifiers())
-    des_p_test.n_classes = 2
+    des_p_test.n_classes_ = 2
     competences = np.ones(des_p_test.n_classifiers) * 0.49
     indices = des_p_test.select(competences)
     expected = np.array([[True, True, True]])
