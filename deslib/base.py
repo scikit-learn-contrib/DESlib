@@ -9,17 +9,16 @@ from abc import abstractmethod, ABCMeta
 
 import numpy as np
 from scipy.stats import mode
-from sklearn.base import ClassifierMixin
+from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import BaseEnsemble
-from sklearn.exceptions import NotFittedError
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
-from sklearn.utils.validation import check_X_y, check_is_fitted
+from sklearn.utils.validation import check_X_y, check_is_fitted, check_array
 
 from deslib.util.instance_hardness import hardness_region_competence
 
 
-class DS(ClassifierMixin):
+class DS(BaseEstimator, ClassifierMixin):
     """Base class for a dynamic classifier (dcs) and ensemble (des) selection methods.
 
     All dcs and des techniques should inherit from this class.
@@ -35,39 +34,16 @@ class DS(ClassifierMixin):
         self.pool_classifiers = pool_classifiers
         self.n_classifiers = len(self.pool_classifiers)
         self.k = k
-        self.DFP = DFP                      # Dynamic Frienemy Pruning
-        self.with_IH = with_IH              # Whether to use hardness to switch between DS and KNN
-        self.safe_k = safe_k                # K value used for defining a safe region
-        self.IH_rate = IH_rate              # Hardness threshold use to decide between DS and KNN
-        self.processed_dsel = None
-        self.BKS_dsel = None
-        self.dsel_scores = None
-        self.roc_algorithm = None           # Algorithm used to define the region of competence
-        self.DSEL_data = None
-        self.DSEL_target = None
-        self.classes = None
-        self.n_classes = None
-        self.n_samples = None
-        self.n_features = None
+        self.DFP = DFP
+        self.with_IH = with_IH
+        self.safe_k = safe_k
+        self.IH_rate = IH_rate
+        self.needs_proba = needs_proba
 
         # TODO: remove these as class variables
         self.neighbors = None
         self.distances = None
         self.DFP_mask = None                # Mask used to apply the classifier pruning
-
-        if self.with_IH and self.safe_k is None:
-            self.safe_k = self.k
-
-        # check if the input parameters are correct. Raise an error if the generated_pool is not fitted or k < 1
-        self._check_parameters()
-
-        # Check if base classifiers are not using LabelEncoder (the case for scikit-learn's ensembles):
-        if isinstance(self.pool_classifiers, BaseEnsemble):
-            self.base_already_encoded = True
-        else:
-            self.base_already_encoded = False
-
-        self.needs_proba = needs_proba
 
     @abstractmethod
     def select(self, competences):
@@ -175,27 +151,39 @@ class DS(ClassifierMixin):
         -------
         self
         """
+        # Check if the lenght of X and y are consistent. Enforces a 2D X and 1D y
+        X, y = check_X_y(X, y)
+
+        # check if the input parameters are correct. Raise an error if the generated_pool is not fitted or k < 1
+        self._validate_parameters()
+
+        if self.with_IH and self.safe_k is None:
+            self.safe_k = self.k
+
+        # Check if base classifiers are not using LabelEncoder (the case for scikit-learn's ensembles):
+        if isinstance(self.pool_classifiers, BaseEnsemble):
+            self.base_already_encoded_ = True
+        else:
+            self.base_already_encoded_ = False
 
         y_ind = self.setup_label_encoder(y)
-
-        check_X_y(X, y_ind)
         self._set_dsel(X, y_ind)
         self._fit_region_competence(X, y_ind, self.k)
 
         return self
 
     def setup_label_encoder(self, y):
-        self.enc = LabelEncoder()
-        y_ind = self.enc.fit_transform(y)
-        self.classes = self.enc.classes_
+        self.enc_ = LabelEncoder()
+        y_ind = self.enc_.fit_transform(y)
+        self.classes_ = self.enc_.classes_
 
         return y_ind
 
     def _encode_base_labels(self, y):
-        if self.base_already_encoded:
+        if self.base_already_encoded_:
             return y
         else:
-            return self.enc.transform(y)
+            return self.enc_.transform(y)
 
     def _fit_region_competence(self, X, y, k):
         """Fit the k-NN classifier inside the dynamic selection method.
@@ -211,8 +199,8 @@ class DS(ClassifierMixin):
         k : int (Default=self.k)
             Number of neighbors used in the k-NN method.
         """
-        self.roc_algorithm = KNeighborsClassifier(n_neighbors=k, n_jobs=-1, algorithm='auto')
-        self.roc_algorithm.fit(X, y)
+        self.roc_algorithm_ = KNeighborsClassifier(n_neighbors=k, n_jobs=-1, algorithm='auto')
+        self.roc_algorithm_.fit(X, y)
 
     def _set_dsel(self, X, y):
         """Pre-Process the input X and y data into the dynamic selection dataset(DSEL) and
@@ -226,12 +214,12 @@ class DS(ClassifierMixin):
         y : array of shape = [n_samples]
             class labels of each sample in X.
         """
-        self.DSEL_data = X
-        self.DSEL_target = y
-        self.n_classes = self.classes.size
-        self.n_features = X.shape[1]
-        self.n_samples = self.DSEL_target.size
-        self.processed_dsel, self.BKS_dsel = self._preprocess_dsel()
+        self.DSEL_data_ = X
+        self.DSEL_target_ = y
+        self.n_classes_ = self.classes_.size
+        self.n_features_ = X.shape[1]
+        self.n_samples_ = self.DSEL_target_.size
+        self.DSEL_processed_, self.BKS_DSEL_ = self._preprocess_dsel()
 
     def _get_region_competence(self, query, k=None):
         """Compute the region of competence of the query sample
@@ -259,7 +247,7 @@ class DS(ClassifierMixin):
             if k is None:
                 k = self.k
 
-            dists, idx = self.roc_algorithm.kneighbors(query, n_neighbors=k, return_distance=True)
+            dists, idx = self.roc_algorithm_.kneighbors(query, n_neighbors=k, return_distance=True)
 
         else:
             dists = self.distances
@@ -281,9 +269,11 @@ class DS(ClassifierMixin):
                            Predicted class label for each sample in X.
         """
         # Check if the DS model was trained
-        self._check_is_fitted()
+        check_is_fitted(self, ["DSEL_processed_", "DSEL_data_", "DSEL_target_"])
+
         # Check if X is a valid input
-        self._check_input_predict(X)
+        X = check_array(X, ensure_2d=False)
+        self._check_num_features(X)
 
         n_samples = X.shape[0]
         predicted_labels = np.empty(n_samples, dtype=np.intp)
@@ -316,12 +306,12 @@ class DS(ClassifierMixin):
 
             if self.with_IH:
                 # if IH is used, calculate the hardness level associated with each sample
-                hardness = hardness_region_competence(self.neighbors, self.DSEL_target, self.safe_k)
+                hardness = hardness_region_competence(self.neighbors, self.DSEL_target_, self.safe_k)
 
                 # Get the index associated with the easy and hard samples. Samples with low hardness are
                 # passed down to the knn classifier while samples with high hardness are passed down to
                 # the DS methods. So, here we split the samples that are passed to down to each stage by
-                # calculating their indices.
+                # calculating their indices_.
                 easy_samples_mask = hardness <= self.IH_rate
                 ind_knn_classifier = np.where(easy_samples_mask)[0]
                 ind_ds_classifier = np.where(~easy_samples_mask)[0]
@@ -329,10 +319,10 @@ class DS(ClassifierMixin):
                 if ind_knn_classifier.size:
                     # all samples with low hardness should be classified by the knn method here:
                     # First get the class associated with each neighbor
-                    y_neighbors = self.DSEL_target[self.neighbors[ind_knn_classifier, :self.safe_k]]
+                    y_neighbors = self.DSEL_target_[self.neighbors[ind_knn_classifier, :self.safe_k]]
 
                     # Accessing which samples in the original matrix are associated with the low
-                    # instance hardness indices. This is important since the low hardness indices
+                    # instance hardness indices_. This is important since the low hardness indices_
                     # ind_knn_classifier was estimated based on a subset of samples
                     ind_knn_original_matrix = ind_disagreement[ind_knn_classifier]
                     prediction_knn, _ = mode(y_neighbors, axis=1)
@@ -354,11 +344,11 @@ class DS(ClassifierMixin):
 
                 # IF the DFP pruning is considered, calculate the DFP mask for all samples in X
                 if self.DFP:
-                     self.DFP_mask = self._frienemy_pruning()
+                    self.DFP_mask = self._frienemy_pruning()
                 else:
                     self.DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers))
 
-                # Get the real indices of the samples that will be classified using a DS algorithm.
+                # Get the real indices_ of the samples that will be classified using a DS algorithm.
                 ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
 
                 if self.needs_proba:
@@ -374,7 +364,7 @@ class DS(ClassifierMixin):
         self.neighbors = None
         self.distances = None
 
-        return self.classes.take(predicted_labels)
+        return self.classes_.take(predicted_labels)
 
     def predict_proba(self, X):
         """Estimates the posterior probabilities for sample in X.
@@ -390,10 +380,10 @@ class DS(ClassifierMixin):
                           Probabilities estimates for each sample in X.
         """
         # Check if the DS model was trained
-        self._check_is_fitted()
+        check_is_fitted(self, ["DSEL_processed_", "DSEL_data_", "DSEL_target_"])
 
         # Check if X is a valid input
-        self._check_input_predict(X)
+        X = check_array(X, ensure_2d=False)
 
         # Check if the base classifiers are able to estimate posterior probabilities (implements predict_proba method).
         self._check_predict_proba()
@@ -402,7 +392,7 @@ class DS(ClassifierMixin):
         base_predictions = base_probabilities.argmax(axis=2)
 
         n_samples = X.shape[0]
-        predicted_proba = np.zeros((n_samples, self.n_classes))
+        predicted_proba = np.zeros((n_samples, self.n_classes_))
 
         all_agree_vector = DS._all_classifier_agree(base_predictions)
         ind_all_agree = np.where(all_agree_vector)[0]
@@ -420,12 +410,12 @@ class DS(ClassifierMixin):
 
             if self.with_IH:
                 # if IH is used, calculate the hardness level associated with each sample
-                hardness = hardness_region_competence(self.neighbors, self.DSEL_target, self.safe_k)
+                hardness = hardness_region_competence(self.neighbors, self.DSEL_target_, self.safe_k)
 
                 # Get the index associated with the easy and hard samples. Samples with low hardness are
                 # passed down to the knn classifier while samples with high hardness are passed down to
                 # the DS methods. So, here we split the samples that are passed to down to each stage by
-                # calculating their indices.
+                # calculating their indices_.
                 easy_samples_mask = hardness <= self.IH_rate
                 ind_knn_classifier = np.where(easy_samples_mask)[0]
                 ind_ds_classifier = np.where(~easy_samples_mask)[0]
@@ -435,11 +425,11 @@ class DS(ClassifierMixin):
                     # First get the class associated with each neighbor
 
                     # Accessing which samples in the original matrix are associated with the
-                    # low instance hardness indices.
+                    # low instance hardness indices_.
                     ind_knn_original_matrix = ind_disagreement[ind_knn_classifier]
 
                     predicted_proba[ind_knn_original_matrix] = \
-                        self.roc_algorithm.predict_proba(X_DS[ind_knn_classifier])
+                        self.roc_algorithm_.predict_proba(X_DS[ind_knn_classifier])
 
                     # Remove from the neighbors and distance matrices the samples that were classified using the KNN
                     self.neighbors = np.delete(self.neighbors, ind_knn_classifier, axis=0)
@@ -451,9 +441,9 @@ class DS(ClassifierMixin):
             if ind_ds_classifier.size:
                 # Check if the dynamic frienemy pruning should be used
                 if self.DFP:
-                        self.DFP_mask = self._frienemy_pruning()
+                    self.DFP_mask = self._frienemy_pruning()
                 else:
-                        self.DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers))
+                    self.DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers))
 
                 ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
 
@@ -492,15 +482,15 @@ class DS(ClassifierMixin):
 
         for sample_idx in range(n_samples):
             # Check if query is in a indecision region
-            neighbors_y = self.DSEL_target[self.neighbors[sample_idx, :self.safe_k]]
+            neighbors_y = self.DSEL_target_[self.neighbors[sample_idx, :self.safe_k]]
 
             if len(set(neighbors_y)) > 1:
                 # There are more than on class in the region of competence (So it is an indecision region).
 
                 # Check if the base classifier predict the correct label for a sample belonging to each class.
                 for clf_index in range(self.n_classifiers):
-                    predictions = self.processed_dsel[self.neighbors[sample_idx, :self.safe_k], clf_index]
-                    correct_class_pred = [self.DSEL_target[index] for count, index in
+                    predictions = self.DSEL_processed_[self.neighbors[sample_idx, :self.safe_k], clf_index]
+                    correct_class_pred = [self.DSEL_target_[index] for count, index in
                                           enumerate(self.neighbors[sample_idx, :self.safe_k])
                                           if predictions[count] == 1]
 
@@ -526,16 +516,15 @@ class DS(ClassifierMixin):
 
         Returns
         -------
-        processed_dsel : array of shape = [n_samples, n_classifiers].
+        DSEL_processed_ : array of shape = [n_samples, n_classifiers].
                          Each element indicates whether the base classifier predicted the correct label for the
                          corresponding sample (True), otherwise (False).
 
-        BKS_dsel : array of shape = [n_samples, n_classifiers]
+        BKS_DSEL_ : array of shape = [n_samples, n_classifiers]
                    Predicted labels of each base classifier for all samples in DSEL.
         """
-
-        BKS_dsel = self._predict_base(self.DSEL_data)
-        processed_dsel = BKS_dsel == self.DSEL_target[:, np.newaxis]
+        BKS_dsel = self._predict_base(self.DSEL_data_)
+        processed_dsel = BKS_dsel == self.DSEL_target_[:, np.newaxis]
 
         return processed_dsel, BKS_dsel
 
@@ -572,7 +561,7 @@ class DS(ClassifierMixin):
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         Probabilities estimates of each base classifier for all test samples.
         """
-        probabilities = np.zeros((X.shape[0], self.n_classifiers, self.n_classes))
+        probabilities = np.zeros((X.shape[0], self.n_classifiers, self.n_classes_))
 
         for index, clf in enumerate(self.pool_classifiers):
             probabilities[:, index] = clf.predict_proba(X)
@@ -589,9 +578,9 @@ class DS(ClassifierMixin):
                  Scores (probabilities) for each class obtained by each base classifier in the generated_pool
                  for each sample in X.
         """
-        scores = np.empty((self.n_samples, self.n_classifiers, self.n_classes))
+        scores = np.empty((self.n_samples_, self.n_classifiers, self.n_classes_))
         for index, clf in enumerate(self.pool_classifiers):
-            scores[:, index, :] = clf.predict_proba(self.DSEL_data)
+            scores[:, index, :] = clf.predict_proba(self.DSEL_data_)
 
         return scores
 
@@ -606,12 +595,12 @@ class DS(ClassifierMixin):
 
         Returns
         -------
-        array of shape = [n_samples] containing True if all classifiers in the generated_pool
+        array of shape = [classes] containing True if all classifiers in the generated_pool
                           agrees on the same label, otherwise False.
         """
         return np.all(predictions == predictions[:, 0].reshape(-1, 1), axis=1)
 
-    def _check_parameters(self):
+    def _validate_parameters(self):
         """Verify if the input parameters are correct (generated_pool and k)
         raises an error if k < 1 or generated_pool is not fitted.
         """
@@ -644,20 +633,6 @@ class DS(ClassifierMixin):
 
         self._validate_pool()
 
-    def _check_is_fitted(self):
-        """ Verify if the dynamic selection algorithm was fitted. Raises an error if it is not fitted.
-
-        Raises
-        -------
-        NotFittedError
-            If the DS method is was not fitted, i.e., `self.roc_algorithm` or `self.processed_dsel`
-             were not pre-processed.
-
-        """
-        if self.roc_algorithm is None or self.processed_dsel is None:
-            raise NotFittedError("DS method not fitted, "
-                                 "call `fit` before exploiting the model.")
-
     def _validate_pool(self):
         """ Check the estimator and the n_estimator attribute, set the
         `base_estimator_` attribute.
@@ -667,7 +642,6 @@ class DS(ClassifierMixin):
         ValueError
             If the pool of classifiers is empty.
         """
-
         if self.n_classifiers <= 0:
             raise ValueError("n_classifiers must be greater than zero, "
                              "got {}.".format(self.n_classifiers))
@@ -678,7 +652,7 @@ class DS(ClassifierMixin):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape = [classes, n_features]
             The input data.
 
         Raises
@@ -687,34 +661,10 @@ class DS(ClassifierMixin):
             If X has a different dimensionality than the training data.
         """
         n_features = X.shape[1]
-        if self.n_features != n_features:
+        if self.n_features_ != n_features:
             raise ValueError("Number of features of the model must "
-                             "match the input. Model n_features is {} and "
-                             "input n_features is {} " .format(self.n_features, n_features))
-
-    def _check_input_predict(self, X):
-        """ Validates the input to the predict and predict_proba methods.
-
-        Parameters
-        ----------
-        X : array of shape = [n_samples, n_features]
-            The input data.
-
-        Raises
-        -------
-        ValueError
-            If the input data contains NaN or has an invalid shape (more than 2 dimensions).
-        """
-        if X is None or np.isnan(X).any():
-            raise ValueError('The input argument X is invalid! X = {}' .format(X))
-
-        if X.ndim != 2:
-            if X.ndim < 2:
-                raise Warning('A 1D array was passed down as input. It is being reshaped to a 2D array.')
-            else:
-                raise ValueError('The input argument X has an invalid shape. Shape X = {}' .format(X.shape))
-
-        self._check_num_features(X)
+                             "match the input. Model n_features_ is {} and "
+                             "input n_features_ is {} " .format(self.n_features_, n_features))
 
     def _check_predict_proba(self):
         """ Checks if each base classifier in the pool implements the predict_proba method.
