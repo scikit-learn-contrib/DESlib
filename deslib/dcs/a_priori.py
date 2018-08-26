@@ -72,6 +72,7 @@ class APriori(DCS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
+
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
                  selection_method='diff', diff_thresh=0.1, rng=np.random.RandomState()):
 
@@ -79,7 +80,6 @@ class APriori(DCS):
                                       selection_method=selection_method,
                                       diff_thresh=diff_thresh,
                                       rng=rng)
-        self._check_predict_proba()
 
         self.name = 'A Priori'
 
@@ -101,6 +101,8 @@ class APriori(DCS):
         self
         """
         super(APriori, self).fit(X, y)
+        self._check_predict_proba()
+
         self.dsel_scores = self._preprocess_dsel_scores()
         return self
 
@@ -114,7 +116,7 @@ class APriori(DCS):
         a higher influence in the computation of the competence level.  The
         competence level estimate is represented by the following equation:
 
-        .. math:: 	\\delta_{i,j} = \\frac{\\sum_{k = 1}^{K}P(\\omega_{l} \\mid
+        .. math::   \\delta_{i,j} = \\frac{\\sum_{k = 1}^{K}P(\\omega_{l} \\mid
             \mathbf{x}_{k} \\in \\omega_{l}, c_{i} )W_{k}}{\\sum_{k = 1}^{K}W_{k}}
 
         where :math:`\\delta_{i,j}` represents the competence level of :math:`c_{i}` for the classification of
@@ -134,15 +136,15 @@ class APriori(DCS):
                       Competence level estimated for each base classifier and test example.
         """
         dists, idx_neighbors = self._get_region_competence(query)
-        dists_normalized = 1.0/dists
+        dists_normalized = 1.0 / dists
 
         # Get the ndarray containing the scores obtained for the correct class for each neighbor (and test sample)
-        scores_target_class = self.dsel_scores[idx_neighbors, :, self.DSEL_target[idx_neighbors]]
+        scores_target_class = self.dsel_scores[idx_neighbors, :, self.DSEL_target_[idx_neighbors]]
 
         # Multiply the scores obtained for the correct class to the distances of each corresponding neighbor
         scores_target_class *= np.expand_dims(dists_normalized, axis=2)
 
         # Sum the scores obtained for each neighbor and divide by the sum of all distances
-        competences = np.sum(scores_target_class, axis=1)/ np.sum(dists_normalized, axis=1, keepdims=True)
+        competences = np.sum(scores_target_class, axis=1) / np.sum(dists_normalized, axis=1, keepdims=True)
 
         return competences

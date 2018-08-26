@@ -69,24 +69,9 @@ class DCS(DS):
     def __init__(self, pool_classifiers, k=7, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
                  selection_method='best', diff_thresh=0.1, rng=np.random.RandomState()):
 
-        if not isinstance(selection_method, str):
-            raise TypeError('The parameter selection_method should be a string.'
-                            ' selection_method = ', type(selection_method))
-
-        selection_method = selection_method.lower()
-
-        if selection_method not in ['best', 'all', 'random', 'diff']:
-            raise ValueError('Invalid value for parameter "selection_method." The possible values are: '
-                             '"best", "all", "random", "diff"')
-
-        if not isinstance(diff_thresh, float):
-            raise TypeError('The parameter diff_thresh should be a float. diff_thresh = ', diff_thresh)
-
-        if diff_thresh >= 0.5 or diff_thresh < 0.0 or np.isnan(diff_thresh):
-            raise ValueError('diff_thresh should be lower than 0.5. diff_thresh = ', diff_thresh)
-
         super(DCS, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
                                   safe_k=safe_k, IH_rate=IH_rate)
+
         self.selection_method = selection_method
         self.diff_thresh = diff_thresh
         self.rng = rng
@@ -284,3 +269,23 @@ class DCS(DS):
             predicted_proba = np.mean(masked_proba, axis=1)
 
         return predicted_proba
+
+    def _validate_parameters(self):
+
+        super(DCS, self)._validate_parameters()
+
+        if not isinstance(self.selection_method, str):
+            raise TypeError('The parameter selection_method should be a string.'
+                            ' selection_method = ', type(self.selection_method))
+
+        self.selection_method = self.selection_method.lower()
+
+        if self.selection_method not in ['best', 'all', 'random', 'diff']:
+            raise ValueError('Invalid value for parameter "selection_method." The possible values are: '
+                             '"best", "all", "random", "diff"')
+
+        if not isinstance(self.diff_thresh, float):
+            raise TypeError('The parameter diff_thresh should be a float. diff_thresh = ', self.diff_thresh)
+
+        if self.diff_thresh >= 0.5 or self.diff_thresh < 0.0 or np.isnan(self.diff_thresh):
+            raise ValueError('diff_thresh should be lower than 0.5. diff_thresh = ', self.diff_thresh)
