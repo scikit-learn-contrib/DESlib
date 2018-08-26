@@ -8,26 +8,38 @@ from deslib.tests.examples_test import *
 
 # -------------------------------------- Testing Hyper-parameters -----------------------
 def test_meta_classifier_not_predict_proba():
+    X = np.random.rand(10, 2)
+    y = np.ones(10)
     with pytest.raises(ValueError):
-        METADES(create_pool_classifiers(), Perceptron())
+        meta = METADES(create_pool_classifiers(), Perceptron())
+        meta.fit(X, y)
 
 
 def test_meta_classifier_is_none():
+    X = np.random.rand(10, 2)
+    y = np.ones(10)
+    y[:5] = 0
     with pytest.warns(Warning):
-        METADES(create_pool_classifiers(), meta_classifier=None)
+        meta = METADES(create_pool_classifiers(), meta_classifier=None)
+        meta.fit(X, y)
 
 
 @pytest.mark.parametrize('Hc', ['a', None, 0.2, -1])
 def test_parameter_Hc(Hc):
+    X = np.random.rand(10, 2)
+    y = np.ones(10)
     with pytest.raises((ValueError, TypeError)):
-        METADES(create_pool_classifiers(), Hc=Hc)
+        meta = METADES(create_pool_classifiers(), Hc=Hc)
+        meta.fit(X, y)
 
 
 @pytest.mark.parametrize('selection_threshold', ['a', None, 0, -1, 0.45])
 def test_parameter_gamma(selection_threshold):
+    X = np.random.rand(10, 2)
+    y = np.ones(10)
     with pytest.raises((ValueError, TypeError)):
-        METADES(create_pool_classifiers(), selection_threshold=selection_threshold)
-
+        meta = METADES(create_pool_classifiers(), selection_threshold=selection_threshold)
+        meta.fit(X, y)
 
 # -------------------------------------- Testing Methods -----------------------
 def test_compute_meta_features():
@@ -36,10 +48,10 @@ def test_compute_meta_features():
     meta_test = METADES([pool[0]])
 
     # Considering only one classifier in the pool (index = 0)
-    meta_test.processed_dsel = dsel_processed_ex1[:, 0].reshape(-1, 1)
+    meta_test.DSEL_processed_ = dsel_processed_ex1[:, 0].reshape(-1, 1)
     meta_test.dsel_scores = dsel_scores_ex1[:, 0, :].reshape(15, 1, 2)  # 15 samples, 1 base classifier, 2 classes
-    meta_test.DSEL_target = y_dsel_ex1
-    meta_test.n_classes = 2
+    meta_test.DSEL_target_ = y_dsel_ex1
+    meta_test.n_classes_ = 2
 
     neighbors = neighbors_ex1[0, :]
     neighbors_op = neighbors_ex1[2, 0:meta_test.Kp]
@@ -51,7 +63,7 @@ def test_compute_meta_features():
     expected_f4 = [0.0, 1.0, 1.0, 1.0, 0.0]
     expected_f5 = [0.5]
 
-    scores = np.empty((query.shape[0], meta_test.n_classifiers, meta_test.n_classes))
+    scores = np.empty((query.shape[0], meta_test.n_classifiers, meta_test.n_classes_))
     for index, clf in enumerate(meta_test.pool_classifiers):
         scores[:, index, :] = clf.predict_proba(query)
 
@@ -67,10 +79,10 @@ def test_estimate_competence():
     meta_test = METADES(create_pool_classifiers())
 
     # Set the state of the system which is set by the fit method.
-    meta_test.processed_dsel = dsel_processed_ex1
+    meta_test.DSEL_processed_ = dsel_processed_ex1
     meta_test.dsel_scores = dsel_scores_ex1
-    meta_test.DSEL_target = y_dsel_ex1
-    meta_test.n_classes = 2
+    meta_test.DSEL_target_ = y_dsel_ex1
+    meta_test.n_classes_ = 2
 
     meta_test.meta_classifier = GaussianNB()
     meta_test.neighbors = neighbors_ex1[0, :]
@@ -97,13 +109,13 @@ def test_estimate_competence_batch():
     meta_test = METADES(create_pool_classifiers())
 
     # Set the state of the system which is set by the fit method.
-    meta_test.processed_dsel = dsel_processed_ex1
+    meta_test.DSEL_processed_ = dsel_processed_ex1
     meta_test.dsel_scores = dsel_scores_ex1
-    meta_test.DSEL_target = y_dsel_ex1
+    meta_test.DSEL_target_ = y_dsel_ex1
     meta_test.neighbors = neighbors_ex1
     meta_test.distances = distances_ex1
 
-    meta_test.n_classes = 2
+    meta_test.n_classes_ = 2
     meta_test.meta_classifier = GaussianNB()
 
     meta_test._get_similar_out_profiles = MagicMock(return_value=(None, neighbors_ex1[:, 0:meta_test.Kp]))
@@ -152,8 +164,8 @@ def test_select_no_competent_classifiers_batch():
 # for all samples at the same time
 def test_sample_selection():
     meta_test = METADES(create_pool_all_agree(0, 10) + create_pool_all_agree(1, 5))
-    meta_test.processed_dsel = np.ones((5, 15))
-    meta_test.processed_dsel[(1, 3, 4), 5:] = 0
+    meta_test.DSEL_processed_ = np.ones((5, 15))
+    meta_test.DSEL_processed_[(1, 3, 4), 5:] = 0
     expected = np.asarray([1, 1/3, 1, 1/3, 1/3])
     value = meta_test._sample_selection_agreement()
     assert np.array_equal(value, expected)
@@ -161,8 +173,8 @@ def test_sample_selection():
 
 def test_sample_selection_working():
     meta_test = METADES(create_pool_all_agree(0, 10) + create_pool_all_agree(1, 5))
-    meta_test.processed_dsel = np.ones((5, 15))
-    meta_test.processed_dsel[(1, 3, 4), 5:] = 0
+    meta_test.DSEL_processed_ = np.ones((5, 15))
+    meta_test.DSEL_processed_[(1, 3, 4), 5:] = 0
     expected = np.asarray([1, 1/3, 1, 1/3, 1/3])
     value = meta_test._sample_selection_agreement()
     assert np.array_equal(value, expected)
@@ -177,4 +189,5 @@ def test_not_predict_proba():
     clf1 = Perceptron()
     clf1.fit(X, y)
     with pytest.raises(ValueError):
-        METADES([clf1, clf1])
+        meta = METADES([clf1, clf1])
+        meta.fit(X, y)

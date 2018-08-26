@@ -68,10 +68,10 @@ def test_fit():
     expected_scores = np.array([[0.5, 0.5], [1.0, 0.0], [0.33, 0.67]])
     expected_scores = np.tile(expected_scores, (15, 1, 1))
 
-    assert np.array_equal(expected_scores, knop_test.dsel_scores)
+    assert np.array_equal(expected_scores, knop_test.dsel_scores_)
 
-    # Assert the roc_algorithm is fitted to the scores (decision space) rather than the features (feature space)
-    expected_roc_data = knop_test.dsel_scores[:, :, 0]
+    # Assert the roc_algorithm_ is fitted to the scores (decision space) rather than the features (feature space)
+    expected_roc_data = knop_test.dsel_scores_[:, :, 0]
     assert np.array_equal(knop_test.op_knn._fit_X, expected_roc_data)
 
 
@@ -84,7 +84,8 @@ def test_not_predict_proba():
     clf1 = Perceptron()
     clf1.fit(X, y)
     with pytest.raises(ValueError):
-        KNOP([clf1, clf1])
+        knop = KNOP([clf1, clf1])
+        knop.fit(X, y)
 
 
 def test_select():

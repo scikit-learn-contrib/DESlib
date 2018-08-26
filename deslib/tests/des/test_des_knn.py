@@ -183,8 +183,8 @@ def test_estimate_competence_ratio_batch():
 def test_select():
     """
     Test case: 10 base classifiers; select 5 based on accuracy, then the 3 most diverse
-    accuracies (/10): 4 6 1 2 9 8 7 9 3 2   (should select indices 1, 4, 5, 6, 7)
-    diversity:        0 8 0 0 1 6 7 2 0 0   (should select indices 1, 5, 6 as most diverse)
+    accuracies (/10): 4 6 1 2 9 8 7 9 3 2   (should select indices_ 1, 4, 5, 6, 7)
+    diversity:        0 8 0 0 1 6 7 2 0 0   (should select indices_ 1, 5, 6 as most diverse)
 
     """
     pool_classifiers = [create_base_classifier(1) for _ in range(10)]
@@ -202,8 +202,8 @@ def test_select():
 def test_select_batch():
     """
     Test case: 10 base classifiers; select 5 based on accuracy, then the 3 most diverse.
-    accuracies (/10): 4 6 1 2 9 8 7 9 3 2   (should select indices 1, 4, 5, 6, 7)
-    diversity:        0 8 0 0 1 6 7 2 0 0   (should select indices 1, 5, 6 as most diverse)
+    accuracies (/10): 4 6 1 2 9 8 7 9 3 2   (should select indices_ 1, 4, 5, 6, 7)
+    diversity:        0 8 0 0 1 6 7 2 0 0   (should select indices_ 1, 5, 6 as most diverse)
 
     """
     n_samples = 10
@@ -222,8 +222,8 @@ def test_select_batch():
 def test_select_less_diverse():
     """
     Test case: 10 base classifiers; select 5 based on accuracy, then the 3 less diverse
-    accuracies (/10): 4 6 1 2 9 8 7 9 3 2   (should select indices 1, 4, 5, 6, 7)
-    diversity:        0 8 0 0 1 6 7 2 0 0   (should select indices 4, 5, 7 as most diverse)
+    accuracies (/10): 4 6 1 2 9 8 7 9 3 2   (should select indices_ 1, 4, 5, 6, 7)
+    diversity:        0 8 0 0 1 6 7 2 0 0   (should select indices_ 4, 5, 7 as most diverse)
 
     """
     pool_classifiers = [create_base_classifier(1) for _ in range(10)]
@@ -239,18 +239,27 @@ def test_select_less_diverse():
 
 
 def test_input_diversity_parameter():
+    X = np.random.rand(10, 2)
+    y = np.ones(10)
     with pytest.raises(ValueError):
-        DESKNN([create_base_classifier(1)]*100, metric='abc')
+        desknn = DESKNN([create_base_classifier(1)]*100, metric='abc')
+        desknn.fit(X, y)
 
 
 def test_J_N_values():
+    X = np.random.rand(10, 2)
+    y = np.ones(10)
     with pytest.raises(ValueError):
-        DESKNN([create_base_classifier(1)]*100, pct_accuracy=0.5, pct_diversity=0)
+        desknn = DESKNN([create_base_classifier(1)]*100, pct_accuracy=0.5, pct_diversity=0)
+        desknn.fit(X, y)
 
 
 def test_J_higher_than_N():
+    X = np.random.rand(10, 2)
+    y = np.ones(10)
     with pytest.raises(ValueError):
-        DESKNN([create_base_classifier(1)]*100, pct_accuracy=0.3, pct_diversity=0.5)
+        desknn = DESKNN([create_base_classifier(1)]*100, pct_accuracy=0.3, pct_diversity=0.5)
+        desknn.fit(X, y)
 
 
 def create_base_classifier(value):
