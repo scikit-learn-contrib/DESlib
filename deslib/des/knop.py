@@ -73,7 +73,7 @@ class KNOP(DES):
                                    IH_rate=IH_rate,
                                    mode='weighting',
                                    needs_proba=True)
-        self._check_predict_proba()
+
         self.name = 'K-Nearest Output Profiles (KNOP)'
 
     def fit(self, X, y):
@@ -94,15 +94,13 @@ class KNOP(DES):
         -------
         self
         """
+        super(KNOP, self).fit(X, y)
 
-        y_ind = self.setup_label_encoder(y)
-        self._set_dsel(X, y_ind)
-        self.dsel_scores = self._preprocess_dsel_scores()
-        self._fit_region_competence(X, y_ind, self.k)
-
-        # Reshape dsel_scores as a 2-D array for nearest neighbor calculations
-        dsel_output_profiles = self.dsel_scores.reshape(self.n_samples, self.n_classifiers * self.n_classes)
-        self._fit_OP(dsel_output_profiles, y_ind, self.k)
+        self._check_predict_proba()
+        self.dsel_scores_ = self._preprocess_dsel_scores()
+        # Reshape DSEL_scores as a 2-D array for nearest neighbor calculations
+        dsel_output_profiles = self.dsel_scores_.reshape(self.n_samples_, self.n_classifiers * self.n_classes_)
+        self._fit_OP(dsel_output_profiles, self.DSEL_target_, self.k)
 
         return self
 
@@ -123,7 +121,7 @@ class KNOP(DES):
         """
         self.op_knn = KNeighborsClassifier(n_neighbors=k, n_jobs=-1, algorithm='auto')
 
-        if self.n_classes == 2:
+        if self.n_classes_ == 2:
             # Get only the scores for one class since they are complementary
             X_temp = X_op[:, ::2]
             self.op_knn.fit(X_temp, y_op)
@@ -148,11 +146,11 @@ class KNOP(DES):
               Indices of the instances belonging to the region of competence of the given query sample.
         """
 
-        if self.n_classes == 2:
+        if self.n_classes_ == 2:
             # Get only the scores for one class since they are complementary
             query_op = probabilities[:, :, 0]
         else:
-            query_op = probabilities.reshape((probabilities.shape[0], self.n_classifiers * self.n_classes))
+            query_op = probabilities.reshape((probabilities.shape[0], self.n_classifiers * self.n_classes_))
 
         dists, idx = self.op_knn.kneighbors(query_op, n_neighbors=self.k, return_distance=True)
         return dists, np.atleast_2d(idx)
@@ -178,7 +176,7 @@ class KNOP(DES):
                       Competence level estimated for each base classifier and test example.
         """
         _, idx_neighbors = self._get_similar_out_profiles(probabilities)
-        competences = np.sum(self.processed_dsel[idx_neighbors, :], axis=1, dtype=np.float)
+        competences = np.sum(self.DSEL_processed_[idx_neighbors, :], axis=1, dtype=np.float)
 
         return competences
 

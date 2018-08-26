@@ -5,11 +5,10 @@
 # License: BSD 3 clause
 
 import numpy as np
+from sklearn.preprocessing import normalize
 
 from deslib.base import DS
 from deslib.util.aggregation import majority_voting_rule
-
-from sklearn.preprocessing import normalize
 
 
 class DESMI(DS):
@@ -50,7 +49,6 @@ class DESMI(DS):
 
         self.name = 'Dynamic Ensemble Selection for multi-class imbalanced datasets (DES-MI)'
         self.N = int(self.n_classifiers * pct_accuracy)
-        self._validate_parameters()
 
         self._alpha = alpha
 
@@ -83,12 +81,12 @@ class DESMI(DS):
         """
         _, idx_neighbors = self._get_region_competence(query)
         # calculate the weight
-        class_frequency = np.bincount(self.DSEL_target)
-        targets = self.DSEL_target[idx_neighbors]       # [n_samples, K_neighbors]
+        class_frequency = np.bincount(self.DSEL_target_)
+        targets = self.DSEL_target_[idx_neighbors]       # [n_samples, K_neighbors]
         num = class_frequency[targets]
         weight = 1./(1 + np.exp(self._alpha * num))
         weight = normalize(weight, norm='l1')
-        correct_num = self.processed_dsel[idx_neighbors, :]
+        correct_num = self.DSEL_processed_[idx_neighbors, :]
         correct = np.zeros((query.shape[0], self.k, self.n_classifiers))
         for i in range(self.n_classifiers):
             correct[:, :, i] = correct_num[:, :, i] * weight
@@ -109,7 +107,7 @@ class DESMI(DS):
         Returns
         -------
         selected_classifiers : array of shape = [n_samples, self.N]
-                               Matrix containing the indices of the N selected base classifier for each test example.
+                               Matrix containing the indices_ of the N selected base classifier for each test example.
         """
         # Check if the accuracy and diversity arrays have the correct dimensionality.
         if accuracy.ndim < 2:
@@ -207,6 +205,8 @@ class DESMI(DS):
         The values of N should be higher than 0.
         ----------
         """
+        super(DESMI, self)._validate_parameters()
+
         if self.N <= 0:
             raise ValueError("The values of N should be higher than 0"
                              "N = {}" .format(self.N))

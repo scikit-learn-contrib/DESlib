@@ -74,19 +74,19 @@ class DESKNN(DS):
                  more_diverse=True,
                  metric='DF'):
 
-        metric = metric.upper()
         super(DESKNN, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate)
 
         self.name = 'Dynamic Ensemble Selection-KNN (DES-KNN)'
+        self.metric = metric.upper()
+        self.pct_accuracy = pct_accuracy
+        self.pct_diversity = pct_diversity
+        self.more_diverse = more_diverse
+
         self.N = int(self.n_classifiers * pct_accuracy)
         self.J = int(np.ceil(self.n_classifiers * pct_diversity))
-        self.metric = metric
-
-        self._validate_parameters()
 
         # Set up the diversity metric
-        self.more_diverse = more_diverse
-        if metric == 'DF':
+        if self.metric == 'DF':
             self.diversity_func = negative_double_fault
         elif metric == 'Q':
             self.diversity_func = Q_statistic
@@ -128,10 +128,10 @@ class DESKNN(DS):
         """
         _, idx_neighbors = self._get_region_competence(query)
         # calculate the classifiers mean accuracy for all samples/base classifier
-        accuracy = np.mean(self.processed_dsel[idx_neighbors, :], axis=1)
+        accuracy = np.mean(self.DSEL_processed_[idx_neighbors, :], axis=1)
 
-        predicted_matrix = self.BKS_dsel[idx_neighbors, :]
-        targets = self.DSEL_target[idx_neighbors]
+        predicted_matrix = self.BKS_DSEL_[idx_neighbors, :]
+        targets = self.DSEL_target_[idx_neighbors]
 
         # TODO: optimize this part with numpy instead of for loops
         # Calculate the more_diverse matrix. It becomes computationally expensive
@@ -160,7 +160,7 @@ class DESKNN(DS):
         Returns
         -------
         selected_classifiers : array of shape = [n_samples, self.J]
-                               Matrix containing the indices of the J selected base classifier for each test example.
+                               Matrix containing the indices_ of the J selected base classifier for each test example.
         """
         # Check if the accuracy and diversity arrays have the correct dimensionality.
         if accuracy.ndim < 2:
@@ -284,6 +284,8 @@ class DESKNN(DS):
         The values of N and J should be higher than 0, and N >= J
         ----------
         """
+        super(DESKNN, self)._validate_parameters()
+
         if self.metric not in ['DF', 'Q', 'RATIO']:
             raise ValueError('Diversity metric must be one of the following values: "DF", "Q" or "Ratio"')
 

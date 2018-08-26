@@ -98,19 +98,11 @@ class METADES(DES):
                                       with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                       mode=mode, needs_proba=True)
 
-        self._check_predict_proba()
-        self._check_input_parameters(Hc, selection_threshold, meta_classifier)
-
         self.name = 'META-DES'
+        self.meta_classifier = meta_classifier
         self.Kp = kp
         self.Hc = Hc
         self.selection_threshold = selection_threshold
-
-        if meta_classifier is None:
-            warnings.warn("No classifier model passed for the Meta-Classifier. Using a Naive Bayes instead")
-            self.meta_classifier = MultinomialNB()
-        else:
-            self.meta_classifier = meta_classifier
 
         self.op_knn = None
         self.n_meta_features = (self.k * 2) + self.Kp + 2
@@ -135,15 +127,22 @@ class METADES(DES):
         -------
         self
         """
+        super(METADES, self).fit(X, y)
 
-        y_ind = self.setup_label_encoder(y)
-        self._set_dsel(X, y_ind)
-        self._fit_region_competence(X, y_ind, self.k)
+        # Validate the input parameters
+        self._check_input_parameters()
+
+        # Check if the base classifier is able to estimate probabilities
+        self._check_predict_proba()
+
         self.dsel_scores = self._preprocess_dsel_scores()
+        # Reshape DSEL_scores as a 2-D array for nearest neighbor calculations
+        dsel_output_profiles = self.dsel_scores.reshape(self.n_samples_, self.n_classifiers * self.n_classes_)
+        self._fit_OP(dsel_output_profiles, self.DSEL_target_, self.Kp)
 
-        # Reshape dsel_scores as a 2-D array for nearest neighbor calculations
-        dsel_output_profiles = self.dsel_scores.reshape(self.n_samples, self.n_classifiers * self.n_classes)
-        self._fit_OP(dsel_output_profiles, y_ind, self.Kp)
+        if self.meta_classifier is None:
+            warnings.warn("No classifier model passed for the Meta-Classifier. Using a Naive Bayes instead")
+            self.meta_classifier = MultinomialNB()
 
         # check whether the meta-classifier was already trained since it could have been pre-processed before
         try:
@@ -172,7 +171,7 @@ class METADES(DES):
         """
         self.op_knn = KNeighborsClassifier(n_neighbors=kp, n_jobs=-1, algorithm='auto')
 
-        if self.n_classes == 2:
+        if self.n_classes_ == 2:
             # Get only the scores for one class since they are complementary
             X_temp = X_op[:, ::2]
             self.op_knn.fit(X_temp, y_op)
@@ -188,8 +187,8 @@ class METADES(DES):
                     The percentage of the base classifier that predicted the correct label for each sample in DSEL.
 
         """
-        # pct_agree = np.sum(self.processed_dsel[query_idx, :]) / self.n_classifiers
-        pct_agree = np.sum(self.processed_dsel, axis=1) / self.n_classifiers
+        # pct_agree = np.sum(self.DSEL_processed_[query_idx, :]) / self.n_classifiers
+        pct_agree = np.sum(self.DSEL_processed_, axis=1) / self.n_classifiers
 
         return pct_agree
 
@@ -204,7 +203,7 @@ class METADES(DES):
                  features.
 
         idx_neighbors : array of shape = [n_samples, self.K]
-                        indices of K-nearest neighbors for each example.
+                        indices_ of K-nearest neighbors for each example.
 
         idx_neighbors_op : array of shape = [n_samples, self.Kp]
                            Indices of the most similar output profiles for each example.
@@ -219,14 +218,14 @@ class METADES(DES):
         idx_neighbors = np.atleast_2d(idx_neighbors)
         idx_neighbors_op = np.atleast_2d(idx_neighbors_op)
 
-        f1_all_classifiers = self.processed_dsel[idx_neighbors, :].swapaxes(1, 2).reshape(-1, self.k)
+        f1_all_classifiers = self.DSEL_processed_[idx_neighbors, :].swapaxes(1, 2).reshape(-1, self.k)
 
-        f2_all_classifiers = self.dsel_scores[idx_neighbors, :, self.DSEL_target[idx_neighbors]].swapaxes(1, 2)
+        f2_all_classifiers = self.dsel_scores[idx_neighbors, :, self.DSEL_target_[idx_neighbors]].swapaxes(1, 2)
         f2_all_classifiers = f2_all_classifiers.reshape(-1, self.k)
 
-        f3_all_classifiers = np.mean(self.processed_dsel[idx_neighbors, :], axis=1).reshape(-1, 1)
+        f3_all_classifiers = np.mean(self.DSEL_processed_[idx_neighbors, :], axis=1).reshape(-1, 1)
 
-        f4_all_classifiers = self.processed_dsel[idx_neighbors_op, :].swapaxes(1, 2).reshape(-1, self.Kp)
+        f4_all_classifiers = self.DSEL_processed_[idx_neighbors_op, :].swapaxes(1, 2).reshape(-1, self.Kp)
 
         f5_all_classifiers = np.max(scores, axis=2).reshape(-1, 1)
         meta_feature_vectors = np.hstack((f1_all_classifiers, f2_all_classifiers, f3_all_classifiers,
@@ -252,7 +251,7 @@ class METADES(DES):
         indices_selected = np.unique(indices_selected)
         # Get the region of competence using the feature space and the decision space. Use K + 1 to later remove itself
         # from the set.
-        _, idx_neighbors = self._get_region_competence(self.DSEL_data[indices_selected, :], self.k + 1)
+        _, idx_neighbors = self._get_region_competence(self.DSEL_data_[indices_selected, :], self.k + 1)
         _, idx_neighbors_op = self._get_similar_out_profiles(self.dsel_scores[indices_selected], self.Kp + 1)
         # Remove the first neighbor (itself)
         idx_neighbors = idx_neighbors[:, 1:]
@@ -263,7 +262,7 @@ class METADES(DES):
 
         # Extract the meta-feature vectors for each base classifier. vector and target must both be numpy arrays
         meta_feature_vector = self.compute_meta_features(scores, idx_neighbors, idx_neighbors_op)
-        meta_feature_target = self.processed_dsel[indices_selected, :].reshape(-1,)
+        meta_feature_target = self.DSEL_processed_[indices_selected, :].reshape(-1, )
         meta_feature_target.astype(np.int)
 
         return meta_feature_vector, meta_feature_target
@@ -310,11 +309,11 @@ class METADES(DES):
         if kp is None:
             kp = self.Kp
 
-        if self.n_classes == 2:
+        if self.n_classes_ == 2:
             # Get only the scores for one class since they are complementary
             query_op = probabilities[:, :, 0]
         else:
-            query_op = probabilities.reshape((probabilities.shape[0], self.n_classifiers * self.n_classes))
+            query_op = probabilities.reshape((probabilities.shape[0], self.n_classifiers * self.n_classes_))
 
         dists, idx = self.op_knn.kneighbors(query_op, n_neighbors=kp, return_distance=True)
         return dists, idx
@@ -384,8 +383,7 @@ class METADES(DES):
 
         return competences
 
-    @staticmethod
-    def _check_input_parameters(Hc, gamma, meta_classifier):
+    def _check_input_parameters(self):
         """Check if the parameters passed as argument are correct.
 
         - Hc should be higher than 0.5
@@ -396,16 +394,16 @@ class METADES(DES):
         used in its place).
         ----------
         """
-        if not isinstance(Hc, (float, int)):
-            raise ValueError('Parameter Hc should be either a number. Currently Hc = {}'.format(type(Hc)))
-        if Hc < 0.5:
-            raise ValueError('Parameter Hc should be higher than 0.5. Currently Hc = {}'.format(Hc))
-        if not isinstance(gamma, float):
-            raise ValueError('Parameter Hc should be either a float. Currently Hc = {}'.format(type(Hc)))
-        if gamma < 0.5:
+        if not isinstance(self.Hc, (float, int)):
+            raise ValueError('Parameter Hc should be either a number. Currently Hc = {}'.format(type(self.Hc)))
+        if self.Hc < 0.5:
+            raise ValueError('Parameter Hc should be higher than 0.5. Currently Hc = {}'.format(self.Hc))
+        if not isinstance(self.selection_threshold, float):
+            raise ValueError('Parameter Hc should be either a float. Currently Hc = {}'.format(type(self.Hc)))
+        if self.selection_threshold < 0.5:
             raise ValueError('Parameter selection_threshold should be higher than 0.5. '
-                             'Currently selection_threshold = {}'.format(gamma))
-        if meta_classifier is not None and "predict_proba" not in dir(meta_classifier):
+                             'Currently selection_threshold = {}'.format(self.selection_threshold))
+        if self.meta_classifier is not None and "predict_proba" not in dir(self.meta_classifier):
             raise ValueError("The meta-classifier should output probability estimates")
 
 

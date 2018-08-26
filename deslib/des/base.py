@@ -60,15 +60,6 @@ class DES(DS):
         super(DES, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
                                   safe_k=safe_k, IH_rate=IH_rate, needs_proba=needs_proba)
 
-        if not isinstance(mode, str):
-            raise TypeError('Parameter "mode" should be a string. Currently "mode" = {}' .format(type(mode)))
-
-        mode = mode.lower()
-
-        if mode not in ['selection', 'hybrid', 'weighting']:
-            raise ValueError('Invalid value for parameter "mode". "mode" should be one of these options '
-                             '{selection, hybrid, weighting}')
-
         self.mode = mode
 
     def estimate_competence(self, query, predictions):
@@ -188,11 +179,11 @@ class DES(DS):
 
         elif self.mode == "weighting":
             votes = np.atleast_2d(predictions)
-            predicted_label = weighted_majority_voting_rule(votes, competences, np.arange(self.n_classes))
+            predicted_label = weighted_majority_voting_rule(votes, competences, np.arange(self.n_classes_))
         else:
             selected_classifiers = self.select(competences)
             votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
-            predicted_label = weighted_majority_voting_rule(votes, competences, np.arange(self.n_classes))
+            predicted_label = weighted_majority_voting_rule(votes, competences, np.arange(self.n_classes_))
 
         return predicted_label
 
@@ -262,3 +253,17 @@ class DES(DS):
             predicted_proba = aggregate_proba_ensemble_weighted(masked_proba, competences)
 
         return predicted_proba
+
+    def _validate_parameters(self):
+
+        super(DES, self)._validate_parameters()
+
+        if not isinstance(self.mode, str):
+            raise TypeError('Parameter "mode" should be a string. Currently "mode" = {}'.format(type(self.mode)))
+
+        self.mode = self.mode.lower()
+
+        if self.mode not in ['selection', 'hybrid', 'weighting']:
+            raise ValueError('Invalid value for parameter "mode". "mode" should be one of these options '
+                             '{selection, hybrid, weighting}')
+
