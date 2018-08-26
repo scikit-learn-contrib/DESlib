@@ -12,10 +12,10 @@ def test_estimate_competence_all_ones(index):
 
     mla_test = MLA(create_pool_classifiers())
 
-    mla_test.processed_dsel = dsel_processed_all_ones
-    mla_test.dsel_scores = dsel_scores_all_ones
-    mla_test.DSEL_target = y_dsel_ex1
-    mla_test.n_classes = 2
+    mla_test.DSEL_processed_ = dsel_processed_all_ones
+    mla_test.DSEL_scores = dsel_scores_all_ones
+    mla_test.DSEL_target_ = y_dsel_ex1
+    mla_test.n_classes_ = 2
 
     mla_test.neighbors = neighbors_ex1[index, :]
     mla_test.distances = distances_all_ones[index, :]
@@ -39,10 +39,10 @@ def test_estimate_competence(index, expected):
 
     mla_test = MLA(create_pool_classifiers())
 
-    mla_test.processed_dsel = dsel_processed_ex1
-    mla_test.dsel_scores = dsel_scores_all_ones
-    mla_test.DSEL_target = y_dsel_ex1
-    mla_test.n_classes = 2
+    mla_test.DSEL_processed_ = dsel_processed_ex1
+    mla_test.DSEL_scores = dsel_scores_all_ones
+    mla_test.DSEL_target_ = y_dsel_ex1
+    mla_test.n_classes_ = 2
 
     mla_test.neighbors = neighbors_ex1[index, :]
     mla_test.distances = distances_all_ones[index, :]
@@ -63,10 +63,10 @@ def test_estimate_competence_batch():
                          [1.000,  0.600,  0.500]])
 
     mla_test = MLA(create_pool_classifiers())
-    mla_test.processed_dsel = dsel_processed_ex1
-    mla_test.dsel_scores = dsel_scores_all_ones
-    mla_test.DSEL_target = y_dsel_ex1
-    mla_test.n_classes = 2
+    mla_test.DSEL_processed_ = dsel_processed_ex1
+    mla_test.DSEL_scores = dsel_scores_all_ones
+    mla_test.DSEL_target_ = y_dsel_ex1
+    mla_test.n_classes_ = 2
 
     mla_test.neighbors = neighbors_ex1
     mla_test.distances = distances_all_ones
@@ -88,8 +88,8 @@ def test_estimate_competence_diff_target(index):
 
     mla_test = MLA(create_pool_classifiers())
 
-    mla_test.processed_dsel = dsel_processed_ex1
-    mla_test.DSEL_target = np.ones(15, dtype=int) * 3
+    mla_test.DSEL_processed_ = dsel_processed_ex1
+    mla_test.DSEL_target_ = np.ones(15, dtype=int) * 3
 
     mla_test.neighbors = neighbors_ex1[index, :]
     mla_test.distances = distances_ex1[index, :]
@@ -111,10 +111,10 @@ def test_estimate_competence_kuncheva_ex():
 
     mla_test = MLA([create_base_classifier(return_value=1)]*2, k=k_ex_kuncheva)
 
-    mla_test.processed_dsel = np.repeat(dsel_processed_kuncheva, 2, axis=1)
-    mla_test.dsel_scores = dsel_scores_ex_kuncheva
-    mla_test.DSEL_target = y_dsel_ex_kuncheva_dependent
-    mla_test.n_classes = n_classes_ex_kuncheva
+    mla_test.DSEL_processed_ = np.repeat(dsel_processed_kuncheva, 2, axis=1)
+    mla_test.DSEL_scores = dsel_scores_ex_kuncheva
+    mla_test.DSEL_target_ = y_dsel_ex_kuncheva_dependent
+    mla_test.n_classes_ = n_classes_ex_kuncheva
 
     mla_test.neighbors = neighbors_ex_kuncheva
     mla_test.distances = distances_ex_kuncheva

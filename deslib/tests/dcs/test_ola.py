@@ -10,7 +10,7 @@ from deslib.tests.examples_test import *
                                              (2, [0.57142857,  0.71428571,  0.57142857])])
 def test_estimate_competence(index, expected):
     ola_test = OLA(create_pool_classifiers())
-    ola_test.processed_dsel = dsel_processed_ex1
+    ola_test.DSEL_processed_ = dsel_processed_ex1
     ola_test.neighbors = neighbors_ex1[index, :]
     ola_test.distances = distances_ex1[index, :]
     ola_test.DFP_mask = [1, 1, 1]
@@ -25,7 +25,7 @@ def test_estimate_competence_batch():
                          [0.57142857, 0.71428571, 0.57142857]])
 
     ola_test = OLA(create_pool_classifiers())
-    ola_test.processed_dsel = dsel_processed_ex1
+    ola_test.DSEL_processed_ = dsel_processed_ex1
     ola_test.neighbors = neighbors_ex1
     ola_test.distances = distances_ex1
     ola_test.DFP_mask = np.ones((3, 3))

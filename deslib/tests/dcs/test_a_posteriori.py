@@ -11,10 +11,10 @@ def test_estimate_competence_all_ones(index):
     query = np.atleast_2d([1, 1])
 
     a_posteriori_test = APosteriori(create_pool_classifiers())
-    a_posteriori_test.processed_dsel = dsel_processed_ex1
+    a_posteriori_test.DSEL_processed_ = dsel_processed_ex1
     a_posteriori_test.dsel_scores = dsel_scores_all_ones
-    a_posteriori_test.DSEL_target = y_dsel_ex1
-    a_posteriori_test.n_classes = 2
+    a_posteriori_test.DSEL_target_ = y_dsel_ex1
+    a_posteriori_test.n_classes_ = 2
 
     a_posteriori_test.neighbors = neighbors_ex1[index, :]
     a_posteriori_test.distances = distances_all_ones[index, :]
@@ -36,10 +36,10 @@ def test_estimate_competence_kuncheva_ex():
 
     a_posteriori_test = APosteriori([create_base_classifier(return_value=1)], k=k_ex_kuncheva)
 
-    a_posteriori_test.processed_dsel = dsel_processed_kuncheva
+    a_posteriori_test.DSEL_processed_ = dsel_processed_kuncheva
     a_posteriori_test.dsel_scores = dsel_scores_ex_kuncheva
-    a_posteriori_test.DSEL_target = y_dsel_ex_kuncheva_dependent
-    a_posteriori_test.n_classes = n_classes_ex_kuncheva
+    a_posteriori_test.DSEL_target_ = y_dsel_ex_kuncheva_dependent
+    a_posteriori_test.n_classes_ = n_classes_ex_kuncheva
 
     a_posteriori_test.neighbors = neighbors_ex_kuncheva
     a_posteriori_test.distances = distances_ex_kuncheva
@@ -59,10 +59,10 @@ def test_estimate_competence_kuncheva_ex_batch():
 
     a_posteriori_test = APosteriori([create_base_classifier(return_value=1)], k=k_ex_kuncheva)
 
-    a_posteriori_test.processed_dsel = dsel_processed_kuncheva
+    a_posteriori_test.DSEL_processed_ = dsel_processed_kuncheva
     a_posteriori_test.dsel_scores = dsel_scores_ex_kuncheva
-    a_posteriori_test.DSEL_target = y_dsel_ex_kuncheva_dependent
-    a_posteriori_test.n_classes = n_classes_ex_kuncheva
+    a_posteriori_test.DSEL_target_ = y_dsel_ex_kuncheva_dependent
+    a_posteriori_test.n_classes_ = n_classes_ex_kuncheva
 
     # repeating the same matrix in a new axis to simulate a batch input.
     a_posteriori_test.neighbors = np.tile(neighbors_ex_kuncheva, (10, 1))
@@ -84,10 +84,10 @@ def test_estimate_competence_diff_target(index):
 
     a_posteriori_test = APosteriori(create_pool_classifiers())
 
-    a_posteriori_test.processed_dsel = dsel_processed_ex1
+    a_posteriori_test.DSEL_processed_ = dsel_processed_ex1
     a_posteriori_test.dsel_scores = np.ones((15, 3, 3))
-    a_posteriori_test.DSEL_target = np.ones(15, dtype=int) * 2
-    a_posteriori_test.n_classes = 2
+    a_posteriori_test.DSEL_target_ = np.ones(15, dtype=int) * 2
+    a_posteriori_test.n_classes_ = 2
 
     a_posteriori_test.neighbors = neighbors_ex1[index, :]
     a_posteriori_test.distances = distances_all_ones[index, :]
@@ -120,4 +120,4 @@ def test_not_predict_proba():
     clf1 = Perceptron()
     clf1.fit(X, y)
     with pytest.raises(ValueError):
-        APosteriori([clf1, clf1])
+        APosteriori([clf1, clf1]).fit(X, y)

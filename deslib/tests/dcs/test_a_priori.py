@@ -1,5 +1,6 @@
 import pytest
 from sklearn.linear_model import Perceptron
+
 from deslib.dcs.a_priori import APriori
 from deslib.tests.examples_test import *
 
@@ -13,10 +14,10 @@ def test_estimate_competence_all_ones(index, expected):
 
     a_priori_test = APriori(create_pool_classifiers())
 
-    a_priori_test.processed_dsel = dsel_processed_ex1
+    a_priori_test.DSEL_processed_ = dsel_processed_ex1
     a_priori_test.dsel_scores = dsel_scores_all_ones
-    a_priori_test.DSEL_target = y_dsel_ex1
-    a_priori_test.n_classes = 2
+    a_priori_test.DSEL_target_ = y_dsel_ex1
+    a_priori_test.n_classes_ = 2
 
     a_priori_test.neighbors = neighbors_ex1[index, :]
     a_priori_test.distances = distances_all_ones[index, :]
@@ -32,10 +33,10 @@ def test_estimate_competence_kuncheva_ex():
 
     a_priori_test = APriori([create_base_classifier(return_value=1)], k=k_ex_kuncheva)
 
-    a_priori_test.processed_dsel = dsel_processed_kuncheva
+    a_priori_test.DSEL_processed_ = dsel_processed_kuncheva
     a_priori_test.dsel_scores = dsel_scores_ex_kuncheva
-    a_priori_test.DSEL_target = y_dsel_ex_kuncheva_independent
-    a_priori_test.n_classes = n_classes_ex_kuncheva
+    a_priori_test.DSEL_target_ = y_dsel_ex_kuncheva_independent
+    a_priori_test.n_classes_ = n_classes_ex_kuncheva
 
     a_priori_test.neighbors = neighbors_ex_kuncheva
     a_priori_test.distances = distances_ex_kuncheva
@@ -54,10 +55,10 @@ def test_estimate_competence2(index, expected):
     # Using 3 neighbors to facilitate the calculations
     a_priori_test = APriori(create_pool_classifiers(), 3)
 
-    a_priori_test.processed_dsel = dsel_processed_ex1
+    a_priori_test.DSEL_processed_ = dsel_processed_ex1
     a_priori_test.dsel_scores = dsel_scores_ex1
-    a_priori_test.DSEL_target = y_dsel_ex1
-    a_priori_test.n_classes = 2
+    a_priori_test.DSEL_target_ = y_dsel_ex1
+    a_priori_test.n_classes_ = 2
 
     a_priori_test.neighbors = neighbors_ex1[index, 0:3]
     a_priori_test.distances = distances_all_ones[index, 0:3]
@@ -77,10 +78,10 @@ def test_estimate_competence_batch():
     # Using 3 neighbors to facilitate the calculations
     a_priori_test = APriori(create_pool_classifiers(), 3)
 
-    a_priori_test.processed_dsel = dsel_processed_ex1
+    a_priori_test.DSEL_processed_ = dsel_processed_ex1
     a_priori_test.dsel_scores = dsel_scores_ex1
-    a_priori_test.DSEL_target = y_dsel_ex1
-    a_priori_test.n_classes = 2
+    a_priori_test.DSEL_target_ = y_dsel_ex1
+    a_priori_test.n_classes_ = 2
 
     a_priori_test.neighbors = neighbors_ex1[:, 0:3]
     a_priori_test.distances = distances_all_ones[:, 0:3]
@@ -107,4 +108,4 @@ def test_not_predict_proba():
     clf1 = Perceptron()
     clf1.fit(X, y)
     with pytest.raises(ValueError):
-        APriori([clf1, clf1])
+        APriori([clf1, clf1]).fit(X, y)
