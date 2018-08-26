@@ -117,7 +117,7 @@ class MLA(DCS):
 
         # Expanding the dimensions of the predictions and target arrays in order to compare both.
         predictions_3d = np.expand_dims(predictions, axis=1)
-        target_3d = np.expand_dims(self.DSEL_target[idx_neighbors], axis=2)
+        target_3d = np.expand_dims(self.DSEL_target_[idx_neighbors], axis=2)
         # Create a mask to remove the neighbors belonging to a different class than the predicted by the base classifier
         mask = (predictions_3d != target_3d)
 
@@ -125,7 +125,7 @@ class MLA(DCS):
         dists_normalized = np.repeat(np.expand_dims(dists_normalized, axis=2), self.n_classifiers, axis=2)
 
         # Multiply the pre-processed correct predictions by the base classifiers to the distance array
-        proc_norm = self.processed_dsel[idx_neighbors, :] * dists_normalized
+        proc_norm = self.DSEL_processed_[idx_neighbors, :] * dists_normalized
 
         # Create masked arrays to remove samples with different label in the calculations
         masked_preprocessed = np.ma.MaskedArray(proc_norm, mask=mask)

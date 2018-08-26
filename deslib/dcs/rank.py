@@ -104,7 +104,7 @@ class Rank(DCS):
                       Competence level estimated for each base classifier and test example.
         """
         _, idx_neighbors = self._get_region_competence(query)
-        results_neighbors = self.processed_dsel[idx_neighbors, :]
+        results_neighbors = self.DSEL_processed_[idx_neighbors, :]
 
         # Get the shape of the vector in order to know the number of samples, base classifiers and neighbors considered.
         shape = results_neighbors.shape

@@ -117,10 +117,10 @@ class LCA(DCS):
 
         # Expanding the dimensions of the predictions and target arrays in order to compare both.
         predictions_3d = np.expand_dims(predictions, axis=1)
-        target_3d = np.expand_dims(self.DSEL_target[idx_neighbors], axis=2)
+        target_3d = np.expand_dims(self.DSEL_target_[idx_neighbors], axis=2)
         # Create a mask to remove the neighbors belonging to a different class than the predicted by the base classifier
         mask = (predictions_3d != target_3d)
-        masked_preprocessed = np.ma.MaskedArray(self.processed_dsel[idx_neighbors, :], mask=mask)
+        masked_preprocessed = np.ma.MaskedArray(self.DSEL_processed_[idx_neighbors, :], mask=mask)
 
         competences_masked = np.mean(masked_preprocessed, axis=1)
         # Fill 0 to the masked values in the resulting array (when no neighbors belongs to the class predicted by

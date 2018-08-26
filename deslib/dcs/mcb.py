@@ -135,7 +135,7 @@ class MCB(DCS):
         # Use the pre-compute decisions to transform the query to the BKS space
         BKS_query = predictions
 
-        T = (self.BKS_dsel[idx_neighbors] == BKS_query.reshape(BKS_query.shape[0], -1, BKS_query.shape[1]))
+        T = (self.BKS_DSEL_[idx_neighbors] == BKS_query.reshape(BKS_query.shape[0], -1, BKS_query.shape[1]))
         S = np.sum(T, axis=2) / self.n_classifiers
 
         # get a mask with the neighbors that will be considered for the competence estimation for all samples.
@@ -145,7 +145,7 @@ class MCB(DCS):
         boolean_mask = np.repeat(np.expand_dims(boolean_mask, axis=2), self.n_classifiers, axis=2)
 
         # Use the masked array mean to take into account the removed neighbors
-        processed_pred = np.ma.MaskedArray(self.processed_dsel[idx_neighbors, :], mask=~boolean_mask)
+        processed_pred = np.ma.MaskedArray(self.DSEL_processed_[idx_neighbors, :], mask=~boolean_mask)
         competences = np.ma.mean(processed_pred, axis=1)
 
         return competences
