@@ -101,7 +101,7 @@ class Probabilistic(DES):
         y_ind = self.setup_label_encoder(y)
         self._set_dsel(X, y_ind)
         if self.k is None:
-            self.k = self.n_samples
+            self.k = self.n_samples_
 
         self._fit_region_competence(X, y_ind, self.k)
         # Pre process the scores in DSEL (it is required only for the source of competence estimation
@@ -164,7 +164,7 @@ class Probabilistic(DES):
 
         # Set the threshold as the performance of the random classifier
         if self.selection_threshold is None:
-            self.selection_threshold = 1.0/self.n_classes
+            self.selection_threshold = 1.0/self.n_classes_
 
         selected_classifiers = (competences > self.selection_threshold)
         # For the rows that are all False (i.e., no base classifier was selected, select all classifiers (all True)
@@ -262,12 +262,12 @@ class Logarithmic(Probabilistic):
         C_src : array of shape = [n_samples, n_classifiers]
                 The competence source for each base classifier at each data point.
         """
-        C_src = np.zeros((self.n_samples, self.n_classifiers))
+        C_src = np.zeros((self.n_samples_, self.n_classifiers))
         for clf_index in range(self.n_classifiers):
             supports = self.dsel_scores[:, clf_index, :]
-            support_correct = supports[np.arange(self.n_samples), self.DSEL_target]
+            support_correct = supports[np.arange(self.n_samples_), self.DSEL_target_]
 
-            C_src[:, clf_index] = log_func(self.n_classes, support_correct)
+            C_src[:, clf_index] = log_func(self.n_classes_, support_correct)
 
         return C_src
 
@@ -339,12 +339,12 @@ class Exponential(Probabilistic):
         C_src : array of shape = [n_samples, n_classifiers]
                 The competence source for each base classifier at each data point.
         """
-        C_src = np.zeros((self.n_samples, self.n_classifiers))
+        C_src = np.zeros((self.n_samples_, self.n_classifiers))
         for clf_index in range(self.n_classifiers):
             supports = self.dsel_scores[:, clf_index, :]
-            support_correct = supports[np.arange(self.n_samples), self.DSEL_target]
+            support_correct = supports[np.arange(self.n_samples_), self.DSEL_target_]
 
-            C_src[:, clf_index] = exponential_func(self.n_classes, support_correct)
+            C_src[:, clf_index] = exponential_func(self.n_classes_, support_correct)
         return C_src
 
 
@@ -412,12 +412,12 @@ class RRC(Probabilistic):
         C_src : array of shape = [n_samples, n_classifiers]
                 The competence source for each base classifier at each data point.
         """
-        c_src = np.zeros((self.n_samples, self.n_classifiers))
+        c_src = np.zeros((self.n_samples_, self.n_classifiers))
 
         for clf_index in range(self.n_classifiers):
             # Get supports for all samples in DSEL
             supports = self.dsel_scores[:, clf_index, :]
-            c_src[:, clf_index] = ccprmod(supports, self.DSEL_target)
+            c_src[:, clf_index] = ccprmod(supports, self.DSEL_target_)
 
         return c_src
 
@@ -493,11 +493,11 @@ class DESKL(Probabilistic):
                 The competence source for each base classifier at each data point.
         """
 
-        C_src = np.zeros((self.n_samples, self.n_classifiers))
+        C_src = np.zeros((self.n_samples_, self.n_classifiers))
         for clf_index in range(self.n_classifiers):
             supports = self.dsel_scores[:, clf_index, :]
-            is_correct = self.processed_dsel[:, clf_index]
-            C_src[:, clf_index] = entropy_func(self.n_classes, supports, is_correct)
+            is_correct = self.DSEL_processed_[:, clf_index]
+            C_src[:, clf_index] = entropy_func(self.n_classes_, supports, is_correct)
 
         return C_src
 
@@ -569,10 +569,10 @@ class MinimumDifference(Probabilistic):
         C_src : array of shape = [n_samples, n_classifiers]
                 The competence source for each base classifier at each data point.
         """
-        C_src = np.zeros((self.n_samples, self.n_classifiers))
+        C_src = np.zeros((self.n_samples_, self.n_classifiers))
         for clf_index in range(self.n_classifiers):
             supports = self.dsel_scores[:, clf_index, :]
-            C_src[:, clf_index] = min_difference(supports, self.DSEL_target)
+            C_src[:, clf_index] = min_difference(supports, self.DSEL_target_)
 
         return C_src
 

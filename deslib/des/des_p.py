@@ -86,7 +86,7 @@ class DESP(DES):
                       Competence level estimated for each base classifier and test example.
         """
         _, idx_neighbors = self._get_region_competence(query)
-        competences = np.mean(self.processed_dsel[idx_neighbors, :], axis=1)
+        competences = np.mean(self.DSEL_processed_[idx_neighbors, :], axis=1)
 
         return competences
 
@@ -109,7 +109,7 @@ class DESP(DES):
         if competences.ndim < 2:
             competences = competences.reshape(1, -1)
 
-        RC = 1.0 / self.n_classes
+        RC = 1.0 / self.n_classes_
         selected_classifiers = (competences > RC)
 
         # For the rows that are all False (i.e., no base classifier was selected, select all classifiers (set all True)

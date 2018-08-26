@@ -84,7 +84,7 @@ class KNORAE(DES):
                       Competence level estimated for each base classifier and test example.
         """
         _, idx_neighbors = self._get_region_competence(query)
-        results_neighbors = self.processed_dsel[idx_neighbors, :]
+        results_neighbors = self.DSEL_processed_[idx_neighbors, :]
 
         # Get the shape of the vector in order to know the number of samples, base classifiers and neighbors considered.
         shape = results_neighbors.shape
@@ -96,7 +96,7 @@ class KNORAE(DES):
         results_neighbors = np.insert(results_neighbors, shape[1], addition, axis=1)
 
         # Look for the first occurrence of a zero in the processed predictions (first misclassified. The np.argmax
-        # Can be used here, since in case of multiple occurrences of the maximum values, the indices
+        # Can be used here, since in case of multiple occurrences of the maximum values, the indices_
         # corresponding to the first occurrence are returned.
         competences = np.argmax(results_neighbors == 0, axis=1)
 
