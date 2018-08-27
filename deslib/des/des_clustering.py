@@ -39,7 +39,7 @@ class DESClustering(DS):
         Whether we select the most or the least diverse classifiers to add to the pre-selected ensemble
 
     metric : String (Default = 'df')
-            Diversity diversity_func used to estimate the diversity of the base classifiers. Can
+            Diversity diversity_func_ used to estimate the diversity of the base classifiers. Can
             be either the double fault (df), Q-statistics (Q), or error correlation (corr)
 
     rng : numpy.random.RandomState instance
@@ -57,37 +57,25 @@ class DESClustering(DS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers, k=5,
+    def __init__(self, pool_classifiers=None, clustering=KMeans(n_clusters=5),
                  pct_accuracy=0.5,
                  pct_diversity=0.33,
                  more_diverse=True,
                  metric='DF',
                  rng=np.random.RandomState()):
 
-        super(DESClustering, self).__init__(pool_classifiers, k)
+        super(DESClustering, self).__init__(pool_classifiers)
 
         self.name = 'DES-Clustering'
+        self.clustering = clustering
+        self.pct_accuracy = pct_accuracy
+        self.pct_diversity = pct_diversity
+        self.more_diverse = more_diverse
+        self.metric = metric.upper()
+        self.rng = rng
+
         self.N = int(self.n_classifiers * pct_accuracy)
         self.J = int(np.ceil(self.n_classifiers * pct_diversity))
-        self.metric = metric.upper()
-        self._validate_parameters()
-
-        self.more_diverse = more_diverse
-        if metric == 'DF':
-            self.diversity_func = negative_double_fault
-        elif metric == 'Q':
-            self.diversity_func = Q_statistic
-        else:
-            self.diversity_func = ratio_errors
-
-        self.roc_algorithm = KMeans(n_clusters=k, random_state=rng)
-
-        # Since the clusters are fixed, we can pre-compute the accuracy and diversity of each cluster as well as the
-        # selected classifiers (indices) for each one. These pre-computed information will be kept on
-        # those three variables:
-        self.accuracy_cluster = np.zeros((self.k, self.n_classifiers))
-        self.diversity_cluster = np.zeros((self.k, self.n_classifiers))
-        self.indices = np.zeros((self.k, self.J),  dtype=int)
 
     def fit(self, X, y):
         """ Train the DS model by setting the Clustering algorithm and
@@ -111,38 +99,60 @@ class DESClustering(DS):
         -------
         self
         """
+        self._validate_parameters()
+        super(DESClustering, self).fit(X, y)
+        self.clustering_ = self.clustering.fit(self.DSEL_data_)
 
-        y_ind = self.setup_label_encoder(y)
-        self._set_dsel(X, y_ind)
-        labels = self.roc_algorithm.fit_predict(X)
+        # y_ind = self.setup_label_encoder(y)
+        # self._set_dsel(X, y_ind)
+        # self.clustering_.fit(self.DSEL_data_)
 
+        if self.metric == 'DF':
+            self.diversity_func_ = negative_double_fault
+        elif self.metric == 'Q':
+            self.diversity_func_ = Q_statistic
+        else:
+            self.diversity_func_ = ratio_errors
+
+        # Since the clusters are fixed, we can pre-compute the accuracy and diversity of each cluster as well as the
+        # selected classifiers (indices) for each one. These pre-computed information will be kept on
+        # those three variables:
+        self.accuracy_cluster_ = np.zeros((self.clustering.n_clusters, self.n_classifiers))
+        self.diversity_cluster_ = np.zeros((self.clustering.n_clusters, self.n_classifiers))
+        self.indices_ = np.zeros((self.clustering.n_clusters, self.J), dtype=int)
+
+        self._preprocess_clusters()
+
+    def _preprocess_clusters(self):
+
+        labels = self.clustering_.predict(self.DSEL_data_)
         # For each cluster estimate the most accurate and most competent classifiers for it.
-        for cluster_index in range(self.k):
+        for cluster_index in range(self.clustering_.n_clusters):
 
-            # Get the indices of the samples in the corresponding cluster.
+            # Get the indices_ of the samples in the corresponding cluster.
             sample_indices = np.where(labels == cluster_index)[0]
 
             # Compute accuracy of each classifier in this cluster
-            accuracy = np.mean(self.processed_dsel[sample_indices, :], axis=0)
-            self.accuracy_cluster[cluster_index, :] = accuracy
+            accuracy = np.mean(self.DSEL_processed_[sample_indices, :], axis=0)
+            self.accuracy_cluster_[cluster_index, :] = accuracy
 
             # Get the N most accurate classifiers for the corresponding cluster
             accuracy_indices = np.argsort(accuracy)[::-1][0:self.N]
 
             # Get the target labels for the samples in the corresponding cluster for the diversity calculation.
 
-            targets = self.DSEL_target[sample_indices]
-            self.diversity_cluster[cluster_index, :] = \
-                compute_pairwise_diversity(targets, self.BKS_dsel[sample_indices, :], self.diversity_func)
+            targets = self.DSEL_target_[sample_indices]
+            self.diversity_cluster_[cluster_index, :] = \
+                compute_pairwise_diversity(targets, self.BKS_DSEL_[sample_indices, :], self.diversity_func_)
 
-            diversity_of_selected = self.diversity_cluster[cluster_index, accuracy_indices]
+            diversity_of_selected = self.diversity_cluster_[cluster_index, accuracy_indices]
 
             if self.more_diverse:
                 diversity_indices = np.argsort(diversity_of_selected)[::-1][0:self.J]
             else:
                 diversity_indices = np.argsort(diversity_of_selected)[0:self.J]
 
-            self.indices[cluster_index, :] = accuracy_indices[diversity_indices]
+            self.indices_[cluster_index, :] = accuracy_indices[diversity_indices]
 
     def estimate_competence(self, query, predictions=None):
         """Get the competence estimates of each base classifier :math:`c_{i}`
@@ -165,8 +175,8 @@ class DESClustering(DS):
         competences : array = [n_samples, n_classifiers]
                       The competence level estimated for each base classifier.
         """
-        cluster_index = self.roc_algorithm.predict(query)
-        competences = self.accuracy_cluster[cluster_index][:]
+        cluster_index = self.clustering_.predict(query)
+        competences = self.accuracy_cluster_[cluster_index][:]
         return competences
 
     def select(self, query):
@@ -186,8 +196,8 @@ class DESClustering(DS):
                                Indices of the selected base classifier for each test example.
 
         """
-        cluster_index = self.roc_algorithm.predict(query)
-        selected_classifiers = self.indices[cluster_index, :]
+        cluster_index = self.clustering_.predict(query)
+        selected_classifiers = self.indices_[cluster_index, :]
         return selected_classifiers
 
     def classify_with_ds(self, query, predictions, probabilities=None):
@@ -257,7 +267,7 @@ class DESClustering(DS):
     def _validate_parameters(self):
         """Check if the parameters passed as argument are correct.
 
-        The diversity_func must be either ['DF', 'Q', 'RATIO']
+        The diversity_func_ must be either ['DF', 'Q', 'RATIO']
 
         The values of N and J should be higher than 0, and N >= J
         ----------
