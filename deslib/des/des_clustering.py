@@ -5,6 +5,7 @@
 # License: BSD 3 clause
 
 import numpy as np
+from sklearn.base import ClusterMixin
 from sklearn.cluster import KMeans
 
 from deslib.base import DS
@@ -281,3 +282,6 @@ class DESClustering(DS):
         if self.N < self.J:
             raise ValueError("The value of N should be greater or equals than J"
                              "N, J" .format(self.N, self.J))
+
+        if not isinstance(self.clustering, ClusterMixin):
+            raise ValueError("Parameter clustering must be a sklearn cluster estimator.")
