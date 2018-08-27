@@ -14,7 +14,7 @@ def test_not_predict_proba():
     clf1 = Perceptron()
     clf1.fit(X, y)
     with pytest.raises(ValueError):
-        Probabilistic([clf1, clf1])
+        Probabilistic([clf1, clf1]).fit(X, y)
 
 
 # Being all ones, all base classifiers are deemed competent

@@ -278,7 +278,7 @@ def test_predict_proba():
     y = np.array([0, 1, 0, 0, 0])
     clf1 = Perceptron()
     clf1.fit(X, y)
-    DESKNN([clf1, clf1, clf1])
+    DESKNN([clf1, clf1, clf1]).fit(X, y)
 
 
 def test_classify_with_ds_single_sample():

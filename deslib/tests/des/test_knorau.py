@@ -53,7 +53,7 @@ def test_predict_proba():
     y = y_dsel_ex1
     clf1 = Perceptron()
     clf1.fit(X, y)
-    KNORAU([clf1, clf1])
+    KNORAU([clf1, clf1]).fit(X, y)
 
 
 def test_select():

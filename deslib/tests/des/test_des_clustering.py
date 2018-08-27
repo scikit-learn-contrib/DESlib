@@ -173,16 +173,16 @@ def test_predict_proba():
     y = y_dsel_ex1
     clf1 = Perceptron()
     clf1.fit(X, y)
-    DESClustering([clf1, clf1])
+    DESClustering([clf1, clf1]).fit(X_dsel_ex1, y_dsel_ex1)
 
 
 def test_classify_with_ds_single_sample():
     query = np.ones(2)
     predictions = np.array([0, 1, 0])
 
-    desknn_test = DESClustering(create_pool_classifiers())
-    desknn_test.select = MagicMock(return_value=np.array([[0, 2]]))
-    result = desknn_test.classify_with_ds(query, predictions)
+    des_clustering_test = DESClustering(create_pool_classifiers())
+    des_clustering_test.select = MagicMock(return_value=np.array([[0, 2]]))
+    result = des_clustering_test.classify_with_ds(query, predictions)
     assert np.allclose(result, 0)
 
 

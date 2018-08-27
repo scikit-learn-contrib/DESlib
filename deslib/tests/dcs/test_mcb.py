@@ -122,4 +122,4 @@ def test_predict_proba():
     y = y_dsel_ex1
     clf1 = Perceptron()
     clf1.fit(X, y)
-    MCB([clf1, clf1])
+    MCB([clf1, clf1]).fit(X, y)
