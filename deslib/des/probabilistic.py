@@ -70,7 +70,6 @@ class Probabilistic(DES):
         super(Probabilistic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
                                             IH_rate=IH_rate,
                                             mode=mode)
-        self._check_predict_proba()
 
         self.C_src = None
         self.selection_threshold = selection_threshold
@@ -97,13 +96,18 @@ class Probabilistic(DES):
         -------
         self
         """
+        self._check_predict_proba()
 
-        y_ind = self.setup_label_encoder(y)
-        self._set_dsel(X, y_ind)
         if self.k is None:
-            self.k = self.n_samples_
+            self.k = X.shape[0]
 
-        self._fit_region_competence(X, y_ind, self.k)
+        super(Probabilistic, self).fit(X, y)
+
+        # y_ind = self.setup_label_encoder(y)
+        # self._set_dsel(X, y_ind)
+        #
+        #
+        # self._fit_region_competence(X, y_ind, self.k)
         # Pre process the scores in DSEL (it is required only for the source of competence estimation
         # Maybe I should not keep this matrix in order to reduce memory requirement.
         self.dsel_scores = self._preprocess_dsel_scores()
