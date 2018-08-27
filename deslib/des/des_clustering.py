@@ -31,17 +31,17 @@ class DESClustering(DS):
         Number of neighbors used to estimate the competence of the base classifiers.
 
     pct_accuracy : float (Default = 0.5)
-        Percentage of base classifiers selected based on accuracy
+                   Percentage of base classifiers selected based on accuracy
 
     pct_diversity : float (Default = 0.33)
-        Percentage of base classifiers selected based n diversity
+                    Percentage of base classifiers selected based n diversity
 
     more_diverse : Boolean (Default = True)
-        Whether we select the most or the least diverse classifiers to add to the pre-selected ensemble
+                   Whether we select the most or the least diverse classifiers to add to the pre-selected ensemble
 
     metric : String (Default = 'df')
-            Diversity diversity_func_ used to estimate the diversity of the base classifiers. Can
-            be either the double fault (df), Q-statistics (Q), or error correlation (corr)
+             Metric used to estimate the diversity of the base classifiers. Can
+             be either the double fault (df), Q-statistics (Q), or error correlation (corr)
 
     rng : numpy.random.RandomState instance
           Random number generator to assure reproducible results.
@@ -104,16 +104,7 @@ class DESClustering(DS):
         super(DESClustering, self).fit(X, y)
         self.clustering_ = self.clustering.fit(self.DSEL_data_)
 
-        # y_ind = self.setup_label_encoder(y)
-        # self._set_dsel(X, y_ind)
-        # self.clustering_.fit(self.DSEL_data_)
-
-        if self.metric == 'DF':
-            self.diversity_func_ = negative_double_fault
-        elif self.metric == 'Q':
-            self.diversity_func_ = Q_statistic
-        else:
-            self.diversity_func_ = ratio_errors
+        self._set_diversity_func()
 
         # Since the clusters are fixed, we can pre-compute the accuracy and diversity of each cluster as well as the
         # selected classifiers (indices) for each one. These pre-computed information will be kept on
@@ -125,7 +116,16 @@ class DESClustering(DS):
         self._preprocess_clusters()
 
     def _preprocess_clusters(self):
+        """Preprocess the competence as well as the average diversity of each base classifier for each specific cluster.
 
+        This process makes the test routines faster, since the ensemble of classifiers of each cluster
+        is already predefined.
+
+        The class attributes Accuracy_cluster_ and diversity_cluster_ stores the accuracy and diversity information
+        respectively of each base classifier for each cluster. The attribute indices_ stores the pre-selected
+        base classifiers for each cluster.
+        ----------
+        """
         labels = self.clustering_.predict(self.DSEL_data_)
         # For each cluster estimate the most accurate and most competent classifiers for it.
         for cluster_index in range(self.clustering_.n_clusters):
@@ -285,3 +285,16 @@ class DESClustering(DS):
 
         if not isinstance(self.clustering, ClusterMixin):
             raise ValueError("Parameter clustering must be a sklearn cluster estimator.")
+
+    def _set_diversity_func(self):
+        """Set the diversity function to be used according to the hyper-parameter metric
+
+        The diversity_func_ can be either the Double Fault, Q-Statistics or Ratio of errors.
+        ----------
+        """
+        if self.metric == 'DF':
+            self.diversity_func_ = negative_double_fault
+        elif self.metric == 'Q':
+            self.diversity_func_ = Q_statistic
+        else:
+            self.diversity_func_ = ratio_errors

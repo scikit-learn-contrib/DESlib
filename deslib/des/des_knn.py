@@ -43,17 +43,17 @@ class DESKNN(DS):
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
     pct_accuracy : float (Default = 0.5)
-        Percentage of base classifiers selected based on accuracy
+                   Percentage of base classifiers selected based on accuracy
 
     pct_diversity : float (Default = 0.3)
-        Percentage of base classifiers selected based n diversity
+                    Percentage of base classifiers selected based n diversity
 
     more_diverse : Boolean (Default = True)
-        Whether we select the most or the least diverse classifiers to add to the pre-selected ensemble
+                   Whether we select the most or the least diverse classifiers to add to the pre-selected ensemble
 
     metric : String (Default = 'df')
-            Diversity diversity_func used to estimate the diversity of the base classifiers. Can
-            be either the double fault (df), Q-statistics (Q), or error correlation (corr)
+             Metric used to estimate the diversity of the base classifiers. Can
+             be either the double fault (df), Q-statistics (Q), or error correlation (corr)
 
     References
     ----------
@@ -67,7 +67,7 @@ class DESKNN(DS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None,
                  IH_rate=0.30,
                  pct_accuracy=0.5,
                  pct_diversity=0.3,
@@ -84,14 +84,6 @@ class DESKNN(DS):
 
         self.N = int(self.n_classifiers * pct_accuracy)
         self.J = int(np.ceil(self.n_classifiers * pct_diversity))
-
-        # Set up the diversity metric
-        if self.metric == 'DF':
-            self.diversity_func = negative_double_fault
-        elif metric == 'Q':
-            self.diversity_func = Q_statistic
-        else:
-            self.diversity_func = ratio_errors
 
     def estimate_competence(self, query, predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}` for
@@ -133,13 +125,14 @@ class DESKNN(DS):
         predicted_matrix = self.BKS_DSEL_[idx_neighbors, :]
         targets = self.DSEL_target_[idx_neighbors]
 
+        self._set_diversity_func()
         # TODO: optimize this part with numpy instead of for loops
         # Calculate the more_diverse matrix. It becomes computationally expensive
         # When the region of competence is high
         diversity = np.zeros((query.shape[0], self.n_classifiers))
         for sample_idx in range(query.shape[0]):
             this_diversity = compute_pairwise_diversity(targets[sample_idx, :],
-                                                      predicted_matrix[sample_idx, :, :], self.diversity_func)
+                                                      predicted_matrix[sample_idx, :, :], self.diversity_func_)
 
             diversity[sample_idx, :] = this_diversity
 
@@ -211,7 +204,6 @@ class DESKNN(DS):
         predicted_label : array of shape = [n_samples]
                           Predicted class label for each test example.
         """
-
         if query.ndim < 2:
             query = query.reshape(1, -1)
 
@@ -279,7 +271,7 @@ class DESKNN(DS):
     def _validate_parameters(self):
         """Check if the parameters passed as argument are correct.
 
-        The diversity_func must be either ['DF', 'Q', 'RATIO']
+        The diversity_func_ must be either ['DF', 'Q', 'RATIO']
 
         The values of N and J should be higher than 0, and N >= J
         ----------
@@ -295,3 +287,16 @@ class DESKNN(DS):
         if self.N < self.J:
             raise ValueError("The value of N should be greater or equals than J"
                              "N = {}, J= {} " .format(self.N, self.J))
+
+    def _set_diversity_func(self):
+        """Set the diversity function to be used according to the hyper-parameter metric
+
+        The diversity_func_ can be either the Double Fault, Q-Statistics or Ratio of errors.
+        ----------
+        """
+        if self.metric == 'DF':
+            self.diversity_func_ = negative_double_fault
+        elif self.metric == 'Q':
+            self.diversity_func_ = Q_statistic
+        else:
+            self.diversity_func_ = ratio_errors
