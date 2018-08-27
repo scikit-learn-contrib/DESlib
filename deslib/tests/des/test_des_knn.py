@@ -26,7 +26,6 @@ def test_estimate_competence():
     clf3 diversity = (2+1)/7 = -3/7
 
     """
-
     query = np.ones((1, 2))
     x = np.array([0, 1, 2, 3, 4, 5, 6]).reshape(-1, 1)
     y = np.array([0, 0, 0, 0, 1, 1, 1])
@@ -39,7 +38,6 @@ def test_estimate_competence():
 
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1)
     target.fit(x, y)
-    target.DFP_mask = np.ones(target.n_classifiers)
     target._get_region_competence = lambda x: (None, np.array([[0, 1, 2, 3, 4, 5, 6]]))
 
     competences, diversity = target.estimate_competence(query)
@@ -80,7 +78,6 @@ def test_estimate_competence_batch():
 
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1)
     target.fit(x, y)
-    target.DFP_mask = np.ones(target.n_classifiers)
     target._get_region_competence = lambda x: (None, np.tile([0, 1, 2, 3, 4, 5, 6], (10, 1)))
 
     competences, diversity = target.estimate_competence(query)
@@ -102,7 +99,6 @@ def test_estimate_competence_Q():
 
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1, metric='Q')
     target.fit(x, y)
-    target.DFP_mask = np.ones(target.n_classifiers)
     target._get_region_competence = lambda x: (None, np.array([[0, 1, 2, 3, 4, 5, 6]]))
 
     competences, diversity = target.estimate_competence(query)
@@ -125,7 +121,6 @@ def test_estimate_competence_Q_batch():
 
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1, metric='Q')
     target.fit(x, y)
-    target.DFP_mask = np.ones(target.n_classifiers)
     target._get_region_competence = lambda x: (None, np.tile([0, 1, 2, 3, 4, 5, 6], (n_samples, 1)))
 
     competences, diversity = target.estimate_competence(query)
@@ -148,7 +143,6 @@ def test_estimate_competence_ratio():
 
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1, metric='Ratio')
     target.fit(x, y)
-    target.DFP_mask = np.ones(target.n_classifiers)
     target._get_region_competence = lambda x: (None, np.array([[0, 1, 2, 3, 4, 5, 6]]))
 
     competences, diversity = target.estimate_competence(query)
@@ -172,7 +166,6 @@ def test_estimate_competence_ratio_batch():
 
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1, metric='Ratio')
     target.fit(x, y)
-    target.DFP_mask = np.ones(target.n_classifiers)
     target._get_region_competence = lambda x: (None, np.tile([0, 1, 2, 3, 4, 5, 6], (n_samples, 1)))
 
     competences, diversity = target.estimate_competence(query)
