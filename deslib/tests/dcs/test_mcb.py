@@ -35,10 +35,10 @@ def test_estimate_competence(index, expected):
     query = np.atleast_2d([1, 1])
 
     mcb_test = MCB(create_pool_classifiers())
+    mcb_test.n_classifiers_ = 3
     mcb_test.DSEL_processed_ = dsel_processed_ex1
     mcb_test.neighbors = neighbors_ex1[index, :]
     mcb_test.distances = distances_ex1[index, :]
-    mcb_test.DFP_mask = [1, 1, 1]
     mcb_test.BKS_DSEL_ = bks_dsel_ex1
 
     predictions = []
@@ -56,6 +56,7 @@ def test_estimate_competence2(index, expected):
     query = np.atleast_2d([1, 1])
 
     mcb_test = MCB(create_pool_classifiers())
+    mcb_test.n_classifiers_ = 3
     mcb_test.DSEL_processed_ = dsel_processed_ex1
     mcb_test.neighbors = neighbors_ex1[index, :]
     mcb_test.distances = distances_ex1[index, :]
@@ -80,6 +81,7 @@ def test_estimate_competence3(index, expected):
     query = np.atleast_2d([1, 1])
 
     mcb_test = MCB(create_pool_classifiers())
+    mcb_test.n_classifiers_ = 3
     mcb_test.DSEL_processed_ = dsel_processed_ex1
     mcb_test.neighbors = neighbors_ex1[index, :]
     mcb_test.distances = distances_ex1[index, :]
@@ -100,6 +102,7 @@ def test_estimate_competence_batch():
                          [0.71428571, 0.85714286, 0.71428571],
                          [0.57142857, 0.71428571, 0.57142857]])
     mcb_test = MCB(create_pool_classifiers())
+    mcb_test.n_classifiers_ = 3
     mcb_test.DSEL_processed_ = dsel_processed_ex1
     mcb_test.neighbors = neighbors_ex1
     mcb_test.distances = distances_ex1

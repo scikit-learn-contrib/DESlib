@@ -13,7 +13,7 @@ def test_estimate_competence(index, expected):
 
     knora_e_test = KNORAE(create_pool_classifiers())
     knora_e_test.fit(X_dsel_ex1, y_dsel_ex1)
-    knora_e_test.DFP_mask = np.ones(knora_e_test .n_classifiers)
+    knora_e_test.DFP_mask = np.ones(knora_e_test .n_classifiers_)
     knora_e_test.neighbors = neighbors_ex1[index, :]
     knora_e_test.distances = distances_ex1[index, :]
     competences = knora_e_test.estimate_competence(query)
@@ -28,7 +28,7 @@ def test_estimate_competence_batch():
 
     knora_e_test = KNORAE(create_pool_classifiers())
     knora_e_test.fit(X_dsel_ex1, y_dsel_ex1)
-    knora_e_test.DFP_mask = np.ones(knora_e_test .n_classifiers)
+    knora_e_test.DFP_mask = np.ones(knora_e_test .n_classifiers_)
     knora_e_test.neighbors = neighbors_ex1
     knora_e_test.distances = distances_ex1
     competences = knora_e_test.estimate_competence(query)
@@ -43,7 +43,7 @@ def test_select(index, expected):
 
     knora_e_test = KNORAE(create_pool_classifiers())
     knora_e_test.fit(X_dsel_ex1, y_dsel_ex1)
-    knora_e_test.DFP_mask = np.ones(knora_e_test .n_classifiers)
+    knora_e_test.DFP_mask = np.ones(knora_e_test .n_classifiers_)
     knora_e_test.neighbors = neighbors_ex1[index, :]
     knora_e_test.distances = distances_ex1[index, :]
     competences = knora_e_test.estimate_competence(query)

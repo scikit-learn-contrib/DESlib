@@ -16,7 +16,7 @@ def test_estimate_competence(index, expected):
     knop_test = KNOP(create_pool_classifiers())
     knop_test.fit(X_dsel_ex1, y_dsel_ex1)
 
-    knop_test.DFP_mask = np.ones(knop_test .n_classifiers)
+    knop_test.DFP_mask = np.ones(knop_test .n_classifiers_)
     knop_test.neighbors = neighbors_ex1[index, :]
     knop_test._get_similar_out_profiles = Mock(return_value=(None, np.atleast_2d(neighbors_ex1[index, :])))
     knop_test.distances = distances_ex1[index, :]
@@ -41,7 +41,7 @@ def test_estimate_competence_batch():
     knop_test = KNOP(create_pool_classifiers())
     knop_test.fit(X_dsel_ex1, y_dsel_ex1)
 
-    knop_test.DFP_mask = np.ones(knop_test .n_classifiers)
+    knop_test.DFP_mask = np.ones(knop_test .n_classifiers_)
     knop_test.neighbors = neighbors_ex1
     knop_test._get_similar_out_profiles = Mock(return_value=(None, neighbors_ex1))
     knop_test.distances = distances_ex1

@@ -81,12 +81,12 @@ def test_potential_function_batch():
 # Test the estimate_competence method using a pre-calculated source of competence matrix. The final competence is
 # a result of the competence source and the result of the potential function model at each data point.
 def test_estimate_competence():
-
+    n_classifiers = 3
     query = np.atleast_2d([1, 1])
     probabilistic_test = Probabilistic(create_pool_classifiers())
     probabilistic_test.distances = [0.5, 1.0, 2.0]
     probabilistic_test.neighbors = [0, 1, 2]
-    probabilistic_test.DFP_mask = np.ones(probabilistic_test.n_classifiers)
+    probabilistic_test.DFP_mask = np.ones(n_classifiers)
 
     probabilistic_test.C_src = np.array([[0.5, 0.2, 0.8],
                                          [1.0, 1.0, 1.0],
@@ -98,11 +98,12 @@ def test_estimate_competence():
 
 def test_estimate_competence_batch():
     n_samples = 10
+    n_classifiers = 3
     query = np.ones((n_samples, 2))
     probabilistic_test = Probabilistic(create_pool_classifiers())
     probabilistic_test.distances = np.tile([0.5, 1.0, 2.0], (n_samples, 1))
     probabilistic_test.neighbors = np.tile([0, 1, 2], (n_samples, 1))
-    probabilistic_test.DFP_mask = np.ones((n_samples, probabilistic_test.n_classifiers))
+    probabilistic_test.DFP_mask = np.ones((n_samples, n_classifiers))
 
     probabilistic_test.C_src = np.array([[0.5, 0.2, 0.8],
                                          [1.0, 1.0, 1.0],
@@ -115,10 +116,11 @@ def test_estimate_competence_batch():
 # Test the estimate competence function when the competence source is equal to zero. The competence should also be zero.
 def test_estimate_competence_zeros():
     query = np.atleast_2d([1, 1])
+    n_classifiers = 3
     probabilistic_test = Probabilistic(create_pool_classifiers())
     probabilistic_test.distances = distances_ex1[0, 0:3]
     probabilistic_test.neighbors = [0, 2, 1]
-    probabilistic_test.DFP_mask = np.zeros(probabilistic_test.n_classifiers)
+    probabilistic_test.DFP_mask = np.zeros(n_classifiers)
     probabilistic_test.C_src = np.zeros((3, 3))
     competence = probabilistic_test.estimate_competence(query)
     assert np.sum(competence) == 0.0
@@ -127,10 +129,11 @@ def test_estimate_competence_zeros():
 # Test the estimate competence function when the competence source is equal to one. The competence should also be ones.
 def test_estimate_competence_ones():
     query = np.atleast_2d([1, 1])
+    n_classifiers = 3
     probabilistic_test = Probabilistic(create_pool_classifiers())
     probabilistic_test.distances = distances_ex1[0, 0:3]
     probabilistic_test.neighbors = [0, 2, 1]
-    probabilistic_test.DFP_mask = np.ones(probabilistic_test.n_classifiers)
+    probabilistic_test.DFP_mask = np.ones(n_classifiers)
     probabilistic_test.C_src = np.ones((3, 3))
     competence = probabilistic_test.estimate_competence(query)
     assert (competence == 1.0).all()
@@ -147,7 +150,9 @@ The expected value should be: an np.array (4,1) with the values = [[0.7849], [0.
 
 
 def test_source_competence_rrc():
-    rrc_test = RRC([create_base_classifier(return_value=1, return_prob=1.0)])
+    pool_classifiers = [create_base_classifier(return_value=1, return_prob=1.0)]
+    rrc_test = RRC(pool_classifiers=pool_classifiers)
+    rrc_test.n_classifiers_ = len(pool_classifiers)
     rrc_test.dsel_scores = np.array([[[0.3, 0.6, 0.1],
                                       [1.0 / 3, 1.0 / 3, 1.0 / 3],
                                       [0.5, 0.2, 0.3],
@@ -171,7 +176,9 @@ The expected value should be: an np.array (3,1) with the values = [[0.0], [1.0],
 
 
 def test_source_competence_kl():
-    entropy_test = DESKL([create_base_classifier(return_value=1, return_prob=1.0)])
+    pool_classifiers = [create_base_classifier(return_value=1, return_prob=1.0)]
+    entropy_test = DESKL(pool_classifiers=pool_classifiers)
+    entropy_test.n_classifiers_ = len(pool_classifiers)
     entropy_test.dsel_scores = np.array([[[0.33, 0.33, 0.33],
                                          [1.0, 0.0, 0.0],
                                          [1.0, 0.0, 0.0]]]).reshape(3, 1, 3)  # 3 Samples, 1 classifier, 3 classes
@@ -194,7 +201,9 @@ The expected value should be: an np.array (4,1) with the values = [[0.7849], [0.
 
 
 def test_source_competence_minimum_difference():
-    md_test = MinimumDifference([create_base_classifier(return_value=1, return_prob=1.0)])
+    pool_classifiers = [create_base_classifier(return_value=1, return_prob=1.0)]
+    md_test = MinimumDifference(pool_classifiers=pool_classifiers)
+    md_test.n_classifiers_ = len(pool_classifiers)
     md_test.dsel_scores = np.array([[[0.3, 0.6, 0.1],
                                     [1.0 / 3, 1.0 / 3, 1.0 / 3],
                                     [0.5, 0.2, 0.3],
@@ -219,7 +228,9 @@ The expected value should be: an np.array (3,1) with the values = [[0.0], [-1.0]
 
 
 def test_source_competence_logarithmic():
-    log_test = Logarithmic([create_base_classifier(return_value=1, return_prob=1.0)])
+    pool_classifiers = [create_base_classifier(return_value=1, return_prob=1.0)]
+    log_test = Logarithmic(pool_classifiers=pool_classifiers)
+    log_test.n_classifiers_ = len(pool_classifiers)
     log_test.dsel_scores = np.array([[[0.67, 0.33, 0.0],
                                      [1.0, 0.0, 0.0],
                                      [0.0, 1.0, 0.0]]]).reshape(3, 1, 3)  # 3 sample, 1 classifier, 3 classes
@@ -244,7 +255,9 @@ The expected value should be: an np.array (3,1) with the values = [[0.0], [-1.0]
 
 
 def test_source_competence_exponential():
-    exp_test = Exponential([create_base_classifier(return_value=1, return_prob=1.0)])
+    pool_classifiers = [create_base_classifier(return_value=1, return_prob=1.0)]
+    exp_test = Exponential(pool_classifiers=pool_classifiers)
+    exp_test.n_classifiers_ = len(pool_classifiers)
     exp_test.dsel_scores = np.array([[[0.5, 0.5],
                                      [1.0, 0.0],
                                      [0.0, 1.0]]]).reshape(3, 1, 2)  # 3 samples, 1 classifier, 2 classes

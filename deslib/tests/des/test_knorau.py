@@ -13,7 +13,7 @@ def test_estimate_competence(index, expected):
 
     knora_u_test = KNORAU(create_pool_classifiers())
     knora_u_test.fit(X_dsel_ex1, y_dsel_ex1)
-    knora_u_test.DFP_mask = np.ones(knora_u_test .n_classifiers)
+    knora_u_test.DFP_mask = np.ones(knora_u_test .n_classifiers_)
     knora_u_test.neighbors = neighbors_ex1[index, :]
     knora_u_test.distances = distances_ex1[index, :]
     competences = knora_u_test.estimate_competence(query)
@@ -28,7 +28,7 @@ def test_estimate_competence_batch():
                          [2.0, 5.0, 2.0]])
     knora_u_test = KNORAU(create_pool_classifiers())
     knora_u_test.fit(X_dsel_ex1, y_dsel_ex1)
-    knora_u_test.DFP_mask = np.ones((3, knora_u_test.n_classifiers))
+    knora_u_test.DFP_mask = np.ones((3, knora_u_test.n_classifiers_))
     knora_u_test.neighbors = neighbors_ex1
     knora_u_test.distances = distances_ex1
     competences = knora_u_test.estimate_competence(query)

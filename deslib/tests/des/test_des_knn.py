@@ -185,6 +185,8 @@ def test_select():
     accuracies = np.array([4, 6, 1, 2, 9, 8, 7, 9, 3, 2]) / 10.
     diversity = np.array([0, 8, 0, 0, 1, 6, 7, 2, 0, 0])
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=5./10, pct_diversity=3./10)
+    target.N = 5
+    target.J = 3
 
     selected_classifiers = target.select(accuracies, diversity)
     expected = np.array([[1, 5, 6]])
@@ -205,6 +207,8 @@ def test_select_batch():
     accuracies = np.tile([4, 6, 1, 2, 9, 8, 7, 9, 3, 2], (n_samples, 1)) / 10.
     diversity = np.tile([0, 8, 0, 0, 1, 6, 7, 2, 0, 0], (n_samples, 1))
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=5./10, pct_diversity=3./10)
+    target.N = 5
+    target.J = 3
 
     selected_classifiers = target.select(accuracies, diversity)
     expected = np.tile([1, 5, 6], (n_samples, 1))
@@ -224,6 +228,8 @@ def test_select_less_diverse():
     accuracies = np.array([[4, 6, 1, 2, 9, 8, 7, 9, 3, 2]]) / 10.
     diversity = np.array([[0, 8, 0, 0, 1, 6, 7, 2, 0, 0]])
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=5./10, pct_diversity=3./10, more_diverse=False)
+    target.N = 5
+    target.J = 3
 
     selected_classifiers = target.select(accuracies, diversity)
     expected = np.array([[4, 5, 7]])
