@@ -39,7 +39,7 @@ def hardness_region_competence(neighbors_idx, labels, safe_k):
 
     Returns
     -------
-    hardness : array of shape = [n_samples]
+    hardness : array of shape = [n_samples_test]
                The Hardness level associated with each example.
 
     References
