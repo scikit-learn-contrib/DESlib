@@ -136,7 +136,7 @@ def test_mcb():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    mcb = MCB(pool_classifiers, rng=rng)
+    mcb = MCB(pool_classifiers, random_state=rng)
     mcb.fit(X_dsel, y_dsel)
     assert np.isclose(mcb.score(X_test, y_test), 0.96276595744680848)
 
@@ -145,7 +145,7 @@ def test_apriori():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    apriori = APriori(pool_classifiers, rng=rng)
+    apriori = APriori(pool_classifiers, random_state=rng)
     apriori.fit(X_dsel, y_dsel)
     assert np.isclose(apriori.score(X_test, y_test), 0.97872340425531912)
 
@@ -162,7 +162,7 @@ def test_aposteriori():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    a_posteriori = APosteriori(pool_classifiers, rng=rng)
+    a_posteriori = APosteriori(pool_classifiers, random_state=rng)
     a_posteriori.fit(X_dsel, y_dsel)
     assert np.isclose(a_posteriori.score(X_test, y_test), 0.96276595744680848)
 
@@ -216,10 +216,11 @@ def test_desknn():
 
 
 def test_des_clustering():
+    from sklearn.cluster import KMeans
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
-
-    des_clustering = DESClustering(pool_classifiers, rng=rng)
+    cluster = KMeans(n_clusters=5, random_state=rng)
+    des_clustering = DESClustering(pool_classifiers, clustering=cluster)
     des_clustering.fit(X_dsel, y_dsel)
     assert np.isclose(des_clustering.score(X_test, y_test), 0.97872340425531912)
 
@@ -282,7 +283,7 @@ def test_mcb_proba():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    mcb = MCB(pool_classifiers, rng=rng)
+    mcb = MCB(pool_classifiers, random_state=rng)
     mcb.fit(X_dsel, y_dsel)
     probas = mcb.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/mcb_proba_integration.npy')
@@ -300,10 +301,11 @@ def test_desknn_proba():
 
 
 def test_des_clustering_proba():
+    from sklearn.cluster import KMeans
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
-
-    des_clustering = DESClustering(pool_classifiers, rng=rng)
+    cluster = KMeans(n_clusters=5, random_state=rng)
+    des_clustering = DESClustering(pool_classifiers, clustering=cluster)
     des_clustering.fit(X_dsel, y_dsel)
     probas = des_clustering.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/des_clustering_proba_integration.npy')
