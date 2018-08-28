@@ -24,8 +24,10 @@ class KNOP(DES):
 
     Parameters
     ----------
-    pool_classifiers : type, the generated_pool of classifiers trained for the corresponding
-    classification problem.
+    pool_classifiers : list of classifiers (Default = None)
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       Each base classifiers should support the methods "predict" and "predict_proba".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -63,7 +65,7 @@ class KNOP(DES):
 
     """
 
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None,
                  IH_rate=0.30):
 
         super(KNOP, self).__init__(pool_classifiers, k,
@@ -99,7 +101,7 @@ class KNOP(DES):
         self._check_predict_proba()
         self.dsel_scores_ = self._preprocess_dsel_scores()
         # Reshape DSEL_scores as a 2-D array for nearest neighbor calculations
-        dsel_output_profiles = self.dsel_scores_.reshape(self.n_samples_, self.n_classifiers * self.n_classes_)
+        dsel_output_profiles = self.dsel_scores_.reshape(self.n_samples_, self.n_classifiers_ * self.n_classes_)
         self._fit_OP(dsel_output_profiles, self.DSEL_target_, self.k)
 
         return self
@@ -150,7 +152,7 @@ class KNOP(DES):
             # Get only the scores for one class since they are complementary
             query_op = probabilities[:, :, 0]
         else:
-            query_op = probabilities.reshape((probabilities.shape[0], self.n_classifiers * self.n_classes_))
+            query_op = probabilities.reshape((probabilities.shape[0], self.n_classifiers_ * self.n_classes_))
 
         dists, idx = self.op_knn.kneighbors(query_op, n_neighbors=self.k, return_distance=True)
         return dists, np.atleast_2d(idx)

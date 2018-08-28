@@ -36,9 +36,10 @@ class METADES(DES):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the methods "predict" and "predict_proba".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -83,7 +84,7 @@ class METADES(DES):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers, meta_classifier=MultinomialNB(),
+    def __init__(self, pool_classifiers=None, meta_classifier=MultinomialNB(),
                  k=7,
                  kp=5,
                  Hc=1.0,
@@ -137,7 +138,7 @@ class METADES(DES):
 
         self.dsel_scores = self._preprocess_dsel_scores()
         # Reshape DSEL_scores as a 2-D array for nearest neighbor calculations
-        dsel_output_profiles = self.dsel_scores.reshape(self.n_samples_, self.n_classifiers * self.n_classes_)
+        dsel_output_profiles = self.dsel_scores.reshape(self.n_samples_, self.n_classifiers_ * self.n_classes_)
         self._fit_OP(dsel_output_profiles, self.DSEL_target_, self.Kp)
 
         if self.meta_classifier is None:
@@ -188,7 +189,7 @@ class METADES(DES):
 
         """
         # pct_agree = np.sum(self.DSEL_processed_[query_idx, :]) / self.n_classifiers
-        pct_agree = np.sum(self.DSEL_processed_, axis=1) / self.n_classifiers
+        pct_agree = np.sum(self.DSEL_processed_, axis=1) / self.n_classifiers_
 
         return pct_agree
 
@@ -313,7 +314,7 @@ class METADES(DES):
             # Get only the scores for one class since they are complementary
             query_op = probabilities[:, :, 0]
         else:
-            query_op = probabilities.reshape((probabilities.shape[0], self.n_classifiers * self.n_classes_))
+            query_op = probabilities.reshape((probabilities.shape[0], self.n_classifiers_ * self.n_classes_))
 
         dists, idx = self.op_knn.kneighbors(query_op, n_neighbors=kp, return_distance=True)
         return dists, idx
@@ -377,7 +378,7 @@ class METADES(DES):
         competences = self.meta_classifier.predict_proba(meta_feature_vectors)[:, 1]
 
         # Reshape the array from 1D [n_samples x n_classifiers] to 2D [n_samples, n_classifiers]
-        competences = competences.reshape(-1, self.n_classifiers)
+        competences = competences.reshape(-1, self.n_classifiers_)
         if self.DFP:
             competences = competences * self.DFP_mask
 

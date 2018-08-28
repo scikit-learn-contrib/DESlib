@@ -21,9 +21,10 @@ class Probabilistic(DES):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the method "predict" and "predict_proba".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = None)
         Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
@@ -64,7 +65,7 @@ class Probabilistic(DES):
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
+    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
                  mode='selection', selection_threshold=None):
 
         super(Probabilistic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
@@ -217,9 +218,10 @@ class Logarithmic(Probabilistic):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the method "predict" and "predict_proba".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = None)
         Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
@@ -251,7 +253,7 @@ class Logarithmic(Probabilistic):
     T.Woloszynski, M. Kurzynski, A measure of competence based on randomized reference classifier for dynamic
     ensemble selection, in: International Conference on Pattern Recognition (ICPR), 2010, pp. 4194–4197.
     """
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection'):
+    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection'):
 
         super(Logarithmic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                           mode=mode)
@@ -266,8 +268,8 @@ class Logarithmic(Probabilistic):
         C_src : array of shape = [n_samples, n_classifiers]
                 The competence source for each base classifier at each data point.
         """
-        C_src = np.zeros((self.n_samples_, self.n_classifiers))
-        for clf_index in range(self.n_classifiers):
+        C_src = np.zeros((self.n_samples_, self.n_classifiers_))
+        for clf_index in range(self.n_classifiers_):
             supports = self.dsel_scores[:, clf_index, :]
             support_correct = supports[np.arange(self.n_samples_), self.DSEL_target_]
 
@@ -288,9 +290,10 @@ class Exponential(Probabilistic):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the method "predict" and "predict_proba".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = None)
         Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
@@ -323,7 +326,7 @@ class Exponential(Probabilistic):
     for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
 
     """
-    def __init__(self, pool_classifiers, k=None, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
+    def __init__(self, pool_classifiers=None, k=None, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
                  mode='selection'):
 
         super(Exponential, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
@@ -343,8 +346,8 @@ class Exponential(Probabilistic):
         C_src : array of shape = [n_samples, n_classifiers]
                 The competence source for each base classifier at each data point.
         """
-        C_src = np.zeros((self.n_samples_, self.n_classifiers))
-        for clf_index in range(self.n_classifiers):
+        C_src = np.zeros((self.n_samples_, self.n_classifiers_))
+        for clf_index in range(self.n_classifiers_):
             supports = self.dsel_scores[:, clf_index, :]
             support_correct = supports[np.arange(self.n_samples_), self.DSEL_target_]
 
@@ -357,12 +360,10 @@ class RRC(Probabilistic):
 
     Parameters
     ----------
-    pool_classifiers : type, the generated_pool of classifiers trained for the corresponding
-    classification problem.
-
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the method "predict" and "predict_proba".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = None)
         Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
@@ -395,7 +396,7 @@ class RRC(Probabilistic):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection'):
+    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection'):
 
         super(RRC, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                   mode=mode)
@@ -416,9 +417,9 @@ class RRC(Probabilistic):
         C_src : array of shape = [n_samples, n_classifiers]
                 The competence source for each base classifier at each data point.
         """
-        c_src = np.zeros((self.n_samples_, self.n_classifiers))
+        c_src = np.zeros((self.n_samples_, self.n_classifiers_))
 
-        for clf_index in range(self.n_classifiers):
+        for clf_index in range(self.n_classifiers_):
             # Get supports for all samples in DSEL
             supports = self.dsel_scores[:, clf_index, :]
             c_src[:, clf_index] = ccprmod(supports, self.DSEL_target_)
@@ -438,9 +439,10 @@ class DESKL(Probabilistic):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the method "predict" and "predict_proba".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = None)
         Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
@@ -476,7 +478,7 @@ class DESKL(Probabilistic):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection'):
+    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection'):
 
         super(DESKL, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                     mode=mode)
@@ -497,8 +499,8 @@ class DESKL(Probabilistic):
                 The competence source for each base classifier at each data point.
         """
 
-        C_src = np.zeros((self.n_samples_, self.n_classifiers))
-        for clf_index in range(self.n_classifiers):
+        C_src = np.zeros((self.n_samples_, self.n_classifiers_))
+        for clf_index in range(self.n_classifiers_):
             supports = self.dsel_scores[:, clf_index, :]
             is_correct = self.DSEL_processed_[:, clf_index]
             C_src[:, clf_index] = entropy_func(self.n_classes_, supports, is_correct)
@@ -517,9 +519,10 @@ class MinimumDifference(Probabilistic):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the method "predict" and "predict_proba".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = None)
         Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
@@ -552,7 +555,7 @@ class MinimumDifference(Probabilistic):
     for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
 
     """
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
+    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
                  mode='selection'):
         super(MinimumDifference, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
                                                 IH_rate=IH_rate, mode=mode)
@@ -573,8 +576,8 @@ class MinimumDifference(Probabilistic):
         C_src : array of shape = [n_samples, n_classifiers]
                 The competence source for each base classifier at each data point.
         """
-        C_src = np.zeros((self.n_samples_, self.n_classifiers))
-        for clf_index in range(self.n_classifiers):
+        C_src = np.zeros((self.n_samples_, self.n_classifiers_))
+        for clf_index in range(self.n_classifiers_):
             supports = self.dsel_scores[:, clf_index, :]
             C_src[:, clf_index] = min_difference(supports, self.DSEL_target_)
 

@@ -21,9 +21,10 @@ class DESKNN(DS):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support the method "predict".
+                       Each base classifiers should support the method "predict".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 5)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -82,8 +83,11 @@ class DESKNN(DS):
         self.pct_diversity = pct_diversity
         self.more_diverse = more_diverse
 
-        self.N = int(self.n_classifiers * pct_accuracy)
-        self.J = int(np.ceil(self.n_classifiers * pct_diversity))
+    def fit(self, X, y):
+        super(DESKNN, self).fit(X, y)
+        self.N = int(self.n_classifiers_ * self.pct_accuracy)
+        self.J = int(np.ceil(self.n_classifiers_ * self.pct_diversity))
+        self._check_parameters()
 
     def estimate_competence(self, query, predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}` for
@@ -129,7 +133,7 @@ class DESKNN(DS):
         # TODO: optimize this part with numpy instead of for loops
         # Calculate the more_diverse matrix. It becomes computationally expensive
         # When the region of competence is high
-        diversity = np.zeros((query.shape[0], self.n_classifiers))
+        diversity = np.zeros((query.shape[0], self.n_classifiers_))
         for sample_idx in range(query.shape[0]):
             this_diversity = compute_pairwise_diversity(targets[sample_idx, :],
                                                       predicted_matrix[sample_idx, :, :], self.diversity_func_)
@@ -268,7 +272,7 @@ class DESKNN(DS):
 
         return predicted_proba
 
-    def _validate_parameters(self):
+    def _check_parameters(self):
         """Check if the parameters passed as argument are correct.
 
         The diversity_func_ must be either ['DF', 'Q', 'RATIO']
@@ -276,7 +280,6 @@ class DESKNN(DS):
         The values of N and J should be higher than 0, and N >= J
         ----------
         """
-        super(DESKNN, self)._validate_parameters()
 
         if self.metric not in ['DF', 'Q', 'RATIO']:
             raise ValueError('Diversity metric must be one of the following values: "DF", "Q" or "Ratio"')

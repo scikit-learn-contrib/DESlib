@@ -17,9 +17,10 @@ class DESMI(DS):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support the method "predict".
+                       Each base classifiers should support the method "predict".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -43,12 +44,12 @@ class DESMI(DS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers, k=7, pct_accuracy=0.4, alpha=0.9):
+    def __init__(self, pool_classifiers=None, k=7, pct_accuracy=0.4, alpha=0.9):
 
         super(DESMI, self).__init__(pool_classifiers, k)
 
         self.name = 'Dynamic Ensemble Selection for multi-class imbalanced datasets (DES-MI)'
-        self.N = int(self.n_classifiers * pct_accuracy)
+        self.N = int(self.n_classifiers_ * pct_accuracy)
 
         self._alpha = alpha
 
@@ -87,8 +88,8 @@ class DESMI(DS):
         weight = 1./(1 + np.exp(self._alpha * num))
         weight = normalize(weight, norm='l1')
         correct_num = self.DSEL_processed_[idx_neighbors, :]
-        correct = np.zeros((query.shape[0], self.k, self.n_classifiers))
-        for i in range(self.n_classifiers):
+        correct = np.zeros((query.shape[0], self.k, self.n_classifiers_))
+        for i in range(self.n_classifiers_):
             correct[:, :, i] = correct_num[:, :, i] * weight
 
         # calculate the classifiers mean accuracy for all samples/base classifier

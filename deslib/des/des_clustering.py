@@ -23,9 +23,10 @@ class DESClustering(DS):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support the method "predict".
+                       Each base classifiers should support the method "predict".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 5)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -75,9 +76,6 @@ class DESClustering(DS):
         self.metric = metric.upper()
         self.rng = rng
 
-        self.N = int(self.n_classifiers * pct_accuracy)
-        self.J = int(np.ceil(self.n_classifiers * pct_diversity))
-
     def fit(self, X, y):
         """ Train the DS model by setting the Clustering algorithm and
         pre-processing the information required to apply the DS
@@ -100,8 +98,14 @@ class DESClustering(DS):
         -------
         self
         """
-        self._validate_parameters()
         super(DESClustering, self).fit(X, y)
+
+        self.N = int(self.n_classifiers_ * self.pct_accuracy)
+        self.J = int(np.ceil(self.n_classifiers_ * self.pct_diversity))
+
+        # Check if the specific parameters are correct (N, J, metric and clustering)
+        self._check_parameters()
+
         self.clustering_ = self.clustering.fit(self.DSEL_data_)
 
         self._set_diversity_func()
@@ -109,8 +113,8 @@ class DESClustering(DS):
         # Since the clusters are fixed, we can pre-compute the accuracy and diversity of each cluster as well as the
         # selected classifiers (indices) for each one. These pre-computed information will be kept on
         # those three variables:
-        self.accuracy_cluster_ = np.zeros((self.clustering.n_clusters, self.n_classifiers))
-        self.diversity_cluster_ = np.zeros((self.clustering.n_clusters, self.n_classifiers))
+        self.accuracy_cluster_ = np.zeros((self.clustering.n_clusters, self.n_classifiers_))
+        self.diversity_cluster_ = np.zeros((self.clustering.n_clusters, self.n_classifiers_))
         self.indices_ = np.zeros((self.clustering.n_clusters, self.J), dtype=int)
 
         self._preprocess_clusters()
@@ -265,7 +269,7 @@ class DESClustering(DS):
 
         return predicted_proba
 
-    def _validate_parameters(self):
+    def _check_parameters(self):
         """Check if the parameters passed as argument are correct.
 
         The diversity_func_ must be either ['DF', 'Q', 'RATIO']

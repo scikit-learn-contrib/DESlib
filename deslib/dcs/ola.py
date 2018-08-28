@@ -24,9 +24,10 @@ class OLA(DCS):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
-                     The generated_pool of classifiers trained for the corresponding classification problem.
-                     The classifiers should support the method "predict".
+    pool_classifiers : list of classifiers (Default = None)
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       Each base classifiers should support the method "predict".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 7)
       Number of neighbors used to estimate the competence of the base classifiers.
@@ -70,13 +71,13 @@ class OLA(DCS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 selection_method='best', diff_thresh=0.1, rng=np.random.RandomState()):
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
+                 selection_method='best', diff_thresh=0.1, random_state=None):
 
         super(OLA, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                   selection_method=selection_method,
                                   diff_thresh=diff_thresh,
-                                  rng=rng)
+                                  random_state=random_state)
 
         self.name = 'Overall Local Accuracy (OLA)'
 

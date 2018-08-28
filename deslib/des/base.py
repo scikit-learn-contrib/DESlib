@@ -16,9 +16,10 @@ class DES(DS):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the method "predict".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -54,7 +55,7 @@ class DES(DS):
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False,
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, mode='selection', needs_proba=False):
 
         super(DES, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
