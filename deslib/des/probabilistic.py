@@ -72,7 +72,7 @@ class Probabilistic(DES):
                                             IH_rate=IH_rate,
                                             mode=mode)
 
-        self.C_src = None
+        self.C_src_ = None
         self.selection_threshold = selection_threshold
 
     def fit(self, X, y):
@@ -97,12 +97,11 @@ class Probabilistic(DES):
         -------
         self
         """
-        self._check_predict_proba()
-
         if self.k is None:
             self.k = X.shape[0]
 
         super(Probabilistic, self).fit(X, y)
+        self._check_predict_proba()
 
         # y_ind = self.setup_label_encoder(y)
         # self._set_dsel(X, y_ind)
@@ -111,10 +110,10 @@ class Probabilistic(DES):
         # self._fit_region_competence(X, y_ind, self.k)
         # Pre process the scores in DSEL (it is required only for the source of competence estimation
         # Maybe I should not keep this matrix in order to reduce memory requirement.
-        self.dsel_scores = self._preprocess_dsel_scores()
+        self.dsel_scores_ = self._preprocess_dsel_scores()
 
         # Pre process the source of competence for the entire DSEL, making the method faster during generalization.
-        self.C_src = self.source_competence()
+        self.C_src_ = self.source_competence()
         return self
 
     def estimate_competence(self, query, predictions=None):
@@ -143,8 +142,8 @@ class Probabilistic(DES):
         sum_potential = np.sum(potential_dists, axis=1)
 
         # Using einsum here since it is way more memory efficient. This line is equivalent to
-        # competences = self.C_src[idx_neighbors, :] * potential_dists[:, :, np.newaxis]
-        competences = np.einsum('ijk,ij->ik', self.C_src[idx_neighbors, :], potential_dists)
+        # competences = self.C_src_[idx_neighbors, :] * potential_dists[:, :, np.newaxis]
+        competences = np.einsum('ijk,ij->ik', self.C_src_[idx_neighbors, :], potential_dists)
         competences = competences / sum_potential.reshape(-1, 1)
 
         return competences
@@ -270,7 +269,7 @@ class Logarithmic(Probabilistic):
         """
         C_src = np.zeros((self.n_samples_, self.n_classifiers_))
         for clf_index in range(self.n_classifiers_):
-            supports = self.dsel_scores[:, clf_index, :]
+            supports = self.dsel_scores_[:, clf_index, :]
             support_correct = supports[np.arange(self.n_samples_), self.DSEL_target_]
 
             C_src[:, clf_index] = log_func(self.n_classes_, support_correct)
@@ -348,7 +347,7 @@ class Exponential(Probabilistic):
         """
         C_src = np.zeros((self.n_samples_, self.n_classifiers_))
         for clf_index in range(self.n_classifiers_):
-            supports = self.dsel_scores[:, clf_index, :]
+            supports = self.dsel_scores_[:, clf_index, :]
             support_correct = supports[np.arange(self.n_samples_), self.DSEL_target_]
 
             C_src[:, clf_index] = exponential_func(self.n_classes_, support_correct)
@@ -421,7 +420,7 @@ class RRC(Probabilistic):
 
         for clf_index in range(self.n_classifiers_):
             # Get supports for all samples in DSEL
-            supports = self.dsel_scores[:, clf_index, :]
+            supports = self.dsel_scores_[:, clf_index, :]
             c_src[:, clf_index] = ccprmod(supports, self.DSEL_target_)
 
         return c_src
@@ -501,7 +500,7 @@ class DESKL(Probabilistic):
 
         C_src = np.zeros((self.n_samples_, self.n_classifiers_))
         for clf_index in range(self.n_classifiers_):
-            supports = self.dsel_scores[:, clf_index, :]
+            supports = self.dsel_scores_[:, clf_index, :]
             is_correct = self.DSEL_processed_[:, clf_index]
             C_src[:, clf_index] = entropy_func(self.n_classes_, supports, is_correct)
 
@@ -567,7 +566,7 @@ class MinimumDifference(Probabilistic):
     def source_competence(self):
         """Calculates the source of competence using the Minimum Difference method.
 
-        The source of competence C_src at the validation point :math:`\mathbf{x}_{k}` calculated by the
+        The source of competence C_src_ at the validation point :math:`\mathbf{x}_{k}` calculated by the
         Minimum Difference between the supports obtained to the correct class and the support obtained by
         the other classes
 
@@ -578,7 +577,7 @@ class MinimumDifference(Probabilistic):
         """
         C_src = np.zeros((self.n_samples_, self.n_classifiers_))
         for clf_index in range(self.n_classifiers_):
-            supports = self.dsel_scores[:, clf_index, :]
+            supports = self.dsel_scores_[:, clf_index, :]
             C_src[:, clf_index] = min_difference(supports, self.DSEL_target_)
 
         return C_src
