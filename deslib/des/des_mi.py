@@ -32,6 +32,26 @@ class DESMI(DS):
     alpha : float (Default = 0.9)
             Scaling coefficient to regulate the weight value
 
+    DFP : Boolean (Default = False)
+          Determines if the dynamic frienemy pruning is applied.
+
+    with_IH : Boolean (Default = False)
+              Whether the hardness level of the region of competence is used to decide between
+              using the DS algorithm or the KNN for classification of a given query sample.
+
+    safe_k : int (default = None)
+             The size of the indecision region.
+
+    IH_rate : float (default = 0.3)
+              Hardness threshold. If the hardness level of the competence region is lower than
+              the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
+
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     References
     ----------
     García, S.; Zhang, Z.-L.; Altalhi, A.; Alshomrani, S. & Herrera, F. "Dynamic ensemble selection for multi-class
@@ -44,9 +64,15 @@ class DESMI(DS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers=None, k=7, pct_accuracy=0.4, alpha=0.9):
+    def __init__(self, pool_classifiers=None, k=7, pct_accuracy=0.4, alpha=0.9, DFP=False, with_IH=False, safe_k=None,
+                 IH_rate=0.30, random_state=None):
 
-        super(DESMI, self).__init__(pool_classifiers, k)
+        super(DESMI, self).__init__(pool_classifiers, k,
+                                    DFP=DFP,
+                                    with_IH=with_IH,
+                                    safe_k=safe_k,
+                                    IH_rate=IH_rate,
+                                    random_state=random_state)
 
         self.name = 'Dynamic Ensemble Selection for multi-class imbalanced datasets (DES-MI)'
         self.N = int(self.n_classifiers_ * pct_accuracy)
