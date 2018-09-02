@@ -45,6 +45,12 @@ class DES(DS):
     needs_proba : Boolean (Default = False)
                   Determines whether the method always needs base classifiers that estimate probabilities.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     References
     ----------
     Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection of classifiers—a comprehensive review."
@@ -56,10 +62,10 @@ class DES(DS):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
-                 safe_k=None, IH_rate=0.30, mode='selection', needs_proba=False):
+                 safe_k=None, IH_rate=0.30, mode='selection', needs_proba=False, random_state=None):
 
         super(DES, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
-                                  safe_k=safe_k, IH_rate=IH_rate, needs_proba=needs_proba)
+                                  safe_k=safe_k, IH_rate=IH_rate, needs_proba=needs_proba, random_state=random_state)
 
         self.mode = mode
 
@@ -261,8 +267,6 @@ class DES(DS):
 
         if not isinstance(self.mode, str):
             raise TypeError('Parameter "mode" should be a string. Currently "mode" = {}'.format(type(self.mode)))
-
-        self.mode = self.mode.lower()
 
         if self.mode not in ['selection', 'hybrid', 'weighting']:
             raise ValueError('Invalid value for parameter "mode". "mode" should be one of these options '

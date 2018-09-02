@@ -48,6 +48,11 @@ class Probabilistic(DES):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
 
     References
     ----------
@@ -66,11 +71,12 @@ class Probabilistic(DES):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 mode='selection', selection_threshold=None):
+                 mode='selection', selection_threshold=None, random_state=None):
 
         super(Probabilistic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
                                             IH_rate=IH_rate,
-                                            mode=mode)
+                                            mode=mode,
+                                            random_state=random_state)
 
         self.C_src_ = None
         self.selection_threshold = selection_threshold
@@ -103,7 +109,7 @@ class Probabilistic(DES):
         super(Probabilistic, self).fit(X, y)
         self._check_predict_proba()
 
-        # y_ind = self.setup_label_encoder(y)
+        # y_ind = self._setup_label_encoder(y)
         # self._set_dsel(X, y_ind)
         #
         #
@@ -244,6 +250,12 @@ class Logarithmic(Probabilistic):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     References
     ----------
     B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
@@ -252,10 +264,11 @@ class Logarithmic(Probabilistic):
     T.Woloszynski, M. Kurzynski, A measure of competence based on randomized reference classifier for dynamic
     ensemble selection, in: International Conference on Pattern Recognition (ICPR), 2010, pp. 4194–4197.
     """
-    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection'):
+    def __init__(self, pool_classifiers=None, k=None, DFP=False,
+                 with_IH=False, safe_k=None, IH_rate=0.30, mode='selection', random_state=None):
 
         super(Logarithmic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                          mode=mode)
+                                          mode=mode, random_state=random_state)
         self.name = "DES-Logarithmic"
 
     def source_competence(self):
@@ -316,6 +329,12 @@ class Exponential(Probabilistic):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     References
     ----------
     [1] B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
@@ -326,10 +345,10 @@ class Exponential(Probabilistic):
 
     """
     def __init__(self, pool_classifiers=None, k=None, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
-                 mode='selection'):
+                 mode='selection', random_state=None):
 
         super(Exponential, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                          mode=mode)
+                                          mode=mode, random_state=random_state)
 
         self.selection_threshold = 0
         self.name = "DES-Exponential"
@@ -386,6 +405,12 @@ class RRC(Probabilistic):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     References
     ----------
     Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
@@ -395,10 +420,11 @@ class RRC(Probabilistic):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection'):
+    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,
+                 safe_k=None, IH_rate=0.30, mode='selection', random_state=None):
 
         super(RRC, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                  mode=mode)
+                                  mode=mode, random_state=None)
         self.name = "DES-RRC"
         self.selection_threshold = None
 
@@ -465,6 +491,12 @@ class DESKL(Probabilistic):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     References
     ----------
     Woloszynski, Tomasz, et al. "A measure of competence based on random classification
@@ -477,10 +509,11 @@ class DESKL(Probabilistic):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection'):
+    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,
+                 safe_k=None, IH_rate=0.30, mode='selection', random_state=None):
 
         super(DESKL, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                    mode=mode)
+                                    mode=mode, random_state=random_state)
         self.selection_threshold = 0.0
         self.name = 'DES-Kullback-Leibler (DES-KL)'
 
@@ -545,6 +578,12 @@ class MinimumDifference(Probabilistic):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     References
     ----------
     [1] B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
@@ -555,9 +594,9 @@ class MinimumDifference(Probabilistic):
 
     """
     def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 mode='selection'):
+                 mode='selection', random_state=None):
         super(MinimumDifference, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
-                                                IH_rate=IH_rate, mode=mode)
+                                                IH_rate=IH_rate, mode=mode, random_state=random_state)
 
         # Threshold is 0 since incompetent classifiers should have a negative competence level
         self.selection_threshold = 0.0

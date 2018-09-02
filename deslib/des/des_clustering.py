@@ -44,8 +44,11 @@ class DESClustering(DS):
              Metric used to estimate the diversity of the base classifiers. Can
              be either the double fault (df), Q-statistics (Q), or error correlation (corr)
 
-    rng : numpy.random.RandomState instance
-          Random number generator to assure reproducible results.
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
 
     References
     ----------
@@ -64,7 +67,7 @@ class DESClustering(DS):
                  pct_diversity=0.33,
                  more_diverse=True,
                  metric='DF',
-                 rng=np.random.RandomState()):
+                 random_state=None):
 
         super(DESClustering, self).__init__(pool_classifiers)
 

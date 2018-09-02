@@ -54,7 +54,13 @@ class DESKNN(DS):
 
     metric : String (Default = 'df')
              Metric used to estimate the diversity of the base classifiers. Can
-             be either the double fault (df), Q-statistics (Q), or error correlation (corr)
+             be either the double fault (df), Q-statistics (Q), or error correlation (ratio)
+
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
 
     References
     ----------
@@ -73,9 +79,12 @@ class DESKNN(DS):
                  pct_accuracy=0.5,
                  pct_diversity=0.3,
                  more_diverse=True,
-                 metric='DF'):
+                 metric='DF',
+                 random_state=None):
 
-        super(DESKNN, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate)
+        super(DESKNN, self).__init__(pool_classifiers, k, DFP=DFP,
+                                     with_IH=with_IH, safe_k=safe_k,
+                                     IH_rate=IH_rate, random_state=random_state)
 
         self.name = 'Dynamic Ensemble Selection-KNN (DES-KNN)'
         self.metric = metric.upper()
