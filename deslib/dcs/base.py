@@ -71,14 +71,13 @@ class DCS(DS):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers=None, k=7, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
-                 selection_method='best', diff_thresh=0.1, random_state=np.random.RandomState()):
+                 selection_method='best', diff_thresh=0.1, random_state=None):
 
         super(DCS, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
-                                  safe_k=safe_k, IH_rate=IH_rate)
+                                  safe_k=safe_k, IH_rate=IH_rate, random_state=random_state)
 
         self.selection_method = selection_method
         self.diff_thresh = diff_thresh
-        self.rng = random_state
 
     def estimate_competence(self, query, predictions=None):
         """estimate the competence of each base classifier for the classification of the query sample.
@@ -162,7 +161,7 @@ class DCS(DS):
                 if len(indices) == 0:
                     indices = range(self.n_classifiers_)
 
-                selected_classifiers[row] = self.rng.choice(indices)
+                selected_classifiers[row] = self.random_state_.choice(indices)
 
         elif self.selection_method == 'random':
             # TODO: Improve this part of the code
@@ -173,7 +172,7 @@ class DCS(DS):
                 # Select a random classifier among all with same competence level
                 indices = [idx for idx, _ in enumerate(competence_list) if competence_list[idx] == best_competence[row]]
 
-                selected_classifiers[row] = self.rng.choice(indices)
+                selected_classifiers[row] = self.random_state_.choice(indices)
 
         elif self.selection_method == 'all':
             # select all base classifiers with max competence estimates.
@@ -281,8 +280,6 @@ class DCS(DS):
         if not isinstance(self.selection_method, str):
             raise TypeError('The parameter selection_method should be a string.'
                             ' selection_method = ', type(self.selection_method))
-
-        self.selection_method = self.selection_method.lower()
 
         if self.selection_method not in ['best', 'all', 'random', 'diff']:
             raise ValueError('Invalid value for parameter "selection_method." The possible values are: '
