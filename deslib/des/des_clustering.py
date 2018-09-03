@@ -18,8 +18,8 @@ class DESClustering(DS):
 
     This method selects an ensemble of classifiers taking into account the
     accuracy and diversity of the base classifiers. The K-means algorithm is used to define the region of competence.
-    For each cluster, the N most accurate classifiers are first selected. Then, the J more diverse classifiers from the
-    N most accurate classifiers are selected to compose the ensemble.
+    For each cluster, the N_ most accurate classifiers are first selected. Then, the J_ more diverse classifiers from the
+    N_ most accurate classifiers are selected to compose the ensemble.
 
     Parameters
     ----------
@@ -28,8 +28,9 @@ class DESClustering(DS):
                        Each base classifiers should support the method "predict".
                        If None, then the pool of classifiers is a bagging classifier.
 
-    k : int (Default = 5)
-        Number of neighbors used to estimate the competence of the base classifiers.
+    clustering :       sklearn.cluster (Default = None)
+                       The clustering model used to estimate the region of competence. If None, a KMeans with
+                       K = 5 is used.
 
     pct_accuracy : float (Default = 0.5)
                    Percentage of base classifiers selected based on accuracy
@@ -62,30 +63,29 @@ class DESClustering(DS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers=None, clustering=KMeans(n_clusters=5),
+    def __init__(self, pool_classifiers=None, clustering=None,
                  pct_accuracy=0.5,
                  pct_diversity=0.33,
                  more_diverse=True,
                  metric='DF',
                  random_state=None):
 
-        super(DESClustering, self).__init__(pool_classifiers)
+        super(DESClustering, self).__init__(pool_classifiers, random_state=random_state)
 
         self.name = 'DES-Clustering'
+        self.metric = metric
         self.clustering = clustering
         self.pct_accuracy = pct_accuracy
         self.pct_diversity = pct_diversity
         self.more_diverse = more_diverse
-        self.metric = metric.upper()
-        self.rng = rng
 
     def fit(self, X, y):
         """ Train the DS model by setting the Clustering algorithm and
         pre-processing the information required to apply the DS
         methods.
 
-        First the data is divided into K clusters. Then, for each cluster, the N most accurate classifiers
-        are first selected. Then, the J more diverse classifiers from the N most accurate classifiers are
+        First the data is divided into K clusters. Then, for each cluster, the N_ most accurate classifiers
+        are first selected. Then, the J_ more diverse classifiers from the N_ most accurate classifiers are
         selected to compose the ensemble of the corresponding cluster. An ensemble of classifiers is assigned
         to each of the K clusters.
 
@@ -103,24 +103,31 @@ class DESClustering(DS):
         """
         super(DESClustering, self).fit(X, y)
 
-        self.N = int(self.n_classifiers_ * self.pct_accuracy)
-        self.J = int(np.ceil(self.n_classifiers_ * self.pct_diversity))
+        self.N_ = int(self.n_classifiers_ * self.pct_accuracy)
+        self.J_ = int(np.ceil(self.n_classifiers_ * self.pct_diversity))
 
-        # Check if the specific parameters are correct (N, J, metric and clustering)
+        # Check if the specific parameters are correct (N_, J_, metric and clustering)
         self._check_parameters()
 
-        self.clustering_ = self.clustering.fit(self.DSEL_data_)
+        # Set-up the clustering method used to estimate the region of competence
+        if self.clustering is None:
+            self.clustering_ = KMeans(n_clusters=5)
+            self.clustering_.fit(self.DSEL_data_)
+        else:
+            self.clustering_ = self.clustering_.fit(self.DSEL_data_)
 
+        # set the diversity metric used
         self._set_diversity_func()
 
         # Since the clusters are fixed, we can pre-compute the accuracy and diversity of each cluster as well as the
         # selected classifiers (indices) for each one. These pre-computed information will be kept on
         # those three variables:
-        self.accuracy_cluster_ = np.zeros((self.clustering.n_clusters, self.n_classifiers_))
-        self.diversity_cluster_ = np.zeros((self.clustering.n_clusters, self.n_classifiers_))
-        self.indices_ = np.zeros((self.clustering.n_clusters, self.J), dtype=int)
+        self.accuracy_cluster_ = np.zeros((self.clustering_.n_clusters, self.n_classifiers_))
+        self.diversity_cluster_ = np.zeros((self.clustering_.n_clusters, self.n_classifiers_))
+        self.indices_ = np.zeros((self.clustering_.n_clusters, self.J_), dtype=int)
 
         self._preprocess_clusters()
+        return self
 
     def _preprocess_clusters(self):
         """Preprocess the competence as well as the average diversity of each base classifier for each specific cluster.
@@ -144,8 +151,8 @@ class DESClustering(DS):
             accuracy = np.mean(self.DSEL_processed_[sample_indices, :], axis=0)
             self.accuracy_cluster_[cluster_index, :] = accuracy
 
-            # Get the N most accurate classifiers for the corresponding cluster
-            accuracy_indices = np.argsort(accuracy)[::-1][0:self.N]
+            # Get the N_ most accurate classifiers for the corresponding cluster
+            accuracy_indices = np.argsort(accuracy)[::-1][0:self.N_]
 
             # Get the target labels for the samples in the corresponding cluster for the diversity calculation.
 
@@ -156,9 +163,9 @@ class DESClustering(DS):
             diversity_of_selected = self.diversity_cluster_[cluster_index, accuracy_indices]
 
             if self.more_diverse:
-                diversity_indices = np.argsort(diversity_of_selected)[::-1][0:self.J]
+                diversity_indices = np.argsort(diversity_of_selected)[::-1][0:self.J_]
             else:
-                diversity_indices = np.argsort(diversity_of_selected)[0:self.J]
+                diversity_indices = np.argsort(diversity_of_selected)[0:self.J_]
 
             self.indices_[cluster_index, :] = accuracy_indices[diversity_indices]
 
@@ -277,21 +284,22 @@ class DESClustering(DS):
 
         The diversity_func_ must be either ['DF', 'Q', 'RATIO']
 
-        The values of N and J should be higher than 0, and N >= J
+        The values of N_ and J_ should be higher than 0, and N_ >= J_
         ----------
         """
-        if self.metric not in ['DF', 'Q', 'RATIO']:
+        if self.metric not in ['DF', 'Q', 'ratio']:
             raise ValueError('Diversity metric must be one of the following values: "DF", "Q" or "Ratio"')
 
-        if self.N <= 0 or self.J <= 0:
-            raise ValueError("The values of N and J should be higher than 0"
-                             "N, J" .format(self.N, self.J))
-        if self.N < self.J:
-            raise ValueError("The value of N should be greater or equals than J"
-                             "N, J" .format(self.N, self.J))
+        if self.N_ <= 0 or self.J_ <= 0:
+            raise ValueError("The values of N_ and J_ should be higher than 0"
+                             "N_, J_" .format(self.N_, self.J_))
+        if self.N_ < self.J_:
+            raise ValueError("The value of N_ should be greater or equals than J_"
+                             "N_, J_" .format(self.N_, self.J_))
 
-        if not isinstance(self.clustering, ClusterMixin):
-            raise ValueError("Parameter clustering must be a sklearn cluster estimator.")
+        if self.clustering is not None:
+            if not isinstance(self.clustering, ClusterMixin):
+                raise ValueError("Parameter clustering must be a sklearn cluster estimator.")
 
     def _set_diversity_func(self):
         """Set the diversity function to be used according to the hyper-parameter metric
