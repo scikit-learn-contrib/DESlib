@@ -124,7 +124,7 @@ class DESMI(DS):
 
         return competence
 
-    def select(self, accuracy):
+    def select(self, competences):
         """Select an ensemble containing the N_ most accurate classifiers for the classification of the query sample.
 
         Parameters
@@ -142,7 +142,7 @@ class DESMI(DS):
             competences = competences.reshape(1, -1)
 
         # sort the array to remove the most accurate classifiers
-        competent_indices = np.argsort(accuracy, axis=1)[:, ::-1][:, 0:self.N_]
+        selected_classifiers = np.argsort(competences, axis=1)[:, ::-1][:, 0:self.N_]
 
         return selected_classifiers
 
@@ -237,7 +237,7 @@ class DESMI(DS):
 
         if self.N_ <= 0:
             raise ValueError("The values of N_ should be higher than 0"
-                             "N_ = {}" .format(self.N))
+                             "N_ = {}" .format(self.N_))
         
         # The value of Scaling coefficient (alpha) should be positive to add more weight to the minority clas
         if self.alpha <= 0:
@@ -245,11 +245,11 @@ class DESMI(DS):
                              "alpha = {}".format(self.alpha))
 
         # The value of Scaling coefficient (alpha) should be positive to add more weight to the minority class
-        if not isinstance(self._alpha, np.float):
+        if not isinstance(self.alpha, np.float):
             raise TypeError("parameter alpha should be a float!")
 
-        if self._alpha <= 0.:
+        if self.alpha <= 0.:
             raise ValueError("The values of alpha should be higher than 0.0, "
-                             "alpha = {}" .format(self._alpha))
+                             "alpha = {}" .format(self.alpha))
 
 

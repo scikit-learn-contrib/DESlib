@@ -153,7 +153,7 @@ class METADES(DES):
 
         # check whether the meta-classifier was already trained since it could have been pre-processed before
         try:
-            check_is_fitted(self.meta_classifier, "estimator_")
+            check_is_fitted(self.meta_classifier_, "estimator_")
         except NotFittedError as _:
             # IF it is not fitted, generate the meta-training dataset and train the meta-classifier
             X_meta, y_meta = self._generate_meta_training_set()
