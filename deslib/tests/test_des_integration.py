@@ -25,6 +25,7 @@ from deslib.des.knora_e import KNORAE
 from deslib.des.knora_u import KNORAU
 from deslib.des.meta_des import METADES
 from deslib.des.probabilistic import RRC, MinimumDifference, DESKL
+from deslib.des.des_mi import DESMI
 # Static techniques
 from deslib.static.oracle import Oracle
 from deslib.static.single_best import SingleBest
@@ -223,6 +224,14 @@ def test_des_clustering():
     des_clustering = DESClustering(pool_classifiers, clustering=cluster)
     des_clustering.fit(X_dsel, y_dsel)
     assert np.isclose(des_clustering.score(X_test, y_test), 0.97872340425531912)
+
+
+def test_mi():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    desmi = DESMI(pool_classifiers, alpha=0.9)
+    desmi.fit(X_dsel, y_dsel)
+    assert np.isclose(desmi.score(X_test, y_test), 0.9787234042553191)
 
 
 def test_oracle():

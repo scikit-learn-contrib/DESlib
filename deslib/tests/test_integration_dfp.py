@@ -137,8 +137,7 @@ def test_meta():
 
     meta_des = METADES(pool_classifiers, DFP=True)
     meta_des.fit(X_dsel, y_dsel)
-    assert np.isclose(meta_des.score(X_test, y_test), 0.9121212121212121) or \
-        np.isclose(meta_des.score(X_test, y_test), 0.8909090909090909)
+    assert np.isclose(meta_des.score(X_test, y_test), 0.9121212121212121)
 
 
 def test_knop():

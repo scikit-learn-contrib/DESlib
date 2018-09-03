@@ -117,18 +117,20 @@ class DESMI(DS):
         for i in range(self.n_classifiers_):
             correct[:, :, i] = correct_num[:, :, i] * weight
 
-        # calculate the classifiers mean accuracy for all samples/base classifier
-        accuracy = np.mean(correct, axis=1)
+        # Apply the weights to each sample for each base classifier
+        competence = correct_num * weight[:, :, np.newaxis]
+        # calculate the classifiers mean competence for all samples/base classifier
+        competence = np.sum(competence, axis=1)
 
-        return accuracy
+        return competence
 
     def select(self, accuracy):
         """Select an ensemble containing the N_ most accurate classifiers for the classification of the query sample.
 
         Parameters
         ----------
-        accuracy : array of shape = [n_samples, n_classifiers]
-                   Local Accuracy estimates (competence) of each base classifiers for all query samples.
+        competences : array of shape = [n_samples, n_classifiers]
+                      Competence estimates of each base classifiers for all query samples.
 
         Returns
         -------
@@ -136,13 +138,13 @@ class DESMI(DS):
                                Matrix containing the indices_ of the N_ selected base classifier for each test example.
         """
         # Check if the accuracy and diversity arrays have the correct dimensionality.
-        if accuracy.ndim < 2:
-            accuracy = accuracy.reshape(1, -1)
+        if competences.ndim < 2:
+            competences = competences.reshape(1, -1)
 
         # sort the array to remove the most accurate classifiers
         competent_indices = np.argsort(accuracy, axis=1)[:, ::-1][:, 0:self.N_]
 
-        return competent_indices
+        return selected_classifiers
 
     def classify_with_ds(self, query, predictions, probabilities=None):
         """Predicts the label of the corresponding query sample.
@@ -167,7 +169,6 @@ class DESMI(DS):
         predicted_label : array of shape = [n_samples]
                           Predicted class label for each test example.
         """
-
         if query.ndim < 2:
             query = query.reshape(1, -1)
 
@@ -208,7 +209,6 @@ class DESMI(DS):
         predicted_proba : array = [n_samples, n_classes]
                           Probability estimates for all test examples.
         """
-
         if query.shape[0] != probabilities.shape[0]:
             raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
                              'and predictions.shape is {}' .format(query.shape, predictions.shape))
@@ -243,3 +243,13 @@ class DESMI(DS):
         if self.alpha <= 0:
             raise ValueError("The values of alpha should be higher than 0"
                              "alpha = {}".format(self.alpha))
+
+        # The value of Scaling coefficient (alpha) should be positive to add more weight to the minority class
+        if not isinstance(self._alpha, np.float):
+            raise TypeError("parameter alpha should be a float!")
+
+        if self._alpha <= 0.:
+            raise ValueError("The values of alpha should be higher than 0.0, "
+                             "alpha = {}" .format(self._alpha))
+
+

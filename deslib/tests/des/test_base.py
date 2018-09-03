@@ -55,7 +55,7 @@ def test_classify_instance_selection_batch():
     query = np.ones((n_samples, 2))
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
     des_test = DES(pool_classifiers, mode='selection')
-    selected_index = np.array([[True, True, False, False, False, True]*n_samples])
+    selected_index = np.array([[True, True, False, False, False, True] * n_samples])
     des_test.select = MagicMock(return_value=selected_index)
 
     predictions = []
@@ -103,6 +103,7 @@ def test_classify_instance_weighting_batch():
         predictions.append(clf.predict(query)[0])
     predicted_label = des_test.classify_with_ds(query, np.tile(predictions, (3, 1)))
     assert np.allclose(predicted_label, 1) and predicted_label.size == 3
+
 
 # Same example of test_classify_instance_selection, however, since the weights are also used in the hybrid scheme,
 # the function should return 1 instead of 0.
@@ -159,7 +160,7 @@ def test_predict_proba_selection():
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
     des_test = DES(pool_classifiers, mode='selection')
     selected_indices = np.array([0, 1, 5])
-    selected_classifiers = np.zeros((1,6), dtype=bool)
+    selected_classifiers = np.zeros((1, 6), dtype=bool)
     selected_classifiers[0, selected_indices] = 1
     des_test.select = MagicMock(return_value=selected_classifiers)
 
@@ -257,4 +258,3 @@ def test_proba_with_ds_diff_sizes():
 
     with pytest.raises(ValueError):
         des_test.predict_proba_with_ds(query, predictions, probabilities)
-
