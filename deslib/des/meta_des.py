@@ -4,8 +4,6 @@
 #
 # License: BSD 3 clause
 
-import warnings
-
 import numpy as np
 from sklearn.exceptions import NotFittedError
 from sklearn.naive_bayes import MultinomialNB
@@ -41,10 +39,14 @@ class METADES(DES):
                        Each base classifiers should support the methods "predict" and "predict_proba".
                        If None, then the pool of classifiers is a bagging classifier.
 
+    meta_classifier :   sklearn.estimator (Default = None)
+                        Classifier model used for the meta-classifier. If None, a Multinomial naive Bayes classifier is
+                        used
+
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
 
-    kp : int (Default = 5)
+    Kp : int (Default = 5)
          Number of output profiles used to estimate the competence of the base classifiers.
 
     Hc : float (Default = 1.0)
@@ -71,6 +73,11 @@ class METADES(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
     References
     ----------
     Cruz, R.M., Sabourin, R., Cavalcanti, G.D. and Ren, T.I., 2015. META-DES: A dynamic ensemble selection framework
@@ -84,9 +91,9 @@ class METADES(DES):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers=None, meta_classifier=MultinomialNB(),
+    def __init__(self, pool_classifiers=None, meta_classifier=None,
                  k=7,
-                 kp=5,
+                 Kp=5,
                  Hc=1.0,
                  selection_threshold=0.5,
                  mode='selection',
@@ -102,12 +109,9 @@ class METADES(DES):
 
         self.name = 'META-DES'
         self.meta_classifier = meta_classifier
-        self.Kp = kp
+        self.Kp = Kp
         self.Hc = Hc
         self.selection_threshold = selection_threshold
-
-        self.op_knn = None
-        self.n_meta_features = (self.k * 2) + self.Kp + 2
 
     def fit(self, X, y):
         """Prepare the DS model by setting the KNN algorithm and
@@ -137,22 +141,26 @@ class METADES(DES):
         # Check if the base classifier is able to estimate probabilities
         self._check_predict_proba()
 
-        self.dsel_scores = self._preprocess_dsel_scores()
+        self.dsel_scores_ = self._preprocess_dsel_scores()
+
         # Reshape DSEL_scores as a 2-D array for nearest neighbor calculations
-        dsel_output_profiles = self.dsel_scores.reshape(self.n_samples_, self.n_classifiers_ * self.n_classes_)
+        dsel_output_profiles = self.dsel_scores_.reshape(self.n_samples_, self.n_classifiers_ * self.n_classes_)
         self._fit_OP(dsel_output_profiles, self.DSEL_target_, self.Kp)
 
         if self.meta_classifier is None:
-            warnings.warn("No classifier model passed for the Meta-Classifier. Using a Naive Bayes instead")
-            self.meta_classifier = MultinomialNB()
+
+            self.meta_classifier_ = MultinomialNB()
 
         # check whether the meta-classifier was already trained since it could have been pre-processed before
         try:
-            check_is_fitted(self.meta_classifier, "classes_")
+            check_is_fitted(self.meta_classifier_, "classes_")
+
         except NotFittedError as _:
             # IF it is not fitted, generate the meta-training dataset and train the meta-classifier
             X_meta, y_meta = self._generate_meta_training_set()
             self._fit_meta_classifier(X_meta, y_meta)
+
+        self.n_meta_features_ = (self.k_ * 2) + self.Kp + 2
 
         return self
 
@@ -171,14 +179,14 @@ class METADES(DES):
              Number of output profiles used in the estimation.
 
         """
-        self.op_knn = KNeighborsClassifier(n_neighbors=kp, n_jobs=-1, algorithm='auto')
+        self.op_knn_ = KNeighborsClassifier(n_neighbors=kp, n_jobs=-1, algorithm='auto')
 
         if self.n_classes_ == 2:
             # Get only the scores for one class since they are complementary
             X_temp = X_op[:, ::2]
-            self.op_knn.fit(X_temp, y_op)
+            self.op_knn_.fit(X_temp, y_op)
         else:
-            self.op_knn.fit(X_op, y_op)
+            self.op_knn_.fit(X_op, y_op)
 
     def _sample_selection_agreement(self):
         """Check the number of base classifier that predict the correct label for the query sample.
@@ -222,7 +230,7 @@ class METADES(DES):
 
         f1_all_classifiers = self.DSEL_processed_[idx_neighbors, :].swapaxes(1, 2).reshape(-1, self.k)
 
-        f2_all_classifiers = self.dsel_scores[idx_neighbors, :, self.DSEL_target_[idx_neighbors]].swapaxes(1, 2)
+        f2_all_classifiers = self.dsel_scores_[idx_neighbors, :, self.DSEL_target_[idx_neighbors]].swapaxes(1, 2)
         f2_all_classifiers = f2_all_classifiers.reshape(-1, self.k)
 
         f3_all_classifiers = np.mean(self.DSEL_processed_[idx_neighbors, :], axis=1).reshape(-1, 1)
@@ -254,13 +262,13 @@ class METADES(DES):
         # Get the region of competence using the feature space and the decision space. Use K + 1 to later remove itself
         # from the set.
         _, idx_neighbors = self._get_region_competence(self.DSEL_data_[indices_selected, :], self.k + 1)
-        _, idx_neighbors_op = self._get_similar_out_profiles(self.dsel_scores[indices_selected], self.Kp + 1)
+        _, idx_neighbors_op = self._get_similar_out_profiles(self.dsel_scores_[indices_selected], self.Kp + 1)
         # Remove the first neighbor (itself)
         idx_neighbors = idx_neighbors[:, 1:]
         idx_neighbors_op = idx_neighbors_op[:, 1:]
 
         # Get the scores for the samples that the meta features are being extracted
-        scores = self.dsel_scores[indices_selected, :, :]
+        scores = self.dsel_scores_[indices_selected, :, :]
 
         # Extract the meta-feature vectors for each base classifier. vector and target must both be numpy arrays
         meta_feature_vector = self.compute_meta_features(scores, idx_neighbors, idx_neighbors_op)
@@ -282,11 +290,11 @@ class METADES(DES):
                  otherwise 0.
 
         """
-        if isinstance(self.meta_classifier, MultinomialNB):
+        if isinstance(self.meta_classifier_, MultinomialNB):
             # Digitize the data (Same implementation we have on PRTools)
             X_meta = np.digitize(X_meta, np.linspace(0.1, 1, 10))
 
-        self.meta_classifier.fit(X_meta, y_meta)
+        self.meta_classifier_.fit(X_meta, y_meta)
 
     def _get_similar_out_profiles(self, probabilities, kp=None):
         """Get the most similar output profiles of the query sample.
@@ -317,7 +325,7 @@ class METADES(DES):
         else:
             query_op = probabilities.reshape((probabilities.shape[0], self.n_classifiers_ * self.n_classes_))
 
-        dists, idx = self.op_knn.kneighbors(query_op, n_neighbors=kp, return_distance=True)
+        dists, idx = self.op_knn_.kneighbors(query_op, n_neighbors=kp, return_distance=True)
         return dists, idx
 
     def select(self, competences):
@@ -371,12 +379,12 @@ class METADES(DES):
         meta_feature_vectors = self.compute_meta_features(probabilities, idx_neighbors, idx_neighbors_op)
 
         # Digitize the data if a Multinomial NB is used as the meta-classifier
-        if isinstance(self.meta_classifier, MultinomialNB):
+        if isinstance(self.meta_classifier_, MultinomialNB):
 
             meta_feature_vectors = np.digitize(meta_feature_vectors, np.linspace(0.1, 1, 10))
 
         # Get the probability for class 1 (Competent)
-        competences = self.meta_classifier.predict_proba(meta_feature_vectors)[:, 1]
+        competences = self.meta_classifier_.predict_proba(meta_feature_vectors)[:, 1]
 
         # Reshape the array from 1D [n_samples x n_classifiers] to 2D [n_samples, n_classifiers]
         competences = competences.reshape(-1, self.n_classifiers_)
