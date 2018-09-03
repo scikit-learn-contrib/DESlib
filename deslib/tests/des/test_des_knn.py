@@ -141,7 +141,7 @@ def test_estimate_competence_ratio():
 
     pool_classifiers = [clf1, clf2, clf3]
 
-    target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1, metric='Ratio')
+    target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1, metric='ratio')
     target.fit(x, y)
     target._get_region_competence = lambda x: (None, np.array([[0, 1, 2, 3, 4, 5, 6]]))
 
@@ -164,7 +164,7 @@ def test_estimate_competence_ratio_batch():
 
     pool_classifiers = [clf1, clf2, clf3]
 
-    target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1, metric='Ratio')
+    target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1, metric='ratio')
     target.fit(x, y)
     target._get_region_competence = lambda x: (None, np.tile([0, 1, 2, 3, 4, 5, 6], (n_samples, 1)))
 
@@ -185,8 +185,8 @@ def test_select():
     accuracies = np.array([4, 6, 1, 2, 9, 8, 7, 9, 3, 2]) / 10.
     diversity = np.array([0, 8, 0, 0, 1, 6, 7, 2, 0, 0])
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=5./10, pct_diversity=3./10)
-    target.N = 5
-    target.J = 3
+    target.N_ = 5
+    target.J_ = 3
 
     selected_classifiers = target.select(accuracies, diversity)
     expected = np.array([[1, 5, 6]])
@@ -207,8 +207,8 @@ def test_select_batch():
     accuracies = np.tile([4, 6, 1, 2, 9, 8, 7, 9, 3, 2], (n_samples, 1)) / 10.
     diversity = np.tile([0, 8, 0, 0, 1, 6, 7, 2, 0, 0], (n_samples, 1))
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=5./10, pct_diversity=3./10)
-    target.N = 5
-    target.J = 3
+    target.N_ = 5
+    target.J_ = 3
 
     selected_classifiers = target.select(accuracies, diversity)
     expected = np.tile([1, 5, 6], (n_samples, 1))
@@ -228,8 +228,8 @@ def test_select_less_diverse():
     accuracies = np.array([[4, 6, 1, 2, 9, 8, 7, 9, 3, 2]]) / 10.
     diversity = np.array([[0, 8, 0, 0, 1, 6, 7, 2, 0, 0]])
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=5./10, pct_diversity=3./10, more_diverse=False)
-    target.N = 5
-    target.J = 3
+    target.N_ = 5
+    target.J_ = 3
 
     selected_classifiers = target.select(accuracies, diversity)
     expected = np.array([[4, 5, 7]])
@@ -273,8 +273,8 @@ def create_base_classifier(value):
 # In this case the test should not raise an error since this class does not require base classifiers that
 # can estimate probabilities
 def test_predict_proba():
-    X = np.random.randn(5, 5)
-    y = np.array([0, 1, 0, 0, 0])
+    X = np.random.randn(15, 5)
+    y = np.array([0, 1, 0, 0, 0]*3)
     clf1 = Perceptron()
     clf1.fit(X, y)
     DESKNN([clf1, clf1, clf1]).fit(X, y)

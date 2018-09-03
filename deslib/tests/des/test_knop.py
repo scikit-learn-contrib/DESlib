@@ -72,7 +72,7 @@ def test_fit():
 
     # Assert the roc_algorithm_ is fitted to the scores (decision space) rather than the features (feature space)
     expected_roc_data = knop_test.dsel_scores_[:, :, 0]
-    assert np.array_equal(knop_test.op_knn._fit_X, expected_roc_data)
+    assert np.array_equal(knop_test.op_knn_._fit_X, expected_roc_data)
 
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.

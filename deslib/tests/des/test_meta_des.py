@@ -15,15 +15,6 @@ def test_meta_classifier_not_predict_proba():
         meta.fit(X, y)
 
 
-def test_meta_classifier_is_none():
-    X = np.random.rand(10, 2)
-    y = np.ones(10)
-    y[:5] = 0
-    with pytest.warns(Warning):
-        meta = METADES(create_pool_classifiers(), meta_classifier=None)
-        meta.fit(X, y)
-
-
 @pytest.mark.parametrize('Hc', ['a', None, 0.2, -1])
 def test_parameter_Hc(Hc):
     X = np.random.rand(10, 2)
@@ -50,7 +41,7 @@ def test_compute_meta_features():
     meta_test.n_classifiers_ = 1
     # Considering only one classifier in the pool (index = 0)
     meta_test.DSEL_processed_ = dsel_processed_ex1[:, 0].reshape(-1, 1)
-    meta_test.dsel_scores = dsel_scores_ex1[:, 0, :].reshape(15, 1, 2)  # 15 samples, 1 base classifier, 2 classes
+    meta_test.dsel_scores_ = dsel_scores_ex1[:, 0, :].reshape(15, 1, 2)  # 15 samples, 1 base classifier, 2 classes
     meta_test.DSEL_target_ = y_dsel_ex1
     meta_test.n_classes_ = 2
 
@@ -81,16 +72,16 @@ def test_estimate_competence():
     meta_test.n_classifiers_ = 3
     # Set the state of the system which is set by the fit method.
     meta_test.DSEL_processed_ = dsel_processed_ex1
-    meta_test.dsel_scores = dsel_scores_ex1
+    meta_test.dsel_scores_ = dsel_scores_ex1
     meta_test.DSEL_target_ = y_dsel_ex1
     meta_test.n_classes_ = 2
 
-    meta_test.meta_classifier = GaussianNB()
+    meta_test.meta_classifier_ = GaussianNB()
     meta_test.neighbors = neighbors_ex1[0, :]
     meta_test.distances = distances_ex1[0, :]
 
     meta_test._get_similar_out_profiles = MagicMock(return_value=(None, neighbors_ex1[0, 0:meta_test.Kp]))
-    meta_test.meta_classifier.predict_proba = MagicMock(return_value=np.array([[0.2, 0.8], [1.0, 0.0], [0.2, 0.8]]))
+    meta_test.meta_classifier_.predict_proba = MagicMock(return_value=np.array([[0.2, 0.8], [1.0, 0.0], [0.2, 0.8]]))
 
     probabilities = []
     for clf in meta_test.pool_classifiers:
@@ -109,21 +100,18 @@ def test_estimate_competence_batch():
     query = np.ones((3, 1))
     meta_test = METADES(pool_classifiers=create_pool_classifiers())
     meta_test.n_classifiers_ = 3
-
+    n_meta_features = 21
+    meta_test.meta_classifier_ = GaussianNB
     # Set the state of the system which is set by the fit method.
     meta_test.DSEL_processed_ = dsel_processed_ex1
-    meta_test.dsel_scores = dsel_scores_ex1
+    meta_test.dsel_scores_ = dsel_scores_ex1
     meta_test.DSEL_target_ = y_dsel_ex1
     meta_test.neighbors = neighbors_ex1
     meta_test.distances = distances_ex1
 
-    meta_test.n_classes_ = 2
-    meta_test.meta_classifier = GaussianNB()
-
     meta_test._get_similar_out_profiles = MagicMock(return_value=(None, neighbors_ex1[:, 0:meta_test.Kp]))
-    meta_test.compute_meta_features = MagicMock(return_value=np.ones((9, meta_test.n_meta_features)))
-    meta_test.meta_classifier.predict_proba = MagicMock(return_value=np.tile([0.0, 0.8], (9, 1)))
-    meta_test.DFP_mask = np.array([1, 0, 1])
+    meta_test.compute_meta_features = MagicMock(return_value=np.ones((9, n_meta_features)))
+    meta_test.meta_classifier_.predict_proba = MagicMock(return_value=np.tile([0.0, 0.8], (9, 1)))
 
     probabilities = []
     for clf in meta_test.pool_classifiers:

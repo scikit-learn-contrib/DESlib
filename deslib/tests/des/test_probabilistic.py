@@ -88,9 +88,9 @@ def test_estimate_competence():
     probabilistic_test.neighbors = [0, 1, 2]
     probabilistic_test.DFP_mask = np.ones(n_classifiers)
 
-    probabilistic_test.C_src = np.array([[0.5, 0.2, 0.8],
-                                         [1.0, 1.0, 1.0],
-                                         [1.0, 0.6, 0.3]])
+    probabilistic_test.C_src_ = np.array([[0.5, 0.2, 0.8],
+                                          [1.0, 1.0, 1.0],
+                                          [1.0, 0.6, 0.3]])
 
     competence = probabilistic_test.estimate_competence(query)
     assert np.allclose(competence, [0.665, 0.458, 0.855], atol=0.01)
@@ -105,9 +105,9 @@ def test_estimate_competence_batch():
     probabilistic_test.neighbors = np.tile([0, 1, 2], (n_samples, 1))
     probabilistic_test.DFP_mask = np.ones((n_samples, n_classifiers))
 
-    probabilistic_test.C_src = np.array([[0.5, 0.2, 0.8],
-                                         [1.0, 1.0, 1.0],
-                                         [1.0, 0.6, 0.3]])
+    probabilistic_test.C_src_ = np.array([[0.5, 0.2, 0.8],
+                                          [1.0, 1.0, 1.0],
+                                          [1.0, 0.6, 0.3]])
     expected = np.tile([0.665, 0.458, 0.855], (n_samples, 1))
     competence = probabilistic_test.estimate_competence(query)
     assert np.allclose(competence, expected, atol=0.01)
@@ -121,7 +121,7 @@ def test_estimate_competence_zeros():
     probabilistic_test.distances = distances_ex1[0, 0:3]
     probabilistic_test.neighbors = [0, 2, 1]
     probabilistic_test.DFP_mask = np.zeros(n_classifiers)
-    probabilistic_test.C_src = np.zeros((3, 3))
+    probabilistic_test.C_src_ = np.zeros((3, 3))
     competence = probabilistic_test.estimate_competence(query)
     assert np.sum(competence) == 0.0
 
@@ -134,7 +134,7 @@ def test_estimate_competence_ones():
     probabilistic_test.distances = distances_ex1[0, 0:3]
     probabilistic_test.neighbors = [0, 2, 1]
     probabilistic_test.DFP_mask = np.ones(n_classifiers)
-    probabilistic_test.C_src = np.ones((3, 3))
+    probabilistic_test.C_src_ = np.ones((3, 3))
     competence = probabilistic_test.estimate_competence(query)
     assert (competence == 1.0).all()
 
@@ -153,10 +153,10 @@ def test_source_competence_rrc():
     pool_classifiers = [create_base_classifier(return_value=1, return_prob=1.0)]
     rrc_test = RRC(pool_classifiers=pool_classifiers)
     rrc_test.n_classifiers_ = len(pool_classifiers)
-    rrc_test.dsel_scores = np.array([[[0.3, 0.6, 0.1],
-                                      [1.0 / 3, 1.0 / 3, 1.0 / 3],
-                                      [0.5, 0.2, 0.3],
-                                      [0.5, 0.2, 0.3]]]).reshape(4, 1, 3)  # 4 samples, 1 classifier and 3 classes
+    rrc_test.dsel_scores_ = np.array([[[0.3, 0.6, 0.1],
+                                       [1.0 / 3, 1.0 / 3, 1.0 / 3],
+                                       [0.5, 0.2, 0.3],
+                                       [0.5, 0.2, 0.3]]]).reshape(4, 1, 3)  # 4 samples, 1 classifier and 3 classes
     rrc_test.DSEL_target_ = [1, 0, 0, 1]
     rrc_test.n_classes_ = 3
     rrc_test.n_samples_ = 4
@@ -179,9 +179,9 @@ def test_source_competence_kl():
     pool_classifiers = [create_base_classifier(return_value=1, return_prob=1.0)]
     entropy_test = DESKL(pool_classifiers=pool_classifiers)
     entropy_test.n_classifiers_ = len(pool_classifiers)
-    entropy_test.dsel_scores = np.array([[[0.33, 0.33, 0.33],
-                                         [1.0, 0.0, 0.0],
-                                         [1.0, 0.0, 0.0]]]).reshape(3, 1, 3)  # 3 Samples, 1 classifier, 3 classes
+    entropy_test.dsel_scores_ = np.array([[[0.33, 0.33, 0.33],
+                                           [1.0, 0.0, 0.0],
+                                           [1.0, 0.0, 0.0]]]).reshape(3, 1, 3)  # 3 Samples, 1 classifier, 3 classes
     entropy_test.DSEL_processed_ = np.array([[False], [True], [False]])
     entropy_test.n_classes_ = 3
     entropy_test.n_samples_ = 3
@@ -204,10 +204,10 @@ def test_source_competence_minimum_difference():
     pool_classifiers = [create_base_classifier(return_value=1, return_prob=1.0)]
     md_test = MinimumDifference(pool_classifiers=pool_classifiers)
     md_test.n_classifiers_ = len(pool_classifiers)
-    md_test.dsel_scores = np.array([[[0.3, 0.6, 0.1],
-                                    [1.0 / 3, 1.0 / 3, 1.0 / 3],
-                                    [0.5, 0.2, 0.3],
-                                    [0.5, 0.2, 0.3]]]).reshape(4, 1, 3)  # 4 samples, 1 classifier, 3 classes
+    md_test.dsel_scores_ = np.array([[[0.3, 0.6, 0.1],
+                                      [1.0 / 3, 1.0 / 3, 1.0 / 3],
+                                      [0.5, 0.2, 0.3],
+                                      [0.5, 0.2, 0.3]]]).reshape(4, 1, 3)  # 4 samples, 1 classifier, 3 classes
 
     md_test.DSEL_target_ = [1, 0, 0, 1]
     md_test.n_classes_ = 3
@@ -231,9 +231,9 @@ def test_source_competence_logarithmic():
     pool_classifiers = [create_base_classifier(return_value=1, return_prob=1.0)]
     log_test = Logarithmic(pool_classifiers=pool_classifiers)
     log_test.n_classifiers_ = len(pool_classifiers)
-    log_test.dsel_scores = np.array([[[0.67, 0.33, 0.0],
-                                     [1.0, 0.0, 0.0],
-                                     [0.0, 1.0, 0.0]]]).reshape(3, 1, 3)  # 3 sample, 1 classifier, 3 classes
+    log_test.dsel_scores_ = np.array([[[0.67, 0.33, 0.0],
+                                       [1.0, 0.0, 0.0],
+                                       [0.0, 1.0, 0.0]]]).reshape(3, 1, 3)  # 3 sample, 1 classifier, 3 classes
 
     log_test.DSEL_target_ = [1, 1, 1]
     log_test.n_classes_ = 3
@@ -258,9 +258,9 @@ def test_source_competence_exponential():
     pool_classifiers = [create_base_classifier(return_value=1, return_prob=1.0)]
     exp_test = Exponential(pool_classifiers=pool_classifiers)
     exp_test.n_classifiers_ = len(pool_classifiers)
-    exp_test.dsel_scores = np.array([[[0.5, 0.5],
-                                     [1.0, 0.0],
-                                     [0.0, 1.0]]]).reshape(3, 1, 2)  # 3 samples, 1 classifier, 2 classes
+    exp_test.dsel_scores_ = np.array([[[0.5, 0.5],
+                                       [1.0, 0.0],
+                                       [0.0, 1.0]]]).reshape(3, 1, 2)  # 3 samples, 1 classifier, 2 classes
 
     exp_test.DSEL_target_ = [1, 1, 1]
     exp_test.n_classes_ = 2
