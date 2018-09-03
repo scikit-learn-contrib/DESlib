@@ -109,7 +109,7 @@ class KNOP(DES):
         self.dsel_scores_ = self._preprocess_dsel_scores()
         # Reshape DSEL_scores as a 2-D array for nearest neighbor calculations
         dsel_output_profiles = self.dsel_scores_.reshape(self.n_samples_, self.n_classifiers_ * self.n_classes_)
-        self._fit_OP(dsel_output_profiles, self.DSEL_target_, self.k)
+        self._fit_OP(dsel_output_profiles, self.DSEL_target_, self.k_)
 
         return self
 
@@ -128,14 +128,14 @@ class KNOP(DES):
             Number of output profiles used in the region of competence estimation.
 
         """
-        self.op_knn = KNeighborsClassifier(n_neighbors=k, n_jobs=-1, algorithm='auto')
+        self.op_knn_ = KNeighborsClassifier(n_neighbors=k, n_jobs=-1, algorithm='auto')
 
         if self.n_classes_ == 2:
             # Get only the scores for one class since they are complementary
             X_temp = X_op[:, ::2]
-            self.op_knn.fit(X_temp, y_op)
+            self.op_knn_.fit(X_temp, y_op)
         else:
-            self.op_knn.fit(X_op, y_op)
+            self.op_knn_.fit(X_op, y_op)
 
     def _get_similar_out_profiles(self, probabilities):
         """Get the most similar output profiles of the query sample.
@@ -161,7 +161,7 @@ class KNOP(DES):
         else:
             query_op = probabilities.reshape((probabilities.shape[0], self.n_classifiers_ * self.n_classes_))
 
-        dists, idx = self.op_knn.kneighbors(query_op, n_neighbors=self.k, return_distance=True)
+        dists, idx = self.op_knn_.kneighbors(query_op, n_neighbors=self.k_, return_distance=True)
         return dists, np.atleast_2d(idx)
 
     def estimate_competence_from_proba(self, query, probabilities):
