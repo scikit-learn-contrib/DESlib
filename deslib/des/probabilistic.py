@@ -78,7 +78,6 @@ class Probabilistic(DES):
                                             mode=mode,
                                             random_state=random_state)
 
-        self.C_src_ = None
         self.selection_threshold = selection_threshold
 
     def fit(self, X, y):
@@ -103,8 +102,6 @@ class Probabilistic(DES):
         -------
         self
         """
-        if self.k is None:
-            self.k = X.shape[0]
 
         super(Probabilistic, self).fit(X, y)
         self._check_predict_proba()
@@ -127,7 +124,7 @@ class Probabilistic(DES):
         and the potential function model. The source of competence :math:`C_{src}` for all data points in DSEL
         is already pre-computed in the fit() steps.
 
-        .. math:: \\delta_{i,j} = \\frac{\\sum_{k=1}^{N}C_{src} \\: exp( -d (\\mathbf{x}_{k}, \\mathbf{x}_{q})^{2} )}
+        .. math:: \\delta_{i,j} = \\frac{\\sum_{k=1}^{N_}C_{src} \\: exp( -d (\\mathbf{x}_{k}, \\mathbf{x}_{q})^{2} )}
             {exp( -d (\\mathbf{x}_{k}, \\mathbf{x}_{q})^{2} )}
 
         Parameters
