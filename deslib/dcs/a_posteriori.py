@@ -110,7 +110,7 @@ class APosteriori(DCS):
         super(APosteriori, self).fit(X, y)
         self._check_predict_proba()
 
-        self.dsel_scores = self._preprocess_dsel_scores()
+        self.dsel_scores_ = self._preprocess_dsel_scores()
         return self
 
     def estimate_competence(self, query, predictions=None):
@@ -160,7 +160,7 @@ class APosteriori(DCS):
         dists_normalized = np.repeat(np.expand_dims(dists_normalized, axis=2), self.n_classifiers_, axis=2)
 
         # Multiply the pre-processed correct predictions by the base classifiers to the distance array
-        scores_target_norm = self.dsel_scores[idx_neighbors, :, self.DSEL_target_[idx_neighbors]] * dists_normalized
+        scores_target_norm = self.dsel_scores_[idx_neighbors, :, self.DSEL_target_[idx_neighbors]] * dists_normalized
 
         # Create masked arrays to remove samples with different label in the calculations
         masked_preprocessed = np.ma.MaskedArray(scores_target_norm, mask=mask)
