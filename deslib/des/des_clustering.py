@@ -111,10 +111,10 @@ class DESClustering(DS):
 
         # Set-up the clustering method used to estimate the region of competence
         if self.clustering is None:
-            self.clustering_ = KMeans(n_clusters=5)
+            self.clustering_ = KMeans(n_clusters=5, random_state=self.random_state)
             self.clustering_.fit(self.DSEL_data_)
         else:
-            self.clustering_ = self.clustering_.fit(self.DSEL_data_)
+            self.clustering_ = self.clustering.fit(self.DSEL_data_)
 
         # set the diversity metric used
         self._set_diversity_func()
