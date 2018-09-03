@@ -10,10 +10,10 @@ from abc import abstractmethod, ABCMeta
 import numpy as np
 from scipy.stats import mode
 from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.ensemble import BaseEnsemble
+from sklearn.ensemble import BaseEnsemble, BaggingClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
-from sklearn.utils.validation import check_X_y, check_is_fitted, check_array
+from sklearn.utils.validation import check_X_y, check_is_fitted, check_array, check_random_state
 
 from deslib.util.instance_hardness import hardness_region_competence
 
@@ -29,16 +29,17 @@ class DS(BaseEstimator, ClassifierMixin):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, needs_proba=False):
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
+                 safe_k=None, IH_rate=0.30, needs_proba=False, random_state=None):
 
         self.pool_classifiers = pool_classifiers
-        self.n_classifiers = len(self.pool_classifiers)
         self.k = k
         self.DFP = DFP
         self.with_IH = with_IH
         self.safe_k = safe_k
         self.IH_rate = IH_rate
         self.needs_proba = needs_proba
+        self.random_state = random_state
 
         # TODO: remove these as class variables
         self.neighbors = None
@@ -151,28 +152,58 @@ class DS(BaseEstimator, ClassifierMixin):
         -------
         self
         """
+        self.random_state_ = check_random_state(self.random_state)
         # Check if the lenght of X and y are consistent. Enforces a 2D X and 1D y
         X, y = check_X_y(X, y)
+
+        # Check if the pool of classifiers is None. If yes, use a BaggingClassifier for the pool.
+        if self.pool_classifiers is None:
+            self.pool_classifiers_ = BaggingClassifier(random_state=self.random_state_)
+            self.pool_classifiers_.fit(X, y)
+            # raise Warning("Pool of classifiers not yet fitted! Using the training data to fit the method.")
+
+        else:
+            self._check_base_classifier_fitted()
+            self.pool_classifiers_ = self.pool_classifiers
+
+        self.n_classifiers_ = len(self.pool_classifiers_)
 
         # check if the input parameters are correct. Raise an error if the generated_pool is not fitted or k < 1
         self._validate_parameters()
 
-        if self.with_IH and self.safe_k is None:
-            self.safe_k = self.k
-
         # Check if base classifiers are not using LabelEncoder (the case for scikit-learn's ensembles):
-        if isinstance(self.pool_classifiers, BaseEnsemble):
+        if isinstance(self.pool_classifiers_, BaseEnsemble):
             self.base_already_encoded_ = True
         else:
             self.base_already_encoded_ = False
 
-        y_ind = self.setup_label_encoder(y)
+        y_ind = self._setup_label_encoder(y)
         self._set_dsel(X, y_ind)
-        self._fit_region_competence(X, y_ind, self.k)
+
+        # validate the value of k
+        self._validate_k()
+
+        self._fit_region_competence(X, y_ind, self.k_)
 
         return self
 
-    def setup_label_encoder(self, y):
+    def _validate_k(self):
+
+        # validate safe_k
+        if self.k is None:
+            self.k_ = self.n_samples_
+
+        elif self.k > self.n_samples_:
+            print("Warning k is bigger than DSEL size. Using All DSEL examples for competence estimation.")
+            self.k_ = self.n_samples_ - 1
+        else:
+            self.k_ = self.k
+
+        # Validate safe_k
+        if self.with_IH and self.safe_k is None:
+            self.safe_k = self.k
+
+    def _setup_label_encoder(self, y):
         self.enc_ = LabelEncoder()
         y_ind = self.enc_.fit_transform(y)
         self.classes_ = self.enc_.classes_
@@ -245,7 +276,7 @@ class DS(BaseEstimator, ClassifierMixin):
         # Check if the neighborhood was already estimated to avoid unnecessary calculations.
         if self.distances is None or self.neighbors is None:
             if k is None:
-                k = self.k
+                k = self.k_
 
             dists, idx = self.roc_algorithm_.kneighbors(query, n_neighbors=k, return_distance=True)
 
@@ -272,7 +303,7 @@ class DS(BaseEstimator, ClassifierMixin):
         check_is_fitted(self, ["DSEL_processed_", "DSEL_data_", "DSEL_target_"])
 
         # Check if X is a valid input
-        X = check_array(X, ensure_2d=False)
+        X = check_array(X)
         self._check_num_features(X)
 
         n_samples = X.shape[0]
@@ -346,7 +377,7 @@ class DS(BaseEstimator, ClassifierMixin):
                 if self.DFP:
                     self.DFP_mask = self._frienemy_pruning()
                 else:
-                    self.DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers))
+                    self.DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers_))
 
                 # Get the real indices_ of the samples that will be classified using a DS algorithm.
                 ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
@@ -443,7 +474,7 @@ class DS(BaseEstimator, ClassifierMixin):
                 if self.DFP:
                     self.DFP_mask = self._frienemy_pruning()
                 else:
-                    self.DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers))
+                    self.DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers_))
 
                 ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
 
@@ -478,7 +509,7 @@ class DS(BaseEstimator, ClassifierMixin):
             self.neighbors = np.atleast_2d(self.neighbors)
 
         n_samples, n_neighbors = self.neighbors.shape
-        mask = np.zeros((n_samples, self.n_classifiers))
+        mask = np.zeros((n_samples, self.n_classifiers_))
 
         for sample_idx in range(n_samples):
             # Check if query is in a indecision region
@@ -488,7 +519,7 @@ class DS(BaseEstimator, ClassifierMixin):
                 # There are more than on class in the region of competence (So it is an indecision region).
 
                 # Check if the base classifier predict the correct label for a sample belonging to each class.
-                for clf_index in range(self.n_classifiers):
+                for clf_index in range(self.n_classifiers_):
                     predictions = self.DSEL_processed_[self.neighbors[sample_idx, :self.safe_k], clf_index]
                     correct_class_pred = [self.DSEL_target_[index] for count, index in
                                           enumerate(self.neighbors[sample_idx, :self.safe_k])
@@ -541,9 +572,9 @@ class DS(BaseEstimator, ClassifierMixin):
         predictions : array of shape = [n_samples, n_classifiers]
                       The predictions of each base classifier for all samples in X.
         """
-        predictions = np.zeros((X.shape[0], self.n_classifiers), dtype=np.intp)
+        predictions = np.zeros((X.shape[0], self.n_classifiers_), dtype=np.intp)
 
-        for index, clf in enumerate(self.pool_classifiers):
+        for index, clf in enumerate(self.pool_classifiers_):
             labels = clf.predict(X)
             predictions[:, index] = self._encode_base_labels(labels)
         return predictions
@@ -561,9 +592,9 @@ class DS(BaseEstimator, ClassifierMixin):
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         Probabilities estimates of each base classifier for all test samples.
         """
-        probabilities = np.zeros((X.shape[0], self.n_classifiers, self.n_classes_))
+        probabilities = np.zeros((X.shape[0], self.n_classifiers_, self.n_classes_))
 
-        for index, clf in enumerate(self.pool_classifiers):
+        for index, clf in enumerate(self.pool_classifiers_):
             probabilities[:, index] = clf.predict_proba(X)
         return probabilities
 
@@ -578,8 +609,8 @@ class DS(BaseEstimator, ClassifierMixin):
                  Scores (probabilities) for each class obtained by each base classifier in the generated_pool
                  for each sample in X.
         """
-        scores = np.empty((self.n_samples_, self.n_classifiers, self.n_classes_))
-        for index, clf in enumerate(self.pool_classifiers):
+        scores = np.empty((self.n_samples_, self.n_classifiers_, self.n_classes_))
+        for index, clf in enumerate(self.pool_classifiers_):
             scores[:, index, :] = clf.predict_proba(self.DSEL_data_)
 
         return scores
@@ -630,7 +661,6 @@ class DS(BaseEstimator, ClassifierMixin):
         if 0 > self.IH_rate or self.IH_rate > 0.5:
             raise ValueError("Parameter IH_rate should be between [0.0, 0.5]."
                              "IH_rate = {}" .format(self.IH_rate))
-
         self._validate_pool()
 
     def _validate_pool(self):
@@ -642,9 +672,9 @@ class DS(BaseEstimator, ClassifierMixin):
         ValueError
             If the pool of classifiers is empty.
         """
-        if self.n_classifiers <= 0:
+        if self.n_classifiers_ <= 0:
             raise ValueError("n_classifiers must be greater than zero, "
-                             "got {}.".format(self.n_classifiers))
+                             "got {}.".format(self.n_classifiers_))
 
     def _check_num_features(self, X):
         """ Verify if the number of features (n_features) of X is equals to the number
@@ -674,7 +704,18 @@ class DS(BaseEstimator, ClassifierMixin):
         ValueError
             If the base classifiers do not implements the predict_proba method.
         """
-        for clf in self.pool_classifiers:
-            check_is_fitted(clf, "classes_")
+        for clf in self.pool_classifiers_:
             if "predict_proba" not in dir(clf):
                 raise ValueError("All base classifiers should output probability estimates")
+
+    def _check_base_classifier_fitted(self):
+        """ Checks if each base classifier in the pool is fitted.
+
+        Raises
+        -------
+        NotFittedError: If any of the base classifiers is not yet fitted.
+        """
+        for clf in self.pool_classifiers:
+            check_is_fitted(clf, "classes_")
+
+

@@ -145,9 +145,9 @@ def test_frienemy_no_classifier_crosses():
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_frienemy_all_classifiers_crosses(index):
     ds_test = DS(create_pool_classifiers())
+    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     ds_test.DSEL_processed_ = dsel_processed_all_ones
-    ds_test.DSEL_target_ = y_dsel_ex1
-    ds_test.DSEL_data_ = X_dsel_ex1
+
     ds_test.neighbors = neighbors_ex1[index, :]
     result = ds_test._frienemy_pruning()
     assert result.all() == 1.0
@@ -155,9 +155,9 @@ def test_frienemy_all_classifiers_crosses(index):
 
 def test_frienemy_not_all_classifiers_crosses():
     ds_test = DS(create_pool_classifiers(), safe_k=3)
+    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     ds_test.DSEL_processed_ = dsel_processed_ex1
-    ds_test.DSEL_target_ = y_dsel_ex1
-    ds_test.DSEL_data_ = X_dsel_ex1
+
     ds_test.neighbors = neighbors_ex1[0, :]
     result = ds_test._frienemy_pruning()
     assert np.array_equal(result, np.array([[1, 1, 0]]))
@@ -167,23 +167,26 @@ def test_frienemy_not_all_classifiers_crosses():
 def test_frienemy_not_all_classifiers_crosses_batch():
     expected = np.array([[1, 1, 0], [0, 1, 0], [1, 1, 1]])
     ds_test = DS(create_pool_classifiers(), safe_k=3)
+    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+
     ds_test.DSEL_processed_ = dsel_processed_ex1
-    ds_test.DSEL_target_ = y_dsel_ex1
-    ds_test.DSEL_data_ = X_dsel_ex1
+
     # passing three samples to compute the DFP at the same time
     ds_test.neighbors = neighbors_ex1
     result = ds_test._frienemy_pruning()
     assert np.array_equal(result, expected)
 
+
 # Test the case where the sample is located in a safe region (i.e., all neighbors comes from the same class)
 def test_frienemy_safe_region():
     ds_test = DS(create_pool_classifiers(), safe_k=3)
+    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     ds_test.DSEL_processed_ = dsel_processed_ex1
-    ds_test.DSEL_target_ = y_dsel_ex1
-    ds_test.DSEL_data_ = X_dsel_ex1
+
     ds_test.neighbors = np.array([0, 1, 2, 6, 7, 8, 14])
     result = ds_test._frienemy_pruning()
     assert np.array_equal(result, np.array([[1, 1, 1]]))
+
 
 # Check if the batch processing is working by passing multiple samples at the same time. Testing sample in a safe region
 def test_frienemy_safe_region_batch():
@@ -191,9 +194,10 @@ def test_frienemy_safe_region_batch():
     n_classifiers = 3
     expected = np.ones((n_samples, n_classifiers))
     ds_test = DS(create_pool_classifiers(), safe_k=3)
+    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+
     ds_test.DSEL_processed_ = dsel_processed_ex1
-    ds_test.DSEL_target_ = y_dsel_ex1
-    ds_test.DSEL_data_ = X_dsel_ex1
+
     ds_test.neighbors = np.tile(np.array([0, 1, 2, 6, 7, 8, 14]), (n_samples, 1))
     result = ds_test._frienemy_pruning()
 

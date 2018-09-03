@@ -11,14 +11,12 @@ def test_estimate_competence_all_ones(index):
     query = np.atleast_2d([1, 1])
 
     a_posteriori_test = APosteriori(create_pool_classifiers())
+    a_posteriori_test.fit(X_dsel_ex1, y_dsel_ex1)
     a_posteriori_test.DSEL_processed_ = dsel_processed_ex1
-    a_posteriori_test.dsel_scores = dsel_scores_all_ones
-    a_posteriori_test.DSEL_target_ = y_dsel_ex1
-    a_posteriori_test.n_classes_ = 2
+    a_posteriori_test.dsel_scores_ = dsel_scores_all_ones
 
     a_posteriori_test.neighbors = neighbors_ex1[index, :]
     a_posteriori_test.distances = distances_all_ones[index, :]
-    a_posteriori_test.DFP_mask = [1, 1, 1]
 
     expected = [1.0, 1.0, 1.0]
 
@@ -35,15 +33,15 @@ def test_estimate_competence_kuncheva_ex():
     query = np.atleast_2d([1, 1])
 
     a_posteriori_test = APosteriori([create_base_classifier(return_value=1)], k=k_ex_kuncheva)
+    a_posteriori_test.n_classifiers_ = 1
 
     a_posteriori_test.DSEL_processed_ = dsel_processed_kuncheva
-    a_posteriori_test.dsel_scores = dsel_scores_ex_kuncheva
+    a_posteriori_test.dsel_scores_ = dsel_scores_ex_kuncheva
     a_posteriori_test.DSEL_target_ = y_dsel_ex_kuncheva_dependent
     a_posteriori_test.n_classes_ = n_classes_ex_kuncheva
 
     a_posteriori_test.neighbors = neighbors_ex_kuncheva
     a_posteriori_test.distances = distances_ex_kuncheva
-    a_posteriori_test.DFP_mask = [1]
 
     predictions = []
     for clf in a_posteriori_test.pool_classifiers:
@@ -58,10 +56,10 @@ def test_estimate_competence_kuncheva_ex_batch():
     query = np.ones((10, 2))
 
     a_posteriori_test = APosteriori([create_base_classifier(return_value=1)], k=k_ex_kuncheva)
-
+    a_posteriori_test.fit(dsel_processed_kuncheva, y_dsel_ex_kuncheva_dependent)
     a_posteriori_test.DSEL_processed_ = dsel_processed_kuncheva
-    a_posteriori_test.dsel_scores = dsel_scores_ex_kuncheva
-    a_posteriori_test.DSEL_target_ = y_dsel_ex_kuncheva_dependent
+    a_posteriori_test.dsel_scores_ = dsel_scores_ex_kuncheva
+
     a_posteriori_test.n_classes_ = n_classes_ex_kuncheva
 
     # repeating the same matrix in a new axis to simulate a batch input.
@@ -81,11 +79,11 @@ def test_estimate_competence_kuncheva_ex_batch():
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_estimate_competence_diff_target(index):
     query = np.atleast_2d([1, 1])
-
-    a_posteriori_test = APosteriori(create_pool_classifiers())
-
+    pool_classifiers = create_pool_classifiers()
+    a_posteriori_test = APosteriori(pool_classifiers=pool_classifiers)
+    a_posteriori_test.n_classifiers_ = len(pool_classifiers)
     a_posteriori_test.DSEL_processed_ = dsel_processed_ex1
-    a_posteriori_test.dsel_scores = np.ones((15, 3, 3))
+    a_posteriori_test.dsel_scores_ = np.ones((15, 3, 3))
     a_posteriori_test.DSEL_target_ = np.ones(15, dtype=int) * 2
     a_posteriori_test.n_classes_ = 2
 
@@ -108,7 +106,7 @@ def test_fit():
     a_posteriori_test.fit(X_dsel_ex1, y_dsel_ex1)
     expected = np.array([[0.5, 0.5], [1.0, 0.0], [0.33, 0.67]])
     expected = np.tile(expected, (15, 1, 1))
-    assert np.array_equal(a_posteriori_test.dsel_scores, expected)
+    assert np.array_equal(a_posteriori_test.dsel_scores_, expected)
 
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
