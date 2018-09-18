@@ -30,6 +30,22 @@ from deslib.des.des_mi import DESMI
 from deslib.static.oracle import Oracle
 from deslib.static.single_best import SingleBest
 from deslib.static.static_selection import StaticSelection
+from sklearn.model_selection import GridSearchCV
+
+
+def test_grid_search():
+    # This tests if the estimator can be cloned and used in a grid search
+
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    kne = KNORAE(pool_classifiers)
+
+    params = {'k': [1, 3, 5, 7]}
+    grid = GridSearchCV(kne, params)
+
+    grid.fit(X_dsel, y_dsel)
+
+    grid.best_estimator_.score(X_test, y_test)
 
 
 def test_label_encoder_integration_list_classifiers():
