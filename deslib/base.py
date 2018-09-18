@@ -16,6 +16,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import check_X_y, check_is_fitted, check_array, check_random_state
 
 from deslib.util.instance_hardness import hardness_region_competence
+import warnings
 
 
 class DS(BaseEstimator, ClassifierMixin):
@@ -194,7 +195,8 @@ class DS(BaseEstimator, ClassifierMixin):
             self.k_ = self.n_samples_
 
         elif self.k > self.n_samples_:
-            print("Warning k is bigger than DSEL size. Using All DSEL examples for competence estimation.")
+            warnings.warn("k is bigger than DSEL size. Using All DSEL examples for competence estimation.",
+                          category=RuntimeWarning)
             self.k_ = self.n_samples_ - 1
         else:
             self.k_ = self.k

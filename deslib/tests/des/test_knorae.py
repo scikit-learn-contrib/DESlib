@@ -4,10 +4,12 @@ from sklearn.linear_model import Perceptron
 from deslib.des.knora_e import KNORAE
 from deslib.tests.examples_test import *
 from sklearn.utils.estimator_checks import check_estimator
+from sklearn.utils.testing import ignore_warnings
 
 
 def test_check_estimator():
-    check_estimator(KNORAE)
+    with ignore_warnings(category=RuntimeWarning):
+        check_estimator(KNORAE)
 
 
 @pytest.mark.parametrize('index, expected', [(0, [1.0, 0.0, 1.0]),
