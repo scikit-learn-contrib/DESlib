@@ -6,6 +6,11 @@ from sklearn.exceptions import NotFittedError
 
 from deslib.static.single_best import SingleBest
 from deslib.tests.examples_test import create_pool_classifiers, X_dsel_ex1, y_dsel_ex1
+from sklearn.utils.estimator_checks import check_estimator
+
+
+def test_check_estimator():
+    check_estimator(SingleBest)
 
 
 # Testing if the fit function selects the correct classifier (the one with highest classification accuracy).

@@ -3,6 +3,11 @@ from sklearn.linear_model import Perceptron
 
 from deslib.dcs.rank import Rank
 from deslib.tests.examples_test import *
+from sklearn.utils.estimator_checks import check_estimator
+
+
+def test_check_estimator():
+    check_estimator(Rank)
 
 
 @pytest.mark.parametrize('index, expected', [(0, [1, 5, 0]),

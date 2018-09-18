@@ -3,6 +3,11 @@ from sklearn.linear_model import Perceptron
 
 from deslib.dcs.lca import LCA
 from deslib.tests.examples_test import *
+from sklearn.utils.estimator_checks import check_estimator
+
+
+def test_check_estimator():
+    check_estimator(LCA)
 
 
 @pytest.mark.parametrize('index, expected', [(0, [0.75000000,  0.66666667,  0.75000000]),

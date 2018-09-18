@@ -2,6 +2,12 @@ import numpy as np
 
 from deslib.static.oracle import Oracle
 from deslib.tests.examples_test import X_dsel_ex1, y_dsel_ex1, create_pool_classifiers, create_pool_all_agree
+from sklearn.utils.estimator_checks import check_estimator
+
+
+def test_check_estimator():
+    check_estimator(Oracle)
+
 
 
 def test_predict():

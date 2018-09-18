@@ -4,6 +4,11 @@ from sklearn.naive_bayes import GaussianNB
 
 from deslib.des.meta_des import METADES
 from deslib.tests.examples_test import *
+from sklearn.utils.estimator_checks import check_estimator
+
+
+def test_check_estimator():
+    check_estimator(METADES)
 
 
 # -------------------------------------- Testing Hyper-parameters -----------------------

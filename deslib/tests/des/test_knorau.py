@@ -3,6 +3,11 @@ from sklearn.linear_model import Perceptron
 
 from deslib.des.knora_u import KNORAU
 from deslib.tests.examples_test import *
+from sklearn.utils.estimator_checks import check_estimator
+
+
+def test_check_estimator():
+    check_estimator(KNORAU)
 
 
 @pytest.mark.parametrize('index, expected', [(0, [4.0, 3.0, 4.0]),

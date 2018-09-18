@@ -3,6 +3,11 @@ from sklearn.linear_model import Perceptron
 
 from deslib.des.des_p import DESP
 from deslib.tests.examples_test import *
+from sklearn.utils.estimator_checks import check_estimator
+
+
+def test_check_estimator():
+    check_estimator(DESP)
 
 
 @pytest.mark.parametrize('index, expected', [(0, [0.57142857, 0.4285714, 0.57142857]),

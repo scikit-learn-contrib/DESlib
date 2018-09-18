@@ -3,6 +3,11 @@ from sklearn.linear_model import Perceptron
 
 from deslib.des.des_mi import DESMI
 from deslib.tests.examples_test import *
+from sklearn.utils.estimator_checks import check_estimator
+
+
+def test_check_estimator():
+    check_estimator(DESMI)
 
 
 # TODO: create test routine for the estimate_competence method

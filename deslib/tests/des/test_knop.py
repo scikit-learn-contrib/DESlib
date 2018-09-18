@@ -5,6 +5,11 @@ from sklearn.linear_model import Perceptron
 
 from deslib.des.knop import KNOP
 from deslib.tests.examples_test import *
+from sklearn.utils.estimator_checks import check_estimator
+
+
+def test_check_estimator():
+    check_estimator(KNOP)
 
 
 @pytest.mark.parametrize('index, expected', [(0, [4.0, 3.0, 4.0]),

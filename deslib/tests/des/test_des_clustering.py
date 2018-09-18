@@ -8,6 +8,12 @@ from sklearn.linear_model import Perceptron
 from deslib.des.des_clustering import DESClustering
 from deslib.tests.examples_test import create_pool_classifiers, X_dsel_ex1, y_dsel_ex1
 from deslib.util.diversity import Q_statistic, ratio_errors, negative_double_fault
+from sklearn.utils.estimator_checks import check_estimator
+
+
+def test_check_estimator():
+    check_estimator(DESClustering)
+
 
 """ Considering a test scenario in which all samples from class 0 are indexed in cluster n. 0 and classes_ 1 to cluster
 n. 1. For this example, the base classifiers that always predicts 0 should me most accurate on the cluster 0, while
