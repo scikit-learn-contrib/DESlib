@@ -6,8 +6,24 @@ from deslib.tests.examples_test import *
 from sklearn.utils.estimator_checks import check_estimator
 
 
-def test_check_estimator():
-    check_estimator(Probabilistic)
+def test_check_estimator_RRC():
+    check_estimator(RRC)
+
+
+def test_check_estimator_DESKL():
+    check_estimator(DESKL)
+
+
+def test_check_estimator_Logarithmic():
+    check_estimator(Logarithmic)
+
+
+def test_check_estimator_Exponential():
+    check_estimator(Exponential)
+
+
+def test_check_estimator_MinimumDifference():
+    check_estimator(MinimumDifference)
 
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
