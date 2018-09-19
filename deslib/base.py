@@ -30,7 +30,7 @@ class DS(ClassifierMixin):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, needs_proba=False):
+    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, needs_proba=False, use_faiss=False):
 
         self.pool_classifiers = pool_classifiers
         self.n_classifiers = len(self.pool_classifiers)
@@ -49,6 +49,11 @@ class DS(ClassifierMixin):
         self.n_classes = None
         self.n_samples = None
         self.n_features = None
+        if use_faiss:
+            from deslib.util.faiss_knn_wrapper import  FaissKNNClassifier
+            self.roc_algorithm_class = FaissKNNClassifier
+        else:
+            self.roc_algorithm_class = KNeighborsClassifier
 
         # TODO: remove these as class variables
         self.neighbors = None
@@ -211,7 +216,7 @@ class DS(ClassifierMixin):
         k : int (Default=self.k)
             Number of neighbors used in the k-NN method.
         """
-        self.roc_algorithm = KNeighborsClassifier(n_neighbors=k, n_jobs=-1, algorithm='auto')
+        self.roc_algorithm = self.roc_algorithm_class(n_neighbors=k, n_jobs=-1, algorithm='auto')
         self.roc_algorithm.fit(X, y)
 
     def _set_dsel(self, X, y):

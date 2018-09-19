@@ -55,10 +55,10 @@ class DES(DS):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False,
-                 safe_k=None, IH_rate=0.30, mode='selection', needs_proba=False):
+                 safe_k=None, IH_rate=0.30, mode='selection', needs_proba=False, use_faiss=False):
 
         super(DES, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
-                                  safe_k=safe_k, IH_rate=IH_rate, needs_proba=needs_proba)
+                                  safe_k=safe_k, IH_rate=IH_rate, needs_proba=needs_proba, use_faiss=use_faiss)
 
         if not isinstance(mode, str):
             raise TypeError('Parameter "mode" should be a string. Currently "mode" = {}' .format(type(mode)))

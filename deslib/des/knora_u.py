@@ -54,14 +54,14 @@ class KNORAU(DES):
     """
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30):
+                 IH_rate=0.30, use_faiss=False):
 
         super(KNORAU, self).__init__(pool_classifiers, k,
                                      DFP=DFP,
                                      with_IH=with_IH,
                                      safe_k=safe_k,
                                      IH_rate=IH_rate,
-                                     mode='weighting')
+                                     mode='weighting', use_faiss=use_faiss)
 
         self.name = 'k-Nearest Oracles Union (KNORA-U)'
 

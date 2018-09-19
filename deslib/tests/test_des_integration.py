@@ -30,6 +30,16 @@ from deslib.des.des_mi import DESMI
 from deslib.static.oracle import Oracle
 from deslib.static.single_best import SingleBest
 from deslib.static.static_selection import StaticSelection
+import pytest
+import warnings
+
+knn_use_faiss = [False]
+
+try:
+    from deslib.util.faiss_knn_wrapper import FaissKNNClassifier
+    knn_use_faiss.append(True)
+except ImportError:
+    warnings.warn("Not testing FAISS for KNN")
 
 
 def test_label_encoder_integration_list_classifiers():
@@ -85,10 +95,11 @@ def load_dataset(encode_labels, rng):
     return X_dsel, X_test, X_train, y_dsel, y_test, y_train
 
 
-def test_knorau():
+@pytest.mark.parametrize('knn_use_faiss', knn_use_faiss)
+def test_knorau(knn_use_faiss):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    knorau = KNORAU(pool_classifiers)
+    knorau = KNORAU(pool_classifiers, use_faiss=knn_use_faiss)
     knorau.fit(X_dsel, y_dsel)
     assert np.isclose(knorau.score(X_test, y_test), 0.97340425531914898)
 
