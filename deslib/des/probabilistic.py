@@ -127,6 +127,7 @@ class Probabilistic(DES):
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for all test examples.
+
         Returns
         -------
         competences : array of shape = [n_samples, n_classifiers]
