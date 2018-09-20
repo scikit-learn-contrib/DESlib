@@ -90,13 +90,6 @@ that is used for the competence level estimation as the dynamic selection datase
     # Split the data into training and DSEL for DS techniques
     X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train, test_size=0.5)
 
-
-
-.. The second important point is that, in the current version, the library only accepts class labels
-starting from 0 to L-1 (where L is the number of classes). If your dataset does not follow this requirement, you can use the
-LabelEncoder class form scikit-learn to prepare the data. As the datasets loaded from scikit-learn already follow this rule, we can
-skip this step.
-
 Training a pool of classifiers:
 -------------------------------
 
@@ -236,3 +229,4 @@ References
 -----------
 
 .. [1] : Oliveira, D.V.R., Cavalcanti, G.D.C. and Sabourin, R., Online Pruning of Base Classifiers for Dynamic Ensemble Selection, Pattern Recognition, vol. 72, December 2017, pp 44-58.
+
