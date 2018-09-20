@@ -44,6 +44,9 @@ class KNOP(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
+    knn_classifer : str or Estimator (Default = None)
+          The KNN classifier
+
     References
     ----------
     Cavalin, Paulo R., Robert Sabourin, and Ching Y. Suen. "LoGID: An adaptive framework combining local and global

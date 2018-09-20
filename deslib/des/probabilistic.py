@@ -47,6 +47,8 @@ class Probabilistic(DES):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    knn_classifer : str or Estimator (Default = None)
+          The KNN classifier
 
     References
     ----------
@@ -239,6 +241,9 @@ class Logarithmic(Probabilistic):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    knn_classifer : str or Estimator (Default = None)
+          The KNN classifier
+
     References
     ----------
     B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
@@ -309,6 +314,9 @@ class Exponential(Probabilistic):
     mode : String (Default = "selection")
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
+
+    knn_classifer : str or Estimator (Default = None)
+          The KNN classifier
 
     References
     ----------
@@ -381,6 +389,9 @@ class RRC(Probabilistic):
     mode : String (Default = "selection")
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
+
+    knn_classifer : str or Estimator (Default = None)
+          The KNN classifier
 
     References
     ----------
@@ -460,6 +471,9 @@ class DESKL(Probabilistic):
     mode : String (Default = "selection")
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
+
+    knn_classifer : str or Estimator (Default = None)
+          The KNN classifier
 
     References
     ----------
@@ -541,6 +555,9 @@ class MinimumDifference(Probabilistic):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    knn_classifer : str or Estimator (Default = None)
+          The KNN classifier
+          
     References
     ----------
     [1] B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of

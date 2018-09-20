@@ -60,6 +60,8 @@ class APosteriori(DCS):
 
     rng : numpy.random.RandomState instance
           Random number generator to assure reproducible results.
+    knn_classifer : str or Estimator (Default = None)
+          The KNN classifier
 
     References
     ----------

@@ -44,6 +44,9 @@ class DES(DS):
     needs_proba : Boolean (Default = False)
                   Determines whether the method always needs base classifiers that estimate probabilities.
 
+    knn_classifer : str or Estimator (Default = None)
+          The KNN classifier
+
     References
     ----------
     Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection of classifiers—a comprehensive review."

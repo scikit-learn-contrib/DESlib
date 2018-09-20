@@ -58,6 +58,9 @@ class MCB(DCS):
     rng : numpy.random.RandomState instance
           Random number generator to assure reproducible results.
 
+    knn_classifer : str or Estimator (Default = None)
+          The KNN classifier
+
     References
     ----------
     Giacinto, Giorgio, and Fabio Roli. "Dynamic classifier selection based on multiple classifier behaviour."

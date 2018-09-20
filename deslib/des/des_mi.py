@@ -32,6 +32,9 @@ class DESMI(DS):
     alpha : float (Default = 0.9)
             Scaling coefficient to regulate the weight value
 
+    knn_classifer : str or Estimator (Default = None)
+          The KNN classifier
+
     References
     ----------
     García, S.; Zhang, Z.-L.; Altalhi, A.; Alshomrani, S. & Herrera, F. "Dynamic ensemble selection for multi-class

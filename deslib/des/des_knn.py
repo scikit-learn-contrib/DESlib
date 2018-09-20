@@ -55,6 +55,9 @@ class DESKNN(DS):
             Diversity diversity_func used to estimate the diversity of the base classifiers. Can
             be either the double fault (df), Q-statistics (Q), or error correlation (corr)
 
+    knn_classifer : str or Estimator (Default = None)
+          The KNN classifier
+
     References
     ----------
     Soares, R. G., Santana, A., Canuto, A. M., & de Souto, M. C. P. "Using accuracy and more_diverse to select

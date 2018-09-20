@@ -47,6 +47,10 @@ class DCS(DS):
     rng : numpy.random.RandomState instance
           Random number generator to assure reproducible results.
 
+    knn_classifer : str or Estimator (Default = None)
+          The KNN classifier
+
+
     References
     ----------
     Woods, Kevin, W. Philip Kegelmeyer, and Kevin Bowyer. "Combination of multiple classifiers

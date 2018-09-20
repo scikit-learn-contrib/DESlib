@@ -45,6 +45,9 @@ class DESP(DES):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    knn_classifer : str or Estimator (Default = None)
+          The KNN classifier
+
     References
     ----------
     Woloszynski, Tomasz, et al. "A measure of competence based on random classification
