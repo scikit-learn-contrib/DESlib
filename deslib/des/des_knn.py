@@ -72,10 +72,11 @@ class DESKNN(DS):
                  pct_accuracy=0.5,
                  pct_diversity=0.3,
                  more_diverse=True,
-                 metric='DF'):
+                 metric='DF',
+                 knn_classifier=None):
 
         metric = metric.upper()
-        super(DESKNN, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate)
+        super(DESKNN, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate, knn_classifier=knn_classifier)
 
         self.name = 'Dynamic Ensemble Selection-KNN (DES-KNN)'
         self.N = int(self.n_classifiers * pct_accuracy)

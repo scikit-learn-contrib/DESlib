@@ -75,6 +75,11 @@ def create_classifiers_disagree():
     return [clf1, clf_2]
 
 
+@pytest.mark.parametrize('knn_method,', ['invalidmethod', 1])
+def test_valid_selection_mode(knn_method):
+    with pytest.raises(ValueError):
+        DS(create_pool_classifiers(), knn_classifier=knn_method)
+
 # In this test the system was trained for a sample containing 2 features and we are passing a sample with 3 as argument.
 # So it should raise a value error.
 def test_different_input_shape():

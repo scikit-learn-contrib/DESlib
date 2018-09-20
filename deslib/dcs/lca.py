@@ -73,12 +73,12 @@ class LCA(DCS):
 
     """
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 selection_method='best', diff_thresh=0.1, rng=np.random.RandomState()):
+                 selection_method='best', diff_thresh=0.1, rng=np.random.RandomState(), knn_classifier=None):
 
             super(LCA, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                       selection_method=selection_method,
                                       diff_thresh=diff_thresh,
-                                      rng=rng)
+                                      rng=rng, knn_classifier=knn_classifier)
 
             self.name = 'Local Classifier Accuracy (LCA)'
 

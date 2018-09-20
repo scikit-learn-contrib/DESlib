@@ -92,11 +92,12 @@ class METADES(DES):
                  DFP=False,
                  with_IH=False,
                  safe_k=None,
-                 IH_rate=0.30):
+                 IH_rate=0.30,
+                 knn_classifier=None):
 
         super(METADES, self).__init__(pool_classifiers, k, DFP=DFP,
                                       with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                      mode=mode, needs_proba=True)
+                                      mode=mode, needs_proba=True, knn_classifier=knn_classifier)
 
         self._check_predict_proba()
         self._check_input_parameters(Hc, selection_threshold, meta_classifier)
