@@ -5,11 +5,10 @@
 # License: BSD 3 clause
 
 import numpy as np
+from sklearn.preprocessing import normalize
 
 from deslib.base import DS
 from deslib.util.aggregation import majority_voting_rule
-
-from sklearn.preprocessing import normalize
 
 
 class DESMI(DS):
@@ -57,15 +56,14 @@ class DESMI(DS):
 
     def estimate_competence(self, query, predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}` for
-        the classification of the query sample.
+        the classification of the query sample. Returns a ndarray containing the competence level
+        of each base classifier.
 
         The competence is estimated using the accuracy criteria. The classification accuracy of the base
         classifiers in the region of competence is estimated. The accuracy is estimated by the weighted results
-        of classifiers who correctly classify the members in the competence region. The weight of member 'x_i' is
-        related to the number of samples of the same class of 'x_i' in the training dataset. For detail, please see
-        the first reference, algorithm 2.
-
-        The method returns one array which contains the accuracy of each base classifier.
+        of classifiers who correctly classify the members in the competence region. The weight of member :math:`x_i` is
+        related to the number of samples of the same class of :math:`x_i` in the training dataset.
+        For detail, please see the first reference, Algorithm 2.
 
         Parameters
         ----------
