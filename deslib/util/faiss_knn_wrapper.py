@@ -9,7 +9,7 @@ class FaissKNNClassifier():
         self.index = None
 
     def predict(self, X):
-        dist, idx = self.kneighbors(X, self.k)
+        _, idx = self.kneighbors(X, self.k)
         class_idx = self.y[idx]
         preds = np.amax(class_idx, axis=1)
         return preds
@@ -20,7 +20,7 @@ class FaissKNNClassifier():
         return dist, idx
 
     def predict_proba(self, X):
-        dist, idx = self.kneighbors(X, self.k)
+        _, idx = self.kneighbors(X, self.k)
         class_idx = self.y[idx]
         preds = np.amax(class_idx, axis=1)
 

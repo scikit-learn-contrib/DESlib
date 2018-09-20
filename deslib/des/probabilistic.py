@@ -557,7 +557,7 @@ class MinimumDifference(Probabilistic):
 
     knn_classifer : str or Estimator (Default = None)
           The KNN classifier
-          
+
     References
     ----------
     [1] B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
