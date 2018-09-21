@@ -11,7 +11,7 @@ from .knop import KNOP
 from .knora_e import KNORAE
 from .knora_u import KNORAU
 from .meta_des import METADES
-from .probabilistic import Probabilistic, RRC, Exponential, DESKL, MinimumDifference,Logarithmic
+from .probabilistic import Probabilistic, RRC, Exponential, DESKL, MinimumDifference, Logarithmic
 
 __all__ = ['DES',
            'METADES',
