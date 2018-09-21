@@ -2,7 +2,15 @@ language: python
 python:
   - "3.5"
   - "3.6"
-  - "3.7"
+
+# from https://github.com/travis-ci/travis-ci/issues/9815
+# Enable 3.7 without globally enabling sudo and dist: xenial for other build jobs
+matrix:
+  include:
+    - python: 3.7
+      dist: xenial
+      sudo: true
+
 before_install:
   - pip install -U pip
 install:
