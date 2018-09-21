@@ -31,8 +31,10 @@ from deslib.static.oracle import Oracle
 from deslib.static.single_best import SingleBest
 from deslib.static.static_selection import StaticSelection
 from sklearn.model_selection import GridSearchCV
+import pytest
 
 
+@pytest.mark.skip(reason='Need to wait for changes on scikit-learn (see issue #89)')
 def test_grid_search():
     # This tests if the estimator can be cloned and used in a grid search
 
