@@ -169,6 +169,7 @@ def test_oracle():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
     oracle = Oracle(pool_classifiers)
+    oracle.fit(X_dsel, y_dsel)
     assert np.isclose(oracle.score(X_test, y_test), 0.98787878787878791)
 
 
