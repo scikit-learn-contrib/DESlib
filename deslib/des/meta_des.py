@@ -5,6 +5,7 @@
 # License: BSD 3 clause
 
 import numpy as np
+import warnings
 from sklearn.exceptions import NotFittedError
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -91,7 +92,9 @@ class METADES(DES):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers=None, meta_classifier=None,
+    def __init__(self,
+                 pool_classifiers=None,
+                 meta_classifier=None,
                  k=7,
                  Kp=5,
                  Hc=1.0,
@@ -145,7 +148,7 @@ class METADES(DES):
 
         # Reshape DSEL_scores as a 2-D array for nearest neighbor calculations
         dsel_output_profiles = self.dsel_scores_.reshape(self.n_samples_, self.n_classifiers_ * self.n_classes_)
-        self._fit_OP(dsel_output_profiles, self.DSEL_target_, self.Kp)
+        self._fit_OP(dsel_output_profiles, self.DSEL_target_)
 
         if self.meta_classifier is None:
 
@@ -159,11 +162,12 @@ class METADES(DES):
             X_meta, y_meta = self._generate_meta_training_set()
             self._fit_meta_classifier(X_meta, y_meta)
 
-        self.n_meta_features_ = (self.k_ * 2) + self.Kp + 2
+        # set the number of meta-features
+        self.n_meta_features_ = (self.k_ * 2) + self.Kp_ + 2
 
         return self
 
-    def _fit_OP(self, X_op, y_op, kp):
+    def _fit_OP(self, X_op, y_op):
         """ Fit the set of output profiles.
 
         Parameters
@@ -178,7 +182,7 @@ class METADES(DES):
              Number of output profiles used in the estimation.
 
         """
-        self.op_knn_ = KNeighborsClassifier(n_neighbors=kp, n_jobs=-1, algorithm='auto')
+        self.op_knn_ = KNeighborsClassifier(n_neighbors=self.Kp_, n_jobs=-1, algorithm='auto')
 
         if self.n_classes_ == 2:
             # Get only the scores for one class since they are complementary
@@ -227,14 +231,14 @@ class METADES(DES):
         idx_neighbors = np.atleast_2d(idx_neighbors)
         idx_neighbors_op = np.atleast_2d(idx_neighbors_op)
 
-        f1_all_classifiers = self.DSEL_processed_[idx_neighbors, :].swapaxes(1, 2).reshape(-1, self.k)
+        f1_all_classifiers = self.DSEL_processed_[idx_neighbors, :].swapaxes(1, 2).reshape(-1, self.k_)
 
         f2_all_classifiers = self.dsel_scores_[idx_neighbors, :, self.DSEL_target_[idx_neighbors]].swapaxes(1, 2)
-        f2_all_classifiers = f2_all_classifiers.reshape(-1, self.k)
+        f2_all_classifiers = f2_all_classifiers.reshape(-1, self.k_)
 
         f3_all_classifiers = np.mean(self.DSEL_processed_[idx_neighbors, :], axis=1).reshape(-1, 1)
 
-        f4_all_classifiers = self.DSEL_processed_[idx_neighbors_op, :].swapaxes(1, 2).reshape(-1, self.Kp)
+        f4_all_classifiers = self.DSEL_processed_[idx_neighbors_op, :].swapaxes(1, 2).reshape(-1, self.Kp_)
 
         f5_all_classifiers = np.max(scores, axis=2).reshape(-1, 1)
         meta_feature_vectors = np.hstack((f1_all_classifiers, f2_all_classifiers, f3_all_classifiers,
@@ -260,8 +264,8 @@ class METADES(DES):
         indices_selected = np.unique(indices_selected)
         # Get the region of competence using the feature space and the decision space. Use K + 1 to later remove itself
         # from the set.
-        _, idx_neighbors = self._get_region_competence(self.DSEL_data_[indices_selected, :], self.k + 1)
-        _, idx_neighbors_op = self._get_similar_out_profiles(self.dsel_scores_[indices_selected], self.Kp + 1)
+        _, idx_neighbors = self._get_region_competence(self.DSEL_data_[indices_selected, :], self.k_ + 1)
+        _, idx_neighbors_op = self._get_similar_out_profiles(self.dsel_scores_[indices_selected], self.Kp_ + 1)
         # Remove the first neighbor (itself)
         idx_neighbors = idx_neighbors[:, 1:]
         idx_neighbors_op = idx_neighbors_op[:, 1:]
@@ -401,18 +405,32 @@ class METADES(DES):
 
         - The meta-classifier must implement the predict_proba function or be equal to None (Naive Bayes is
         used in its place).
-        ----------
+
+        Raises
+        -------
+        ValueError
+            If any of the hyper-parameters are invalid.
         """
         if not isinstance(self.Hc, (float, int)):
             raise ValueError('Parameter Hc should be either a number. Currently Hc = {}'.format(type(self.Hc)))
+
         if self.Hc < 0.5:
             raise ValueError('Parameter Hc should be higher than 0.5. Currently Hc = {}'.format(self.Hc))
+
         if not isinstance(self.selection_threshold, float):
             raise ValueError('Parameter Hc should be either a float. Currently Hc = {}'.format(type(self.Hc)))
+
         if self.selection_threshold < 0.5:
             raise ValueError('Parameter selection_threshold should be higher than 0.5. '
                              'Currently selection_threshold = {}'.format(self.selection_threshold))
+
         if self.meta_classifier is not None and "predict_proba" not in dir(self.meta_classifier):
             raise ValueError("The meta-classifier should output probability estimates")
 
+        if self.Kp > self.n_samples_:
+            warnings.warn("kp is bigger than DSEL size. Using All DSEL examples for competence estimation.",
+                          category=RuntimeWarning)
+            self.Kp_ = self.n_samples_ - 1
+        else:
+            self.Kp_ = self.Kp
 

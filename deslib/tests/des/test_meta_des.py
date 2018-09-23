@@ -44,6 +44,8 @@ def test_compute_meta_features():
     pool = create_pool_classifiers()
     meta_test = METADES(pool_classifiers=[pool[0]])
     meta_test.n_classifiers_ = 1
+    meta_test.k_ = 7
+    meta_test.Kp_ = 5
     # Considering only one classifier in the pool (index = 0)
     meta_test.DSEL_processed_ = dsel_processed_ex1[:, 0].reshape(-1, 1)
     meta_test.dsel_scores_ = dsel_scores_ex1[:, 0, :].reshape(15, 1, 2)  # 15 samples, 1 base classifier, 2 classes
@@ -75,6 +77,8 @@ def test_estimate_competence():
     query = np.ones((1, 2))
     meta_test = METADES(pool_classifiers=create_pool_classifiers())
     meta_test.n_classifiers_ = 3
+    meta_test.k_ = 7
+    meta_test.Kp_ = 5
     # Set the state of the system which is set by the fit method.
     meta_test.DSEL_processed_ = dsel_processed_ex1
     meta_test.dsel_scores_ = dsel_scores_ex1
