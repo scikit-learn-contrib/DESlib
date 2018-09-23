@@ -52,6 +52,13 @@ class KNOP(DES):
                    If None, the random number generator is the RandomState instance used
                    by `np.random`.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = None)
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     Cavalin, Paulo R., Robert Sabourin, and Ching Y. Suen. "LoGID: An adaptive framework combining local and global
@@ -72,7 +79,7 @@ class KNOP(DES):
     """
 
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30, random_state=None):
+                 IH_rate=0.30, random_state=None, knn_classifier='knn'):
 
         super(KNOP, self).__init__(pool_classifiers, k,
                                    DFP=DFP,
@@ -81,7 +88,8 @@ class KNOP(DES):
                                    IH_rate=IH_rate,
                                    mode='weighting',
                                    needs_proba=True,
-                                   random_state=random_state)
+                                   random_state=random_state,
+                                   knn_classifier=knn_classifier)
 
         self.name = 'K-Nearest Output Profiles (KNOP)'
 

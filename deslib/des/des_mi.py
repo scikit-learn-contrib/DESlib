@@ -52,6 +52,14 @@ class DESMI(DS):
                    If None, the random number generator is the RandomState instance used
                    by `np.random`.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     wrapper.
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     García, S.; Zhang, Z.-L.; Altalhi, A.; Alshomrani, S. & Herrera, F. "Dynamic ensemble selection for multi-class
@@ -65,14 +73,16 @@ class DESMI(DS):
     """
 
     def __init__(self, pool_classifiers=None, k=7, pct_accuracy=0.4, alpha=0.9, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30, random_state=None):
+                 IH_rate=0.30, random_state=None, knn_classifier='knn'):
 
-        super(DESMI, self).__init__(pool_classifiers, k,
+        super(DESMI, self).__init__(pool_classifiers=pool_classifiers,
+                                    k=k,
                                     DFP=DFP,
                                     with_IH=with_IH,
                                     safe_k=safe_k,
                                     IH_rate=IH_rate,
-                                    random_state=random_state)
+                                    random_state=random_state,
+                                    knn_classifier=knn_classifier)
 
         self.name = 'Dynamic Ensemble Selection for multi-class imbalanced datasets (DES-MI)'
         self.alpha = alpha

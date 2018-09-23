@@ -55,6 +55,7 @@ def test_check_k_type(k):
         ds_test = DS(pool_classifiers, k=k)
         ds_test.fit(X, y)
 
+
 @pytest.mark.parametrize('safe_k', ['a', 2.5])
 def test_check_safe_k_type(safe_k):
     pool_classifiers = create_pool_classifiers()
@@ -88,6 +89,13 @@ def create_classifiers_disagree():
     clf1 = create_base_classifier(return_value=1)
     clf_2 = create_base_classifier(return_value=0)
     return [clf1, clf_2]
+
+
+@pytest.mark.parametrize('knn_method,', ['invalidmethod', 1])
+def test_valid_selection_mode(knn_method):
+    with pytest.raises(ValueError):
+        ds = DS(create_pool_classifiers(), knn_classifier=knn_method)
+        ds.fit(X_dsel_ex1, y_dsel_ex1)
 
 
 # In this test the system was trained for a sample containing 2 features and we are passing a sample with 3 as argument.
@@ -221,6 +229,7 @@ def test_predict_proba_DFP():
     ds_test.predict_proba(query)
     assert np.array_equal(ds_test.DFP_mask, np.atleast_2d([[1, 1, 0]]))
 
+
 @pytest.mark.parametrize('X', [None, [[0.1, 0.2], [0.5, np.nan]]])
 def test_bad_input_X(X):
     ds_test = DS(create_pool_classifiers())
@@ -275,8 +284,9 @@ def test_input_IH_rate(IH_rate):
     X = np.random.rand(10, 2)
     y = np.ones(10)
     with pytest.raises((ValueError, TypeError)):
-       ds = DS(create_pool_classifiers(), with_IH=True, IH_rate=IH_rate)
-       ds.fit(X, y)
+        ds = DS(create_pool_classifiers(), with_IH=True, IH_rate=IH_rate)
+        ds.fit(X, y)
+
 
 def test_predict_proba_all_agree():
     query = np.atleast_2d([1, 1])
@@ -324,8 +334,7 @@ def test_predict_proba_instance_called(index):
     assert np.allclose(proba, np.atleast_2d([0.25, 0.75]))
 
 
-#----------------------------------------- Testing label encoder-------------------------------------
-
+# ----------------------------------------- Testing label encoder-------------------------------------
 def create_pool_classifiers_dog_cat_plane():
     clf_0 = create_base_classifier(return_value='cat', return_prob=np.atleast_2d([0.5, 0.5]))
     clf_1 = create_base_classifier(return_value='dog', return_prob=np.atleast_2d([1.0, 0.0]))
@@ -339,11 +348,12 @@ def create_pool_classifiers_dog():
     pool_classifiers = [clf_0, clf_0, clf_0]
     return pool_classifiers
 
+
 def test_label_encoder_only_dsel_allagree():
     X_dsel_ex1 = np.array([[-1, 1], [-0.75, 0.5], [-1.5, 1.5]])
     y_dsel_ex1 = np.array(['cat', 'dog', 'plane'])
 
-    query = np.atleast_2d([[1, 0], [-1,-1]])
+    query = np.atleast_2d([[1, 0], [-1, -1]])
     ds_test = DS(create_pool_classifiers_dog(), k=2)
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     ds_test.neighbors = neighbors_ex1[0, :]
@@ -356,7 +366,7 @@ def test_label_encoder_only_dsel():
     X_dsel_ex1 = np.array([[-1, 1], [-0.75, 0.5], [-1.5, 1.5]])
     y_dsel_ex1 = np.array(['cat', 'dog', 'plane'])
 
-    query = np.atleast_2d([[1, 0], [-1,-1]])
+    query = np.atleast_2d([[1, 0], [-1, -1]])
     ds_test = DS(create_pool_classifiers_dog_cat_plane(), k=2)
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     ds_test.neighbors = neighbors_ex1[0, :]

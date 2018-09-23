@@ -49,6 +49,13 @@ class KNORAE(DES):
                    If None, the random number generator is the RandomState instance used
                    by `np.random`.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr. "From dynamic classifier selection to dynamic ensemble
@@ -63,10 +70,16 @@ class KNORAE(DES):
     """
 
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30, random_state=None):
+                 IH_rate=0.30, random_state=None, knn_classifier='knn'):
 
-        super(KNORAE, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
-                                     IH_rate=IH_rate, random_state=random_state)
+        super(KNORAE, self).__init__(pool_classifiers=pool_classifiers,
+                                     k=k,
+                                     DFP=DFP,
+                                     with_IH=with_IH,
+                                     safe_k=safe_k,
+                                     IH_rate=IH_rate,
+                                     random_state=random_state,
+                                     knn_classifier=knn_classifier)
 
         self.name = 'k-Nearest Oracles Eliminate (KNORA-E)'
 

@@ -79,6 +79,14 @@ class METADES(DES):
                    If RandomState instance, random_state is the random number generator;
                    If None, the random number generator is the RandomState instance used
                    by `np.random`.
+
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     Cruz, R.M., Sabourin, R., Cavalcanti, G.D. and Ren, T.I., 2015. META-DES: A dynamic ensemble selection framework
@@ -104,11 +112,19 @@ class METADES(DES):
                  with_IH=False,
                  safe_k=None,
                  IH_rate=0.30,
-                 random_state=None):
+                 random_state=None,
+                 knn_classifier='knn'):
 
-        super(METADES, self).__init__(pool_classifiers, k, DFP=DFP,
-                                      with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                      mode=mode, needs_proba=True, random_state=random_state)
+        super(METADES, self).__init__(pool_classifiers=pool_classifiers,
+                                      k=k,
+                                      DFP=DFP,
+                                      with_IH=with_IH,
+                                      safe_k=safe_k,
+                                      IH_rate=IH_rate,
+                                      mode=mode,
+                                      needs_proba=True,
+                                      random_state=random_state,
+                                      knn_classifier=knn_classifier)
 
         self.name = 'META-DES'
         self.meta_classifier = meta_classifier

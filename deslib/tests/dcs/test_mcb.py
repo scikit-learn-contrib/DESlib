@@ -24,14 +24,16 @@ def test_check_estimator():
 def test_similarity_threshold(similarity_threshold):
 
     with pytest.raises(ValueError):
-        MCB(create_pool_classifiers(), similarity_threshold=similarity_threshold)
+        mcb = MCB(create_pool_classifiers(), similarity_threshold=similarity_threshold)
+        mcb.fit(X_dsel_ex1, y_dsel_ex1)
 
 
 @pytest.mark.parametrize('similarity_threshold', [None, 'a'])
 def test_similarity_threshold_type(similarity_threshold):
 
     with pytest.raises(TypeError):
-        MCB(create_pool_classifiers(), similarity_threshold=similarity_threshold)
+        mcb = MCB(create_pool_classifiers(), similarity_threshold=similarity_threshold)
+        mcb.fit(X_dsel_ex1, y_dsel_ex1)
 
 
 @pytest.mark.parametrize('index, expected', [(0, [0.57142857,  0.71428571,  0.71428571]),

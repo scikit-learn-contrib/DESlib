@@ -62,6 +62,14 @@ class DESKNN(DS):
                    If None, the random number generator is the RandomState instance used
                    by `np.random`.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
+
     References
     ----------
     Soares, R. G., Santana, A., Canuto, A. M., & de Souto, M. C. P. "Using accuracy and more_diverse to select
@@ -80,11 +88,17 @@ class DESKNN(DS):
                  pct_diversity=0.3,
                  more_diverse=True,
                  metric='DF',
-                 random_state=None):
+                 random_state=None,
+                 knn_classifier='knn'):
 
-        super(DESKNN, self).__init__(pool_classifiers, k, DFP=DFP,
-                                     with_IH=with_IH, safe_k=safe_k,
-                                     IH_rate=IH_rate, random_state=random_state)
+        super(DESKNN, self).__init__(pool_classifiers=pool_classifiers,
+                                     k=k,
+                                     DFP=DFP,
+                                     with_IH=with_IH,
+                                     safe_k=safe_k,
+                                     IH_rate=IH_rate,
+                                     random_state=random_state,
+                                     knn_classifier=knn_classifier)
 
         self.name = 'Dynamic Ensemble Selection-KNN (DES-KNN)'
         self.metric = metric

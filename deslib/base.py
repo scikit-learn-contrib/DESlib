@@ -8,6 +8,7 @@
 from abc import abstractmethod, ABCMeta
 
 import numpy as np
+import functools
 from scipy.stats import mode
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import BaseEnsemble, BaggingClassifier
@@ -31,7 +32,7 @@ class DS(BaseEstimator, ClassifierMixin):
 
     @abstractmethod
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
-                 safe_k=None, IH_rate=0.30, needs_proba=False, random_state=None):
+                 safe_k=None, IH_rate=0.30, needs_proba=False, random_state=None, knn_classifier='knn'):
 
         self.pool_classifiers = pool_classifiers
         self.k = k
@@ -41,11 +42,40 @@ class DS(BaseEstimator, ClassifierMixin):
         self.IH_rate = IH_rate
         self.needs_proba = needs_proba
         self.random_state = random_state
+        self.knn_classifier = knn_classifier
 
         # TODO: remove these as class variables
         self.neighbors = None
         self.distances = None
         self.DFP_mask = None                # Mask used to apply the classifier pruning
+
+    def _set_region_of_competence_algorithm(self):
+
+        if self.knn_classifier is None:
+            self.roc_algorithm_ = functools.partial(KNeighborsClassifier, n_jobs=-1, algorithm="auto")
+
+        elif isinstance(self.knn_classifier, str):
+
+            if self.knn_classifier == "faiss":
+                from deslib.util.faiss_knn_wrapper import FaissKNNClassifier
+                self.roc_algorithm_ = functools.partial(FaissKNNClassifier, n_jobs=-1, algorithm="auto")
+
+            elif self.knn_classifier == "knn":
+                self.roc_algorithm_ = functools.partial(KNeighborsClassifier, n_jobs=-1, algorithm="auto")
+
+            else:
+
+                raise ValueError('"knn_classifier" should be one of the following '
+                                 '["knn", "faiss"] or an estimator class')
+
+        elif callable(self.knn_classifier):
+
+            self.roc_algorithm_ = self.knn_classifier
+
+        else:
+            raise ValueError('"knn_classifier" should be one of the following '
+                             '["knn", "faiss"] or an estimator class')
+        self.roc_algorithm_ = self.roc_algorithm_(self.k)
 
     @abstractmethod
     def select(self, competences):
@@ -183,7 +213,7 @@ class DS(BaseEstimator, ClassifierMixin):
 
         # validate the value of k
         self._validate_k()
-
+        self._set_region_of_competence_algorithm()
         self._fit_region_competence(X, y_ind, self.k_)
 
         return self
@@ -232,8 +262,12 @@ class DS(BaseEstimator, ClassifierMixin):
         k : int (Default=self.k)
             Number of neighbors used in the k-NN method.
         """
-        self.roc_algorithm_ = KNeighborsClassifier(n_neighbors=k, n_jobs=-1, algorithm='auto')
+# <<<<<<
+#         self.roc_algorithm_ = KNeighborsClassifier(n_neighbors=k, n_jobs=-1, algorithm='auto')
         self.roc_algorithm_.fit(X, y)
+# =======
+#         self.roc_algorithm.fit(X, y)
+# >>>>>>> master
 
     def _set_dsel(self, X, y):
         """Pre-Process the input X and y data into the dynamic selection dataset(DSEL) and
@@ -719,5 +753,6 @@ class DS(BaseEstimator, ClassifierMixin):
         """
         for clf in self.pool_classifiers:
             check_is_fitted(clf, "classes_")
+
 
 

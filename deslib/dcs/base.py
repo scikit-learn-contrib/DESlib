@@ -52,6 +52,13 @@ class DCS(DS):
                    If None, the random number generator is the RandomState instance used
                    by `np.random`.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     Woods, Kevin, W. Philip Kegelmeyer, and Kevin Bowyer. "Combination of multiple classifiers
@@ -72,10 +79,16 @@ class DCS(DS):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers=None, k=7, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
-                 selection_method='best', diff_thresh=0.1, random_state=None):
+                 selection_method='best', diff_thresh=0.1, random_state=None, knn_classifier='knn'):
 
-        super(DCS, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
-                                  safe_k=safe_k, IH_rate=IH_rate, random_state=random_state)
+        super(DCS, self).__init__(pool_classifiers=pool_classifiers,
+                                  k=k,
+                                  DFP=DFP,
+                                  with_IH=with_IH,
+                                  safe_k=safe_k,
+                                  IH_rate=IH_rate,
+                                  random_state=random_state,
+                                  knn_classifier=knn_classifier)
 
         self.selection_method = selection_method
         self.diff_thresh = diff_thresh

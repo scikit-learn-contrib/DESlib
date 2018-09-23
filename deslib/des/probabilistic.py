@@ -53,6 +53,12 @@ class Probabilistic(DES):
                    If RandomState instance, random_state is the random number generator;
                    If None, the random number generator is the RandomState instance used
                    by `np.random`.
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
 
     References
     ----------
@@ -71,12 +77,17 @@ class Probabilistic(DES):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 mode='selection', selection_threshold=None, random_state=None):
+                 mode='selection', selection_threshold=None, random_state=None, knn_classifier='knn'):
 
-        super(Probabilistic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
+        super(Probabilistic, self).__init__(pool_classifiers=pool_classifiers,
+                                            k=k,
+                                            DFP=DFP,
+                                            with_IH=with_IH,
+                                            safe_k=safe_k,
                                             IH_rate=IH_rate,
                                             mode=mode,
-                                            random_state=random_state)
+                                            random_state=random_state,
+                                            knn_classifier=knn_classifier)
 
         self.selection_threshold = selection_threshold
 
@@ -248,6 +259,13 @@ class Logarithmic(Probabilistic):
                    If None, the random number generator is the RandomState instance used
                    by `np.random`.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
@@ -257,10 +275,18 @@ class Logarithmic(Probabilistic):
     ensemble selection, in: International Conference on Pattern Recognition (ICPR), 2010, pp. 4194–4197.
     """
     def __init__(self, pool_classifiers=None, k=None, DFP=False,
-                 with_IH=False, safe_k=None, IH_rate=0.30, mode='selection', random_state=None):
+                 with_IH=False, safe_k=None, IH_rate=0.30, mode='selection', random_state=None, knn_classifier='knn'):
 
-        super(Logarithmic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                          mode=mode, random_state=random_state)
+        super(Logarithmic, self).__init__(pool_classifiers=pool_classifiers,
+                                          k=k,
+                                          DFP=DFP,
+                                          with_IH=with_IH,
+                                          safe_k=safe_k,
+                                          IH_rate=IH_rate,
+                                          mode=mode,
+                                          random_state=random_state,
+                                          knn_classifier=knn_classifier)
+
         self.name = "DES-Logarithmic"
 
     def source_competence(self):
@@ -327,6 +353,13 @@ class Exponential(Probabilistic):
                    If None, the random number generator is the RandomState instance used
                    by `np.random`.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     [1] B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
@@ -337,10 +370,17 @@ class Exponential(Probabilistic):
 
     """
     def __init__(self, pool_classifiers=None, k=None, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
-                 mode='selection', random_state=None):
+                 mode='selection', random_state=None, knn_classifier='knn'):
 
-        super(Exponential, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                          mode=mode, random_state=random_state)
+        super(Exponential, self).__init__(pool_classifiers=pool_classifiers,
+                                          k=k,
+                                          DFP=DFP,
+                                          with_IH=with_IH,
+                                          safe_k=safe_k,
+                                          IH_rate=IH_rate,
+                                          mode=mode,
+                                          random_state=random_state,
+                                          knn_classifier=knn_classifier)
 
         self.selection_threshold = 0
         self.name = "DES-Exponential"
@@ -403,6 +443,13 @@ class RRC(Probabilistic):
                    If None, the random number generator is the RandomState instance used
                    by `np.random`.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
@@ -413,10 +460,18 @@ class RRC(Probabilistic):
 
     """
     def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,
-                 safe_k=None, IH_rate=0.30, mode='selection', random_state=None):
+                 safe_k=None, IH_rate=0.30, mode='selection', random_state=None, knn_classifier='knn'):
 
-        super(RRC, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                  mode=mode, random_state=None)
+        super(RRC, self).__init__(pool_classifiers=pool_classifiers,
+                                  k=k,
+                                  DFP=DFP,
+                                  with_IH=with_IH,
+                                  safe_k=safe_k,
+                                  IH_rate=IH_rate,
+                                  mode=mode,
+                                  random_state=random_state,
+                                  knn_classifier=knn_classifier)
+
         self.name = "DES-RRC"
         self.selection_threshold = None
 
@@ -489,6 +544,13 @@ class DESKL(Probabilistic):
                    If None, the random number generator is the RandomState instance used
                    by `np.random`.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     Woloszynski, Tomasz, et al. "A measure of competence based on random classification
@@ -502,10 +564,17 @@ class DESKL(Probabilistic):
 
     """
     def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,
-                 safe_k=None, IH_rate=0.30, mode='selection', random_state=None):
+                 safe_k=None, IH_rate=0.30, mode='selection', random_state=None, knn_classifier='knn'):
 
-        super(DESKL, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                    mode=mode, random_state=random_state)
+        super(DESKL, self).__init__(pool_classifiers=pool_classifiers,
+                                    k=k,
+                                    DFP=DFP,
+                                    with_IH=with_IH,
+                                    safe_k=safe_k,
+                                    IH_rate=IH_rate,
+                                    mode=mode,
+                                    random_state=random_state,
+                                    knn_classifier=knn_classifier)
         self.selection_threshold = 0.0
         self.name = 'DES-Kullback-Leibler (DES-KL)'
 
@@ -576,6 +645,13 @@ class MinimumDifference(Probabilistic):
                    If None, the random number generator is the RandomState instance used
                    by `np.random`.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     [1] B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
@@ -586,9 +662,17 @@ class MinimumDifference(Probabilistic):
 
     """
     def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 mode='selection', random_state=None):
-        super(MinimumDifference, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
-                                                IH_rate=IH_rate, mode=mode, random_state=random_state)
+                 mode='selection', random_state=None, knn_classifier='knn'):
+
+        super(MinimumDifference, self).__init__(pool_classifiers=pool_classifiers,
+                                                k=k,
+                                                DFP=DFP,
+                                                with_IH=with_IH,
+                                                safe_k=safe_k,
+                                                IH_rate=IH_rate,
+                                                mode=mode,
+                                                random_state=random_state,
+                                                knn_classifier=knn_classifier)
 
         # Threshold is 0 since incompetent classifiers should have a negative competence level
         self.selection_threshold = 0.0

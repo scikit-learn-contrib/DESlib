@@ -62,6 +62,13 @@ class MCB(DCS):
                    If None, the random number generator is the RandomState instance used
                    by `np.random`.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     Giacinto, Giorgio, and Fabio Roli. "Dynamic classifier selection based on multiple classifier behaviour."
@@ -81,20 +88,14 @@ class MCB(DCS):
     """
 
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 similarity_threshold=0.7, selection_method='diff', diff_thresh=0.1, random_state=None):
+                 similarity_threshold=0.7, selection_method='diff', diff_thresh=0.1, random_state=None,
+                 knn_classifier='knn'):
 
         super(MCB, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                   selection_method=selection_method,
                                   diff_thresh=diff_thresh,
-                                  random_state=random_state)
-
-        if not isinstance(similarity_threshold, float):
-            raise TypeError('The parameter similarity_threshold must be a float.'
-                            ' similarity_threshold = ', type(similarity_threshold))
-
-        if similarity_threshold > 1 or similarity_threshold < 0:
-            raise ValueError('The parameter similarity_threshold should be between [0 and 1]. '
-                             'similarity_threshold = ', similarity_threshold)
+                                  random_state=random_state,
+                                  knn_classifier=knn_classifier)
 
         self.similarity_threshold = similarity_threshold
         self.name = 'Multiple Classifier Behaviour (MCB)'
@@ -153,3 +154,14 @@ class MCB(DCS):
         competences = np.ma.mean(processed_pred, axis=1)
 
         return competences
+
+    def _validate_parameters(self):
+
+        super(MCB, self)._validate_parameters()
+
+        if not isinstance(self.similarity_threshold, float):
+            raise TypeError('The parameter similarity_threshold must be a float.'
+                            ' similarity_threshold = ', type(self.similarity_threshold))
+        if self.similarity_threshold > 1 or self.similarity_threshold < 0:
+            raise ValueError('The parameter similarity_threshold should be between [0 and 1]. '
+                             'similarity_threshold = ', self.similarity_threshold)
