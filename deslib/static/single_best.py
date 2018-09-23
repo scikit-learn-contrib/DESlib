@@ -6,7 +6,7 @@
 
 import numpy as np
 from .base import StaticEnsemble
-from sklearn.utils.validation import check_X_y, check_is_fitted
+from sklearn.utils.validation import check_X_y, check_is_fitted, check_array
 
 
 class SingleBest(StaticEnsemble):
@@ -37,8 +37,8 @@ class SingleBest(StaticEnsemble):
 
     """
     def __init__(self, pool_classifiers=None, random_state=None):
-        self.pool_classifiers = pool_classifiers
-        self.random_state = random_state
+        super(SingleBest, self).__init__(pool_classifiers=pool_classifiers, random_state=random_state)
+        self.name = 'Single Best'
 
     def fit(self, X, y):
         """Fit the model by selecting the base classifier with the highest accuracy in the dataset.
@@ -78,8 +78,9 @@ class SingleBest(StaticEnsemble):
         predicted_labels : array of shape = [n_samples]
                            Predicted class for each sample in X.
         """
+        X = check_array(X)
         self._check_is_fitted()
-        predicted_labels = self.best_clf_.predict(X).astype(int)
+        predicted_labels = self.best_clf_.predict(X)
         return self.classes_.take(predicted_labels)
 
     def predict_proba(self, X):

@@ -7,7 +7,7 @@
 import numpy as np
 from .base import StaticEnsemble
 from deslib.util.aggregation import majority_voting
-from sklearn.utils.validation import check_is_fitted, check_X_y
+from sklearn.utils.validation import check_is_fitted, check_X_y, check_array
 
 
 class StaticSelection(StaticEnsemble):
@@ -36,10 +36,9 @@ class StaticSelection(StaticEnsemble):
     """
 
     def __init__(self, pool_classifiers=None, pct_classifiers=0.5, random_state=None):
-
-        self.pool_classifiers = pool_classifiers
+        super(StaticSelection, self).__init__(pool_classifiers=pool_classifiers, random_state=random_state)
         self.pct_classifiers = pct_classifiers
-        self.random_state = random_state
+        self.name = "Static Selection"
 
     def fit(self, X, y):
         """Fit the static selection model by select an ensemble of classifier containing the base classifiers with
@@ -89,6 +88,7 @@ class StaticSelection(StaticEnsemble):
         predicted_labels : array of shape = [n_samples]
                            Predicted class for each sample in X.
         """
+        X = check_array(X)
         self._check_is_fitted()
         predicted_labels = majority_voting(self.ensemble_, X).astype(int)
 
