@@ -22,7 +22,7 @@ def test_fit():
     single_best_test = SingleBest(pool_classifiers)
     single_best_test.fit(X, y)
 
-    assert single_best_test.best_clf_index == 0 or single_best_test.best_clf_index == 2
+    assert single_best_test.best_clf_index_ == 0 or single_best_test.best_clf_index_ == 2
 
 
 # The classifier with highest accuracy always predicts 0. So the expected prediction should always be equal zero.
