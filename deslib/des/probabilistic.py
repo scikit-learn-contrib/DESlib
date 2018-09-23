@@ -100,19 +100,13 @@ class Probabilistic(DES):
 
         Returns
         -------
-        self
+        self : object
+            Returns self.
         """
 
         super(Probabilistic, self).fit(X, y)
         self._check_predict_proba()
 
-        # y_ind = self._setup_label_encoder(y)
-        # self._set_dsel(X, y_ind)
-        #
-        #
-        # self._fit_region_competence(X, y_ind, self.k)
-        # Pre process the scores in DSEL (it is required only for the source of competence estimation
-        # Maybe I should not keep this matrix in order to reduce memory requirement.
         self.dsel_scores_ = self._preprocess_dsel_scores()
 
         # Pre process the source of competence for the entire DSEL, making the method faster during generalization.
