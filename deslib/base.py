@@ -262,12 +262,7 @@ class DS(BaseEstimator, ClassifierMixin):
         k : int (Default=self.k)
             Number of neighbors used in the k-NN method.
         """
-# <<<<<<
-#         self.roc_algorithm_ = KNeighborsClassifier(n_neighbors=k, n_jobs=-1, algorithm='auto')
         self.roc_algorithm_.fit(X, y)
-# =======
-#         self.roc_algorithm.fit(X, y)
-# >>>>>>> master
 
     def _set_dsel(self, X, y):
         """Pre-Process the input X and y data into the dynamic selection dataset(DSEL) and
