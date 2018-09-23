@@ -6,6 +6,33 @@ from sklearn.utils.validation import check_is_fitted, check_random_state
 
 
 class StaticEnsemble(BaseEstimator, ClassifierMixin):
+    """Base class for static ensembles.
+
+    All static ensemble techniques should inherit from this class.
+
+    Warning: This class should not be instantiated directly, use derived classes instead.
+
+    Parameters
+    ----------
+
+    pool_classifiers : list of classifiers
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       The classifiers should support methods "predict".
+
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
+    References
+    ----------
+    Kuncheva, Ludmila I. Combining pattern classifiers: methods and algorithms. John Wiley & Sons, 2004.
+
+    R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
+    Information Fusion, vol. 41, pp. 195 – 216, 2018.
+
+    """
     __metaclass__ = ABCMeta
 
     @abstractmethod
@@ -14,8 +41,7 @@ class StaticEnsemble(BaseEstimator, ClassifierMixin):
         self.random_state = random_state
 
     def fit(self, X, y):
-        """Fit the model by selecting the base classifier with the highest accuracy in the dataset.
-        The single best classifier is kept in self.best_clf and its index is kept in self.best_clf_index.
+        """Fit the model according to the given training data.
 
         Parameters
         ----------

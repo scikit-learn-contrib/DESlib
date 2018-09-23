@@ -5,9 +5,11 @@
 # License: BSD 3 clause
 
 import numpy as np
+from .base import StaticEnsemble
+from sklearn.utils.validation import check_X_y
 
 
-class Oracle:
+class Oracle(StaticEnsemble):
     """ Abstract method that always selects the base classifier that predicts the correct label if such classifier
     exists. This method is often used to measure the upper-limit performance that can be achieved by a dynamic
     classifier selection technique. It is used as a benchmark by several dynamic selection algorithms
@@ -27,9 +29,25 @@ class Oracle:
 
     """
 
-    def __init__(self, pool_classifiers):
+    def __init__(self, pool_classifiers=None, random_state=None):
         self.pool_classifiers = pool_classifiers
-        self.n_classifiers = len(self.pool_classifiers)
+        self.random_state = random_state
+
+    def fit(self, X, y):
+        """Fit the model according to the given training data.
+
+        Parameters
+        ----------
+        X : array of shape = [n_samples, n_features]
+            Data used to fit the model.
+
+        y : array of shape = [n_samples]
+            class labels of each example in X.
+
+        """
+        X, y = check_X_y(X, y)
+        super(Oracle, self).fit(X, y)
+        return self
 
     def predict(self, X, y):
         """Prepare the labels using the Oracle model.
@@ -58,7 +76,7 @@ class Oracle:
                     predicted_labels[sample_index] = predicted
                     break
 
-        return predicted_labels
+        return self.classes_.take(predicted_labels)
 
     def score(self, X, y):
         """Prepare the labels using the Oracle model.
