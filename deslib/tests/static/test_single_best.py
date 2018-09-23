@@ -30,7 +30,7 @@ def test_predict():
     X = X_dsel_ex1
     y = y_dsel_ex1
     pool_classifiers = create_pool_classifiers()
-    single_best_test = SingleBest(pool_classifiers)
+    single_best_test = SingleBest(pool_classifiers=pool_classifiers)
     single_best_test.fit(X, y)
 
     predicted_labels = single_best_test.predict(X)
@@ -52,7 +52,7 @@ def test_predict_proba():
 def test_not_fitted():
     single_best_test = SingleBest(create_pool_classifiers())
     with pytest.raises(NotFittedError):
-        single_best_test.predict(np.array([1, -1]))
+        single_best_test.predict(np.array([[1, -1]]))
 
 
 # Test calling the predict_proba function with classifiers that do not implement the predict_proba

@@ -80,7 +80,7 @@ class SingleBest(StaticEnsemble):
         """
         X = check_array(X)
         self._check_is_fitted()
-        predicted_labels = self.best_clf_.predict(X)
+        predicted_labels = np.array(self.best_clf_.predict(X), dtype=int)
         return self.classes_.take(predicted_labels)
 
     def predict_proba(self, X):

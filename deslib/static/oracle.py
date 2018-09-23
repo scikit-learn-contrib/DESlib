@@ -80,6 +80,7 @@ class Oracle(StaticEnsemble):
                 # If one base classifier predicts the correct answer, consider as a correct prediction
                 predicted = clf.predict(x.reshape(1, -1))[0]
                 if predicted == y[sample_index]:
+                    predicted = int(predicted)
                     predicted_labels[sample_index] = self.enc_.inverse_transform(predicted)
                     break
 
