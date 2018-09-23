@@ -4,6 +4,7 @@ import numpy as np
 
 from deslib.base import DS
 from deslib.util.aggregation import majority_voting_rule
+from sklearn.utils.validation import check_random_state
 
 
 class DCS(DS):
@@ -149,6 +150,7 @@ class DCS(DS):
             superior than all others, it will be the only member selected. Otherwise,
             a random classifier from this list is selected.
             """
+            rng = check_random_state(self.random_state)
             best_competence = competences[np.arange(competences.shape[0]), best_index]
             # best_competence = np.max(competences)
             diff = best_competence.reshape(-1, 1) - competences
@@ -161,10 +163,11 @@ class DCS(DS):
                 if len(indices) == 0:
                     indices = range(self.n_classifiers_)
 
-                selected_classifiers[row] = self.random_state_.choice(indices)
+                selected_classifiers[row] = rng.choice(indices)
 
         elif self.selection_method == 'random':
             # TODO: Improve this part of the code
+            rng = check_random_state(self.random_state)
             selected_classifiers = np.zeros(competences.shape[0], dtype=np.int)
             best_competence = competences[np.arange(competences.shape[0]), best_index]
             for row in range(competences.shape[0]):
@@ -172,7 +175,7 @@ class DCS(DS):
                 # Select a random classifier among all with same competence level
                 indices = [idx for idx, _ in enumerate(competence_list) if competence_list[idx] == best_competence[row]]
 
-                selected_classifiers[row] = self.random_state_.choice(indices)
+                selected_classifiers[row] = rng.choice(indices)
 
         elif self.selection_method == 'all':
             # select all base classifiers with max competence estimates.
