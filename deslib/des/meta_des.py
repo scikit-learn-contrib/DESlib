@@ -70,6 +70,13 @@ class METADES(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     Cruz, R.M., Sabourin, R., Cavalcanti, G.D. and Ren, T.I., 2015. META-DES: A dynamic ensemble selection framework
@@ -92,11 +99,12 @@ class METADES(DES):
                  DFP=False,
                  with_IH=False,
                  safe_k=None,
-                 IH_rate=0.30):
+                 IH_rate=0.30,
+                 knn_classifier='knn'):
 
         super(METADES, self).__init__(pool_classifiers, k, DFP=DFP,
                                       with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                      mode=mode, needs_proba=True)
+                                      mode=mode, needs_proba=True, knn_classifier=knn_classifier)
 
         self._check_predict_proba()
         self._check_input_parameters(Hc, selection_threshold, meta_classifier)

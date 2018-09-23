@@ -44,6 +44,14 @@ class KNOP(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = None)
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
+
     References
     ----------
     Cavalin, Paulo R., Robert Sabourin, and Ching Y. Suen. "LoGID: An adaptive framework combining local and global
@@ -64,7 +72,7 @@ class KNOP(DES):
     """
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30):
+                 IH_rate=0.30, knn_classifier=None):
 
         super(KNOP, self).__init__(pool_classifiers, k,
                                    DFP=DFP,
@@ -72,7 +80,8 @@ class KNOP(DES):
                                    safe_k=safe_k,
                                    IH_rate=IH_rate,
                                    mode='weighting',
-                                   needs_proba=True)
+                                   needs_proba=True,
+                                   knn_classifier=knn_classifier)
         self._check_predict_proba()
         self.name = 'K-Nearest Output Profiles (KNOP)'
 

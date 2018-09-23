@@ -43,6 +43,13 @@ class KNORAE(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr. "From dynamic classifier selection to dynamic ensemble
@@ -57,9 +64,9 @@ class KNORAE(DES):
     """
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30):
+                 IH_rate=0.30, knn_classifier='knn'):
 
-        super(KNORAE, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate)
+        super(KNORAE, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate, knn_classifier=knn_classifier)
 
         self.name = 'k-Nearest Oracles Eliminate (KNORA-E)'
 

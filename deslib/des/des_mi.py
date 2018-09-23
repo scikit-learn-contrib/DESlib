@@ -31,6 +31,14 @@ class DESMI(DS):
     alpha : float (Default = 0.9)
             Scaling coefficient to regulate the weight value
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     wrapper.
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     García, S.; Zhang, Z.-L.; Altalhi, A.; Alshomrani, S. & Herrera, F. "Dynamic ensemble selection for multi-class
@@ -44,9 +52,11 @@ class DESMI(DS):
     """
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30, pct_accuracy=0.4, alpha=0.9):
+                 IH_rate=0.30, pct_accuracy=0.4, alpha=0.9, knn_classifier='knn'):
 
-        super(DESMI, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate)
+        super(DESMI, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
+                                    knn_classifier=knn_classifier)
+
         self.name = 'Dynamic Ensemble Selection for multi-class imbalanced datasets (DES-MI)'
         self.N = int(self.n_classifiers * pct_accuracy)
         self._alpha = alpha

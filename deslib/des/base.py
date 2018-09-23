@@ -44,6 +44,13 @@ class DES(DS):
     needs_proba : Boolean (Default = False)
                   Determines whether the method always needs base classifiers that estimate probabilities.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection of classifiers—a comprehensive review."
@@ -55,10 +62,10 @@ class DES(DS):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False,
-                 safe_k=None, IH_rate=0.30, mode='selection', needs_proba=False):
+                 safe_k=None, IH_rate=0.30, mode='selection', needs_proba=False, knn_classifier='knn'):
 
-        super(DES, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
-                                  safe_k=safe_k, IH_rate=IH_rate, needs_proba=needs_proba)
+        super(DES, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
+                                  IH_rate=IH_rate, needs_proba=needs_proba, knn_classifier=knn_classifier)
 
         if not isinstance(mode, str):
             raise TypeError('Parameter "mode" should be a string. Currently "mode" = {}' .format(type(mode)))

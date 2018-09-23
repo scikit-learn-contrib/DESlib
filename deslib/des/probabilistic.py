@@ -47,6 +47,13 @@ class Probabilistic(DES):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
 
     References
     ----------
@@ -65,11 +72,11 @@ class Probabilistic(DES):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 mode='selection', selection_threshold=None):
+                 mode='selection', selection_threshold=None, knn_classifier='knn'):
 
         super(Probabilistic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
                                             IH_rate=IH_rate,
-                                            mode=mode)
+                                            mode=mode, knn_classifier=knn_classifier)
         self._check_predict_proba()
 
         self.C_src = None
@@ -240,6 +247,13 @@ class Logarithmic(Probabilistic):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
@@ -248,10 +262,11 @@ class Logarithmic(Probabilistic):
     T.Woloszynski, M. Kurzynski, A measure of competence based on randomized reference classifier for dynamic
     ensemble selection, in: International Conference on Pattern Recognition (ICPR), 2010, pp. 4194–4197.
     """
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection'):
+    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
+                 mode='selection', knn_classifier='knn'):
 
         super(Logarithmic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                          mode=mode)
+                                          mode=mode, knn_classifier=knn_classifier)
         self.name = "DES-Logarithmic"
 
     def source_competence(self):
@@ -311,6 +326,13 @@ class Exponential(Probabilistic):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     [1] B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
@@ -321,10 +343,10 @@ class Exponential(Probabilistic):
 
     """
     def __init__(self, pool_classifiers, k=None, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
-                 mode='selection'):
+                 mode='selection', knn_classifier='knn'):
 
         super(Exponential, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                          mode=mode)
+                                          mode=mode, knn_classifier=knn_classifier)
 
         self.selection_threshold = 0
         self.name = "DES-Exponential"
@@ -383,6 +405,13 @@ class RRC(Probabilistic):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
@@ -392,10 +421,11 @@ class RRC(Probabilistic):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection'):
+    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection',
+                 knn_classifier='knn'):
 
         super(RRC, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                  mode=mode)
+                                  mode=mode, knn_classifier=knn_classifier)
         self.name = "DES-RRC"
         self.selection_threshold = None
 
@@ -461,6 +491,13 @@ class DESKL(Probabilistic):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     Woloszynski, Tomasz, et al. "A measure of competence based on random classification
@@ -473,10 +510,11 @@ class DESKL(Probabilistic):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection'):
+    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection',
+                 knn_classifier='knn'):
 
         super(DESKL, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                    mode=mode)
+                                    mode=mode, knn_classifier=knn_classifier)
         self.selection_threshold = 0.0
         self.name = 'DES-Kullback-Leibler (DES-KL)'
 
@@ -540,6 +578,13 @@ class MinimumDifference(Probabilistic):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     [1] B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
@@ -550,9 +595,9 @@ class MinimumDifference(Probabilistic):
 
     """
     def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 mode='selection'):
+                 mode='selection', knn_classifier='knn'):
         super(MinimumDifference, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
-                                                IH_rate=IH_rate, mode=mode)
+                                                IH_rate=IH_rate, mode=mode, knn_classifier=knn_classifier)
 
         # Threshold is 0 since incompetent classifiers should have a negative competence level
         self.selection_threshold = 0.0

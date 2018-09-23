@@ -61,6 +61,13 @@ class APosteriori(DCS):
     rng : numpy.random.RandomState instance
           Random number generator to assure reproducible results.
 
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
     References
     ----------
     G. Giacinto and F. Roli, Methods for Dynamic Classifier Selection
@@ -77,12 +84,12 @@ class APosteriori(DCS):
 
     """
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 selection_method='diff', diff_thresh=0.1, rng=np.random.RandomState()):
+                 selection_method='diff', diff_thresh=0.1, rng=np.random.RandomState(), knn_classifier='knn'):
 
         super(APosteriori, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                           selection_method=selection_method,
                                           diff_thresh=diff_thresh,
-                                          rng=rng)
+                                          rng=rng, knn_classifier=knn_classifier)
         self._check_predict_proba()
 
         self.name = 'A Posteriori'
