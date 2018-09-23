@@ -6,9 +6,7 @@
 
 import numpy as np
 from .base import StaticEnsemble
-from sklearn.utils.validation import check_random_state, check_X_y, check_is_fitted
-from sklearn.ensemble import BaggingClassifier, BaseEnsemble
-from sklearn.preprocessing import LabelEncoder
+from sklearn.utils.validation import check_X_y, check_is_fitted
 
 
 class SingleBest(StaticEnsemble):
