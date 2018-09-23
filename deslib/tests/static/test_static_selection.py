@@ -61,7 +61,7 @@ def test_predict_diff():
 def test_not_fitted():
     static_selection_test = StaticSelection(create_pool_classifiers(), 0.25)
     with pytest.raises(NotFittedError):
-        static_selection_test.predict(np.array([1, -1]))
+        static_selection_test.predict(np.array([[1, -1]]))
 
 
 def test_invalid_pct():
