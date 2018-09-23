@@ -5,7 +5,7 @@
 
 import numpy as np
 from scipy.stats.mstats import mode
-
+from sklearn.utils.validation import check_array
 from deslib.util.prob_functions import softmax
 
 """
@@ -86,8 +86,7 @@ def _get_ensemble_votes(classifier_ensemble, X):
             The votes obtained by each base classifier
     """
     # Check if a single sample was passed down to the function. In this case the sample must be converted to a 2D array.
-    if X.ndim == 1:
-        X = np.atleast_2d(X)
+    X = check_array(X)
 
     n_samples = X.shape[0]
     votes = np.zeros((n_samples, len(classifier_ensemble)))
