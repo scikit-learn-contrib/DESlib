@@ -28,9 +28,9 @@ def test_fit():
     static_selection_test = StaticSelection(pool_classifiers, 0.5)
     static_selection_test.fit(X, y)
 
-    assert static_selection_test.n_classifiers_ensemble == 50
-    assert static_selection_test.n_classifiers_ensemble == len(static_selection_test.clf_indices)
-    assert np.array_equal(np.sort(static_selection_test.clf_indices), list(range(50, 100)))
+    assert static_selection_test.n_classifiers_ensemble_ == 50
+    assert static_selection_test.n_classifiers_ensemble_ == len(static_selection_test.clf_indices_)
+    assert np.array_equal(np.sort(static_selection_test.clf_indices_), list(range(50, 100)))
 
 
 # The classifier with highest accuracy always predicts 0. So the expected prediction should always be equal zero.
@@ -66,7 +66,11 @@ def test_not_fitted():
 
 def test_invalid_pct():
     with pytest.raises(TypeError):
-        StaticSelection(create_pool_classifiers(), pct_classifiers='something')
+        test = StaticSelection(create_pool_classifiers(), pct_classifiers='something')
+        test.fit(np.random.rand(10, 2), np.ones(10))
 
+
+def test_invalid_pct2():
     with pytest.raises(ValueError):
-        StaticSelection(create_pool_classifiers(), pct_classifiers=1.2)
+        test = StaticSelection(create_pool_classifiers(), pct_classifiers=1.2)
+        test.fit(np.random.rand(10, 2), np.ones(10))
