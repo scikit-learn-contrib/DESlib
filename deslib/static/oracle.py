@@ -36,6 +36,7 @@ class Oracle(StaticEnsemble):
     def fit(self, X, y):
         """Fit the model according to the given training data.
 
+        Setup the label encoder and fit
         Parameters
         ----------
         X : array of shape = [n_samples, n_features]
@@ -44,6 +45,10 @@ class Oracle(StaticEnsemble):
         y : array of shape = [n_samples]
             class labels of each example in X.
 
+        Returns
+        -------
+        self : object
+            Returns self.
         """
         X, y = check_X_y(X, y)
         super(Oracle, self).fit(X, y)

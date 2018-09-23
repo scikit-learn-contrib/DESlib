@@ -52,6 +52,11 @@ class StaticSelection(StaticEnsemble):
 
         y : array of shape = [n_samples]
             class labels of each example in X.
+
+        Returns
+        -------
+        self : object
+            Returns self.
         """
         self._validate_parameters()
 

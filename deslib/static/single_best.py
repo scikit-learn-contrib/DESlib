@@ -79,7 +79,7 @@ class SingleBest(StaticEnsemble):
                            Predicted class for each sample in X.
         """
         self._check_is_fitted()
-        predicted_labels = self.best_clf_.predict(X)
+        predicted_labels = self.best_clf_.predict(X).astype(int)
         return self.classes_.take(predicted_labels)
 
     def predict_proba(self, X):
@@ -95,6 +95,11 @@ class SingleBest(StaticEnsemble):
         -------
         predicted_proba : array of shape = [n_samples, n_classes]
                           Posterior probabilities estimates for each class.
+
+        Returns
+        -------
+        self : object
+            Returns self.
         """
         self._check_is_fitted()
 

@@ -51,6 +51,10 @@ class StaticEnsemble(BaseEstimator, ClassifierMixin):
         y : array of shape = [n_samples]
             class labels of each example in X.
 
+        Returns
+        -------
+        self : object
+            Returns self.
         """
         self.random_state_ = check_random_state(self.random_state)
 
