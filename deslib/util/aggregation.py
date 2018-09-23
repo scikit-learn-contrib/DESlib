@@ -86,7 +86,9 @@ def _get_ensemble_votes(classifier_ensemble, X):
             The votes obtained by each base classifier
     """
     # Check if a single sample was passed down to the function. In this case the sample must be converted to a 2D array.
-    X = check_array(X)
+    X = check_array(X, ensure_2d=False)
+    if X.ndim == 1:
+        X = np.atleast_2d(X)
 
     n_samples = X.shape[0]
     votes = np.zeros((n_samples, len(classifier_ensemble)))
