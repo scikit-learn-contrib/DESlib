@@ -70,7 +70,7 @@ class DESP(DES):
                  random_state=None):
 
         super(DESP, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                   mode=mode)
+                                   mode=mode, random_state=random_state)
 
         self.name = 'DES-Performance (DES-P)'
 
