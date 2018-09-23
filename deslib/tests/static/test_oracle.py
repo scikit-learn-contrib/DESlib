@@ -9,11 +9,11 @@ def test_check_estimator():
     check_estimator(Oracle)
 
 
-
 def test_predict():
     X = X_dsel_ex1
     y = y_dsel_ex1
     oracle_test = Oracle(create_pool_classifiers())
+    oracle_test.fit(X, y)
     predicted_labels = oracle_test.predict(X, y)
     assert np.equal(predicted_labels, y).all()
 
@@ -27,6 +27,7 @@ def test_predict_all_same():
     y = np.copy(y_dsel_ex1)
     expected = y
     oracle_test = Oracle(create_pool_all_agree(return_value=0, size=10))
+    oracle_test.fit(X, y)
     expected[expected == 1] = -1
     predicted_labels = oracle_test.predict(X, y)
     assert np.equal(predicted_labels, expected).all()
