@@ -44,8 +44,13 @@ class KNOP(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
-    knn_classifer : str or Estimator (Default = None)
-          The KNN classifier
+    knn_classifier : {'knn', 'faiss', None} (Default = None)
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
 
     References
     ----------

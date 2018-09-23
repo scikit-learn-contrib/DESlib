@@ -47,9 +47,12 @@ class DCS(DS):
     rng : numpy.random.RandomState instance
           Random number generator to assure reproducible results.
 
-    knn_classifer : str or Estimator (Default = None)
-          The KNN classifier
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
 
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
 
     References
     ----------
@@ -71,7 +74,7 @@ class DCS(DS):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers, k=7, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
-                 selection_method='best', diff_thresh=0.1, rng=np.random.RandomState(), knn_classifier=None):
+                 selection_method='best', diff_thresh=0.1, rng=np.random.RandomState(), knn_classifier='knn'):
 
         if not isinstance(selection_method, str):
             raise TypeError('The parameter selection_method should be a string.'

@@ -45,8 +45,12 @@ class DESP(DES):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
-    knn_classifer : str or Estimator (Default = None)
-          The KNN classifier
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
 
     References
     ----------
@@ -61,8 +65,7 @@ class DESP(DES):
     """
 
     def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30,
-                 mode='selection', knn_classifier=None):
+                 IH_rate=0.30, mode='selection', knn_classifier='knn'):
 
         super(DESP, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                    mode=mode, knn_classifier=knn_classifier)
