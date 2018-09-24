@@ -34,11 +34,10 @@ from deslib.static.static_selection import StaticSelection
 import pytest
 import warnings
 
-knn_methods = [None, "knn", KNeighborsClassifier]
+knn_methods = [None]
 
 try:
     from deslib.util.faiss_knn_wrapper import FaissKNNClassifier
-    knn_methods.append("faiss")
     knn_methods.append(FaissKNNClassifier)
 except ImportError:
     warnings.warn("Not testing FAISS for KNN")
@@ -284,13 +283,13 @@ def test_kne_proba(knn_methods):
 
 # ------------------------------------------ Testing predict_proba -----------------------------------
 @pytest.mark.parametrize('knn_methods', knn_methods)
-def test_kne_proba_IH(knn_methods):
+def test_compare_faiss_predict_proba_IH(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
     kne = KNORAE(pool_classifiers, knn_classifier=knn_methods, with_IH=True, IH_rate=0.1)
     kne.fit(X_dsel, y_dsel)
     probas = kne.predict_proba(X_test)
-    expected = np.load('deslib/tests/expected_values/kne_proba_integration.npy')
+    expected = np.load('deslib/tests/expected_values/kne_knn_proba_integration.npy')
     assert np.allclose(probas, expected)
 
 

@@ -47,7 +47,8 @@ class FaissKNNClassifier:
         """
         _, idx = self.kneighbors(X, self.n_neighbors)
         class_idx = self.y[idx]
-        preds = np.amax(class_idx, axis=1)
+        counts = np.apply_along_axis(lambda x: np.bincount(x, minlength=2), axis=1, arr=class_idx.astype(np.int64))
+        preds = np.argmax(counts, axis=1)
         return preds
 
     def kneighbors(self, X, n_neighbors, return_distance=True):
@@ -70,12 +71,13 @@ class FaissKNNClassifier:
         """
         _, idx = self.kneighbors(X, self.n_neighbors)
         class_idx = self.y[idx]
-        preds = np.amax(class_idx, axis=1)
+        counts = np.apply_along_axis(lambda x: np.bincount(x, minlength=self.num_of_classes), axis=1, arr=class_idx.astype(np.int64))
+        preds = np.argmax(counts, axis=1)
 
         #TODO: can probably be improved for a vectorized version
-        preds_proba = np.zeros(X.shape[0], self.num_of_classes)
-        for i in range(preds):
-            preds_proba[i] = np.bincount(class_idx[i, :]) / self.n_neighbors
+        preds_proba = np.zeros((X.shape[0], self.num_of_classes))
+        for i in range(preds.shape[0]):
+            preds_proba[i] = counts[i] / self.n_neighbors
 
         return preds_proba
 

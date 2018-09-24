@@ -10,3 +10,4 @@ pytest-cov
 pillow
 sphinx_gallery
 matplotlib
+mock
