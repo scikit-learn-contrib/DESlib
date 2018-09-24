@@ -343,38 +343,4 @@ class OLP(DS):
 
         return self.classes_.take(predicted_labels)
 
-
-    # def _check_parameters(self):
-    #     """
-    #     Verifies if the input parameters are correct (k)
-    #     raises an error if k < 1.
-    #     """
-    #     if self.k is not None:
-    #
-    #         if not isinstance(self.k, int):
-    #             raise TypeError("parameter k should be an integer")
-    #         if self.k <= 1:
-    #             raise ValueError("parameter k must be higher than 1."
-    #                              "input k is {} " .format(self.k))
-    #
-    #     if self.safe_k is not None:
-    #         if not isinstance(self.safe_k, int):
-    #             raise TypeError("parameter safe_k should be an integer")
-    #         if self.safe_k <= 1:
-    #             raise ValueError("parameter safe_k must be higher than 1."
-    #                              "input safe_k is {} " .format(self.safe_k))
-    #
-    #     if not isinstance(self.IH_rate, float):
-    #         raise TypeError("parameter IH_rate should be a float between [0.0, 0.5]")
-    #
-    #     if 0 > self.IH_rate or self.IH_rate > 0.5:
-    #         raise ValueError("Parameter IH_rate should be between [0.0, 0.5]."
-    #                          "IH_rate = {}" .format(self.IH_rate))
-    #
-    #     self._validate_pool()
-
-    # def _validate_pool(self):
-    #     """Check the n_estimator attribute."""
-    #     if self.n_classifiers < 0:
-    #         raise ValueError("n_classifiers must be greater than zero, "
-    #                          "got {}.".format(self.n_classifiers))
+# TODO write predict_proba method
