@@ -24,7 +24,7 @@ class FaissKNNClassifier():
         class_idx = self.y[idx]
         preds = np.amax(class_idx, axis=1)
 
-        #FIXME: can probably be improved for a vectorized version
+        #TODO: can probably be improved for a vectorized version
         preds_proba = np.zeros(X.shape[0], self.num_of_classes)
         for i in range(preds):
             preds_proba[i] = np.bincount(class_idx[i, :]) / self.k
@@ -33,6 +33,7 @@ class FaissKNNClassifier():
 
     def fit(self, X, y):
         X = np.atleast_2d(X).astype(np.float32)
+        X = np.ascontiguousarray(X)
         self.index = faiss.IndexFlatL2(X.shape[1])
         self.index.add(X)
         self.y = y
