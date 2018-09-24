@@ -55,8 +55,13 @@ class DESKNN(DS):
             Diversity diversity_func used to estimate the diversity of the base classifiers. Can
             be either the double fault (df), Q-statistics (Q), or error correlation (corr)
 
-    knn_classifer : str or Estimator (Default = None)
-          The KNN classifier
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+                     The algorithm used to estimate the region of competence:
+
+                     - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
+                     - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
+                     - None, will use sklearn :class:`KNeighborsClassifier`.
+
 
     References
     ----------
@@ -76,10 +81,11 @@ class DESKNN(DS):
                  pct_diversity=0.3,
                  more_diverse=True,
                  metric='DF',
-                 knn_classifier=None):
+                 knn_classifier='knn'):
 
         metric = metric.upper()
-        super(DESKNN, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate, knn_classifier=knn_classifier)
+        super(DESKNN, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
+                                     IH_rate=IH_rate, knn_classifier=knn_classifier)
 
         self.name = 'Dynamic Ensemble Selection-KNN (DES-KNN)'
         self.N = int(self.n_classifiers * pct_accuracy)

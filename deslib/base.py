@@ -31,7 +31,8 @@ class DS(ClassifierMixin):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, needs_proba=False, knn_classifier=None):
+    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
+                 needs_proba=False, knn_classifier='knn'):
 
         self.pool_classifiers = pool_classifiers
         self.n_classifiers = len(self.pool_classifiers)
@@ -54,7 +55,7 @@ class DS(ClassifierMixin):
             self.roc_algorithm = functools.partial(KNeighborsClassifier, n_jobs=-1, algorithm="auto")
         elif isinstance(knn_classifier, str):
             if knn_classifier == "faiss":
-                from deslib.util.faiss_knn_wrapper import  FaissKNNClassifier
+                from deslib.util.faiss_knn_wrapper import FaissKNNClassifier
                 self.roc_algorithm = functools.partial(FaissKNNClassifier, n_jobs=-1, algorithm="auto")
             elif knn_classifier == "knn":
                 self.roc_algorithm = functools.partial(KNeighborsClassifier, n_jobs=-1, algorithm="auto")
