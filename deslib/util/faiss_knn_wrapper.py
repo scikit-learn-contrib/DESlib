@@ -1,3 +1,9 @@
+# coding=utf-8
+
+# Author:  Le Thanh Nguyen-Meidine <nmlethanh91@gmail.com>
+#
+# License: BSD 3 clause
+
 import faiss
 import numpy as np
 
