@@ -9,6 +9,7 @@ install:
   - travis_retry pip install codecov
   - travis_retry python setup.py build
   - travis_retry python setup.py install
+  - travis_retry conda install faiss-cpu -c pytorch
 script: coverage run -m py.test
 after_success:
   - codecov
