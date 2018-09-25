@@ -7,6 +7,9 @@ from sklearn.model_selection import train_test_split
 import threading
 import os
 import warnings
+import urllib.request
+import gzip
+import shutil
 
 def sk_knn(Xtrain, Y, k, Xtest):
     start = time.clock()
@@ -26,7 +29,20 @@ def faiss_knn(Xtrain, Y, k, Xtest):
 if __name__ == "__main__":
 
     if not os.path.exists("../../HIGGS.csv"):
-        warnings.warn("Please download the HIGGS dataset from https://archive.ics.uci.edu/ml/datasets/HIGGS")
+        print("Downloading HIGGS dataset from https://archive.ics.uci.edu/ml/datasets/HIGGS")
+        if not os.path.exists("../../HIGGS.gz"):
+            url = "https://archive.ics.uci.edu/ml/machine-learning-databases/00280/HIGGS.csv.gz"
+            filedata = urllib.request.urlopen(url)
+            data2write = filedata.read()
+            with open('../../HIGSS.gz', 'wb') as f:
+                f.write(data2write)
+        print("Finished downloading")
+        print("Extracting HIGGS.gz")
+        if not os.path.exists("../../HIGGS.csv"):
+            with gzip.open('../../HIGGS.gz', 'rb') as f:
+                with open('../../HIGGS.csv', 'wb') as csv_out:
+                    shutil.copyfileobj(f, csv_out)
+        print("Extracted csv")
 
     df = pd.read_csv('../../HIGGS.csv', header=None)
     data = df.values
