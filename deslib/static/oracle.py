@@ -81,10 +81,11 @@ class Oracle(StaticEnsemble):
                 predicted = clf.predict(x.reshape(1, -1))[0]
                 if predicted == y[sample_index]:
                     predicted = int(predicted)
-                    predicted_labels[sample_index] = self.enc_.inverse_transform(predicted)
+                    predicted_labels[sample_index] = predicted
                     break
+                predicted_labels[sample_index] = predicted
 
-        return predicted_labels
+        return self.classes_.take(predicted_labels)
 
     def score(self, X, y):
         """Prepare the labels using the Oracle model.

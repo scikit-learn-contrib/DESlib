@@ -23,7 +23,7 @@ def test_predict_all_same():
     expected = y
     oracle_test = Oracle(create_pool_all_agree(return_value=0, size=10))
     oracle_test.fit(X, y)
-    expected[expected == 1] = -1
+    expected[expected == 1] = 0
     predicted_labels = oracle_test.predict(X, y)
     assert np.equal(predicted_labels, expected).all()
 
