@@ -14,7 +14,7 @@ except ImportError:
                     reason="requires the faiss library")
 def test_faiss_predict():
     rng = np.random.RandomState(123456)
-    _, X_test, X_train, y_dsel, y_test, y_train = load_dataset(None, rng)
+    _, X_test, X_train, _, y_test, y_train = load_dataset(None, rng)
     k = 7
     X_train = X_train.astype(np.float32)
     X_test = X_test.astype(np.float32)
