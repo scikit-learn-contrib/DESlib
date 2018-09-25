@@ -9,6 +9,7 @@ install:
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
   - conda create -n test_env python="$TRAVIS_PYTHON_VERSION"
+  - echo ". $HOME/miniconda/etc/profile.d/conda.sh" >> "$HOME/.bashrc"
   - conda activate test_env
   - travis_wait travis_retry pip install -r requirements-dev.txt
   - travis_retry pip install codecov
