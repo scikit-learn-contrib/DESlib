@@ -10,6 +10,7 @@ import copy
 
 from scipy.stats import mode
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.multiclass import check_classification_targets
 
 from deslib.util.sgh import SGH
 from deslib.base import DS
@@ -82,6 +83,7 @@ class OLP(DS):
         self
         """
         X, y = check_X_y(X, y)
+        check_classification_targets(y)
 
         # Label encoder
         self.base_already_encoded_ = False
