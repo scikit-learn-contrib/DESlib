@@ -2,10 +2,11 @@ from unittest.mock import Mock
 
 import pytest
 from sklearn.exceptions import NotFittedError
+from sklearn.neighbors import KNeighborsClassifier
 
 from deslib.base import DS
 from deslib.tests.examples_test import *
-
+import unittest.mock
 
 def test_all_classifiers_agree():
     # 10 classifiers that return 1
@@ -79,6 +80,24 @@ def create_classifiers_disagree():
 def test_valid_selection_mode(knn_method):
     with pytest.raises(ValueError):
         DS(create_pool_classifiers(), knn_classifier=knn_method)
+
+def test_import_faiss_mode():
+    try:
+        import sys
+        sys.modules.pop('deslib.util.faiss_knn_wrapper')
+    except Exception:
+        pass
+    with unittest.mock.patch.dict('sys.modules', {'faiss': None}):
+        with pytest.raises(ImportError):
+            DS(create_pool_classifiers(), knn_classifier="faiss")
+
+def test_none_selection_mode():
+    ds = DS(create_pool_classifiers(), knn_classifier=None)
+    assert(isinstance(ds.roc_algorithm, KNeighborsClassifier))
+
+def test_string_selection_mode():
+    ds = DS(create_pool_classifiers(), knn_classifier="knn")
+    assert(isinstance(ds.roc_algorithm, KNeighborsClassifier))
 
 # In this test the system was trained for a sample containing 2 features and we are passing a sample with 3 as argument.
 # So it should raise a value error.

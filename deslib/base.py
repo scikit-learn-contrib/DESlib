@@ -51,24 +51,29 @@ class DS(ClassifierMixin):
         self.n_classes = None
         self.n_samples = None
         self.n_features = None
+        self.knn_class = None
+
         if knn_classifier is None:
-            self.roc_algorithm = functools.partial(KNeighborsClassifier, n_jobs=-1, algorithm="auto")
+            self.knn_class = functools.partial(KNeighborsClassifier, n_jobs=-1, algorithm="auto")
         elif isinstance(knn_classifier, str):
             if knn_classifier == "faiss":
-                from deslib.util.faiss_knn_wrapper import FaissKNNClassifier
-                self.roc_algorithm = functools.partial(FaissKNNClassifier, n_jobs=-1, algorithm="auto")
+                try:
+                    from deslib.util.faiss_knn_wrapper import FaissKNNClassifier
+                except ImportError:
+                    raise ImportError("FAISS library needs to be manually installed, please check the Installation Guide")
+                self.knn_class = functools.partial(FaissKNNClassifier, n_jobs=-1, algorithm="auto")
             elif knn_classifier == "knn":
-                self.roc_algorithm = functools.partial(KNeighborsClassifier, n_jobs=-1, algorithm="auto")
+                self.knn_class = functools.partial(KNeighborsClassifier, n_jobs=-1, algorithm="auto")
             else:
                 raise ValueError('"knn_classifier" should be one of the following '
                                  '["knn", "faiss"] or an estimator class')
         elif callable(knn_classifier):
-            self.roc_algorithm = knn_classifier
+            self.knn_class = knn_classifier
         else:
             raise ValueError('"knn_classifier" should be one of the following '
                              '["knn", "faiss"] or an estimator class')
 
-        self.roc_algorithm = self.roc_algorithm(self.k)
+        self.roc_algorithm = self.knn_class(self.k)
 
         # TODO: remove these as class variables
         self.neighbors = None
