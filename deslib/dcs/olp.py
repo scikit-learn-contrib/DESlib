@@ -9,7 +9,7 @@ import numpy as np
 import copy
 
 from scipy.stats import mode
-from sklearn.utils.validation import check_X_y, check_array
+from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 
 from deslib.util.sgh import SGH
 from deslib.base import DS
@@ -245,6 +245,8 @@ class OLP(DS):
             curr_k += 2
             n_err += 1
 
+        # Handle cases where not all classifiers are generated due to the lack of samples in DSEL
+        self.n_classifiers_ = n
         return
 
     def select(self, query):
@@ -297,6 +299,38 @@ class OLP(DS):
 
         return predicted_label
 
+    def predict_proba_with_ds(self, query, predictions=None, probabilities=None):
+        """
+        Predicts the label of the corresponding query sample.
+
+        The prediction is made by aggregating the votes obtained by all selected base classifiers.
+
+        Parameters
+        ----------
+        query : array of shape = [n_features]
+                The test sample
+
+        Returns
+        -------
+        predicted_label : Prediction of the ensemble for the input query.
+        """
+
+        # Generate LP
+        self._generate_local_pool(query)
+        probs = np.zeros(self.n_classes_)
+        # Predict query label
+        if len(self.pool_classifiers) > 0:
+            votes = self.select(query)
+            for idx in range(self.n_classes_):
+                probs[idx] = np.sum(votes == idx) / self.n_classifiers_
+        else:
+            nn = np.arange(0, self.k)
+            votes = self.neighbors[0][nn]
+            for idx in range(self.n_classes_):
+                probs[idx] = np.sum(votes == idx) / self.k
+
+        return probs
+
     def predict(self, X):
         """
         Predicts the class label for each sample in X.
@@ -312,7 +346,7 @@ class OLP(DS):
                            Predicted class label for each sample in X.
         """
         # Check if the DS model was trained
-        # self._check_is_fitted()
+        check_is_fitted(self, ["DSEL_data_", "DSEL_target_", "hardness_"])
         # Check if X is a valid input
         X = check_array(X)
 
@@ -343,4 +377,49 @@ class OLP(DS):
 
         return self.classes_.take(predicted_labels)
 
-# TODO write predict_proba method
+    def predict_proba(self, X):
+        """
+        Predicts the class label for each sample in X.
+
+        Parameters
+        ----------
+        X : array of shape = [n_samples, n_features]
+            The input data.
+
+        Returns
+        -------
+        predicted_labels : array of shape = [n_samples]
+                           Predicted class label for each sample in X.
+        """
+        # Check if the DS model was trained
+        check_is_fitted(self, ["DSEL_data_", "DSEL_target_", "hardness_"])
+        # Check if X is a valid input
+        X = check_array(X)
+
+        n_samples = X.shape[0]
+        predicted_probas = np.zeros((n_samples, self.n_classes_), dtype=float)
+        for index, instance in enumerate(X):
+
+            instance = instance.reshape(1, -1)
+
+            # proceeds with DS, calculates the region of competence of the query sample
+            tmp_k = np.minimum(self.n_samples_, self.n_classes_ * self.n_classifiers * self.k)
+            self.distances, self.neighbors = self._get_region_competence(instance, k=tmp_k)
+
+            nn = np.arange(0, self.k)
+            roc = self.neighbors[0][nn]
+
+            # If all of its neighbors in the RoC have Instance hardness (IH) below or equal to IH_rate, use KNN
+            if np.all(self.hardness_[np.asarray(roc)] <= self.IH_rate):
+                y_neighbors = self.DSEL_target_[roc]
+                for idx in range(self.n_classes_):
+                    predicted_probas[index, idx] = np.sum(y_neighbors == idx) / self.k
+
+            # Otherwise, generate the local pool for the query instance and use DS for classification
+            else:
+                predicted_probas[index, :] = self.predict_proba_with_ds(instance)
+
+            self.neighbors = None
+            self.distances = None
+
+        return predicted_probas
