@@ -1,9 +1,17 @@
 
+import pytest
+import sys
 from sklearn.neighbors import KNeighborsClassifier
 from deslib.tests.examples_test import *
-from deslib.util.faiss_knn_wrapper import FaissKNNClassifier
 from deslib.tests.test_des_integration import load_dataset
 
+try:
+    from deslib.util.faiss_knn_wrapper import FaissKNNClassifier
+except ImportError:
+    pass
+
+@pytest.mark.skipif('faiss' not in sys.modules,
+                    reason="requires the faiss library")
 def test_faiss_predict():
     rng = np.random.RandomState(123456)
     X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(None, rng)

@@ -33,6 +33,7 @@ from deslib.static.single_best import SingleBest
 from deslib.static.static_selection import StaticSelection
 import pytest
 import warnings
+import sys
 
 knn_methods = [None]
 
@@ -281,10 +282,12 @@ def test_kne_proba(knn_methods):
     assert np.allclose(probas, expected)
 
 # ------------------------------------------ Testing predict_proba -----------------------------------
-@pytest.mark.parametrize('knn_methods', knn_methods)
-def test_compare_faiss_predict_proba_IH(knn_methods):
+
+@pytest.mark.skipif('faiss' not in sys.modules,
+                    reason="requires the faiss library")
+def test_compare_faiss_predict_proba_IH():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-    kne = KNORAE(pool_classifiers, knn_classifier=knn_methods, with_IH=True, IH_rate=0.1)
+    kne = KNORAE(pool_classifiers, knn_classifier="faiss", with_IH=True, IH_rate=0.1)
     kne.fit(X_dsel, y_dsel)
     probas = kne.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/kne_knn_proba_integration.npy')
