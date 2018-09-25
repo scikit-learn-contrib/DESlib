@@ -6,7 +6,7 @@ from sklearn.neighbors import KNeighborsClassifier
 
 from deslib.base import DS
 from deslib.tests.examples_test import *
-import mock
+import unittest.mock
 
 def test_all_classifiers_agree():
     # 10 classifiers that return 1
@@ -87,7 +87,7 @@ def test_import_faiss_mode():
         sys.modules.pop('deslib.util.faiss_knn_wrapper')
     except Exception:
         pass
-    with mock.patch.dict('sys.modules', {'faiss': None}):
+    with unittest.mock.patch.dict('sys.modules', {'faiss': None}):
         with pytest.raises(ImportError):
             DS(create_pool_classifiers(), knn_classifier="faiss")
 
