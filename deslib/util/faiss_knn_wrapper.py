@@ -47,7 +47,7 @@ class FaissKNNClassifier:
         """
         _, idx = self.kneighbors(X, self.n_neighbors)
         class_idx = self.y[idx]
-        counts = np.apply_along_axis(lambda x: np.bincount(x, minlength=2), axis=1, arr=class_idx.astype(np.int64))
+        counts = np.apply_along_axis(lambda x: np.bincount(x, minlength=self.num_of_classes), axis=1, arr=class_idx.astype(np.int64))
         preds = np.argmax(counts, axis=1)
         return preds
 
