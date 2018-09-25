@@ -85,7 +85,7 @@ def test_import_faiss_mode():
     try:
         import sys
         sys.modules.pop('deslib.util.faiss_knn_wrapper')
-    except:
+    except Exception:
         pass
     with mock.patch.dict('sys.modules', {'faiss': None}):
         with pytest.raises(ImportError):

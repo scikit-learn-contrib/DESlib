@@ -6,7 +6,6 @@ import time
 from sklearn.model_selection import train_test_split
 import threading
 import os
-import warnings
 import urllib.request
 import gzip
 import shutil

@@ -9,7 +9,6 @@ import warnings
 import numpy as np
 from sklearn.exceptions import NotFittedError
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.utils.validation import check_is_fitted
 
 from deslib.des.base import DES

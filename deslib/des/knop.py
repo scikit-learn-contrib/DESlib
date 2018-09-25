@@ -5,7 +5,6 @@
 # License: BSD 3 clause
 
 import numpy as np
-from sklearn.neighbors import KNeighborsClassifier
 
 from deslib.des.base import DES
 

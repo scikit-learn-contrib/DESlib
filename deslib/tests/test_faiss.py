@@ -1,17 +1,12 @@
-from unittest.mock import Mock
 
-import pytest
-from sklearn.exceptions import NotFittedError
 from sklearn.neighbors import KNeighborsClassifier
-
-from deslib.base import DS
 from deslib.tests.examples_test import *
 from deslib.util.faiss_knn_wrapper import FaissKNNClassifier
 from deslib.tests.test_des_integration import load_dataset
 
 def test_faiss_predict():
     rng = np.random.RandomState(123456)
-    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(None, rng)
+    _, _, X_train, y_dsel, y_test, y_train = load_dataset(None, rng)
     k = 7
     X_train = X_train.astype(np.float32)
     X_test = X_test.astype(np.float32)
