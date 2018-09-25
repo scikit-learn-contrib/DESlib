@@ -5,6 +5,14 @@ python:
 before_install:
   - pip install -U pip
 install:
+  - wget https://repo.anaconda.com/archive/Anaconda3-5.2.0-Linux-x86_64.sh
+  - export PATH="$HOME/anaconda3/bin:$PATH"
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then
+        conda create -n test_env python=3.5
+    else
+        conda create -n test_env python=3.6
+    fi
+  - conda activate test_env
   - travis_wait travis_retry pip install -r requirements-dev.txt
   - travis_retry pip install codecov
   - travis_retry python setup.py build
