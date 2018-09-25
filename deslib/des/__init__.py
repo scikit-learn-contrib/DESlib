@@ -5,12 +5,13 @@ The :mod:`deslib.des` provides a set of key dynamic ensemble selection algorithm
 from .base import DES
 from .des_clustering import DESClustering
 from .des_knn import DESKNN
+from .des_mi import DESMI
 from .des_p import DESP
 from .knop import KNOP
 from .knora_e import KNORAE
 from .knora_u import KNORAU
 from .meta_des import METADES
-from .probabilistic import Probabilistic, RRC, Exponential, DESKL, MinimumDifference
+from .probabilistic import Probabilistic, RRC, Exponential, DESKL, MinimumDifference, Logarithmic
 
 __all__ = ['DES',
            'METADES',
@@ -24,4 +25,6 @@ __all__ = ['DES',
            'RRC',
            'DESKL',
            'MinimumDifference',
-           'Exponential']
+           'Exponential',
+           'Logarithmic',
+           'DESMI']

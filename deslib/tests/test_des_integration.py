@@ -4,6 +4,7 @@ from sklearn.datasets import load_breast_cancer
 from sklearn.ensemble import BaggingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import Perceptron
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
@@ -279,12 +280,10 @@ def test_kne_proba(knn_methods):
     expected = np.load('deslib/tests/expected_values/kne_proba_integration.npy')
     assert np.allclose(probas, expected)
 
-
 # ------------------------------------------ Testing predict_proba -----------------------------------
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_compare_faiss_predict_proba_IH(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-
     kne = KNORAE(pool_classifiers, knn_classifier=knn_methods, with_IH=True, IH_rate=0.1)
     kne.fit(X_dsel, y_dsel)
     probas = kne.predict_proba(X_test)
@@ -295,7 +294,6 @@ def test_compare_faiss_predict_proba_IH(knn_methods):
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_desp_proba(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-
     desp = DESP(pool_classifiers, knn_classifier=knn_methods)
     desp.fit(X_dsel, y_dsel)
     probas = desp.predict_proba(X_test)

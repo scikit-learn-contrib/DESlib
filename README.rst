@@ -88,6 +88,7 @@ The library is divided into four modules:
     10. DES-Minimum Difference [21]_
     11. DES-Clustering [16]_
     12. DES-KNN [16]_
+    13. DES Multiclass Imbalance (DES-MI) [24]_
 
 * DCS techniques currently available are:
     1. Modified Classifier Rank (Rank) [19]_
@@ -196,9 +197,11 @@ References:
 
 .. [21] : B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197–206.
 
-.. [22] : Smith, M.R., Martinez, T. and Giraud-Carrier, C., 2014. An instance level analysis of data complexity. Machine learning, 95(2), pp.225-256
+.. [22] : Smith, Michael R., Tony Martinez, and Christophe Giraud-Carrier. "An instance level analysis of data complexity." Machine learning 95.2 (2014), pp 225-256.
 
 .. [23] : P. C. Smits, Multiple classifier systems for supervised remote sensing image classification based on dynamic classifier selection, IEEE Transactions on Geoscience and Remote Sensing 40 (4) (2002) 801–813.
+
+.. [24] : García, S., Zhang, Z.L., Altalhi, A., Alshomrani, S. and Herrera, F., "Dynamic ensemble selection for multi-class imbalanced datasets." Information Sciences 445 (2018): 22-37.
 
 .. _scikit-learn: http://scikit-learn.org/stable/
 

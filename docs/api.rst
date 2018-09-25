@@ -45,6 +45,7 @@ All base classifiers that attain a minimum competence level are selected to comp
     modules/des/knop
     modules/des/knora_e
     modules/des/knora_u
+    modules/des/desmi
     modules/des/probabilistic
 
 Static ensembles
