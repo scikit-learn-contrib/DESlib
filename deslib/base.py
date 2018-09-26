@@ -32,7 +32,7 @@ class DS(BaseEstimator, ClassifierMixin):
 
     @abstractmethod
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
-                 safe_k=None, IH_rate=0.30, needs_proba=False, random_state=None, knn_classifier='knn'):
+                 safe_k=None, IH_rate=0.30, needs_proba=False, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
         self.pool_classifiers = pool_classifiers
         self.k = k
@@ -43,6 +43,7 @@ class DS(BaseEstimator, ClassifierMixin):
         self.needs_proba = needs_proba
         self.random_state = random_state
         self.knn_classifier = knn_classifier
+        self.DSEL_perc = DSEL_perc
 
         # TODO: remove these as class variables
         self.neighbors = None

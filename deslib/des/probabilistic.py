@@ -53,12 +53,17 @@ class Probabilistic(DES):
                    If RandomState instance, random_state is the random number generator;
                    If None, the random number generator is the RandomState instance used
                    by `np.random`.
+
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
 
                      - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -77,7 +82,7 @@ class Probabilistic(DES):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 mode='selection', selection_threshold=None, random_state=None, knn_classifier='knn'):
+                 mode='selection', selection_threshold=None, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
         super(Probabilistic, self).__init__(pool_classifiers=pool_classifiers,
                                             k=k,
@@ -87,7 +92,8 @@ class Probabilistic(DES):
                                             IH_rate=IH_rate,
                                             mode=mode,
                                             random_state=random_state,
-                                            knn_classifier=knn_classifier)
+                                            knn_classifier=knn_classifier,
+                                            DSEL_perc=DSEL_perc)
 
         self.selection_threshold = selection_threshold
 
@@ -266,6 +272,10 @@ class Logarithmic(Probabilistic):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_size : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
+
     References
     ----------
     B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
@@ -274,8 +284,8 @@ class Logarithmic(Probabilistic):
     T.Woloszynski, M. Kurzynski, A measure of competence based on randomized reference classifier for dynamic
     ensemble selection, in: International Conference on Pattern Recognition (ICPR), 2010, pp. 4194–4197.
     """
-    def __init__(self, pool_classifiers=None, k=None, DFP=False,
-                 with_IH=False, safe_k=None, IH_rate=0.30, mode='selection', random_state=None, knn_classifier='knn'):
+    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None,
+                 IH_rate=0.30, mode='selection', random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
         super(Logarithmic, self).__init__(pool_classifiers=pool_classifiers,
                                           k=k,
@@ -285,7 +295,8 @@ class Logarithmic(Probabilistic):
                                           IH_rate=IH_rate,
                                           mode=mode,
                                           random_state=random_state,
-                                          knn_classifier=knn_classifier)
+                                          knn_classifier=knn_classifier,
+                                          DSEL_perc=DSEL_perc)
 
         self.name = "DES-Logarithmic"
 
@@ -360,6 +371,10 @@ class Exponential(Probabilistic):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_size : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
+
     References
     ----------
     [1] B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
@@ -370,7 +385,7 @@ class Exponential(Probabilistic):
 
     """
     def __init__(self, pool_classifiers=None, k=None, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
-                 mode='selection', random_state=None, knn_classifier='knn'):
+                 mode='selection', random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
         super(Exponential, self).__init__(pool_classifiers=pool_classifiers,
                                           k=k,
@@ -380,7 +395,8 @@ class Exponential(Probabilistic):
                                           IH_rate=IH_rate,
                                           mode=mode,
                                           random_state=random_state,
-                                          knn_classifier=knn_classifier)
+                                          knn_classifier=knn_classifier,
+                                          DSEL_perc=DSEL_perc)
 
         self.selection_threshold = 0
         self.name = "DES-Exponential"
@@ -450,6 +466,10 @@ class RRC(Probabilistic):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_size : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
+
     References
     ----------
     Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of classifier competence
@@ -460,7 +480,7 @@ class RRC(Probabilistic):
 
     """
     def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,
-                 safe_k=None, IH_rate=0.30, mode='selection', random_state=None, knn_classifier='knn'):
+                 safe_k=None, IH_rate=0.30, mode='selection', random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
         super(RRC, self).__init__(pool_classifiers=pool_classifiers,
                                   k=k,
@@ -470,7 +490,8 @@ class RRC(Probabilistic):
                                   IH_rate=IH_rate,
                                   mode=mode,
                                   random_state=random_state,
-                                  knn_classifier=knn_classifier)
+                                  knn_classifier=knn_classifier,
+                                  DSEL_perc=DSEL_perc)
 
         self.name = "DES-RRC"
         self.selection_threshold = None
@@ -551,6 +572,10 @@ class DESKL(Probabilistic):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_size : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
+
     References
     ----------
     Woloszynski, Tomasz, et al. "A measure of competence based on random classification
@@ -564,7 +589,7 @@ class DESKL(Probabilistic):
 
     """
     def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,
-                 safe_k=None, IH_rate=0.30, mode='selection', random_state=None, knn_classifier='knn'):
+                 safe_k=None, IH_rate=0.30, mode='selection', random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
         super(DESKL, self).__init__(pool_classifiers=pool_classifiers,
                                     k=k,
@@ -574,7 +599,8 @@ class DESKL(Probabilistic):
                                     IH_rate=IH_rate,
                                     mode=mode,
                                     random_state=random_state,
-                                    knn_classifier=knn_classifier)
+                                    knn_classifier=knn_classifier,
+                                    DSEL_perc=DSEL_perc)
         self.selection_threshold = 0.0
         self.name = 'DES-Kullback-Leibler (DES-KL)'
 
@@ -652,6 +678,10 @@ class MinimumDifference(Probabilistic):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_size : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
+
     References
     ----------
     [1] B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
@@ -662,7 +692,7 @@ class MinimumDifference(Probabilistic):
 
     """
     def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 mode='selection', random_state=None, knn_classifier='knn'):
+                 mode='selection', random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
         super(MinimumDifference, self).__init__(pool_classifiers=pool_classifiers,
                                                 k=k,
@@ -672,7 +702,8 @@ class MinimumDifference(Probabilistic):
                                                 IH_rate=IH_rate,
                                                 mode=mode,
                                                 random_state=random_state,
-                                                knn_classifier=knn_classifier)
+                                                knn_classifier=knn_classifier,
+                                                DSEL_perc=DSEL_perc)
 
         # Threshold is 0 since incompetent classifiers should have a negative competence level
         self.selection_threshold = 0.0

@@ -58,6 +58,10 @@ class DES(DS):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
+
     References
     ----------
     Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection of classifiers—a comprehensive review."
@@ -70,7 +74,7 @@ class DES(DS):
 
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, mode='selection', needs_proba=False,
-                 random_state=None, knn_classifier='knn'):
+                 random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
         super(DES, self).__init__(pool_classifiers=pool_classifiers,
                                   k=k,
@@ -80,7 +84,8 @@ class DES(DS):
                                   IH_rate=IH_rate,
                                   needs_proba=needs_proba,
                                   random_state=random_state,
-                                  knn_classifier=knn_classifier)
+                                  knn_classifier=knn_classifier,
+                                  DSEL_perc=DSEL_perc)
         self.mode = mode
 
     def estimate_competence(self, query, predictions):

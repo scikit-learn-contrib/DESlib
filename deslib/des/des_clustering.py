@@ -51,6 +51,10 @@ class DESClustering(DS):
                    If None, the random number generator is the RandomState instance used
                    by `np.random`.
 
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
+
     References
     ----------
     Soares, R. G., Santana, A., Canuto, A. M., & de Souto, M. C. P. "Using accuracy and more_diverse to select
@@ -68,9 +72,10 @@ class DESClustering(DS):
                  pct_diversity=0.33,
                  more_diverse=True,
                  metric='DF',
-                 random_state=None):
+                 random_state=None,
+                 DSEL_perc=0.5):
 
-        super(DESClustering, self).__init__(pool_classifiers, random_state=random_state)
+        super(DESClustering, self).__init__(pool_classifiers, random_state=random_state, DSEL_perc=DSEL_perc)
 
         self.name = 'DES-Clustering'
         self.metric = metric

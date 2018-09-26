@@ -67,6 +67,10 @@ class MLA(DCS):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
+
     References
     ----------
     Woods, Kevin, W. Philip Kegelmeyer, and Kevin Bowyer. "Combination of multiple classifiers
@@ -83,7 +87,7 @@ class MLA(DCS):
                  selection_method='best',
                  diff_thresh=0.1,
                  random_state=None,
-                 knn_classifier='knn'):
+                 knn_classifier='knn', DSEL_perc=0.5):
 
         super(MLA, self).__init__(pool_classifiers=pool_classifiers,
                                   k=k,
@@ -94,7 +98,8 @@ class MLA(DCS):
                                   selection_method=selection_method,
                                   diff_thresh=diff_thresh,
                                   random_state=random_state,
-                                  knn_classifier=knn_classifier)
+                                  knn_classifier=knn_classifier,
+                                  DSEL_perc=DSEL_perc)
 
         self.name = 'Modified Local Accuracy (MLA)'
 

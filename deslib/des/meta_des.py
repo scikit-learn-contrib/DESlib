@@ -87,6 +87,10 @@ class METADES(DES):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
+
     References
     ----------
     Cruz, R.M., Sabourin, R., Cavalcanti, G.D. and Ren, T.I., 2015. META-DES: A dynamic ensemble selection framework
@@ -113,7 +117,8 @@ class METADES(DES):
                  safe_k=None,
                  IH_rate=0.30,
                  random_state=None,
-                 knn_classifier='knn'):
+                 knn_classifier='knn',
+                 DSEL_perc=0.5):
 
         super(METADES, self).__init__(pool_classifiers=pool_classifiers,
                                       k=k,
@@ -124,7 +129,8 @@ class METADES(DES):
                                       mode=mode,
                                       needs_proba=True,
                                       random_state=random_state,
-                                      knn_classifier=knn_classifier)
+                                      knn_classifier=knn_classifier,
+                                      DSEL_perc=DSEL_perc)
 
         self.name = 'META-DES'
         self.meta_classifier = meta_classifier

@@ -68,6 +68,10 @@ class OLA(DCS):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
+
     References
     ----------
     Woods, Kevin, W. Philip Kegelmeyer, and Kevin Bowyer. "Combination of multiple classifiers
@@ -81,7 +85,7 @@ class OLA(DCS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 selection_method='best', diff_thresh=0.1, random_state=None, knn_classifier='knn'):
+                 selection_method='best', diff_thresh=0.1, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
         super(OLA, self).__init__(pool_classifiers=pool_classifiers,
                                   k=k,
@@ -92,7 +96,8 @@ class OLA(DCS):
                                   selection_method=selection_method,
                                   diff_thresh=diff_thresh,
                                   random_state=random_state,
-                                  knn_classifier=knn_classifier)
+                                  knn_classifier=knn_classifier,
+                                  DSEL_perc=DSEL_perc)
 
         self.name = 'Overall Local Accuracy (OLA)'
 

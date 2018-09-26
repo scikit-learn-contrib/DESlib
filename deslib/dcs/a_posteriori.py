@@ -72,6 +72,10 @@ class APosteriori(DCS):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
+
     References
     ----------
     G. Giacinto and F. Roli, Methods for Dynamic Classifier Selection
@@ -88,7 +92,7 @@ class APosteriori(DCS):
 
     """
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 selection_method='diff', diff_thresh=0.1, random_state=None, knn_classifier='knn'):
+                 selection_method='diff', diff_thresh=0.1, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
         super(APosteriori, self).__init__(pool_classifiers=pool_classifiers,
                                           k=k,
@@ -99,7 +103,8 @@ class APosteriori(DCS):
                                           selection_method=selection_method,
                                           diff_thresh=diff_thresh,
                                           knn_classifier=knn_classifier,
-                                          random_state=random_state)
+                                          random_state=random_state,
+                                          DSEL_perc=DSEL_perc)
 
         self.name = 'A Posteriori'
 

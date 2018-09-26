@@ -55,6 +55,10 @@ class KNORAU(DES):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
+
     References
     ----------
     Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr. "From dynamic classifier selection to dynamic ensemble
@@ -68,7 +72,7 @@ class KNORAU(DES):
     """
 
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30, random_state=None, knn_classifier='knn'):
+                 IH_rate=0.30, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
         super(KNORAU, self).__init__(pool_classifiers, k,
                                      DFP=DFP,
@@ -77,7 +81,8 @@ class KNORAU(DES):
                                      IH_rate=IH_rate,
                                      mode='weighting',
                                      random_state=random_state,
-                                     knn_classifier=knn_classifier)
+                                     knn_classifier=knn_classifier,
+                                     DSEL_perc=DSEL_perc)
 
         self.name = 'k-Nearest Oracles Union (KNORA-U)'
 

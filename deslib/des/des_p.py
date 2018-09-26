@@ -59,6 +59,10 @@ class DESP(DES):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
+
     References
     ----------
     Woloszynski, Tomasz, et al. "A measure of competence based on random classification
@@ -75,7 +79,8 @@ class DESP(DES):
                  IH_rate=0.30,
                  mode='selection',
                  random_state=None,
-                 knn_classifier='knn'):
+                 knn_classifier='knn',
+                 DSEL_perc=0.5):
 
         super(DESP, self).__init__(pool_classifiers=pool_classifiers,
                                    k=k,
@@ -85,7 +90,8 @@ class DESP(DES):
                                    IH_rate=IH_rate,
                                    mode=mode,
                                    random_state=random_state,
-                                   knn_classifier=knn_classifier)
+                                   knn_classifier=knn_classifier,
+                                   DSEL_perc=DSEL_perc)
 
         self.name = 'DES-Performance (DES-P)'
 

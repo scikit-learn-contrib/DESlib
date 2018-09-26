@@ -56,6 +56,10 @@ class KNORAE(DES):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
+
     References
     ----------
     Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr. "From dynamic classifier selection to dynamic ensemble
@@ -70,7 +74,7 @@ class KNORAE(DES):
     """
 
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30, random_state=None, knn_classifier='knn'):
+                 IH_rate=0.30, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
         super(KNORAE, self).__init__(pool_classifiers=pool_classifiers,
                                      k=k,
@@ -79,7 +83,8 @@ class KNORAE(DES):
                                      safe_k=safe_k,
                                      IH_rate=IH_rate,
                                      random_state=random_state,
-                                     knn_classifier=knn_classifier)
+                                     knn_classifier=knn_classifier,
+                                     DSEL_perc=DSEL_perc)
 
         self.name = 'k-Nearest Oracles Eliminate (KNORA-E)'
 

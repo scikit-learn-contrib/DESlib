@@ -59,6 +59,10 @@ class KNOP(DES):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
+
     References
     ----------
     Cavalin, Paulo R., Robert Sabourin, and Ching Y. Suen. "LoGID: An adaptive framework combining local and global
@@ -79,7 +83,7 @@ class KNOP(DES):
     """
 
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30, random_state=None, knn_classifier='knn'):
+                 IH_rate=0.30, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
         super(KNOP, self).__init__(pool_classifiers, k,
                                    DFP=DFP,
@@ -89,7 +93,8 @@ class KNOP(DES):
                                    mode='weighting',
                                    needs_proba=True,
                                    random_state=random_state,
-                                   knn_classifier=knn_classifier)
+                                   knn_classifier=knn_classifier,
+                                   DSEL_perc=DSEL_perc)
 
         self.name = 'K-Nearest Output Profiles (KNOP)'
 
