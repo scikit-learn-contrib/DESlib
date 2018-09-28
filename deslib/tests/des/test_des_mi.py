@@ -30,7 +30,7 @@ def test_check_alpha_type(alpha):
 
 
 @pytest.mark.parametrize('pct_accuracy', [-1.0, -0.5, 0.0, 1.01])
-def test_check_alpha_value(pct_accuracy):
+def test_check_pct_accuracy_value(pct_accuracy):
     pool_classifiers = create_pool_classifiers()
     with pytest.raises(ValueError):
         desmi = DESMI(pool_classifiers, pct_accuracy=pct_accuracy)
