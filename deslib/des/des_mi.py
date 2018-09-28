@@ -252,8 +252,8 @@ class DESMI(DS):
         if self.N_ <= 0:
             raise ValueError("The values of N_ should be higher than 0"
                              "N_ = {}" .format(self.N_))
-        
-        # The value of Scaling coefficient (alpha) should be positive to add more weight to the minority clas
+
+        # The value of Scaling coefficient (alpha) should be positive to add more weight to the minority class
         if self.alpha <= 0:
             raise ValueError("The values of alpha should be higher than 0"
                              "alpha = {}".format(self.alpha))
@@ -265,5 +265,3 @@ class DESMI(DS):
         if self.alpha <= 0.:
             raise ValueError("The values of alpha should be higher than 0.0, "
                              "alpha = {}" .format(self.alpha))
-
-

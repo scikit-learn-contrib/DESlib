@@ -297,10 +297,10 @@ class DESClustering(DS):
 
         if self.N_ <= 0 or self.J_ <= 0:
             raise ValueError("The values of N_ and J_ should be higher than 0"
-                             "N_, J_" .format(self.N_, self.J_))
+                             "N_ = {}, J_= {} " .format(self.N_, self.J_))
         if self.N_ < self.J_:
             raise ValueError("The value of N_ should be greater or equals than J_"
-                             "N_, J_" .format(self.N_, self.J_))
+                             "N_ = {}, J_= {} " .format(self.N_, self.J_))
 
         if self.clustering is not None:
             if not isinstance(self.clustering, ClusterMixin):
