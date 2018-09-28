@@ -1,6 +1,6 @@
-scikit-learn==0.19.0
 numpy>=1.10.4
 scipy>=0.13.3
+scikit-learn==0.19.0
 sphinx
 sphinx_rtd_theme
 numpydoc
@@ -10,3 +10,4 @@ pytest-cov
 pillow
 sphinx_gallery
 matplotlib
+nose
