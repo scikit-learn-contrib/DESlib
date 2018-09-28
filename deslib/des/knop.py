@@ -140,7 +140,7 @@ class KNOP(DES):
             Number of output profiles used in the region of competence estimation.
 
         """
-        self.op_knn = self.knn_class(k)
+        self.op_knn_ = self.knn_class_(k)
 
         if self.n_classes_ == 2:
             # Get only the scores for one class since they are complementary

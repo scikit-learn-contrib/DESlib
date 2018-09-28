@@ -53,16 +53,16 @@ class DS(BaseEstimator, ClassifierMixin):
     def _set_region_of_competence_algorithm(self):
 
         if self.knn_classifier is None:
-            self.roc_algorithm_ = functools.partial(KNeighborsClassifier, n_jobs=-1, algorithm="auto")
+            self.knn_class_ = functools.partial(KNeighborsClassifier, n_jobs=-1, algorithm="auto")
 
         elif isinstance(self.knn_classifier, str):
 
             if self.knn_classifier == "faiss":
                 from deslib.util.faiss_knn_wrapper import FaissKNNClassifier
-                self.roc_algorithm_ = functools.partial(FaissKNNClassifier, n_jobs=-1, algorithm="auto")
+                self.knn_class_ = functools.partial(FaissKNNClassifier, n_jobs=-1, algorithm="auto")
 
             elif self.knn_classifier == "knn":
-                self.roc_algorithm_ = functools.partial(KNeighborsClassifier, n_jobs=-1, algorithm="auto")
+                self.knn_class_ = functools.partial(KNeighborsClassifier, n_jobs=-1, algorithm="auto")
 
             else:
 
@@ -71,12 +71,12 @@ class DS(BaseEstimator, ClassifierMixin):
 
         elif callable(self.knn_classifier):
 
-            self.roc_algorithm_ = self.knn_classifier
+            self.knn_class_ = self.knn_classifier
 
         else:
             raise ValueError('"knn_classifier" should be one of the following '
                              '["knn", "faiss"] or an estimator class')
-        self.roc_algorithm_ = self.roc_algorithm_(self.k)
+        self.roc_algorithm_ = self.knn_class_(self.k)
 
     @abstractmethod
     def select(self, competences):

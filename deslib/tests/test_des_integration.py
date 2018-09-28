@@ -51,7 +51,6 @@ def test_grid_search():
 
     grid.best_estimator_.score(X_test, y_test)
 
-knn_methods = [None, "knn", KNeighborsClassifier]
 knn_methods = [None]
 
 try:

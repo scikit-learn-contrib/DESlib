@@ -199,11 +199,8 @@ class METADES(DES):
         y_op : array of shape = [n_samples]
                class labels of each sample in X_op.
 
-        kp : int
-             Number of output profiles used in the estimation.
-
         """
-        self.op_knn = self.knn_class(kp)
+        self.op_knn_ = self.knn_class_(self.Kp_)
 
         if self.n_classes_ == 2:
             # Get only the scores for one class since they are complementary

@@ -107,15 +107,22 @@ def test_import_faiss_mode():
         pass
     with unittest.mock.patch.dict('sys.modules', {'faiss': None}):
         with pytest.raises(ImportError):
-            DS(create_pool_classifiers(), knn_classifier="faiss")
+
+            ds = DS(create_pool_classifiers(), knn_classifier="faiss")
+            ds.fit(X_dsel_ex1, y_dsel_ex1)
+
 
 def test_none_selection_mode():
     ds = DS(create_pool_classifiers(), knn_classifier=None)
-    assert(isinstance(ds.roc_algorithm, KNeighborsClassifier))
+    ds.fit(X_dsel_ex1, y_dsel_ex1)
+    assert(isinstance(ds.roc_algorithm_, KNeighborsClassifier))
+
 
 def test_string_selection_mode():
     ds = DS(create_pool_classifiers(), knn_classifier="knn")
-    assert(isinstance(ds.roc_algorithm, KNeighborsClassifier))
+    ds.fit(X_dsel_ex1, y_dsel_ex1)
+    assert(isinstance(ds.roc_algorithm_, KNeighborsClassifier))
+
 
 # In this test the system was trained for a sample containing 2 features and we are passing a sample with 3 as argument.
 # So it should raise a value error.
