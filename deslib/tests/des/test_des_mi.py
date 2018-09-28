@@ -18,7 +18,8 @@ def test_check_alpha_value(alpha):
     pool_classifiers = create_pool_classifiers()
 
     with pytest.raises(ValueError):
-        DESMI(pool_classifiers, alpha=alpha)
+        desmi = DESMI(pool_classifiers, alpha=alpha)
+        desmi.fit(X_dsel_ex1, y_dsel_ex1)
 
 
 @pytest.mark.parametrize('alpha', ['a', None, 'string', 1])
