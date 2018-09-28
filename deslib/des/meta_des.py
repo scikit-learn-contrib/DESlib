@@ -8,7 +8,6 @@ import numpy as np
 import warnings
 from sklearn.exceptions import NotFittedError
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.utils.validation import check_is_fitted
 
 from deslib.des.base import DES
@@ -204,7 +203,7 @@ class METADES(DES):
              Number of output profiles used in the estimation.
 
         """
-        self.op_knn_ = KNeighborsClassifier(n_neighbors=self.Kp_, n_jobs=-1, algorithm='auto')
+        self.op_knn = self.knn_class(kp)
 
         if self.n_classes_ == 2:
             # Get only the scores for one class since they are complementary

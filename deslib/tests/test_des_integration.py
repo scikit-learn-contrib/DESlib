@@ -4,7 +4,6 @@ from sklearn.datasets import load_breast_cancer
 from sklearn.ensemble import BaggingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import Perceptron
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
@@ -34,6 +33,7 @@ from deslib.static.static_selection import StaticSelection
 from sklearn.model_selection import GridSearchCV
 import pytest
 import warnings
+import sys
 
 
 @pytest.mark.skip(reason='Need to wait for changes on scikit-learn (see issue #89)')
@@ -52,10 +52,10 @@ def test_grid_search():
     grid.best_estimator_.score(X_test, y_test)
 
 knn_methods = [None, "knn", KNeighborsClassifier]
+knn_methods = [None]
 
 try:
     from deslib.util.faiss_knn_wrapper import FaissKNNClassifier
-    knn_methods.append("faiss")
     knn_methods.append(FaissKNNClassifier)
 except ImportError:
     warnings.warn("Not testing FAISS for KNN")
@@ -315,11 +315,9 @@ def test_kne_proba(knn_methods):
     expected = np.load('deslib/tests/expected_values/kne_proba_integration.npy')
     assert np.allclose(probas, expected)
 
-
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_desp_proba(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-
     desp = DESP(pool_classifiers, knn_classifier=knn_methods)
     desp.fit(X_dsel, y_dsel)
     probas = desp.predict_proba(X_test)

@@ -2,22 +2,20 @@ language: python
 python:
   - "3.5"
   - "3.6"
-
-# from https://github.com/travis-ci/travis-ci/issues/9815
-# Enable 3.7 without globally enabling sudo and dist: xenial for other build jobs
-matrix:
-  include:
-    - python: 3.7
-      dist: xenial
-      sudo: true
-
-before_install:
-  - pip install -U pip
 install:
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda create -n test_env python="$TRAVIS_PYTHON_VERSION"
+  - echo ". $HOME/miniconda/etc/profile.d/conda.sh" >> "$HOME/.bashrc"
+  - source activate test_env
   - travis_wait travis_retry pip install -r requirements-dev.txt
   - travis_retry pip install codecov
   - travis_retry python setup.py build
   - travis_retry python setup.py install
+  - travis_retry conda install faiss-cpu -c pytorch
 script: coverage run -m py.test
 after_success:
   - codecov

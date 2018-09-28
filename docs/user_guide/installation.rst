@@ -25,3 +25,10 @@ DESlib is tested to work with Python 3.5, 3.6 and 3.7. The dependency requiremen
 * scikit-learn(>=0.19.0)
 
 These dependencies are automatically installed using the pip commands above.
+
+Optional dependencies
+=====================
+
+To use Faiss (Fair AI Similarity Search), a fast implementation of KNN that can use GPUs, follow the instructions below:
+https://github.com/facebookresearch/faiss/blob/master/INSTALL.md
+

@@ -5,7 +5,6 @@
 # License: BSD 3 clause
 
 import numpy as np
-from sklearn.neighbors import KNeighborsClassifier
 
 from deslib.des.base import DES
 
@@ -141,7 +140,7 @@ class KNOP(DES):
             Number of output profiles used in the region of competence estimation.
 
         """
-        self.op_knn_ = KNeighborsClassifier(n_neighbors=k, n_jobs=-1, algorithm='auto')
+        self.op_knn = self.knn_class(k)
 
         if self.n_classes_ == 2:
             # Get only the scores for one class since they are complementary
