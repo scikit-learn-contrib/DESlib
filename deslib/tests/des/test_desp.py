@@ -3,6 +3,11 @@ from sklearn.linear_model import Perceptron
 
 from deslib.des.des_p import DESP
 from deslib.tests.examples_test import *
+from sklearn.utils.estimator_checks import check_estimator
+
+
+def test_check_estimator():
+    check_estimator(DESP)
 
 
 @pytest.mark.parametrize('index, expected', [(0, [0.57142857, 0.4285714, 0.57142857]),
@@ -13,7 +18,7 @@ def test_estimate_competence(index, expected):
 
     des_p_test = DESP(create_pool_classifiers())
     des_p_test.fit(X_dsel_ex1, y_dsel_ex1)
-    des_p_test.DFP_mask = np.ones(des_p_test.n_classifiers)
+    des_p_test.DFP_mask = np.ones(des_p_test.n_classifiers_)
     des_p_test.neighbors = neighbors_ex1[index, :]
     des_p_test.distances = distances_ex1[index, :]
     competences = des_p_test.estimate_competence(query)
@@ -29,7 +34,7 @@ def test_estimate_competence_batch():
 
     des_p_test = DESP(create_pool_classifiers())
     des_p_test.fit(X_dsel_ex1, y_dsel_ex1)
-    des_p_test.DFP_mask = np.ones((3, des_p_test.n_classifiers))
+    des_p_test.DFP_mask = np.ones((3, des_p_test.n_classifiers_))
     des_p_test.neighbors = neighbors_ex1
     des_p_test.distances = distances_ex1
     competences = des_p_test.estimate_competence(query)
@@ -45,7 +50,7 @@ def test_select_two_classes(index, expected):
     des_p_test = DESP(create_pool_classifiers())
     des_p_test.fit(X_dsel_ex1, y_dsel_ex1)
 
-    des_p_test.DFP_mask = np.ones(des_p_test.n_classifiers)
+    des_p_test.DFP_mask = np.ones(des_p_test.n_classifiers_)
     des_p_test.neighbors = neighbors_ex1[index, :]
     des_p_test.distances = distances_ex1[index, :]
 
@@ -65,7 +70,7 @@ def test_select_three_classes(index, expected):
     des_p_test = DESP(create_pool_classifiers())
     des_p_test.fit(X_dsel_ex1, y_dsel_ex1)
 
-    des_p_test.n_classes = 3
+    des_p_test.n_classes_ = 3
     des_p_test.neighbors = neighbors_ex1[index, :]
     des_p_test.distances = distances_ex1[index, :]
 
@@ -76,9 +81,10 @@ def test_select_three_classes(index, expected):
 
 
 def test_select_none_competent():
+    n_classifiers = 3
     des_p_test = DESP(create_pool_classifiers())
-    des_p_test.n_classes = 2
-    competences = np.ones(des_p_test.n_classifiers) * 0.49
+    des_p_test.n_classes_ = 2
+    competences = np.ones(n_classifiers) * 0.49
     indices = des_p_test.select(competences)
     expected = np.array([[True, True, True]])
     assert np.array_equal(expected, indices)
@@ -92,4 +98,4 @@ def test_predict_proba():
     y = y_dsel_ex1
     clf1 = Perceptron()
     clf1.fit(X, y)
-    DESP([clf1, clf1])
+    DESP([clf1, clf1]).fit(X, y)

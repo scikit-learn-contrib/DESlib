@@ -6,6 +6,7 @@
 
 import numpy as np
 from scipy.stats import mode
+from sklearn.neighbors import NearestNeighbors
 
 """
 This file contains the implementation of different functions to measure instance hardness. Instance hardness can be
@@ -39,7 +40,7 @@ def hardness_region_competence(neighbors_idx, labels, safe_k):
 
     Returns
     -------
-    hardness : array of shape = [n_samples]
+    hardness : array of shape = [n_samples_test]
                The Hardness level associated with each example.
 
     References
@@ -55,3 +56,43 @@ def hardness_region_competence(neighbors_idx, labels, safe_k):
     hardness = ((safe_k - num_majority_class) / safe_k).reshape(-1, )
 
     return hardness
+
+
+def kdn_score(X, y, k):
+    """
+    Calculates the K-Disagreeing Neighbors score (KDN) of each sample in the input dataset.
+
+    Parameters
+    ----------
+    X : array of shape = [n_samples, n_features]
+        The input data.
+
+    y : array of shape = [n_samples]
+        class labels of each example in X.
+
+    k : int
+        Neighborhood size for calculating the KDN score.
+
+    Returns
+    -------
+
+    score : array of shape = [n_samples,1]
+        KDN score of each sample in X.
+
+    neighbors : array of shape = [n_samples,k]
+        Indexes of the k neighbors of each sample in X.
+
+
+    References
+    ----------
+    M. R. Smith, T. Martinez, C. Giraud-Carrier, An instance level analysis of data complexity,
+    Machine Learning 95 (2) (2014) 225-256.
+
+    """
+
+    nbrs = NearestNeighbors(n_neighbors=k + 1, algorithm='kd_tree').fit(X)
+    _, indices = nbrs.kneighbors(X)
+    neighbors = indices[:, 1:]
+    diff_class = np.matlib.repmat(y, k, 1).transpose() != y[neighbors]
+    score = np.sum(diff_class, axis=1) / k
+    return score, neighbors

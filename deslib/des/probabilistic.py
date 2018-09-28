@@ -21,9 +21,10 @@ class Probabilistic(DES):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the method "predict" and "predict_proba".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = None)
         Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
@@ -47,6 +48,12 @@ class Probabilistic(DES):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
 
@@ -54,6 +61,9 @@ class Probabilistic(DES):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -71,15 +81,20 @@ class Probabilistic(DES):
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 mode='selection', selection_threshold=None, knn_classifier='knn'):
+    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
+                 mode='selection', selection_threshold=None, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
-        super(Probabilistic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
+        super(Probabilistic, self).__init__(pool_classifiers=pool_classifiers,
+                                            k=k,
+                                            DFP=DFP,
+                                            with_IH=with_IH,
+                                            safe_k=safe_k,
                                             IH_rate=IH_rate,
-                                            mode=mode, knn_classifier=knn_classifier)
-        self._check_predict_proba()
+                                            mode=mode,
+                                            random_state=random_state,
+                                            knn_classifier=knn_classifier,
+                                            DSEL_perc=DSEL_perc)
 
-        self.C_src = None
         self.selection_threshold = selection_threshold
 
     def fit(self, X, y):
@@ -102,21 +117,17 @@ class Probabilistic(DES):
 
         Returns
         -------
-        self
+        self : object
+            Returns self.
         """
 
-        y_ind = self.setup_label_encoder(y)
-        self._set_dsel(X, y_ind)
-        if self.k is None:
-            self.k = self.n_samples
+        super(Probabilistic, self).fit(X, y)
+        self._check_predict_proba()
 
-        self._fit_region_competence(X, y_ind, self.k)
-        # Pre process the scores in DSEL (it is required only for the source of competence estimation
-        # Maybe I should not keep this matrix in order to reduce memory requirement.
-        self.dsel_scores = self._preprocess_dsel_scores()
+        self.dsel_scores_ = self._preprocess_dsel_scores()
 
         # Pre process the source of competence for the entire DSEL, making the method faster during generalization.
-        self.C_src = self.source_competence()
+        self.C_src_ = self.source_competence()
         return self
 
     def estimate_competence(self, query, predictions=None):
@@ -124,7 +135,7 @@ class Probabilistic(DES):
         and the potential function model. The source of competence :math:`C_{src}` for all data points in DSEL
         is already pre-computed in the fit() steps.
 
-        .. math:: \\delta_{i,j} = \\frac{\\sum_{k=1}^{N}C_{src} \\: exp( -d (\\mathbf{x}_{k}, \\mathbf{x}_{q})^{2} )}
+        .. math:: \\delta_{i,j} = \\frac{\\sum_{k=1}^{N_}C_{src} \\: exp( -d (\\mathbf{x}_{k}, \\mathbf{x}_{q})^{2} )}
             {exp( -d (\\mathbf{x}_{k}, \\mathbf{x}_{q})^{2} )}
 
         Parameters
@@ -146,8 +157,8 @@ class Probabilistic(DES):
         sum_potential = np.sum(potential_dists, axis=1)
 
         # Using einsum here since it is way more memory efficient. This line is equivalent to
-        # competences = self.C_src[idx_neighbors, :] * potential_dists[:, :, np.newaxis]
-        competences = np.einsum('ijk,ij->ik', self.C_src[idx_neighbors, :], potential_dists)
+        # competences = self.C_src_[idx_neighbors, :] * potential_dists[:, :, np.newaxis]
+        competences = np.einsum('ijk,ij->ik', self.C_src_[idx_neighbors, :], potential_dists)
         competences = competences / sum_potential.reshape(-1, 1)
 
         return competences
@@ -172,7 +183,7 @@ class Probabilistic(DES):
 
         # Set the threshold as the performance of the random classifier
         if self.selection_threshold is None:
-            self.selection_threshold = 1.0/self.n_classes
+            self.selection_threshold = 1.0/self.n_classes_
 
         selected_classifiers = (competences > self.selection_threshold)
         # For the rows that are all False (i.e., no base classifier was selected, select all classifiers (all True)
@@ -221,9 +232,10 @@ class Logarithmic(Probabilistic):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the method "predict" and "predict_proba".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = None)
         Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
@@ -247,12 +259,22 @@ class Logarithmic(Probabilistic):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
 
                      - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    DSEL_size : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -262,11 +284,20 @@ class Logarithmic(Probabilistic):
     T.Woloszynski, M. Kurzynski, A measure of competence based on randomized reference classifier for dynamic
     ensemble selection, in: International Conference on Pattern Recognition (ICPR), 2010, pp. 4194–4197.
     """
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 mode='selection', knn_classifier='knn'):
+    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None,
+                 IH_rate=0.30, mode='selection', random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
-        super(Logarithmic, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                          mode=mode, knn_classifier=knn_classifier)
+        super(Logarithmic, self).__init__(pool_classifiers=pool_classifiers,
+                                          k=k,
+                                          DFP=DFP,
+                                          with_IH=with_IH,
+                                          safe_k=safe_k,
+                                          IH_rate=IH_rate,
+                                          mode=mode,
+                                          random_state=random_state,
+                                          knn_classifier=knn_classifier,
+                                          DSEL_perc=DSEL_perc)
+
         self.name = "DES-Logarithmic"
 
     def source_competence(self):
@@ -278,12 +309,12 @@ class Logarithmic(Probabilistic):
         C_src : array of shape = [n_samples, n_classifiers]
                 The competence source for each base classifier at each data point.
         """
-        C_src = np.zeros((self.n_samples, self.n_classifiers))
-        for clf_index in range(self.n_classifiers):
-            supports = self.dsel_scores[:, clf_index, :]
-            support_correct = supports[np.arange(self.n_samples), self.DSEL_target]
+        C_src = np.zeros((self.n_samples_, self.n_classifiers_))
+        for clf_index in range(self.n_classifiers_):
+            supports = self.dsel_scores_[:, clf_index, :]
+            support_correct = supports[np.arange(self.n_samples_), self.DSEL_target_]
 
-            C_src[:, clf_index] = log_func(self.n_classes, support_correct)
+            C_src[:, clf_index] = log_func(self.n_classes_, support_correct)
 
         return C_src
 
@@ -300,9 +331,10 @@ class Exponential(Probabilistic):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the method "predict" and "predict_proba".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = None)
         Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
@@ -326,12 +358,22 @@ class Exponential(Probabilistic):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
 
                      - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    DSEL_size : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -342,11 +384,19 @@ class Exponential(Probabilistic):
     for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
 
     """
-    def __init__(self, pool_classifiers, k=None, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
-                 mode='selection', knn_classifier='knn'):
+    def __init__(self, pool_classifiers=None, k=None, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
+                 mode='selection', random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
-        super(Exponential, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                          mode=mode, knn_classifier=knn_classifier)
+        super(Exponential, self).__init__(pool_classifiers=pool_classifiers,
+                                          k=k,
+                                          DFP=DFP,
+                                          with_IH=with_IH,
+                                          safe_k=safe_k,
+                                          IH_rate=IH_rate,
+                                          mode=mode,
+                                          random_state=random_state,
+                                          knn_classifier=knn_classifier,
+                                          DSEL_perc=DSEL_perc)
 
         self.selection_threshold = 0
         self.name = "DES-Exponential"
@@ -362,12 +412,12 @@ class Exponential(Probabilistic):
         C_src : array of shape = [n_samples, n_classifiers]
                 The competence source for each base classifier at each data point.
         """
-        C_src = np.zeros((self.n_samples, self.n_classifiers))
-        for clf_index in range(self.n_classifiers):
-            supports = self.dsel_scores[:, clf_index, :]
-            support_correct = supports[np.arange(self.n_samples), self.DSEL_target]
+        C_src = np.zeros((self.n_samples_, self.n_classifiers_))
+        for clf_index in range(self.n_classifiers_):
+            supports = self.dsel_scores_[:, clf_index, :]
+            support_correct = supports[np.arange(self.n_samples_), self.DSEL_target_]
 
-            C_src[:, clf_index] = exponential_func(self.n_classes, support_correct)
+            C_src[:, clf_index] = exponential_func(self.n_classes_, support_correct)
         return C_src
 
 
@@ -376,12 +426,10 @@ class RRC(Probabilistic):
 
     Parameters
     ----------
-    pool_classifiers : type, the generated_pool of classifiers trained for the corresponding
-    classification problem.
-
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the method "predict" and "predict_proba".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = None)
         Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
@@ -405,12 +453,22 @@ class RRC(Probabilistic):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
 
                      - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    DSEL_size : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -421,11 +479,20 @@ class RRC(Probabilistic):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection',
-                 knn_classifier='knn'):
+    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,
+                 safe_k=None, IH_rate=0.30, mode='selection', random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
-        super(RRC, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                  mode=mode, knn_classifier=knn_classifier)
+        super(RRC, self).__init__(pool_classifiers=pool_classifiers,
+                                  k=k,
+                                  DFP=DFP,
+                                  with_IH=with_IH,
+                                  safe_k=safe_k,
+                                  IH_rate=IH_rate,
+                                  mode=mode,
+                                  random_state=random_state,
+                                  knn_classifier=knn_classifier,
+                                  DSEL_perc=DSEL_perc)
+
         self.name = "DES-RRC"
         self.selection_threshold = None
 
@@ -443,12 +510,12 @@ class RRC(Probabilistic):
         C_src : array of shape = [n_samples, n_classifiers]
                 The competence source for each base classifier at each data point.
         """
-        c_src = np.zeros((self.n_samples, self.n_classifiers))
+        c_src = np.zeros((self.n_samples_, self.n_classifiers_))
 
-        for clf_index in range(self.n_classifiers):
+        for clf_index in range(self.n_classifiers_):
             # Get supports for all samples in DSEL
-            supports = self.dsel_scores[:, clf_index, :]
-            c_src[:, clf_index] = ccprmod(supports, self.DSEL_target)
+            supports = self.dsel_scores_[:, clf_index, :]
+            c_src[:, clf_index] = ccprmod(supports, self.DSEL_target_)
 
         return c_src
 
@@ -465,9 +532,10 @@ class DESKL(Probabilistic):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the method "predict" and "predict_proba".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = None)
         Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
@@ -491,12 +559,22 @@ class DESKL(Probabilistic):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
 
                      - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    DSEL_size : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -510,11 +588,19 @@ class DESKL(Probabilistic):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30, mode='selection',
-                 knn_classifier='knn'):
+    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,
+                 safe_k=None, IH_rate=0.30, mode='selection', random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
-        super(DESKL, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                    mode=mode, knn_classifier=knn_classifier)
+        super(DESKL, self).__init__(pool_classifiers=pool_classifiers,
+                                    k=k,
+                                    DFP=DFP,
+                                    with_IH=with_IH,
+                                    safe_k=safe_k,
+                                    IH_rate=IH_rate,
+                                    mode=mode,
+                                    random_state=random_state,
+                                    knn_classifier=knn_classifier,
+                                    DSEL_perc=DSEL_perc)
         self.selection_threshold = 0.0
         self.name = 'DES-Kullback-Leibler (DES-KL)'
 
@@ -532,11 +618,11 @@ class DESKL(Probabilistic):
                 The competence source for each base classifier at each data point.
         """
 
-        C_src = np.zeros((self.n_samples, self.n_classifiers))
-        for clf_index in range(self.n_classifiers):
-            supports = self.dsel_scores[:, clf_index, :]
-            is_correct = self.processed_dsel[:, clf_index]
-            C_src[:, clf_index] = entropy_func(self.n_classes, supports, is_correct)
+        C_src = np.zeros((self.n_samples_, self.n_classifiers_))
+        for clf_index in range(self.n_classifiers_):
+            supports = self.dsel_scores_[:, clf_index, :]
+            is_correct = self.DSEL_processed_[:, clf_index]
+            C_src[:, clf_index] = entropy_func(self.n_classes_, supports, is_correct)
 
         return C_src
 
@@ -552,9 +638,10 @@ class MinimumDifference(Probabilistic):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the method "predict" and "predict_proba".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = None)
         Number of neighbors used to estimate the competence of the base classifiers. If k = None, the whole dynamic
@@ -578,12 +665,22 @@ class MinimumDifference(Probabilistic):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
 
                      - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    DSEL_size : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -594,10 +691,19 @@ class MinimumDifference(Probabilistic):
     for dynamic ensemble selection." Pattern Recognition 44.10 (2011): 2656-2668.
 
     """
-    def __init__(self, pool_classifiers, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 mode='selection', knn_classifier='knn'):
-        super(MinimumDifference, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
-                                                IH_rate=IH_rate, mode=mode, knn_classifier=knn_classifier)
+    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
+                 mode='selection', random_state=None, knn_classifier='knn', DSEL_perc=0.5):
+
+        super(MinimumDifference, self).__init__(pool_classifiers=pool_classifiers,
+                                                k=k,
+                                                DFP=DFP,
+                                                with_IH=with_IH,
+                                                safe_k=safe_k,
+                                                IH_rate=IH_rate,
+                                                mode=mode,
+                                                random_state=random_state,
+                                                knn_classifier=knn_classifier,
+                                                DSEL_perc=DSEL_perc)
 
         # Threshold is 0 since incompetent classifiers should have a negative competence level
         self.selection_threshold = 0.0
@@ -606,7 +712,7 @@ class MinimumDifference(Probabilistic):
     def source_competence(self):
         """Calculates the source of competence using the Minimum Difference method.
 
-        The source of competence C_src at the validation point :math:`\mathbf{x}_{k}` calculated by the
+        The source of competence C_src_ at the validation point :math:`\mathbf{x}_{k}` calculated by the
         Minimum Difference between the supports obtained to the correct class and the support obtained by
         the other classes
 
@@ -615,10 +721,10 @@ class MinimumDifference(Probabilistic):
         C_src : array of shape = [n_samples, n_classifiers]
                 The competence source for each base classifier at each data point.
         """
-        C_src = np.zeros((self.n_samples, self.n_classifiers))
-        for clf_index in range(self.n_classifiers):
-            supports = self.dsel_scores[:, clf_index, :]
-            C_src[:, clf_index] = min_difference(supports, self.DSEL_target)
+        C_src = np.zeros((self.n_samples_, self.n_classifiers_))
+        for clf_index in range(self.n_classifiers_):
+            supports = self.dsel_scores_[:, clf_index, :]
+            C_src[:, clf_index] = min_difference(supports, self.DSEL_target_)
 
         return C_src
 

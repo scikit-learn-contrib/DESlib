@@ -16,14 +16,15 @@ class DESKNN(DS):
 
     This method selects an ensemble of classifiers taking into account the
     accuracy and diversity of the base classifiers. The k-NN algorithm is used to define the region of competence.
-    The N most accurate classifiers in the region of competence are first selected.
-    Then, the J more diverse classifiers from the N most accurate classifiers are selected to compose the ensemble.
+    The N_ most accurate classifiers in the region of competence are first selected.
+    Then, the J_ more diverse classifiers from the N_ most accurate classifiers are selected to compose the ensemble.
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support the method "predict".
+                       Each base classifiers should support the method "predict".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 5)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -43,17 +44,23 @@ class DESKNN(DS):
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
     pct_accuracy : float (Default = 0.5)
-        Percentage of base classifiers selected based on accuracy
+                   Percentage of base classifiers selected based on accuracy
 
     pct_diversity : float (Default = 0.3)
-        Percentage of base classifiers selected based n diversity
+                    Percentage of base classifiers selected based n diversity
 
     more_diverse : Boolean (Default = True)
-        Whether we select the most or the least diverse classifiers to add to the pre-selected ensemble
+                   Whether we select the most or the least diverse classifiers to add to the pre-selected ensemble
 
     metric : String (Default = 'df')
-            Diversity diversity_func used to estimate the diversity of the base classifiers. Can
-            be either the double fault (df), Q-statistics (Q), or error correlation (corr)
+             Metric used to estimate the diversity of the base classifiers. Can
+             be either the double fault (df), Q-statistics (Q), or error correlation (ratio)
+
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
 
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
@@ -62,6 +69,9 @@ class DESKNN(DS):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -75,33 +85,63 @@ class DESKNN(DS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None,
                  IH_rate=0.30,
                  pct_accuracy=0.5,
                  pct_diversity=0.3,
                  more_diverse=True,
                  metric='DF',
-                 knn_classifier='knn'):
+                 random_state=None,
+                 knn_classifier='knn',
+                 DSEL_perc=0.5):
 
-        metric = metric.upper()
-        super(DESKNN, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
-                                     IH_rate=IH_rate, knn_classifier=knn_classifier)
+        super(DESKNN, self).__init__(pool_classifiers=pool_classifiers,
+                                     k=k,
+                                     DFP=DFP,
+                                     with_IH=with_IH,
+                                     safe_k=safe_k,
+                                     IH_rate=IH_rate,
+                                     random_state=random_state,
+                                     knn_classifier=knn_classifier,
+                                     DSEL_perc=DSEL_perc)
 
         self.name = 'Dynamic Ensemble Selection-KNN (DES-KNN)'
-        self.N = int(self.n_classifiers * pct_accuracy)
-        self.J = int(np.ceil(self.n_classifiers * pct_diversity))
         self.metric = metric
-
-        self._validate_parameters()
-
-        # Set up the diversity metric
+        self.pct_accuracy = pct_accuracy
+        self.pct_diversity = pct_diversity
         self.more_diverse = more_diverse
-        if metric == 'DF':
-            self.diversity_func = negative_double_fault
-        elif metric == 'Q':
-            self.diversity_func = Q_statistic
-        else:
-            self.diversity_func = ratio_errors
+
+    def fit(self, X, y):
+        """ Train the DS model by setting the Clustering algorithm and
+        pre-processing the information required to apply the DS
+        methods.
+
+        First the data is divided into K clusters. Then, for each cluster, the N_ most accurate classifiers
+        are first selected. Then, the J_ more diverse classifiers from the N_ most accurate classifiers are
+        selected to compose the ensemble of the corresponding cluster. An ensemble of classifiers is assigned
+        to each of the K clusters.
+
+        Parameters
+        ----------
+        X : array of shape = [n_samples, n_features]
+            Data used to fit the model.
+
+        y : array of shape = [n_samples]
+            class labels of each example in X.
+
+        Returns
+        -------
+        self
+        """
+        super(DESKNN, self).fit(X, y)
+
+        self.N_ = int(self.n_classifiers_ * self.pct_accuracy)
+
+        self.J_ = int(np.ceil(self.n_classifiers_ * self.pct_diversity))
+
+        self._check_parameters()
+
+        return self
 
     def estimate_competence(self, query, predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}` for
@@ -138,25 +178,26 @@ class DESKNN(DS):
         """
         _, idx_neighbors = self._get_region_competence(query)
         # calculate the classifiers mean accuracy for all samples/base classifier
-        accuracy = np.mean(self.processed_dsel[idx_neighbors, :], axis=1)
+        accuracy = np.mean(self.DSEL_processed_[idx_neighbors, :], axis=1)
 
-        predicted_matrix = self.BKS_dsel[idx_neighbors, :]
-        targets = self.DSEL_target[idx_neighbors]
+        predicted_matrix = self.BKS_DSEL_[idx_neighbors, :]
+        targets = self.DSEL_target_[idx_neighbors]
 
+        self._set_diversity_func()
         # TODO: optimize this part with numpy instead of for loops
         # Calculate the more_diverse matrix. It becomes computationally expensive
         # When the region of competence is high
-        diversity = np.zeros((query.shape[0], self.n_classifiers))
+        diversity = np.zeros((query.shape[0], self.n_classifiers_))
         for sample_idx in range(query.shape[0]):
             this_diversity = compute_pairwise_diversity(targets[sample_idx, :],
-                                                      predicted_matrix[sample_idx, :, :], self.diversity_func)
+                                                      predicted_matrix[sample_idx, :, :], self.diversity_func_)
 
             diversity[sample_idx, :] = this_diversity
 
         return accuracy, diversity
 
     def select(self, accuracy, diversity):
-        """Select an ensemble containing the N most accurate ant the J most diverse classifiers for the classification
+        """Select an ensemble containing the N_ most accurate ant the J_ most diverse classifiers for the classification
         of the query sample.
 
         Parameters
@@ -169,8 +210,8 @@ class DESKNN(DS):
 
         Returns
         -------
-        selected_classifiers : array of shape = [n_samples, self.J]
-                               Matrix containing the indices of the J selected base classifier for each test example.
+        selected_classifiers : array of shape = [n_samples, self.J_]
+                               Matrix containing the indices_ of the J_ selected base classifier for each test example.
         """
         # Check if the accuracy and diversity arrays have the correct dimensionality.
         if accuracy.ndim < 2:
@@ -180,15 +221,15 @@ class DESKNN(DS):
             diversity = diversity.reshape(1, -1)
 
         # sort the array to remove the most accurate classifiers
-        competent_indices = np.argsort(accuracy, axis=1)[:, ::-1][:, 0:self.N]
+        competent_indices = np.argsort(accuracy, axis=1)[:, ::-1][:, 0:self.N_]
         diversity_of_selected = diversity[np.arange(diversity.shape[0])[:, None], competent_indices]
         # diversity_of_selected = diversity.take(competent_indices)
 
         # sort the remaining classifiers to select the most diverse ones
         if self.more_diverse:
-            diversity_indices = np.argsort(diversity_of_selected, axis=1)[:, ::-1][:, 0:self.J]
+            diversity_indices = np.argsort(diversity_of_selected, axis=1)[:, ::-1][:, 0:self.J_]
         else:
-            diversity_indices = np.argsort(diversity_of_selected, axis=1)[:, 0:self.J]
+            diversity_indices = np.argsort(diversity_of_selected, axis=1)[:, 0:self.J_]
 
         # Getting the index of all selected base classifiers.
         selected_classifiers = competent_indices[np.arange(competent_indices.shape[0])[:, None], diversity_indices]
@@ -214,14 +255,13 @@ class DESKNN(DS):
         Different than other DES techniques, this method is based on a two stage selection, where
         first the most accurate classifier are selected, then the diversity information is used to get the most
         diverse ensemble for the probability estimation. Hence, the weighting mode is not defined. Also, the
-        selected ensemble size is fixed (self.J), so there is no need to use masked arrays in this class.
+        selected ensemble size is fixed (self.J_), so there is no need to use masked arrays in this class.
 
         Returns
         -------
         predicted_label : array of shape = [n_samples]
                           Predicted class label for each test example.
         """
-
         if query.ndim < 2:
             query = query.reshape(1, -1)
 
@@ -286,20 +326,34 @@ class DESKNN(DS):
 
         return predicted_proba
 
-    def _validate_parameters(self):
+    def _check_parameters(self):
         """Check if the parameters passed as argument are correct.
 
-        The diversity_func must be either ['DF', 'Q', 'RATIO']
+        The diversity_func_ must be either ['DF', 'Q', 'RATIO']
 
-        The values of N and J should be higher than 0, and N >= J
+        The values of N_ and J_ should be higher than 0, and N_ >= J_
         ----------
         """
-        if self.metric not in ['DF', 'Q', 'RATIO']:
+
+        if self.metric not in ['DF', 'Q', 'ratio']:
             raise ValueError('Diversity metric must be one of the following values: "DF", "Q" or "Ratio"')
 
-        if self.N <= 0 or self.J <= 0:
-            raise ValueError("The values of N and J should be higher than 0"
-                             "N = {}, J= {} " .format(self.N, self.J))
-        if self.N < self.J:
-            raise ValueError("The value of N should be greater or equals than J"
-                             "N = {}, J= {} " .format(self.N, self.J))
+        if self.N_ <= 0 or self.J_ <= 0:
+            raise ValueError("The values of N_ and J_ should be higher than 0"
+                             "N_ = {}, J_= {} " .format(self.N_, self.J_))
+        if self.N_ < self.J_:
+            raise ValueError("The value of N_ should be greater or equals than J_"
+                             "N_ = {}, J_= {} " .format(self.N_, self.J_))
+
+    def _set_diversity_func(self):
+        """Set the diversity function to be used according to the hyper-parameter metric
+
+        The diversity_func_ can be either the Double Fault, Q-Statistics or Ratio of errors.
+        ----------
+        """
+        if self.metric == 'DF':
+            self.diversity_func_ = negative_double_fault
+        elif self.metric == 'Q':
+            self.diversity_func_ = Q_statistic
+        else:
+            self.diversity_func_ = ratio_errors

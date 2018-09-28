@@ -22,10 +22,10 @@ class KNORAE(DES):
     
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support the method "predict".
-
+                       Each base classifiers should support the method "predict".
+                       If None, then the pool of classifiers is a bagging classifier.
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
 
@@ -43,12 +43,22 @@ class KNORAE(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
 
                      - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -63,10 +73,18 @@ class KNORAE(DES):
 
     """
 
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30, knn_classifier='knn'):
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None,
+                 IH_rate=0.30, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
-        super(KNORAE, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate, knn_classifier=knn_classifier)
+        super(KNORAE, self).__init__(pool_classifiers=pool_classifiers,
+                                     k=k,
+                                     DFP=DFP,
+                                     with_IH=with_IH,
+                                     safe_k=safe_k,
+                                     IH_rate=IH_rate,
+                                     random_state=random_state,
+                                     knn_classifier=knn_classifier,
+                                     DSEL_perc=DSEL_perc)
 
         self.name = 'k-Nearest Oracles Eliminate (KNORA-E)'
 
@@ -91,7 +109,7 @@ class KNORAE(DES):
                       Competence level estimated for each base classifier and test example.
         """
         _, idx_neighbors = self._get_region_competence(query)
-        results_neighbors = self.processed_dsel[idx_neighbors, :]
+        results_neighbors = self.DSEL_processed_[idx_neighbors, :]
 
         # Get the shape of the vector in order to know the number of samples, base classifiers and neighbors considered.
         shape = results_neighbors.shape
@@ -103,7 +121,7 @@ class KNORAE(DES):
         results_neighbors = np.insert(results_neighbors, shape[1], addition, axis=1)
 
         # Look for the first occurrence of a zero in the processed predictions (first misclassified. The np.argmax
-        # Can be used here, since in case of multiple occurrences of the maximum values, the indices
+        # Can be used here, since in case of multiple occurrences of the maximum values, the indices_
         # corresponding to the first occurrence are returned.
         competences = np.argmax(results_neighbors == 0, axis=1)
 

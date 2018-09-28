@@ -1,7 +1,13 @@
 import pytest
 from sklearn.linear_model import Perceptron
+
 from deslib.dcs.lca import LCA
 from deslib.tests.examples_test import *
+from sklearn.utils.estimator_checks import check_estimator
+
+
+def test_check_estimator():
+    check_estimator(LCA)
 
 
 @pytest.mark.parametrize('index, expected', [(0, [0.75000000,  0.66666667,  0.75000000]),
@@ -9,11 +15,11 @@ from deslib.tests.examples_test import *
                                              (2, [1.00000000,  0.60000000,  0.50000000])])
 def test_estimate_competence_woods(index, expected):
     lca_test = LCA(create_pool_classifiers())
-    lca_test.processed_dsel = dsel_processed_ex1
+    lca_test.DSEL_processed_ = dsel_processed_ex1
     lca_test.neighbors = neighbors_ex1[index, :]
     lca_test.distances = distances_ex1[index, :]
     lca_test.DFP_mask = [1, 1, 1]
-    lca_test.DSEL_target = y_dsel_ex1
+    lca_test.DSEL_target_ = y_dsel_ex1
 
     query = np.atleast_2d([1, 1])
 
@@ -30,11 +36,11 @@ def test_estimate_competence_batch():
                          [0.80000000, 1.00000000, 0.80000000],
                          [1.00000000, 0.60000000, 0.50000000]])
     lca_test = LCA(create_pool_classifiers())
-    lca_test.processed_dsel = dsel_processed_ex1
+    lca_test.DSEL_processed_ = dsel_processed_ex1
     lca_test.neighbors = neighbors_ex1
     lca_test.distances = distances_ex1
     lca_test.DFP_mask = np.ones((3, 3))
-    lca_test.DSEL_target = y_dsel_ex1
+    lca_test.DSEL_target_ = y_dsel_ex1
 
     query = np.ones((3, 2))
 
@@ -51,8 +57,8 @@ def test_estimate_competence_batch():
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_estimate_competence_diff_target(index):
     lca_test = LCA(create_pool_classifiers())
-    lca_test.processed_dsel = dsel_processed_ex1
-    lca_test.DSEL_target = np.ones(15, dtype=int) * 3
+    lca_test.DSEL_processed_ = dsel_processed_ex1
+    lca_test.DSEL_target_ = np.ones(15, dtype=int) * 3
     lca_test.neighbors = neighbors_ex1[index, :]
     lca_test.distances = distances_ex1[index, :]
     lca_test.DFP_mask = [1, 1, 1]
@@ -76,4 +82,4 @@ def test_predict_proba():
     y = y_dsel_ex1
     clf1 = Perceptron()
     clf1.fit(X, y)
-    LCA([clf1, clf1])
+    LCA([clf1, clf1]).fit(X, y)

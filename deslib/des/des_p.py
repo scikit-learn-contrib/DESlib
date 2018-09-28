@@ -20,9 +20,10 @@ class DESP(DES):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support the method "predict".
+                       Each base classifiers should support the method "predict".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -45,12 +46,22 @@ class DESP(DES):
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
 
                      - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -64,11 +75,23 @@ class DESP(DES):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30, mode='selection', knn_classifier='knn'):
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None,
+                 IH_rate=0.30,
+                 mode='selection',
+                 random_state=None,
+                 knn_classifier='knn',
+                 DSEL_perc=0.5):
 
-        super(DESP, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                   mode=mode, knn_classifier=knn_classifier)
+        super(DESP, self).__init__(pool_classifiers=pool_classifiers,
+                                   k=k,
+                                   DFP=DFP,
+                                   with_IH=with_IH,
+                                   safe_k=safe_k,
+                                   IH_rate=IH_rate,
+                                   mode=mode,
+                                   random_state=random_state,
+                                   knn_classifier=knn_classifier,
+                                   DSEL_perc=DSEL_perc)
 
         self.name = 'DES-Performance (DES-P)'
 
@@ -92,7 +115,7 @@ class DESP(DES):
                       Competence level estimated for each base classifier and test example.
         """
         _, idx_neighbors = self._get_region_competence(query)
-        competences = np.mean(self.processed_dsel[idx_neighbors, :], axis=1)
+        competences = np.mean(self.DSEL_processed_[idx_neighbors, :], axis=1)
 
         return competences
 
@@ -115,7 +138,7 @@ class DESP(DES):
         if competences.ndim < 2:
             competences = competences.reshape(1, -1)
 
-        RC = 1.0 / self.n_classes
+        RC = 1.0 / self.n_classes_
         selected_classifiers = (competences > RC)
 
         # For the rows that are all False (i.e., no base classifier was selected, select all classifiers (set all True)

@@ -69,7 +69,7 @@ def test_mcb():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    mcb = MCB(pool_classifiers, rng=rng, DFP=True, with_IH=True, IH_rate=0.1)
+    mcb = MCB(pool_classifiers, random_state=rng, DFP=True, with_IH=True, IH_rate=0.1)
     mcb.fit(X_dsel, y_dsel)
     assert np.isclose(mcb.score(X_test, y_test), 0.9)
 
@@ -78,6 +78,6 @@ def test_aposteriori():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    a_posteriori = APosteriori(pool_classifiers, rng=rng, DFP=True, with_IH=True, IH_rate=0.1)
+    a_posteriori = APosteriori(pool_classifiers, random_state=rng, DFP=True, with_IH=True, IH_rate=0.1)
     a_posteriori.fit(X_dsel, y_dsel)
     assert np.isclose(a_posteriori.score(X_test, y_test), 0.8303030303030303)

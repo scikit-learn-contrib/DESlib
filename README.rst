@@ -57,7 +57,7 @@ Latest version (under development):
 Dependencies:
 -------------
 
-DESlib is tested to work with Python 3.5, and 3.6. The dependency requirements are:
+DESlib is tested to work with Python 3.5, 3.6 and 3.7. The dependency requirements are:
 
 * scipy(>=0.13.3)
 * numpy(>=1.10.4)

@@ -3,6 +3,11 @@ from sklearn.linear_model import Perceptron
 
 from deslib.dcs.rank import Rank
 from deslib.tests.examples_test import *
+from sklearn.utils.estimator_checks import check_estimator
+
+
+def test_check_estimator():
+    check_estimator(Rank)
 
 
 @pytest.mark.parametrize('index, expected', [(0, [1, 5, 0]),
@@ -10,7 +15,7 @@ from deslib.tests.examples_test import *
                                              (2, [0, 0, 1])])
 def test_estimate_competence(index, expected):
     rank_test = Rank(create_pool_classifiers())
-    rank_test.processed_dsel = dsel_processed_ex1
+    rank_test.DSEL_processed_ = dsel_processed_ex1
     rank_test.neighbors = neighbors_ex1[index, :]
     rank_test.distances = distances_ex1[index, :]
     rank_test.DFP_mask = [1, 1, 1]
@@ -24,7 +29,7 @@ def test_estimate_competence_batch():
                          [1, 1, 2],
                          [0, 0, 1]])
     rank_test = Rank(create_pool_classifiers())
-    rank_test.processed_dsel = dsel_processed_ex1
+    rank_test.DSEL_processed_ = dsel_processed_ex1
     rank_test.neighbors = neighbors_ex1
     rank_test.distances = distances_ex1
     rank_test.DFP_mask = np.ones((3, 3))
@@ -40,7 +45,7 @@ def test_predict_proba():
     y = y_dsel_ex1
     clf1 = Perceptron()
     clf1.fit(X, y)
-    Rank([clf1, clf1])
+    Rank([clf1, clf1]).fit(X, y)
 
 
 

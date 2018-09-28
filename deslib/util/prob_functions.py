@@ -228,6 +228,10 @@ def min_difference(supports, idx_correct_label):
     supports_correct = supports[mask]
     # Get supports for the other classes
     supports_others = supports[~mask]
+
+    if len(supports_others) == 0:  # Corner case where there is a single class in y_train
+        supports_others = np.zeros_like(supports_correct)
+
     difference = supports_correct.reshape(-1, 1) - supports_others.reshape(supports_correct.size, -1)
     C_src = np.sort(difference, axis=1)[:, 0]
     return C_src

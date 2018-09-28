@@ -16,9 +16,10 @@ class DES(DS):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the method "predict".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -44,12 +45,22 @@ class DES(DS):
     needs_proba : Boolean (Default = False)
                   Determines whether the method always needs base classifiers that estimate probabilities.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
 
                      - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -61,21 +72,20 @@ class DES(DS):
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False,
-                 safe_k=None, IH_rate=0.30, mode='selection', needs_proba=False, knn_classifier='knn'):
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
+                 safe_k=None, IH_rate=0.30, mode='selection', needs_proba=False,
+                 random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
-        super(DES, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k,
-                                  IH_rate=IH_rate, needs_proba=needs_proba, knn_classifier=knn_classifier)
-
-        if not isinstance(mode, str):
-            raise TypeError('Parameter "mode" should be a string. Currently "mode" = {}' .format(type(mode)))
-
-        mode = mode.lower()
-
-        if mode not in ['selection', 'hybrid', 'weighting']:
-            raise ValueError('Invalid value for parameter "mode". "mode" should be one of these options '
-                             '{selection, hybrid, weighting}')
-
+        super(DES, self).__init__(pool_classifiers=pool_classifiers,
+                                  k=k,
+                                  DFP=DFP,
+                                  with_IH=with_IH,
+                                  safe_k=safe_k,
+                                  IH_rate=IH_rate,
+                                  needs_proba=needs_proba,
+                                  random_state=random_state,
+                                  knn_classifier=knn_classifier,
+                                  DSEL_perc=DSEL_perc)
         self.mode = mode
 
     def estimate_competence(self, query, predictions):
@@ -195,11 +205,11 @@ class DES(DS):
 
         elif self.mode == "weighting":
             votes = np.atleast_2d(predictions)
-            predicted_label = weighted_majority_voting_rule(votes, competences, np.arange(self.n_classes))
+            predicted_label = weighted_majority_voting_rule(votes, competences, np.arange(self.n_classes_))
         else:
             selected_classifiers = self.select(competences)
             votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
-            predicted_label = weighted_majority_voting_rule(votes, competences, np.arange(self.n_classes))
+            predicted_label = weighted_majority_voting_rule(votes, competences, np.arange(self.n_classes_))
 
         return predicted_label
 
@@ -269,3 +279,15 @@ class DES(DS):
             predicted_proba = aggregate_proba_ensemble_weighted(masked_proba, competences)
 
         return predicted_proba
+
+    def _validate_parameters(self):
+
+        super(DES, self)._validate_parameters()
+
+        if not isinstance(self.mode, str):
+            raise TypeError('Parameter "mode" should be a string. Currently "mode" = {}'.format(type(self.mode)))
+
+        if self.mode not in ['selection', 'hybrid', 'weighting']:
+            raise ValueError('Invalid value for parameter "mode". "mode" should be one of these options '
+                             '{selection, hybrid, weighting}')
+

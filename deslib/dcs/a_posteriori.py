@@ -28,9 +28,10 @@ class APosteriori(DCS):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the method "predict" and "predict_proba".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -58,8 +59,11 @@ class APosteriori(DCS):
                   classifiers for the random and diff selection schemes. If the difference is lower than the
                   threshold, their performance are considered equivalent.
 
-    rng : numpy.random.RandomState instance
-          Random number generator to assure reproducible results.
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
 
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
@@ -67,6 +71,10 @@ class APosteriori(DCS):
                      - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -83,14 +91,20 @@ class APosteriori(DCS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 selection_method='diff', diff_thresh=0.1, rng=np.random.RandomState(), knn_classifier='knn'):
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
+                 selection_method='diff', diff_thresh=0.1, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
-        super(APosteriori, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
+        super(APosteriori, self).__init__(pool_classifiers=pool_classifiers,
+                                          k=k,
+                                          DFP=DFP,
+                                          with_IH=with_IH,
+                                          safe_k=safe_k,
+                                          IH_rate=IH_rate,
                                           selection_method=selection_method,
                                           diff_thresh=diff_thresh,
-                                          rng=rng, knn_classifier=knn_classifier)
-        self._check_predict_proba()
+                                          knn_classifier=knn_classifier,
+                                          random_state=random_state,
+                                          DSEL_perc=DSEL_perc)
 
         self.name = 'A Posteriori'
 
@@ -112,7 +126,9 @@ class APosteriori(DCS):
         self
         """
         super(APosteriori, self).fit(X, y)
-        self.dsel_scores = self._preprocess_dsel_scores()
+        self._check_predict_proba()
+
+        self.dsel_scores_ = self._preprocess_dsel_scores()
         return self
 
     def estimate_competence(self, query, predictions=None):
@@ -150,26 +166,26 @@ class APosteriori(DCS):
         predictions = np.atleast_2d(predictions)
 
         # Normalize the distances
-        dists_normalized = 1.0/dists
+        dists_normalized = 1.0 / dists
 
         # Expanding the dimensions of the predictions and target arrays in order to compare both.
         predictions_3d = np.expand_dims(predictions, axis=1)
-        target_3d = np.expand_dims(self.DSEL_target[idx_neighbors], axis=2)
+        target_3d = np.expand_dims(self.DSEL_target_[idx_neighbors], axis=2)
         # Create a mask to remove the neighbors belonging to a different class than the predicted by the base classifier
         mask = (predictions_3d != target_3d)
 
         # Broadcast the distance array to the same shape as the pre-processed information for future calculations
-        dists_normalized = np.repeat(np.expand_dims(dists_normalized, axis=2), self.n_classifiers, axis=2)
+        dists_normalized = np.repeat(np.expand_dims(dists_normalized, axis=2), self.n_classifiers_, axis=2)
 
         # Multiply the pre-processed correct predictions by the base classifiers to the distance array
-        scores_target_norm = self.dsel_scores[idx_neighbors, :, self.DSEL_target[idx_neighbors]] * dists_normalized
+        scores_target_norm = self.dsel_scores_[idx_neighbors, :, self.DSEL_target_[idx_neighbors]] * dists_normalized
 
         # Create masked arrays to remove samples with different label in the calculations
         masked_preprocessed = np.ma.MaskedArray(scores_target_norm, mask=mask)
         masked_dist = np.ma.MaskedArray(dists_normalized, mask=mask)
 
         # Consider only the neighbor samples where the predicted label is equals to the neighbor label
-        competences_masked = np.ma.sum(masked_preprocessed, axis=1)/ np.ma.sum(masked_dist, axis=1)
+        competences_masked = np.ma.sum(masked_preprocessed, axis=1) / np.ma.sum(masked_dist, axis=1)
 
         # Fill 0 to the masked values in the resulting array (when no neighbors belongs to the class predicted by
         # the corresponding base classifier)

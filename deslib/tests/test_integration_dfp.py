@@ -99,7 +99,7 @@ def test_mcb():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    mcb = MCB(pool_classifiers, rng=rng, DFP=True)
+    mcb = MCB(pool_classifiers, random_state=rng, DFP=True)
     mcb.fit(X_dsel, y_dsel)
     assert np.isclose(mcb.score(X_test, y_test), 0.8606060606060606)
 
@@ -108,7 +108,7 @@ def test_apriori():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    apriori = APriori(pool_classifiers, rng=rng, DFP=True)
+    apriori = APriori(pool_classifiers, random_state=rng, DFP=True)
     apriori.fit(X_dsel, y_dsel)
     assert np.isclose(apriori.score(X_test, y_test), 0.87272727272727268)
 
@@ -125,7 +125,7 @@ def test_aposteriori():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    a_posteriori = APosteriori(pool_classifiers, rng=rng, DFP=True)
+    a_posteriori = APosteriori(pool_classifiers, random_state=rng, DFP=True)
     a_posteriori.fit(X_dsel, y_dsel)
     assert np.isclose(a_posteriori.score(X_test, y_test), 0.90000000000000002)
 
@@ -169,6 +169,7 @@ def test_oracle():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
     oracle = Oracle(pool_classifiers)
+    oracle.fit(X_dsel, y_dsel)
     assert np.isclose(oracle.score(X_test, y_test), 0.98787878787878791)
 
 
@@ -223,7 +224,7 @@ def test_mcb_proba():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    mcb = MCB(pool_classifiers, rng=rng, DFP=True)
+    mcb = MCB(pool_classifiers, random_state=rng, DFP=True)
     mcb.fit(X_dsel, y_dsel)
     probas = mcb.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/mcb_proba_DFP.npy')

@@ -23,8 +23,10 @@ class KNOP(DES):
 
     Parameters
     ----------
-    pool_classifiers : type, the generated_pool of classifiers trained for the corresponding
-    classification problem.
+    pool_classifiers : list of classifiers (Default = None)
+                       The generated_pool of classifiers trained for the corresponding classification problem.
+                       Each base classifiers should support the methods "predict" and "predict_proba".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -43,6 +45,12 @@ class KNOP(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     knn_classifier : {'knn', 'faiss', None} (Default = None)
                      The algorithm used to estimate the region of competence:
 
@@ -50,6 +58,9 @@ class KNOP(DES):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -70,8 +81,8 @@ class KNOP(DES):
 
     """
 
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30, knn_classifier=None):
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None,
+                 IH_rate=0.30, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
         super(KNOP, self).__init__(pool_classifiers, k,
                                    DFP=DFP,
@@ -80,8 +91,10 @@ class KNOP(DES):
                                    IH_rate=IH_rate,
                                    mode='weighting',
                                    needs_proba=True,
-                                   knn_classifier=knn_classifier)
-        self._check_predict_proba()
+                                   random_state=random_state,
+                                   knn_classifier=knn_classifier,
+                                   DSEL_perc=DSEL_perc)
+
         self.name = 'K-Nearest Output Profiles (KNOP)'
 
     def fit(self, X, y):
@@ -102,15 +115,13 @@ class KNOP(DES):
         -------
         self
         """
+        super(KNOP, self).fit(X, y)
 
-        y_ind = self.setup_label_encoder(y)
-        self._set_dsel(X, y_ind)
-        self.dsel_scores = self._preprocess_dsel_scores()
-        self._fit_region_competence(X, y_ind, self.k)
-
-        # Reshape dsel_scores as a 2-D array for nearest neighbor calculations
-        dsel_output_profiles = self.dsel_scores.reshape(self.n_samples, self.n_classifiers * self.n_classes)
-        self._fit_OP(dsel_output_profiles, y_ind, self.k)
+        self._check_predict_proba()
+        self.dsel_scores_ = self._preprocess_dsel_scores()
+        # Reshape DSEL_scores as a 2-D array for nearest neighbor calculations
+        dsel_output_profiles = self.dsel_scores_.reshape(self.n_samples_, self.n_classifiers_ * self.n_classes_)
+        self._fit_OP(dsel_output_profiles, self.DSEL_target_, self.k_)
 
         return self
 
@@ -129,14 +140,14 @@ class KNOP(DES):
             Number of output profiles used in the region of competence estimation.
 
         """
-        self.op_knn = self.knn_class(k)
+        self.op_knn_ = self.knn_class_(k)
 
-        if self.n_classes == 2:
+        if self.n_classes_ == 2:
             # Get only the scores for one class since they are complementary
             X_temp = X_op[:, ::2]
-            self.op_knn.fit(X_temp, y_op)
+            self.op_knn_.fit(X_temp, y_op)
         else:
-            self.op_knn.fit(X_op, y_op)
+            self.op_knn_.fit(X_op, y_op)
 
     def _get_similar_out_profiles(self, probabilities):
         """Get the most similar output profiles of the query sample.
@@ -156,13 +167,13 @@ class KNOP(DES):
               Indices of the instances belonging to the region of competence of the given query sample.
         """
 
-        if self.n_classes == 2:
+        if self.n_classes_ == 2:
             # Get only the scores for one class since they are complementary
             query_op = probabilities[:, :, 0]
         else:
-            query_op = probabilities.reshape((probabilities.shape[0], self.n_classifiers * self.n_classes))
+            query_op = probabilities.reshape((probabilities.shape[0], self.n_classifiers_ * self.n_classes_))
 
-        dists, idx = self.op_knn.kneighbors(query_op, n_neighbors=self.k, return_distance=True)
+        dists, idx = self.op_knn_.kneighbors(query_op, n_neighbors=self.k_, return_distance=True)
         return dists, np.atleast_2d(idx)
 
     def estimate_competence_from_proba(self, query, probabilities):
@@ -186,7 +197,7 @@ class KNOP(DES):
                       Competence level estimated for each base classifier and test example.
         """
         _, idx_neighbors = self._get_similar_out_profiles(probabilities)
-        competences = np.sum(self.processed_dsel[idx_neighbors, :], axis=1, dtype=np.float)
+        competences = np.sum(self.DSEL_processed_[idx_neighbors, :], axis=1, dtype=np.float)
 
         return competences
 

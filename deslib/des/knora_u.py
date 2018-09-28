@@ -20,9 +20,10 @@ class KNORAU(DES):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support the method "predict".
+                       Each base classifiers should support the method "predict".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -41,6 +42,12 @@ class KNORAU(DES):
               Hardness threshold. If the hardness level of the competence region is lower than
               the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
 
@@ -48,6 +55,9 @@ class KNORAU(DES):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -61,15 +71,18 @@ class KNORAU(DES):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30, use_faiss=False, knn_classifier='knn'):
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None,
+                 IH_rate=0.30, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
         super(KNORAU, self).__init__(pool_classifiers, k,
                                      DFP=DFP,
                                      with_IH=with_IH,
                                      safe_k=safe_k,
                                      IH_rate=IH_rate,
-                                     mode='weighting', knn_classifier=knn_classifier)
+                                     mode='weighting',
+                                     random_state=random_state,
+                                     knn_classifier=knn_classifier,
+                                     DSEL_perc=DSEL_perc)
 
         self.name = 'k-Nearest Oracles Union (KNORA-U)'
 
@@ -94,7 +107,7 @@ class KNORAU(DES):
 
         """
         _, idx_neighbors = self._get_region_competence(query)
-        competences = np.sum(self.processed_dsel[idx_neighbors, :], axis=1, dtype=np.float)
+        competences = np.sum(self.DSEL_processed_[idx_neighbors, :], axis=1, dtype=np.float)
 
         return competences
 

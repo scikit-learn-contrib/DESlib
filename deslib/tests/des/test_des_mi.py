@@ -1,9 +1,16 @@
 import pytest
 from sklearn.linear_model import Perceptron
-from deslib.tests.examples_test import *
-from deslib.des.des_mi import DESMI
 
-# TODO: create test rourtine for the estimate_competence method
+from deslib.des.des_mi import DESMI
+from deslib.tests.examples_test import *
+from sklearn.utils.estimator_checks import check_estimator
+
+
+def test_check_estimator():
+    check_estimator(DESMI)
+
+
+# TODO: create test routine for the estimate_competence method
 
 
 @pytest.mark.parametrize('alpha', [-1.0, -0.5, 0.0])
@@ -11,22 +18,24 @@ def test_check_alpha_value(alpha):
     pool_classifiers = create_pool_classifiers()
 
     with pytest.raises(ValueError):
-        DESMI(pool_classifiers, alpha=alpha)
+        desmi = DESMI(pool_classifiers, alpha=alpha)
+        desmi.fit(X_dsel_ex1, y_dsel_ex1)
 
 
 @pytest.mark.parametrize('alpha', ['a', None, 'string', 1])
 def test_check_alpha_type(alpha):
     pool_classifiers = create_pool_classifiers()
-
     with pytest.raises(TypeError):
-        DESMI(pool_classifiers, alpha=alpha)
+        desmi = DESMI(pool_classifiers, alpha=alpha)
+        desmi.fit(X_dsel_ex1, y_dsel_ex1)
 
 
-@pytest.mark.parametrize('alpha', [-1.0, -0.5, 0.0])
-def test_check_N_value(alpha):
+@pytest.mark.parametrize('pct_accuracy', [-1.0, -0.5, 0.0, 1.01])
+def test_check_pct_accuracy_value(pct_accuracy):
     pool_classifiers = create_pool_classifiers()
     with pytest.raises(ValueError):
-        DESMI(pool_classifiers, pct_accuracy=0.05)
+        desmi = DESMI(pool_classifiers, pct_accuracy=pct_accuracy)
+        desmi.fit(X_dsel_ex1, y_dsel_ex1)
 
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
@@ -43,6 +52,7 @@ def test_require_proba():
 def test_select_single_sample():
     pool_classifiers = create_pool_classifiers()
     des_mi = DESMI(pool_classifiers, pct_accuracy=0.7)
+    des_mi.N_ = 2
     competences = np.array([0.7, 0.2, 1.0])
     selected_clf = des_mi.select(competences)
     expected = np.array([0, 2])
@@ -53,6 +63,7 @@ def test_select_batch_samples():
     n_samples = 10
     pool_classifiers = create_pool_classifiers()
     des_mi = DESMI(pool_classifiers, pct_accuracy=0.7)
+    des_mi.N_ = 2
     competences = np.tile(np.array([0.7, 0.2, 1.0]), (n_samples, 1))
     selected_clf = des_mi.select(competences)
     expected = np.tile(np.array([0, 2]), (n_samples, 1))

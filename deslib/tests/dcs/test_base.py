@@ -6,26 +6,38 @@ from deslib.tests.examples_test import *
 
 @pytest.mark.parametrize('selection_method,', ['a', 'test'])
 def test_valid_selection_method(selection_method):
+    X = np.random.rand(10, 2)
+    y = np.ones(10)
     with pytest.raises(ValueError):
-        DCS(create_pool_classifiers(), selection_method=selection_method)
+        dcs = DCS(create_pool_classifiers(), selection_method=selection_method)
+        dcs.fit(X, y)
 
 
 @pytest.mark.parametrize('selection_method,', [1, [1.0, 2.0], None, np.nan])
 def test_selection_method_type(selection_method):
+    X = np.random.rand(10, 2)
+    y = np.ones(10)
     with pytest.raises(TypeError):
-        DCS(create_pool_classifiers(), selection_method=selection_method)
+        dcs = DCS(create_pool_classifiers(), selection_method=selection_method)
+        dcs.fit(X, y)
 
 
 @pytest.mark.parametrize('diff_thresh,', ['test', None, [0.1, 0.2]])
 def test_valid_diff_threshold_type(diff_thresh):
+    X = np.random.rand(10, 2)
+    y = np.ones(10)
     with pytest.raises(TypeError):
-        DCS(create_pool_classifiers(), selection_method='diff', diff_thresh=diff_thresh)
+        dcs = DCS(create_pool_classifiers(), selection_method='diff', diff_thresh=diff_thresh)
+        dcs.fit(X, y)
 
 
 @pytest.mark.parametrize('diff_thresh,', [1.0, -0.15, 0.5, np.nan])
 def test_valid_diff_threshold_value(diff_thresh):
+    X = np.random.rand(10, 2)
+    y = np.ones(10)
     with pytest.raises(ValueError):
-        DCS(create_pool_classifiers(), selection_method='diff', diff_thresh=diff_thresh)
+        dcs = DCS(create_pool_classifiers(), selection_method='diff', diff_thresh=diff_thresh)
+        dcs.fit(X, y)
 
 
 # ------------------------ Testing different types of selection routines -----------------
@@ -52,7 +64,9 @@ def test_select_all(competences, expected):
 def test_select_diff(competences, expected):
     rng = np.random.RandomState(123456)
     pool_classifiers = create_pool_classifiers()
-    dcs_test = DCS(pool_classifiers, selection_method='diff', diff_thresh=0.15, rng=rng)
+    dcs_test = DCS(pool_classifiers, selection_method='diff', diff_thresh=0.15, random_state=rng)
+    dcs_test.fit(X_dsel_ex1, y_dsel_ex1)
+
     selected_clf = dcs_test.select(np.array(competences))
     assert np.allclose(selected_clf, expected)
 
@@ -61,7 +75,9 @@ def test_select_diff(competences, expected):
 def test_select_random(competences, expected):
     rng = np.random.RandomState(123456)
     pool_classifiers = create_pool_classifiers()
-    dcs_test = DCS(pool_classifiers, selection_method='random', rng=rng)
+    dcs_test = DCS(pool_classifiers, selection_method='random', random_state=rng)
+    dcs_test.fit(X_dsel_ex1, y_dsel_ex1)
+
     selected_clf = dcs_test.select(np.array(competences))
     assert np.allclose(selected_clf, expected)
 
@@ -89,7 +105,9 @@ def test_select_diff_batch():
     expected = np.array([0, 2, 2])
     rng = np.random.RandomState(123456)
     pool_classifiers = create_pool_classifiers()
-    dcs_test = DCS(pool_classifiers, selection_method='diff', diff_thresh=0.15, rng=rng)
+    dcs_test = DCS(pool_classifiers, selection_method='diff', diff_thresh=0.15, random_state=rng)
+    dcs_test.fit(X_dsel_ex1, y_dsel_ex1)
+
     selected_clf = dcs_test.select(competences)
     assert np.array_equal(selected_clf, expected)
 
@@ -99,7 +117,9 @@ def test_select_random_batch():
     expected = np.array([1, 2, 1])
     rng = np.random.RandomState(123456)
     pool_classifiers = create_pool_classifiers()
-    dcs_test = DCS(pool_classifiers, selection_method='random', rng=rng)
+    dcs_test = DCS(pool_classifiers, selection_method='random', random_state=rng)
+    dcs_test.fit(X_dsel_ex1, y_dsel_ex1)
+
     selected_clf = dcs_test.select(competences)
     assert np.array_equal(selected_clf, expected)
 
@@ -108,9 +128,11 @@ def test_select_random_batch():
 
 def test_classify_instance():
     query = np.array([-1, 1])
+    n_classifiers = 3
+
     pool_classifiers = create_pool_classifiers()
     dcs_test = DCS(pool_classifiers)
-    competences = np.random.rand(dcs_test.n_classifiers)
+    competences = np.random.rand(n_classifiers)
 
     dcs_test.estimate_competence = MagicMock(return_value=competences)
     expected = pool_classifiers[np.argmax(competences)].predict(query)[0]
@@ -124,10 +146,12 @@ def test_classify_instance():
 
 def test_classify_instance_batch():
     n_samples = 3
+    n_classifiers = 3
     query = np.ones((n_samples, 2))
     pool_classifiers = create_pool_classifiers()
     dcs_test = DCS(pool_classifiers)
-    competences = np.random.rand(n_samples, dcs_test.n_classifiers)
+
+    competences = np.random.rand(n_samples, n_classifiers)
 
     dcs_test.estimate_competence = MagicMock(return_value=competences)
     expected = []
@@ -173,11 +197,12 @@ def test_classify_instance_all_batch():
 
 def test_predict_proba_instance():
     query = np.array([-1, 1])
+    n_classifiers = 3
     pool_classifiers = create_pool_classifiers()
     dcs_test = DCS(pool_classifiers)
-    dcs_test.n_classes = 2
+    dcs_test.n_classes_ = 2
 
-    competences = np.random.rand(dcs_test.n_classifiers)
+    competences = np.random.rand(n_classifiers)
 
     dcs_test.estimate_competence = MagicMock(return_value=competences)
     expected = pool_classifiers[np.argmax(competences)].predict_proba(query)
@@ -203,7 +228,7 @@ def test_predict_proba_instance_all(competences, expected):
     query = np.array([-1, 1])
     pool_classifiers = create_pool_classifiers()
     dcs_test = DCS(pool_classifiers, selection_method='all')
-    dcs_test.n_classes = 2
+    dcs_test.n_classes_ = 2
 
     dcs_test.estimate_competence = MagicMock(return_value=np.array(competences))
 

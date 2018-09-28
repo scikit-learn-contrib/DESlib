@@ -3,6 +3,11 @@ from sklearn.linear_model import Perceptron
 
 from deslib.dcs.mla import MLA
 from deslib.tests.examples_test import *
+from sklearn.utils.estimator_checks import check_estimator
+
+
+def test_check_estimator():
+    check_estimator(MLA)
 
 
 # Should always be 1.0 since the supports for the correct class is always 1.
@@ -11,15 +16,15 @@ def test_estimate_competence_all_ones(index):
     query = np.atleast_2d([1, 1])
 
     mla_test = MLA(create_pool_classifiers())
+    mla_test.n_classifiers_ = 3
 
-    mla_test.processed_dsel = dsel_processed_all_ones
-    mla_test.dsel_scores = dsel_scores_all_ones
-    mla_test.DSEL_target = y_dsel_ex1
-    mla_test.n_classes = 2
+    mla_test.DSEL_processed_ = dsel_processed_all_ones
+    mla_test.DSEL_scores = dsel_scores_all_ones
+    mla_test.DSEL_target_ = y_dsel_ex1
+    mla_test.n_classes_ = 2
 
     mla_test.neighbors = neighbors_ex1[index, :]
     mla_test.distances = distances_all_ones[index, :]
-    mla_test.DFP_mask = [1, 1, 1]
 
     expected = [1.0, 1.0, 1.0]
 
@@ -38,15 +43,15 @@ def test_estimate_competence(index, expected):
     query = np.atleast_2d([1, 1])
 
     mla_test = MLA(create_pool_classifiers())
+    mla_test.n_classifiers_ = 3
 
-    mla_test.processed_dsel = dsel_processed_ex1
-    mla_test.dsel_scores = dsel_scores_all_ones
-    mla_test.DSEL_target = y_dsel_ex1
-    mla_test.n_classes = 2
+    mla_test.DSEL_processed_ = dsel_processed_ex1
+    mla_test.DSEL_scores = dsel_scores_all_ones
+    mla_test.DSEL_target_ = y_dsel_ex1
+    mla_test.n_classes_ = 2
 
     mla_test.neighbors = neighbors_ex1[index, :]
     mla_test.distances = distances_all_ones[index, :]
-    mla_test.DFP_mask = [1, 1, 1]
 
     predictions = []
     for clf in mla_test.pool_classifiers:
@@ -63,10 +68,11 @@ def test_estimate_competence_batch():
                          [1.000,  0.600,  0.500]])
 
     mla_test = MLA(create_pool_classifiers())
-    mla_test.processed_dsel = dsel_processed_ex1
-    mla_test.dsel_scores = dsel_scores_all_ones
-    mla_test.DSEL_target = y_dsel_ex1
-    mla_test.n_classes = 2
+    mla_test.n_classifiers_ = 3
+    mla_test.DSEL_processed_ = dsel_processed_ex1
+    mla_test.DSEL_scores = dsel_scores_all_ones
+    mla_test.DSEL_target_ = y_dsel_ex1
+    mla_test.n_classes_ = 2
 
     mla_test.neighbors = neighbors_ex1
     mla_test.distances = distances_all_ones
@@ -87,13 +93,13 @@ def test_estimate_competence_diff_target(index):
     query = np.atleast_2d([1, 1])
 
     mla_test = MLA(create_pool_classifiers())
+    mla_test.n_classifiers_ = 3
 
-    mla_test.processed_dsel = dsel_processed_ex1
-    mla_test.DSEL_target = np.ones(15, dtype=int) * 3
+    mla_test.DSEL_processed_ = dsel_processed_ex1
+    mla_test.DSEL_target_ = np.ones(15, dtype=int) * 3
 
     mla_test.neighbors = neighbors_ex1[index, :]
     mla_test.distances = distances_ex1[index, :]
-    mla_test.DFP_mask = [1, 1, 1]
 
     expected = [0.0, 0.0, 0.0]
 
@@ -110,15 +116,15 @@ def test_estimate_competence_kuncheva_ex():
     query = np.atleast_2d([1, 1])
 
     mla_test = MLA([create_base_classifier(return_value=1)]*2, k=k_ex_kuncheva)
+    mla_test.n_classifiers_ = 2
 
-    mla_test.processed_dsel = np.repeat(dsel_processed_kuncheva, 2, axis=1)
-    mla_test.dsel_scores = dsel_scores_ex_kuncheva
-    mla_test.DSEL_target = y_dsel_ex_kuncheva_dependent
-    mla_test.n_classes = n_classes_ex_kuncheva
+    mla_test.DSEL_processed_ = np.repeat(dsel_processed_kuncheva, 2, axis=1)
+    mla_test.DSEL_scores = dsel_scores_ex_kuncheva
+    mla_test.DSEL_target_ = y_dsel_ex_kuncheva_dependent
+    mla_test.n_classes_ = n_classes_ex_kuncheva
 
     mla_test.neighbors = neighbors_ex_kuncheva
     mla_test.distances = distances_ex_kuncheva
-    mla_test.DFP_mask = [1, 1]
 
     predictions = []
     for clf in mla_test.pool_classifiers:
@@ -136,4 +142,4 @@ def test_predict_proba():
     y = y_dsel_ex1
     clf1 = Perceptron()
     clf1.fit(X, y)
-    MLA([clf1, clf1])
+    MLA([clf1, clf1]).fit(X, y)

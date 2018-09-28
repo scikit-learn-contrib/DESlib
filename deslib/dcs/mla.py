@@ -23,9 +23,10 @@ class MLA(DCS):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support the method "predict".
+                       Each base classifiers should support the method "predict".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -53,8 +54,11 @@ class MLA(DCS):
                   classifiers for the random and diff selection schemes. If the difference is lower than the
                   threshold, their performance are considered equivalent.
 
-    rng : numpy.random.RandomState instance
-          Random number generator to assure reproducible results.
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
 
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
@@ -62,6 +66,10 @@ class MLA(DCS):
                      - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -75,15 +83,23 @@ class MLA(DCS):
     R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
                  selection_method='best',
                  diff_thresh=0.1,
-                 rng=np.random.RandomState(), knn_classifier='knn'):
+                 random_state=None,
+                 knn_classifier='knn', DSEL_perc=0.5):
 
-        super(MLA, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
+        super(MLA, self).__init__(pool_classifiers=pool_classifiers,
+                                  k=k,
+                                  DFP=DFP,
+                                  with_IH=with_IH,
+                                  safe_k=safe_k,
+                                  IH_rate=IH_rate,
                                   selection_method=selection_method,
                                   diff_thresh=diff_thresh,
-                                  rng=rng, knn_classifier=knn_classifier)
+                                  random_state=random_state,
+                                  knn_classifier=knn_classifier,
+                                  DSEL_perc=DSEL_perc)
 
         self.name = 'Modified Local Accuracy (MLA)'
 
@@ -125,15 +141,15 @@ class MLA(DCS):
 
         # Expanding the dimensions of the predictions and target arrays in order to compare both.
         predictions_3d = np.expand_dims(predictions, axis=1)
-        target_3d = np.expand_dims(self.DSEL_target[idx_neighbors], axis=2)
+        target_3d = np.expand_dims(self.DSEL_target_[idx_neighbors], axis=2)
         # Create a mask to remove the neighbors belonging to a different class than the predicted by the base classifier
         mask = (predictions_3d != target_3d)
 
         # Broadcast the distance array to the same shape as the pre-processed information for future calculations
-        dists_normalized = np.repeat(np.expand_dims(dists_normalized, axis=2), self.n_classifiers, axis=2)
+        dists_normalized = np.repeat(np.expand_dims(dists_normalized, axis=2), self.n_classifiers_, axis=2)
 
         # Multiply the pre-processed correct predictions by the base classifiers to the distance array
-        proc_norm = self.processed_dsel[idx_neighbors, :] * dists_normalized
+        proc_norm = self.DSEL_processed_[idx_neighbors, :] * dists_normalized
 
         # Create masked arrays to remove samples with different label in the calculations
         masked_preprocessed = np.ma.MaskedArray(proc_norm, mask=mask)

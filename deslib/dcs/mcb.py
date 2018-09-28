@@ -25,9 +25,10 @@ class MCB(DCS):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support the method "predict".
+                       Each base classifiers should support the method "predict".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -55,8 +56,11 @@ class MCB(DCS):
                   classifiers for the random and diff selection schemes. If the difference is lower than the
                   threshold, their performance are considered equivalent.
 
-    rng : numpy.random.RandomState instance
-          Random number generator to assure reproducible results.
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
 
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
@@ -64,6 +68,10 @@ class MCB(DCS):
                      - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -83,22 +91,16 @@ class MCB(DCS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 similarity_threshold=0.7, selection_method='diff', diff_thresh=0.1, rng=np.random.RandomState(),
-                 knn_classifier='knn'):
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
+                 similarity_threshold=0.7, selection_method='diff', diff_thresh=0.1, random_state=None,
+                 knn_classifier='knn', DSEL_perc=0.5):
 
         super(MCB, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
                                   selection_method=selection_method,
                                   diff_thresh=diff_thresh,
-                                  rng=rng, knn_classifier=knn_classifier)
-
-        if not isinstance(similarity_threshold, float):
-            raise TypeError('The parameter similarity_threshold must be a float.'
-                            ' similarity_threshold = ', type(similarity_threshold))
-
-        if similarity_threshold > 1 or similarity_threshold < 0:
-            raise ValueError('The parameter similarity_threshold should be between [0 and 1]. '
-                             'similarity_threshold = ', similarity_threshold)
+                                  random_state=random_state,
+                                  knn_classifier=knn_classifier,
+                                  DSEL_perc=DSEL_perc)
 
         self.similarity_threshold = similarity_threshold
         self.name = 'Multiple Classifier Behaviour (MCB)'
@@ -143,17 +145,28 @@ class MCB(DCS):
         # Use the pre-compute decisions to transform the query to the BKS space
         BKS_query = predictions
 
-        T = (self.BKS_dsel[idx_neighbors] == BKS_query.reshape(BKS_query.shape[0], -1, BKS_query.shape[1]))
-        S = np.sum(T, axis=2) / self.n_classifiers
+        T = (self.BKS_DSEL_[idx_neighbors] == BKS_query.reshape(BKS_query.shape[0], -1, BKS_query.shape[1]))
+        S = np.sum(T, axis=2) / self.n_classifiers_
 
         # get a mask with the neighbors that will be considered for the competence estimation for all samples.
         boolean_mask = (S > self.similarity_threshold)
         boolean_mask[~np.any(boolean_mask, axis=1), :] = True
         # Expanding this mask to the third axis (n_classifiers) since it is the same for each classifier.
-        boolean_mask = np.repeat(np.expand_dims(boolean_mask, axis=2), self.n_classifiers, axis=2)
+        boolean_mask = np.repeat(np.expand_dims(boolean_mask, axis=2), self.n_classifiers_, axis=2)
 
         # Use the masked array mean to take into account the removed neighbors
-        processed_pred = np.ma.MaskedArray(self.processed_dsel[idx_neighbors, :], mask=~boolean_mask)
+        processed_pred = np.ma.MaskedArray(self.DSEL_processed_[idx_neighbors, :], mask=~boolean_mask)
         competences = np.ma.mean(processed_pred, axis=1)
 
         return competences
+
+    def _validate_parameters(self):
+
+        super(MCB, self)._validate_parameters()
+
+        if not isinstance(self.similarity_threshold, float):
+            raise TypeError('The parameter similarity_threshold must be a float.'
+                            ' similarity_threshold = ', type(self.similarity_threshold))
+        if self.similarity_threshold > 1 or self.similarity_threshold < 0:
+            raise ValueError('The parameter similarity_threshold should be between [0 and 1]. '
+                             'similarity_threshold = ', self.similarity_threshold)

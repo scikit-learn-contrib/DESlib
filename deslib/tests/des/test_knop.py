@@ -5,6 +5,11 @@ from sklearn.linear_model import Perceptron
 
 from deslib.des.knop import KNOP
 from deslib.tests.examples_test import *
+from sklearn.utils.estimator_checks import check_estimator
+
+
+def test_check_estimator():
+    check_estimator(KNOP)
 
 
 @pytest.mark.parametrize('index, expected', [(0, [4.0, 3.0, 4.0]),
@@ -16,7 +21,7 @@ def test_estimate_competence(index, expected):
     knop_test = KNOP(create_pool_classifiers())
     knop_test.fit(X_dsel_ex1, y_dsel_ex1)
 
-    knop_test.DFP_mask = np.ones(knop_test .n_classifiers)
+    knop_test.DFP_mask = np.ones(knop_test .n_classifiers_)
     knop_test.neighbors = neighbors_ex1[index, :]
     knop_test._get_similar_out_profiles = Mock(return_value=(None, np.atleast_2d(neighbors_ex1[index, :])))
     knop_test.distances = distances_ex1[index, :]
@@ -41,7 +46,7 @@ def test_estimate_competence_batch():
     knop_test = KNOP(create_pool_classifiers())
     knop_test.fit(X_dsel_ex1, y_dsel_ex1)
 
-    knop_test.DFP_mask = np.ones(knop_test .n_classifiers)
+    knop_test.DFP_mask = np.ones(knop_test .n_classifiers_)
     knop_test.neighbors = neighbors_ex1
     knop_test._get_similar_out_profiles = Mock(return_value=(None, neighbors_ex1))
     knop_test.distances = distances_ex1
@@ -68,11 +73,11 @@ def test_fit():
     expected_scores = np.array([[0.5, 0.5], [1.0, 0.0], [0.33, 0.67]])
     expected_scores = np.tile(expected_scores, (15, 1, 1))
 
-    assert np.array_equal(expected_scores, knop_test.dsel_scores)
+    assert np.array_equal(expected_scores, knop_test.dsel_scores_)
 
-    # Assert the roc_algorithm is fitted to the scores (decision space) rather than the features (feature space)
-    expected_roc_data = knop_test.dsel_scores[:, :, 0]
-    assert np.array_equal(knop_test.op_knn._fit_X, expected_roc_data)
+    # Assert the roc_algorithm_ is fitted to the scores (decision space) rather than the features (feature space)
+    expected_roc_data = knop_test.dsel_scores_[:, :, 0]
+    assert np.array_equal(knop_test.op_knn_._fit_X, expected_roc_data)
 
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
@@ -84,7 +89,8 @@ def test_not_predict_proba():
     clf1 = Perceptron()
     clf1.fit(X, y)
     with pytest.raises(ValueError):
-        KNOP([clf1, clf1])
+        knop = KNOP([clf1, clf1])
+        knop.fit(X, y)
 
 
 def test_select():

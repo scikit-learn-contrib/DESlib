@@ -4,6 +4,7 @@ import numpy as np
 
 from deslib.base import DS
 from deslib.util.aggregation import majority_voting_rule
+from sklearn.utils.validation import check_random_state
 
 
 class DCS(DS):
@@ -14,9 +15,10 @@ class DCS(DS):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the method "predict".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -44,8 +46,11 @@ class DCS(DS):
                   classifiers for the random and diff selection schemes. If the difference is lower than the
                   threshold, their performance are considered equivalent.
 
-    rng : numpy.random.RandomState instance
-          Random number generator to assure reproducible results.
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
 
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
@@ -53,6 +58,10 @@ class DCS(DS):
                      - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -73,30 +82,21 @@ class DCS(DS):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, pool_classifiers, k=7, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
-                 selection_method='best', diff_thresh=0.1, rng=np.random.RandomState(), knn_classifier='knn'):
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
+                 selection_method='best', diff_thresh=0.1, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
-        if not isinstance(selection_method, str):
-            raise TypeError('The parameter selection_method should be a string.'
-                            ' selection_method = ', type(selection_method))
+        super(DCS, self).__init__(pool_classifiers=pool_classifiers,
+                                  k=k,
+                                  DFP=DFP,
+                                  with_IH=with_IH,
+                                  safe_k=safe_k,
+                                  IH_rate=IH_rate,
+                                  random_state=random_state,
+                                  knn_classifier=knn_classifier,
+                                  DSEL_perc=DSEL_perc)
 
-        selection_method = selection_method.lower()
-
-        if selection_method not in ['best', 'all', 'random', 'diff']:
-            raise ValueError('Invalid value for parameter "selection_method." The possible values are: '
-                             '"best", "all", "random", "diff"')
-
-        if not isinstance(diff_thresh, float):
-            raise TypeError('The parameter diff_thresh should be a float. diff_thresh = ', diff_thresh)
-
-        if diff_thresh >= 0.5 or diff_thresh < 0.0 or np.isnan(diff_thresh):
-            raise ValueError('diff_thresh should be lower than 0.5. diff_thresh = ', diff_thresh)
-
-        super(DCS, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH,
-                                  safe_k=safe_k, IH_rate=IH_rate, knn_classifier=knn_classifier)
         self.selection_method = selection_method
         self.diff_thresh = diff_thresh
-        self.rng = rng
 
     def estimate_competence(self, query, predictions=None):
         """estimate the competence of each base classifier for the classification of the query sample.
@@ -168,6 +168,7 @@ class DCS(DS):
             superior than all others, it will be the only member selected. Otherwise,
             a random classifier from this list is selected.
             """
+            rng = check_random_state(self.random_state)
             best_competence = competences[np.arange(competences.shape[0]), best_index]
             # best_competence = np.max(competences)
             diff = best_competence.reshape(-1, 1) - competences
@@ -178,12 +179,13 @@ class DCS(DS):
                 indices = [idx for idx, _ in enumerate(diff_list) if diff_list[idx] < self.diff_thresh]
 
                 if len(indices) == 0:
-                    indices = range(self.n_classifiers)
+                    indices = range(self.n_classifiers_)
 
-                selected_classifiers[row] = self.rng.choice(indices)
+                selected_classifiers[row] = rng.choice(indices)
 
         elif self.selection_method == 'random':
             # TODO: Improve this part of the code
+            rng = check_random_state(self.random_state)
             selected_classifiers = np.zeros(competences.shape[0], dtype=np.int)
             best_competence = competences[np.arange(competences.shape[0]), best_index]
             for row in range(competences.shape[0]):
@@ -191,7 +193,7 @@ class DCS(DS):
                 # Select a random classifier among all with same competence level
                 indices = [idx for idx, _ in enumerate(competence_list) if competence_list[idx] == best_competence[row]]
 
-                selected_classifiers[row] = self.rng.choice(indices)
+                selected_classifiers[row] = rng.choice(indices)
 
         elif self.selection_method == 'all':
             # select all base classifiers with max competence estimates.
@@ -291,3 +293,21 @@ class DCS(DS):
             predicted_proba = np.mean(masked_proba, axis=1)
 
         return predicted_proba
+
+    def _validate_parameters(self):
+
+        super(DCS, self)._validate_parameters()
+
+        if not isinstance(self.selection_method, str):
+            raise TypeError('The parameter selection_method should be a string.'
+                            ' selection_method = ', type(self.selection_method))
+
+        if self.selection_method not in ['best', 'all', 'random', 'diff']:
+            raise ValueError('Invalid value for parameter "selection_method." The possible values are: '
+                             '"best", "all", "random", "diff"')
+
+        if not isinstance(self.diff_thresh, float):
+            raise TypeError('The parameter diff_thresh should be a float. diff_thresh = ', self.diff_thresh)
+
+        if self.diff_thresh >= 0.5 or self.diff_thresh < 0.0 or np.isnan(self.diff_thresh):
+            raise ValueError('diff_thresh should be lower than 0.5. diff_thresh = ', self.diff_thresh)

@@ -24,9 +24,10 @@ class APriori(DCS):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict" and "predict_proba".
+                       Each base classifiers should support the method "predict" and "predict_proba".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -54,8 +55,11 @@ class APriori(DCS):
                   classifiers for the random and diff selection schemes. If the difference is lower than the
                   threshold, their performance are considered equivalent.
 
-    rng : numpy.random.RandomState instance
-          Random number generator to assure reproducible results.
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
 
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
@@ -63,6 +67,10 @@ class APriori(DCS):
                      - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -79,14 +87,21 @@ class APriori(DCS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 selection_method='diff', diff_thresh=0.1, rng=np.random.RandomState(), knn_classifier='knn'):
 
-        super(APriori, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
+                 selection_method='diff', diff_thresh=0.1, random_state=None, knn_classifier='knn', DSEL_perc=0.33):
+
+        super(APriori, self).__init__(pool_classifiers=pool_classifiers,
+                                      k=k,
+                                      DFP=DFP,
+                                      with_IH=with_IH,
+                                      safe_k=safe_k,
+                                      IH_rate=IH_rate,
                                       selection_method=selection_method,
                                       diff_thresh=diff_thresh,
-                                      rng=rng, knn_classifier=knn_classifier)
-        self._check_predict_proba()
+                                      random_state=random_state,
+                                      knn_classifier=knn_classifier,
+                                      DSEL_perc=DSEL_perc)
 
         self.name = 'A Priori'
 
@@ -108,7 +123,9 @@ class APriori(DCS):
         self
         """
         super(APriori, self).fit(X, y)
-        self.dsel_scores = self._preprocess_dsel_scores()
+        self._check_predict_proba()
+
+        self.dsel_scores_ = self._preprocess_dsel_scores()
         return self
 
     def estimate_competence(self, query, predictions=None):
@@ -121,7 +138,7 @@ class APriori(DCS):
         a higher influence in the computation of the competence level.  The
         competence level estimate is represented by the following equation:
 
-        .. math:: 	\\delta_{i,j} = \\frac{\\sum_{k = 1}^{K}P(\\omega_{l} \\mid
+        .. math::   \\delta_{i,j} = \\frac{\\sum_{k = 1}^{K}P(\\omega_{l} \\mid
             \mathbf{x}_{k} \\in \\omega_{l}, c_{i} )W_{k}}{\\sum_{k = 1}^{K}W_{k}}
 
         where :math:`\\delta_{i,j}` represents the competence level of :math:`c_{i}` for the classification of
@@ -141,15 +158,15 @@ class APriori(DCS):
                       Competence level estimated for each base classifier and test example.
         """
         dists, idx_neighbors = self._get_region_competence(query)
-        dists_normalized = 1.0/dists
+        dists_normalized = 1.0 / dists
 
         # Get the ndarray containing the scores obtained for the correct class for each neighbor (and test sample)
-        scores_target_class = self.dsel_scores[idx_neighbors, :, self.DSEL_target[idx_neighbors]]
+        scores_target_class = self.dsel_scores_[idx_neighbors, :, self.DSEL_target_[idx_neighbors]]
 
         # Multiply the scores obtained for the correct class to the distances of each corresponding neighbor
         scores_target_class *= np.expand_dims(dists_normalized, axis=2)
 
         # Sum the scores obtained for each neighbor and divide by the sum of all distances
-        competences = np.sum(scores_target_class, axis=1)/ np.sum(dists_normalized, axis=1, keepdims=True)
+        competences = np.sum(scores_target_class, axis=1) / np.sum(dists_normalized, axis=1, keepdims=True)
 
         return competences

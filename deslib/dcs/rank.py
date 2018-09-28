@@ -24,9 +24,10 @@ class Rank(DCS):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support the method "predict".
+                       Each base classifiers should support the method "predict".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -54,8 +55,11 @@ class Rank(DCS):
                   classifiers for the random and diff selection schemes. If the difference is lower than the
                   threshold, their performance are considered equivalent.
 
-    rng : numpy.random.RandomState instance
-          Random number generator to assure reproducible results.
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
 
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
@@ -63,6 +67,10 @@ class Rank(DCS):
                      - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -80,14 +88,20 @@ class Rank(DCS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30,
-                 selection_method='best',
-                 diff_thresh=0.1, rng=np.random.RandomState(), knn_classifier='knn'):
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
+                 selection_method='best', diff_thresh=0.1, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
-        super(Rank, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
+        super(Rank, self).__init__(pool_classifiers=pool_classifiers,
+                                   k=k,
+                                   DFP=DFP,
+                                   with_IH=with_IH,
+                                   safe_k=safe_k,
+                                   IH_rate=IH_rate,
                                    selection_method=selection_method,
-                                   diff_thresh=diff_thresh, rng=rng, knn_classifier=knn_classifier)
+                                   diff_thresh=diff_thresh,
+                                   random_state=random_state,
+                                   knn_classifier=knn_classifier,
+                                   DSEL_perc=DSEL_perc)
 
         self.name = 'Modified Classifier Rank'
 
@@ -111,7 +125,7 @@ class Rank(DCS):
                       Competence level estimated for each base classifier and test example.
         """
         _, idx_neighbors = self._get_region_competence(query)
-        results_neighbors = self.processed_dsel[idx_neighbors, :]
+        results_neighbors = self.DSEL_processed_[idx_neighbors, :]
 
         # Get the shape of the vector in order to know the number of samples, base classifiers and neighbors considered.
         shape = results_neighbors.shape

@@ -17,9 +17,10 @@ class DESMI(DS):
 
     Parameters
     ----------
-    pool_classifiers : list of classifiers
+    pool_classifiers : list of classifiers (Default = None)
                        The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support the method "predict".
+                       Each base classifiers should support the method "predict".
+                       If None, then the pool of classifiers is a bagging classifier.
 
     k : int (Default = 7)
         Number of neighbors used to estimate the competence of the base classifiers.
@@ -31,6 +32,26 @@ class DESMI(DS):
     alpha : float (Default = 0.9)
             Scaling coefficient to regulate the weight value
 
+    DFP : Boolean (Default = False)
+          Determines if the dynamic frienemy pruning is applied.
+
+    with_IH : Boolean (Default = False)
+              Whether the hardness level of the region of competence is used to decide between
+              using the DS algorithm or the KNN for classification of a given query sample.
+
+    safe_k : int (default = None)
+             The size of the indecision region.
+
+    IH_rate : float (default = 0.3)
+              Hardness threshold. If the hardness level of the competence region is lower than
+              the IH_rate the KNN classifier is used. Otherwise, the DS algorithm is used for classification.
+
+    random_state : int, RandomState instance or None, optional (default=None)
+                   If int, random_state is the seed used by the random number generator;
+                   If RandomState instance, random_state is the random number generator;
+                   If None, the random number generator is the RandomState instance used
+                   by `np.random`.
+
     knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
                      The algorithm used to estimate the region of competence:
 
@@ -38,6 +59,10 @@ class DESMI(DS):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      wrapper.
                      - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    DSEL_perc : float (Default = 0.5)
+                Percentage of the input data used to fit DSEL.
+                Note: This parameter is only used if the pool of classifier is None or unfitted.
 
     References
     ----------
@@ -51,18 +76,22 @@ class DESMI(DS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers, k=7, DFP=False, with_IH=False, safe_k=None,
-                 IH_rate=0.30, pct_accuracy=0.4, alpha=0.9, knn_classifier='knn'):
+    def __init__(self, pool_classifiers=None, k=7, pct_accuracy=0.4, alpha=0.9, DFP=False, with_IH=False, safe_k=None,
+                 IH_rate=0.30, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
-        super(DESMI, self).__init__(pool_classifiers, k, DFP=DFP, with_IH=with_IH, safe_k=safe_k, IH_rate=IH_rate,
-                                    knn_classifier=knn_classifier)
+        super(DESMI, self).__init__(pool_classifiers=pool_classifiers,
+                                    k=k,
+                                    DFP=DFP,
+                                    with_IH=with_IH,
+                                    safe_k=safe_k,
+                                    IH_rate=IH_rate,
+                                    random_state=random_state,
+                                    knn_classifier=knn_classifier,
+                                    DSEL_perc=DSEL_perc)
 
         self.name = 'Dynamic Ensemble Selection for multi-class imbalanced datasets (DES-MI)'
-        self.N = int(self.n_classifiers * pct_accuracy)
-        self._alpha = alpha
-
-        # Check if the parameters are OK. Change that to the fit method.
-        self._validate_parameters()
+        self.alpha = alpha
+        self.pct_accuracy = pct_accuracy
 
     def estimate_competence(self, query, predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}` for
@@ -92,12 +121,15 @@ class DESMI(DS):
         """
         _, idx_neighbors = self._get_region_competence(query)
         # calculate the weight
-        class_frequency = np.bincount(self.DSEL_target)
-        targets = self.DSEL_target[idx_neighbors]       # [n_samples, K_neighbors]
+        class_frequency = np.bincount(self.DSEL_target_)
+        targets = self.DSEL_target_[idx_neighbors]       # [n_samples, K_neighbors]
         num = class_frequency[targets]
-        weight = 1. / (1 + np.exp(self._alpha * num))
+        weight = 1./(1 + np.exp(self.alpha * num))
         weight = normalize(weight, norm='l1')
-        correct_num = self.processed_dsel[idx_neighbors, :]
+        correct_num = self.DSEL_processed_[idx_neighbors, :]
+        correct = np.zeros((query.shape[0], self.k_, self.n_classifiers_))
+        for i in range(self.n_classifiers_):
+            correct[:, :, i] = correct_num[:, :, i] * weight
 
         # Apply the weights to each sample for each base classifier
         competence = correct_num * weight[:, :, np.newaxis]
@@ -107,7 +139,7 @@ class DESMI(DS):
         return competence
 
     def select(self, competences):
-        """Select an ensemble containing the N most accurate classifiers for the classification of the query sample.
+        """Select an ensemble containing the N_ most accurate classifiers for the classification of the query sample.
 
         Parameters
         ----------
@@ -116,15 +148,15 @@ class DESMI(DS):
 
         Returns
         -------
-        selected_classifiers : array of shape = [n_samples, self.N]
-                               Matrix containing the indices of the N selected base classifier for each test example.
+        selected_classifiers : array of shape = [n_samples, self.N_]
+                               Matrix containing the indices_ of the N_ selected base classifier for each test example.
         """
         # Check if the accuracy and diversity arrays have the correct dimensionality.
         if competences.ndim < 2:
             competences = competences.reshape(1, -1)
 
         # sort the array to remove the most accurate classifiers
-        selected_classifiers = np.argsort(competences, axis=1)[:, ::-1][:, 0:self.N]
+        selected_classifiers = np.argsort(competences, axis=1)[:, ::-1][:, 0:self.N_]
 
         return selected_classifiers
 
@@ -144,7 +176,7 @@ class DESMI(DS):
 
         Notes
         ------
-        Different than other DES techniques, this method only select N candidates from the pool of classifiers.
+        Different than other DES techniques, this method only select N_ candidates from the pool of classifiers.
 
         Returns
         -------
@@ -210,19 +242,25 @@ class DESMI(DS):
     def _validate_parameters(self):
         """Check if the parameters passed as argument are correct.
 
-        The values of N should be higher than 0.
+        The values of N_ should be higher than 0.
         ----------
         """
-        if self.N <= 0:
-            raise ValueError("The values of N should be higher than 0"
-                             "N = {}" .format(self.N))
+        super(DESMI, self)._validate_parameters()
+
+        self.N_ = int(self.n_classifiers_ * self.pct_accuracy)
+
+        if self.N_ <= 0:
+            raise ValueError("The value of N_ should be higher than 0"
+                             "N_ = {}" .format(self.N_))
 
         # The value of Scaling coefficient (alpha) should be positive to add more weight to the minority class
-        if not isinstance(self._alpha, np.float):
+        if self.alpha <= 0:
+            raise ValueError("The value of alpha should be higher than 0"
+                             "alpha = {}".format(self.alpha))
+
+        if not isinstance(self.alpha, np.float):
             raise TypeError("parameter alpha should be a float!")
 
-        if self._alpha <= 0.:
-            raise ValueError("The values of alpha should be higher than 0.0, "
-                             "alpha = {}" .format(self._alpha))
-
-
+        if self.pct_accuracy <= 0. or self.pct_accuracy > 1:
+            raise ValueError("The value of pct_accuracy should be higher than 0 and lower or equal to 1, "
+                             "pct_accuracy = {}" .format(self.pct_accuracy))

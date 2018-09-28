@@ -6,6 +6,11 @@ from sklearn.exceptions import NotFittedError
 
 from deslib.static.single_best import SingleBest
 from deslib.tests.examples_test import create_pool_classifiers, X_dsel_ex1, y_dsel_ex1
+from sklearn.utils.estimator_checks import check_estimator
+
+
+def test_check_estimator():
+    check_estimator(SingleBest)
 
 
 # Testing if the fit function selects the correct classifier (the one with highest classification accuracy).
@@ -17,7 +22,7 @@ def test_fit():
     single_best_test = SingleBest(pool_classifiers)
     single_best_test.fit(X, y)
 
-    assert single_best_test.best_clf_index == 0 or single_best_test.best_clf_index == 2
+    assert single_best_test.best_clf_index_ == 0 or single_best_test.best_clf_index_ == 2
 
 
 # The classifier with highest accuracy always predicts 0. So the expected prediction should always be equal zero.
@@ -25,7 +30,7 @@ def test_predict():
     X = X_dsel_ex1
     y = y_dsel_ex1
     pool_classifiers = create_pool_classifiers()
-    single_best_test = SingleBest(pool_classifiers)
+    single_best_test = SingleBest(pool_classifiers=pool_classifiers)
     single_best_test.fit(X, y)
 
     predicted_labels = single_best_test.predict(X)
@@ -47,7 +52,7 @@ def test_predict_proba():
 def test_not_fitted():
     single_best_test = SingleBest(create_pool_classifiers())
     with pytest.raises(NotFittedError):
-        single_best_test.predict(np.array([1, -1]))
+        single_best_test.predict(np.array([[1, -1]]))
 
 
 # Test calling the predict_proba function with classifiers that do not implement the predict_proba

@@ -30,9 +30,26 @@ from deslib.des.des_mi import DESMI
 from deslib.static.oracle import Oracle
 from deslib.static.single_best import SingleBest
 from deslib.static.static_selection import StaticSelection
+from sklearn.model_selection import GridSearchCV
 import pytest
 import warnings
 import sys
+
+
+@pytest.mark.skip(reason='Need to wait for changes on scikit-learn (see issue #89)')
+def test_grid_search():
+    # This tests if the estimator can be cloned and used in a grid search
+
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+
+    kne = KNORAE(pool_classifiers)
+
+    params = {'k': [1, 3, 5, 7]}
+    grid = GridSearchCV(kne, params)
+
+    grid.fit(X_dsel, y_dsel)
+
+    grid.best_estimator_.score(X_test, y_test)
 
 knn_methods = [None]
 
@@ -104,6 +121,7 @@ def test_knorau(knn_methods):
     knorau.fit(X_dsel, y_dsel)
     assert np.isclose(knorau.score(X_test, y_test), 0.97340425531914898)
 
+
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_kne(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
@@ -111,6 +129,7 @@ def test_kne(knn_methods):
     kne = KNORAE(pool_classifiers, knn_classifier=knn_methods)
     kne.fit(X_dsel, y_dsel)
     assert np.isclose(kne.score(X_test, y_test), 0.973404255319148)
+
 
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_desp(knn_methods):
@@ -129,6 +148,7 @@ def test_ola(knn_methods):
     ola.fit(X_dsel, y_dsel)
     assert np.isclose(ola.score(X_test, y_test), 0.96808510638297873)
 
+
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_lca(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
@@ -136,6 +156,7 @@ def test_lca(knn_methods):
     lca = LCA(pool_classifiers, knn_classifier=knn_methods)
     lca.fit(X_dsel, y_dsel)
     assert np.isclose(lca.score(X_test, y_test), 0.96808510638297873)
+
 
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_MLA(knn_methods):
@@ -145,23 +166,26 @@ def test_MLA(knn_methods):
     mla.fit(X_dsel, y_dsel)
     assert np.isclose(mla.score(X_test, y_test), 0.96808510638297873)
 
+
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_mcb(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    mcb = MCB(pool_classifiers, rng=rng, knn_classifier=knn_methods)
+    mcb = MCB(pool_classifiers, random_state=rng, knn_classifier=knn_methods)
     mcb.fit(X_dsel, y_dsel)
     assert np.isclose(mcb.score(X_test, y_test), 0.96276595744680848)
+
 
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_apriori(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    apriori = APriori(pool_classifiers, rng=rng, knn_classifier=knn_methods)
+    apriori = APriori(pool_classifiers, random_state=rng, knn_classifier=knn_methods)
     apriori.fit(X_dsel, y_dsel)
     assert np.isclose(apriori.score(X_test, y_test), 0.97872340425531912)
+
 
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_rank(knn_methods):
@@ -171,14 +195,16 @@ def test_rank(knn_methods):
     rank.fit(X_dsel, y_dsel)
     assert np.isclose(rank.score(X_test, y_test), 0.973404255319149)
 
+
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_aposteriori(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    a_posteriori = APosteriori(pool_classifiers, rng=rng, knn_classifier=knn_methods)
+    a_posteriori = APosteriori(pool_classifiers, random_state=rng, knn_classifier=knn_methods)
     a_posteriori.fit(X_dsel, y_dsel)
     assert np.isclose(a_posteriori.score(X_test, y_test), 0.96276595744680848)
+
 
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_meta(knn_methods):
@@ -188,6 +214,7 @@ def test_meta(knn_methods):
     meta_des.fit(X_dsel, y_dsel)
     assert np.isclose(meta_des.score(X_test, y_test), 0.973404255319149)
 
+
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_rrc(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
@@ -195,6 +222,7 @@ def test_rrc(knn_methods):
     rrc = RRC(pool_classifiers, knn_classifier=knn_methods)
     rrc.fit(X_dsel, y_dsel)
     assert np.isclose(rrc.score(X_test, y_test), 0.97340425531914898)
+
 
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_deskl(knn_methods):
@@ -204,6 +232,7 @@ def test_deskl(knn_methods):
     deskl.fit(X_dsel, y_dsel)
     assert np.isclose(deskl.score(X_test, y_test), 0.97340425531914898)
 
+
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_minimum_diff(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
@@ -212,6 +241,7 @@ def test_minimum_diff(knn_methods):
     minimum_diff.fit(X_dsel, y_dsel)
     assert np.isclose(minimum_diff.score(X_test, y_test), 0.97340425531914898)
 
+
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_knop(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
@@ -219,6 +249,7 @@ def test_knop(knn_methods):
     knop = KNOP(pool_classifiers, knn_classifier=knn_methods)
     knop.fit(X_dsel, y_dsel)
     assert np.isclose(knop.score(X_test, y_test), 0.97340425531914898)
+
 
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_desknn(knn_methods):
@@ -230,12 +261,14 @@ def test_desknn(knn_methods):
 
 
 def test_des_clustering():
+    from sklearn.cluster import KMeans
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
-
-    des_clustering = DESClustering(pool_classifiers, rng=rng)
+    cluster = KMeans(n_clusters=5, random_state=rng)
+    des_clustering = DESClustering(pool_classifiers, clustering=cluster)
     des_clustering.fit(X_dsel, y_dsel)
     assert np.isclose(des_clustering.score(X_test, y_test), 0.97872340425531912)
+
 
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_mi(knn_methods):
@@ -250,6 +283,7 @@ def test_oracle():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
     oracle = Oracle(pool_classifiers)
+    oracle.fit(X_dsel, y_dsel)
     assert np.isclose(oracle.score(X_test, y_test), 0.99468085106382975)
 
 
@@ -280,19 +314,6 @@ def test_kne_proba(knn_methods):
     expected = np.load('deslib/tests/expected_values/kne_proba_integration.npy')
     assert np.allclose(probas, expected)
 
-# ------------------------------------------ Testing predict_proba -----------------------------------
-
-@pytest.mark.skipif('faiss' not in sys.modules,
-                    reason="requires the faiss library")
-def test_compare_faiss_predict_proba_IH():
-    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-    kne = KNORAE(pool_classifiers, knn_classifier="faiss", with_IH=True, IH_rate=0.1)
-    kne.fit(X_dsel, y_dsel)
-    probas = kne.predict_proba(X_test)
-    expected = np.load('deslib/tests/expected_values/kne_knn_proba_integration.npy')
-    assert np.allclose(probas, expected)
-
-
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_desp_proba(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
@@ -301,6 +322,7 @@ def test_desp_proba(knn_methods):
     probas = desp.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/desp_proba_integration.npy')
     assert np.allclose(probas, expected)
+
 
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_ola_proba(knn_methods):
@@ -312,16 +334,19 @@ def test_ola_proba(knn_methods):
     expected = np.load('deslib/tests/expected_values/ola_proba_integration.npy')
     assert np.allclose(probas, expected)
 
+
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_mcb_proba(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    mcb = MCB(pool_classifiers, rng=rng, knn_classifier=knn_methods)
+    mcb = MCB(pool_classifiers, random_state=rng, knn_classifier=knn_methods)
+
     mcb.fit(X_dsel, y_dsel)
     probas = mcb.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/mcb_proba_integration.npy')
     assert np.allclose(probas, expected)
+
 
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_desknn_proba(knn_methods):
@@ -335,10 +360,11 @@ def test_desknn_proba(knn_methods):
 
 
 def test_des_clustering_proba():
+    from sklearn.cluster import KMeans
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
-
-    des_clustering = DESClustering(pool_classifiers, rng=rng)
+    cluster = KMeans(n_clusters=5, random_state=rng)
+    des_clustering = DESClustering(pool_classifiers, clustering=cluster)
     des_clustering.fit(X_dsel, y_dsel)
     probas = des_clustering.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/des_clustering_proba_integration.npy')
