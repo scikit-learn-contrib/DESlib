@@ -28,13 +28,13 @@ def test_check_alpha_type(alpha):
         desmi = DESMI(pool_classifiers, alpha=alpha)
         desmi.fit(X_dsel_ex1, y_dsel_ex1)
 
-@pytest.mark.parametrize('alpha', [-1.0, -0.5, 0.0])
-def test_check_alpha_value(alpha):
+
+@pytest.mark.parametrize('pct_accuracy', [-1.0, -0.5, 0.0, 1.01])
+def test_check_alpha_value(pct_accuracy):
     pool_classifiers = create_pool_classifiers()
     with pytest.raises(ValueError):
-        desmi = DESMI(pool_classifiers, pct_accuracy=0.05)
+        desmi = DESMI(pool_classifiers, pct_accuracy=pct_accuracy)
         desmi.fit(X_dsel_ex1, y_dsel_ex1)
-
 
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.

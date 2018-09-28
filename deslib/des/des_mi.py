@@ -250,18 +250,17 @@ class DESMI(DS):
         self.N_ = int(self.n_classifiers_ * self.pct_accuracy)
 
         if self.N_ <= 0:
-            raise ValueError("The values of N_ should be higher than 0"
+            raise ValueError("The value of N_ should be higher than 0"
                              "N_ = {}" .format(self.N_))
 
         # The value of Scaling coefficient (alpha) should be positive to add more weight to the minority class
         if self.alpha <= 0:
-            raise ValueError("The values of alpha should be higher than 0"
+            raise ValueError("The value of alpha should be higher than 0"
                              "alpha = {}".format(self.alpha))
 
-        # The value of Scaling coefficient (alpha) should be positive to add more weight to the minority class
         if not isinstance(self.alpha, np.float):
             raise TypeError("parameter alpha should be a float!")
 
-        if self.alpha <= 0.:
-            raise ValueError("The values of alpha should be higher than 0.0, "
-                             "alpha = {}" .format(self.alpha))
+        if self.pct_accuracy <= 0. or self.pct_accuracy > 1:
+            raise ValueError("The value of pct_accuracy should be higher than 0 and lower or equal to 1, "
+                             "pct_accuracy = {}" .format(self.pct_accuracy))
