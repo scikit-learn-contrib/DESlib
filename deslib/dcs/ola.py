@@ -101,7 +101,7 @@ class OLA(DCS):
 
         self.name = 'Overall Local Accuracy (OLA)'
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, neighbors, distances=None, predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}` for
         the classification of the query sample.
 
@@ -120,6 +120,12 @@ class OLA(DCS):
         query : array cf shape  = [m_samples, n_features]
                 The test examples.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for the test examples.
 
@@ -128,7 +134,6 @@ class OLA(DCS):
         competences : array of shape = [n_samples, n_classifiers]
                       Competence level estimated for each base classifier and test example.
         """
-        _, idx_neighbors = self._get_region_competence(query)
-        competences = np.mean(self.DSEL_processed_[idx_neighbors, :], axis=1)
+        competences = np.mean(self.DSEL_processed_[neighbors, :], axis=1)
 
         return competences

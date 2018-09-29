@@ -247,7 +247,7 @@ class DCS(DS):
             raise ValueError('The arrays query and predictions must have the same shape. query.shape is {}'
                              'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
-        competences = self.estimate_competence(query, predictions=predictions)
+        competences = self.estimate_competence(query, neighbors, distances=distances, predictions=predictions)
 
         if self.DFP:
             competences = competences * DFP_mask
@@ -299,7 +299,7 @@ class DCS(DS):
             raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
                              'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
-        competences = self.estimate_competence(query, predictions)
+        competences = self.estimate_competence(query, neighbors, distances=distances, predictions=predictions)
 
         if self.DFP:
             competences = competences * DFP_mask

@@ -105,7 +105,7 @@ class MCB(DCS):
         self.similarity_threshold = similarity_threshold
         self.name = 'Multiple Classifier Behaviour (MCB)'
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, neighbors, distances=None, predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the Multiple Classifier Behaviour criterion.
 
@@ -131,6 +131,12 @@ class MCB(DCS):
         query : array cf shape  = [n_samples, n_features]
                 The test samples.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for the test examples.
 
@@ -140,12 +146,10 @@ class MCB(DCS):
                       Competence level estimated for each base classifier and test example.
         """
 
-        _, idx_neighbors = self._get_region_competence(query)
-
         # Use the pre-compute decisions to transform the query to the BKS space
         BKS_query = predictions
 
-        T = (self.BKS_DSEL_[idx_neighbors] == BKS_query.reshape(BKS_query.shape[0], -1, BKS_query.shape[1]))
+        T = (self.BKS_DSEL_[neighbors] == BKS_query.reshape(BKS_query.shape[0], -1, BKS_query.shape[1]))
         S = np.sum(T, axis=2) / self.n_classifiers_
 
         # get a mask with the neighbors that will be considered for the competence estimation for all samples.
@@ -155,7 +159,7 @@ class MCB(DCS):
         boolean_mask = np.repeat(np.expand_dims(boolean_mask, axis=2), self.n_classifiers_, axis=2)
 
         # Use the masked array mean to take into account the removed neighbors
-        processed_pred = np.ma.MaskedArray(self.DSEL_processed_[idx_neighbors, :], mask=~boolean_mask)
+        processed_pred = np.ma.MaskedArray(self.DSEL_processed_[neighbors, :], mask=~boolean_mask)
         competences = np.ma.mean(processed_pred, axis=1)
 
         return competences

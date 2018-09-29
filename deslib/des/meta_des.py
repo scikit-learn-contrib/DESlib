@@ -373,7 +373,7 @@ class METADES(DES):
 
         return selected_classifiers
 
-    def estimate_competence_from_proba(self, query, probabilities):
+    def estimate_competence_from_proba(self, query, neighbors, probabilities, distances=None):
         """Estimate the competence of each base classifier :math:`c_i`
         the classification of the query sample. This method received an array with the pre-calculated probability
         estimates for each query.
@@ -387,6 +387,12 @@ class METADES(DES):
         query : array of shape = [n_samples, n_features]
                 The test examples.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         Probabilities estimates obtained by each each base classifier for each query sample.
 
@@ -395,9 +401,8 @@ class METADES(DES):
         competences : array of shape = [n_samples, n_classifiers]
                       The competence level estimated for each base classifier and test example.
         """
-        _, idx_neighbors = self._get_region_competence(query)
         _, idx_neighbors_op = self._get_similar_out_profiles(probabilities)
-        meta_feature_vectors = self.compute_meta_features(probabilities, idx_neighbors, idx_neighbors_op)
+        meta_feature_vectors = self.compute_meta_features(probabilities, neighbors, idx_neighbors_op)
 
         # Digitize the data if a Multinomial NB is used as the meta-classifier
         if isinstance(self.meta_classifier_, MultinomialNB):

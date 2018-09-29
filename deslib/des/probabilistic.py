@@ -130,7 +130,7 @@ class Probabilistic(DES):
         self.C_src_ = self.source_competence()
         return self
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, neighbors, distances, predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` using the source of competence :math:`C_{src}`
         and the potential function model. The source of competence :math:`C_{src}` for all data points in DSEL
         is already pre-computed in the fit() steps.
@@ -143,6 +143,12 @@ class Probabilistic(DES):
         query : array of shape = [n_samples, n_features]
                 The test examples.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for all test examples.
 
@@ -151,14 +157,14 @@ class Probabilistic(DES):
         competences : array of shape = [n_samples, n_classifiers]
                       Competence level estimated for each base classifier and test example.
         """
-        dists, idx_neighbors = self._get_region_competence(query)
+        distances, neighbors = self._get_region_competence(query)
 
-        potential_dists = self.potential_func(dists)
+        potential_dists = self.potential_func(distances)
         sum_potential = np.sum(potential_dists, axis=1)
 
         # Using einsum here since it is way more memory efficient. This line is equivalent to
         # competences = self.C_src_[idx_neighbors, :] * potential_dists[:, :, np.newaxis]
-        competences = np.einsum('ijk,ij->ik', self.C_src_[idx_neighbors, :], potential_dists)
+        competences = np.einsum('ijk,ij->ik', self.C_src_[neighbors, :], potential_dists)
         competences = competences / sum_potential.reshape(-1, 1)
 
         return competences
