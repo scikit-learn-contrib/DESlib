@@ -93,9 +93,9 @@ class DS(BaseEstimator, ClassifierMixin):
         pass
 
     @abstractmethod
-    def estimate_competence(self, query, predictions):
-        """estimate the competence of each base classifier ci
-        the classification of the query sample x.
+    def estimate_competence(self, query, neighbors, distances=None, predictions=None):
+        """estimate the competence of each base classifier :math:`c_{i}`
+        the classification of the query sample :math:`\mathbf{x}`.
         Returns an array containing the level of competence estimated
         for each base classifier. The size of the vector is equals to
         the size of the generated_pool of classifiers.
@@ -104,6 +104,12 @@ class DS(BaseEstimator, ClassifierMixin):
         ----------
         query : array cf shape  = [n_samples, n_features]
                 The query sample
+
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample.
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample.
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for all test examples
@@ -130,6 +136,12 @@ class DS(BaseEstimator, ClassifierMixin):
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         Probabilities estimates of each base classifier for all test examples (For methods that
                         always require probabilities from the base classifiers).
+
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
 
         DFP_mask : array of shape = [n_samples, n_classifiers]
                    Mask containing 1 for the selected base classifier and 0 otherwise.

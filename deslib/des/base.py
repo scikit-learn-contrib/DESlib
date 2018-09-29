@@ -88,7 +88,7 @@ class DES(DS):
                                   DSEL_perc=DSEL_perc)
         self.mode = mode
 
-    def estimate_competence(self, query, predictions):
+    def estimate_competence(self, query, neighbors, distances=None, predictions=None):
         """Estimate the competence of each base classifier ci
         the classification of the query sample x.
         Returns an array containing the level of competence estimated
@@ -99,6 +99,12 @@ class DES(DS):
         ----------
         query : array of shape  = [n_samples, n_features]
                 The test examples
+
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for all test examples.
@@ -148,7 +154,7 @@ class DES(DS):
         """
         pass
 
-    def classify_with_ds(self, query, predictions, probabilities=None, DFP_mask=None):
+    def classify_with_ds(self, query, predictions, probabilities=None, neighbors=None, distances=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
 
         If self.mode == "selection", the selected ensemble is combined using the
@@ -173,6 +179,12 @@ class DES(DS):
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         Probabilities estimates of each base classifier for all test examples. (For methods that always
                         require probabilities from the base classifiers).
+
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
 
         DFP_mask : array of shape = [n_samples, n_classifiers]
                    Mask containing 1 for the selected base classifier and 0 otherwise.
