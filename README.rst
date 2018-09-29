@@ -118,7 +118,6 @@ Here we show an example using the KNORA-E method using random forest as a pool o
 
 .. code-block:: python
 
-    from sklearn.ensemble import RandomForestClassifier
     from deslib.des.knora_e import KNORAE
 
 
@@ -136,7 +135,7 @@ Here we show an example using the KNORA-E method using random forest as a pool o
     knorae.predict(X_test)
 
 The library accepts any list of classifiers (from scikit-learn) as input, including a list containing different classifier models (heterogeneous ensembles).
-More examples to use the API can be found in the documentation and im the Examples directory.
+More examples to use the API can be found in the documentation and in the Examples directory.
 
 Citation
 ---------
