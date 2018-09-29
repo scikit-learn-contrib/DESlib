@@ -409,8 +409,6 @@ class METADES(DES):
 
         # Reshape the array from 1D [n_samples x n_classifiers] to 2D [n_samples, n_classifiers]
         competences = competences.reshape(-1, self.n_classifiers_)
-        if self.DFP:
-            competences = competences * self.DFP_mask
 
         return competences
 
