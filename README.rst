@@ -15,6 +15,8 @@
 .. image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
     :target: https://opensource.org/licenses/BSD-3-Clause
 
+.. image:: https://badges.gitter.im/DESlib/gitter.png
+    :target: https://gitter.im/deslib/Lobby
 
 DESlib
 ========
@@ -63,7 +65,7 @@ DESlib is tested to work with Python 3.5, 3.6 and 3.7. The dependency requiremen
 * numpy(>=1.10.4)
 * scikit-learn(>=0.19.0)
 
-These dependencies are automaticatically installed using the pip commands above.
+These dependencies are automatically installed using the pip commands above.
 
 Description:
 ------------
@@ -92,7 +94,7 @@ The library is divided into four modules:
 
 * DCS techniques currently available are:
     1. Modified Classifier Rank (Rank) [19]_
-    2. Overall Locall Accuracy (OLA) [4]_
+    2. Overall Local Accuracy (OLA) [4]_
     3. Local Class Accuracy (LCA) [4]_
     4. Modified Local Accuracy (MLA) [23]_
     5. Multiple Classifier Behaviour (MCB) [5]_
