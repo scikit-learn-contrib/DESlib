@@ -106,8 +106,6 @@ class APosteriori(DCS):
                                           random_state=random_state,
                                           DSEL_perc=DSEL_perc)
 
-        self.name = 'A Posteriori'
-
     def fit(self, X, y):
         """Prepare the DS model by setting the KNN algorithm and
         pre-processing the information required to apply the DS

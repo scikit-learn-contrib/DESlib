@@ -103,8 +103,6 @@ class APriori(DCS):
                                       knn_classifier=knn_classifier,
                                       DSEL_perc=DSEL_perc)
 
-        self.name = 'A Priori'
-
     def fit(self, X, y):
         """Prepare the DS model by setting the KNN algorithm and
         pre-processing the information required to apply the DS

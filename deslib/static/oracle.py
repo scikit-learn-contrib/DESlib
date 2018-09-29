@@ -31,7 +31,6 @@ class Oracle(StaticEnsemble):
     """
     def __init__(self, pool_classifiers=None, random_state=None):
         super(Oracle, self).__init__(pool_classifiers=pool_classifiers, random_state=random_state)
-        self.name = 'Oracle'
 
     def fit(self, X, y):
         """Fit the model according to the given training data.

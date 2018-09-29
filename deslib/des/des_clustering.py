@@ -77,7 +77,6 @@ class DESClustering(DS):
 
         super(DESClustering, self).__init__(pool_classifiers, random_state=random_state, DSEL_perc=DSEL_perc)
 
-        self.name = 'DES-Clustering'
         self.metric = metric
         self.clustering = clustering
         self.pct_accuracy = pct_accuracy

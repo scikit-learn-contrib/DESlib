@@ -131,7 +131,7 @@ class METADES(DES):
                                       knn_classifier=knn_classifier,
                                       DSEL_perc=DSEL_perc)
 
-        self.name = 'META-DES'
+
         self.meta_classifier = meta_classifier
         self.Kp = Kp
         self.Hc = Hc

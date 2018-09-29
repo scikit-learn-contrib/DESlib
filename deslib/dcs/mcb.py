@@ -103,7 +103,6 @@ class MCB(DCS):
                                   DSEL_perc=DSEL_perc)
 
         self.similarity_threshold = similarity_threshold
-        self.name = 'Multiple Classifier Behaviour (MCB)'
 
     def estimate_competence(self, query, neighbors, distances=None, predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` for

@@ -38,7 +38,6 @@ class SingleBest(StaticEnsemble):
     """
     def __init__(self, pool_classifiers=None, random_state=None):
         super(SingleBest, self).__init__(pool_classifiers=pool_classifiers, random_state=random_state)
-        self.name = 'Single Best'
 
     def fit(self, X, y):
         """Fit the model by selecting the base classifier with the highest accuracy in the dataset.

@@ -105,7 +105,6 @@ class DESKNN(DS):
                                      knn_classifier=knn_classifier,
                                      DSEL_perc=DSEL_perc)
 
-        self.name = 'Dynamic Ensemble Selection-KNN (DES-KNN)'
         self.metric = metric
         self.pct_accuracy = pct_accuracy
         self.pct_diversity = pct_diversity

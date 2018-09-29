@@ -89,7 +89,6 @@ class DESMI(DS):
                                     knn_classifier=knn_classifier,
                                     DSEL_perc=DSEL_perc)
 
-        self.name = 'Dynamic Ensemble Selection for multi-class imbalanced datasets (DES-MI)'
         self.alpha = alpha
         self.pct_accuracy = pct_accuracy
 

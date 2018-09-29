@@ -38,7 +38,6 @@ class StaticSelection(StaticEnsemble):
     def __init__(self, pool_classifiers=None, pct_classifiers=0.5, random_state=None):
         super(StaticSelection, self).__init__(pool_classifiers=pool_classifiers, random_state=random_state)
         self.pct_classifiers = pct_classifiers
-        self.name = "Static Selection"
 
     def fit(self, X, y):
         """Fit the static selection model by select an ensemble of classifier containing the base classifiers with

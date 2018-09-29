@@ -95,8 +95,6 @@ class KNOP(DES):
                                    knn_classifier=knn_classifier,
                                    DSEL_perc=DSEL_perc)
 
-        self.name = 'K-Nearest Output Profiles (KNOP)'
-
     def fit(self, X, y):
         """Train the DS model by setting the KNN algorithm and
         pre-process the information required to apply the DS

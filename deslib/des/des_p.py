@@ -93,8 +93,6 @@ class DESP(DES):
                                    knn_classifier=knn_classifier,
                                    DSEL_perc=DSEL_perc)
 
-        self.name = 'DES-Performance (DES-P)'
-
     def estimate_competence(self, query, neighbors, distances=None, predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample base on its local performance.

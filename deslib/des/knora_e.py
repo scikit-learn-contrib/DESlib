@@ -86,8 +86,6 @@ class KNORAE(DES):
                                      knn_classifier=knn_classifier,
                                      DSEL_perc=DSEL_perc)
 
-        self.name = 'k-Nearest Oracles Eliminate (KNORA-E)'
-
     def estimate_competence(self, query, neighbors, distances=None, predictions=None):
         """Estimate the competence of the base classifiers. In the case of the KNORA-E technique, the classifiers
         are only considered competent when they achieve a 100% accuracy in the region of competence. For each base,
