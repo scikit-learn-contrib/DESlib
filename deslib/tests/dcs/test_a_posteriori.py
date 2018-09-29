@@ -20,8 +20,8 @@ def test_estimate_competence_all_ones(index):
     a_posteriori_test.DSEL_processed_ = dsel_processed_ex1
     a_posteriori_test.dsel_scores_ = dsel_scores_all_ones
 
-    a_posteriori_test.neighbors = neighbors_ex1[index, :]
-    a_posteriori_test.distances = distances_all_ones[index, :]
+    neighbors = neighbors_ex1[index, :].reshape(1, -1)
+    distances = distances_all_ones[index, :].reshape(1, -1)
 
     expected = [1.0, 1.0, 1.0]
 
@@ -29,7 +29,7 @@ def test_estimate_competence_all_ones(index):
     for clf in a_posteriori_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
 
-    competences = a_posteriori_test.estimate_competence(query, predictions=np.array(predictions))
+    competences = a_posteriori_test.estimate_competence(query, neighbors, distances, predictions=np.array(predictions))
     assert np.isclose(competences, expected).all()
 
 
@@ -45,13 +45,13 @@ def test_estimate_competence_kuncheva_ex():
     a_posteriori_test.DSEL_target_ = y_dsel_ex_kuncheva_dependent
     a_posteriori_test.n_classes_ = n_classes_ex_kuncheva
 
-    a_posteriori_test.neighbors = neighbors_ex_kuncheva
-    a_posteriori_test.distances = distances_ex_kuncheva
+    neighbors = neighbors_ex_kuncheva.reshape(1, -1)
+    distances = distances_ex_kuncheva.reshape(1, -1)
 
     predictions = []
     for clf in a_posteriori_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    competences = a_posteriori_test.estimate_competence(query, predictions=np.array(predictions))
+    competences = a_posteriori_test.estimate_competence(query, neighbors, distances, predictions=np.array(predictions))
     assert np.isclose(competences, 0.95, atol=0.01)
 
 
@@ -68,14 +68,13 @@ def test_estimate_competence_kuncheva_ex_batch():
     a_posteriori_test.n_classes_ = n_classes_ex_kuncheva
 
     # repeating the same matrix in a new axis to simulate a batch input.
-    a_posteriori_test.neighbors = np.tile(neighbors_ex_kuncheva, (10, 1))
-    a_posteriori_test.distances = np.tile(distances_ex_kuncheva, (10, 1))
-    a_posteriori_test.DFP_mask = np.ones((10, 1))
+    neighbors = np.tile(neighbors_ex_kuncheva, (10, 1))
+    distances = np.tile(distances_ex_kuncheva, (10, 1))
 
     predictions = []
     for clf in a_posteriori_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    competences = a_posteriori_test.estimate_competence(query, predictions=np.array(predictions))
+    competences = a_posteriori_test.estimate_competence(query, neighbors, distances, predictions=np.array(predictions))
     assert np.allclose(competences, 0.95, atol=0.01)
 
 
@@ -92,16 +91,15 @@ def test_estimate_competence_diff_target(index):
     a_posteriori_test.DSEL_target_ = np.ones(15, dtype=int) * 2
     a_posteriori_test.n_classes_ = 2
 
-    a_posteriori_test.neighbors = neighbors_ex1[index, :]
-    a_posteriori_test.distances = distances_all_ones[index, :]
-    a_posteriori_test.DFP_mask = [1, 1, 1]
+    neighbors = neighbors_ex1[index, :].reshape(1, -1)
+    distances = distances_all_ones[index, :].reshape(1, -1)
 
     expected = [0.0, 0.0, 0.0]
 
     predictions = []
     for clf in a_posteriori_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    competences = a_posteriori_test.estimate_competence(query, predictions=np.array(predictions))
+    competences = a_posteriori_test.estimate_competence(query, neighbors, distances, predictions=np.array(predictions))
     assert np.isclose(competences, expected).all()
 
 

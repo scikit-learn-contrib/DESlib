@@ -106,8 +106,6 @@ class APosteriori(DCS):
                                           random_state=random_state,
                                           DSEL_perc=DSEL_perc)
 
-        self.name = 'A Posteriori'
-
     def fit(self, X, y):
         """Prepare the DS model by setting the KNN algorithm and
         pre-processing the information required to apply the DS
@@ -131,7 +129,7 @@ class APosteriori(DCS):
         self.dsel_scores_ = self._preprocess_dsel_scores()
         return self
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, neighbors, distances, predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the A Posteriori method.
 
@@ -153,6 +151,12 @@ class APosteriori(DCS):
         query : array cf shape  = [n_samples, n_features]
                 The query sample.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for the test examples.
 
@@ -161,16 +165,15 @@ class APosteriori(DCS):
         competences : array of shape = [n_samples, n_classifiers]
                       Competence level estimated for each base classifier and test example.
         """
-        dists, idx_neighbors = self._get_region_competence(query)
         # Guarantee that these arrays are view as a 2D array for the case where a single test sample is passed down.
         predictions = np.atleast_2d(predictions)
 
         # Normalize the distances
-        dists_normalized = 1.0 / dists
+        dists_normalized = 1.0 / distances
 
         # Expanding the dimensions of the predictions and target arrays in order to compare both.
         predictions_3d = np.expand_dims(predictions, axis=1)
-        target_3d = np.expand_dims(self.DSEL_target_[idx_neighbors], axis=2)
+        target_3d = np.expand_dims(self.DSEL_target_[neighbors], axis=2)
         # Create a mask to remove the neighbors belonging to a different class than the predicted by the base classifier
         mask = (predictions_3d != target_3d)
 
@@ -178,7 +181,7 @@ class APosteriori(DCS):
         dists_normalized = np.repeat(np.expand_dims(dists_normalized, axis=2), self.n_classifiers_, axis=2)
 
         # Multiply the pre-processed correct predictions by the base classifiers to the distance array
-        scores_target_norm = self.dsel_scores_[idx_neighbors, :, self.DSEL_target_[idx_neighbors]] * dists_normalized
+        scores_target_norm = self.dsel_scores_[neighbors, :, self.DSEL_target_[neighbors]] * dists_normalized
 
         # Create masked arrays to remove samples with different label in the calculations
         masked_preprocessed = np.ma.MaskedArray(scores_target_norm, mask=mask)

@@ -98,13 +98,19 @@ class DCS(DS):
         self.selection_method = selection_method
         self.diff_thresh = diff_thresh
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, neighbors, distances=None, predictions=None):
         """estimate the competence of each base classifier for the classification of the query sample.
 
         Parameters
         ----------
         query : array of shape = [n_samples, n_features]
                 The test examples.
+
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample.
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample.
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for all test examples.
@@ -149,9 +155,6 @@ class DCS(DS):
         """
         if competences.ndim < 2:
             competences = competences.reshape(1, -1)
-
-        if self.DFP:
-            competences = competences * self.DFP_mask
 
         selected_classifiers = []
         best_index = np.argmax(competences, axis=1)
@@ -202,7 +205,7 @@ class DCS(DS):
 
         return selected_classifiers
 
-    def classify_with_ds(self, query, predictions, probabilities=None):
+    def classify_with_ds(self, query, predictions, probabilities=None, neighbors=None, distances=None, DFP_mask=None):
         """Predicts the class label of the corresponding query sample.
 
         If self.selection_method == "all", the majority voting scheme is used to aggregate the predictions
@@ -220,6 +223,15 @@ class DCS(DS):
                         Probabilities estimates of each base classifier for all test examples. (For methods that
                         always require probabilities from the base classifiers).
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample.
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample.
+
+        DFP_mask : array of shape = [n_samples, n_classifiers]
+                   Mask containing 1 for the selected base classifier and 0 otherwise.
+
         Returns
         -------
         predicted_label : array of shape = [n_samples]
@@ -235,7 +247,10 @@ class DCS(DS):
             raise ValueError('The arrays query and predictions must have the same shape. query.shape is {}'
                              'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
-        competences = self.estimate_competence(query, predictions=predictions)
+        competences = self.estimate_competence(query, neighbors, distances=distances, predictions=predictions)
+
+        if self.DFP:
+            competences = competences * DFP_mask
 
         if self.selection_method != 'all':
             # only one classifier is selected
@@ -249,7 +264,7 @@ class DCS(DS):
 
         return predicted_label
 
-    def predict_proba_with_ds(self, query, predictions, probabilities):
+    def predict_proba_with_ds(self, query, predictions, probabilities, neighbors=None, distances=None, DFP_mask=None):
         """Predicts the posterior probabilities of the corresponding query sample.
 
         If self.selection_method == "all", get the probability estimates of the selected ensemble. Otherwise,
@@ -266,6 +281,15 @@ class DCS(DS):
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         Probabilities estimates of each base classifier for all test examples.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
+        DFP_mask : array of shape = [n_samples, n_classifiers]
+                   Mask containing 1 for the selected base classifier and 0 otherwise.
+
         Returns
         -------
         predicted_proba : array = [n_samples, n_classes]
@@ -275,7 +299,11 @@ class DCS(DS):
             raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
                              'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
-        competences = self.estimate_competence(query, predictions)
+        competences = self.estimate_competence(query, neighbors, distances=distances, predictions=predictions)
+
+        if self.DFP:
+            competences = competences * DFP_mask
+
         if self.selection_method != 'all':
             # only one classifier is selected
             clf_index = self.select(competences)

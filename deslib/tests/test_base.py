@@ -169,8 +169,7 @@ def test_frienemy_no_classifier_crosses():
     y = y_dsel_ex1
     ds_test = DS(create_pool_classifiers())
     ds_test.fit(X, y)
-    ds_test.neighbors = neighbors_ex1[0, :]
-    mask = ds_test._frienemy_pruning()
+    mask = ds_test._frienemy_pruning(neighbors_ex1[0, :])
     assert mask.shape == (1, 3) and np.allclose(mask, 1)
 
 
@@ -182,8 +181,7 @@ def test_frienemy_all_classifiers_crosses(index):
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     ds_test.DSEL_processed_ = dsel_processed_all_ones
 
-    ds_test.neighbors = neighbors_ex1[index, :]
-    result = ds_test._frienemy_pruning()
+    result = ds_test._frienemy_pruning(neighbors_ex1[index, :])
     assert result.all() == 1.0
 
 
@@ -192,8 +190,7 @@ def test_frienemy_not_all_classifiers_crosses():
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     ds_test.DSEL_processed_ = dsel_processed_ex1
 
-    ds_test.neighbors = neighbors_ex1[0, :]
-    result = ds_test._frienemy_pruning()
+    result = ds_test._frienemy_pruning(neighbors_ex1[0, :])
     assert np.array_equal(result, np.array([[1, 1, 0]]))
 
 
@@ -206,8 +203,7 @@ def test_frienemy_not_all_classifiers_crosses_batch():
     ds_test.DSEL_processed_ = dsel_processed_ex1
 
     # passing three samples to compute the DFP at the same time
-    ds_test.neighbors = neighbors_ex1
-    result = ds_test._frienemy_pruning()
+    result = ds_test._frienemy_pruning(neighbors_ex1)
     assert np.array_equal(result, expected)
 
 
@@ -217,8 +213,7 @@ def test_frienemy_safe_region():
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     ds_test.DSEL_processed_ = dsel_processed_ex1
 
-    ds_test.neighbors = np.array([0, 1, 2, 6, 7, 8, 14])
-    result = ds_test._frienemy_pruning()
+    result = ds_test._frienemy_pruning(np.array([0, 1, 2, 6, 7, 8, 14]))
     assert np.array_equal(result, np.array([[1, 1, 1]]))
 
 
@@ -232,28 +227,10 @@ def test_frienemy_safe_region_batch():
 
     ds_test.DSEL_processed_ = dsel_processed_ex1
 
-    ds_test.neighbors = np.tile(np.array([0, 1, 2, 6, 7, 8, 14]), (n_samples, 1))
-    result = ds_test._frienemy_pruning()
+    neighbors = np.tile(np.array([0, 1, 2, 6, 7, 8, 14]), (n_samples, 1))
+    result = ds_test._frienemy_pruning(neighbors)
 
     assert np.array_equal(result, expected)
-
-
-# In this test, the frienemy pruning is used. So, the value of self.DFP_mask should change.
-def test_predict_proba_DFP():
-    query = np.atleast_2d([1, 1])
-    ds_test = DS(create_pool_classifiers(), DFP=True, safe_k=3)
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-
-    # change the state of the system
-    ds_test.DSEL_processed_ = dsel_processed_ex1
-    ds_test.DSEL_target_ = y_dsel_ex1
-    ds_test.DSEL_data_ = X_dsel_ex1
-    ds_test.neighbors = neighbors_ex1[0, :]
-    ds_test.distances = distances_ex1[0, :]
-
-    ds_test.predict_proba_with_ds = MagicMock(return_value=np.atleast_2d([0.25, 0.75]))
-    ds_test.predict_proba(query)
-    assert np.array_equal(ds_test.DFP_mask, np.atleast_2d([[1, 1, 0]]))
 
 
 @pytest.mark.parametrize('X', [None, [[0.1, 0.2], [0.5, np.nan]]])
@@ -274,17 +251,14 @@ def test_preprocess_dsel_scores():
 
 
 def test_DFP_is_used():
-    query = np.atleast_2d([1, 0])
     ds_test = DS(create_pool_classifiers(), DFP=True, safe_k=3)
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     ds_test.DSEL_processed_ = dsel_processed_ex1
     ds_test.DSEL_target_ = y_dsel_ex1
     ds_test.DSEL_data_ = X_dsel_ex1
-    ds_test.neighbors = neighbors_ex1[0, :]
-    ds_test.distances = distances_ex1[0, :]
-    ds_test.classify_with_ds = MagicMock(return_value=0)
-    ds_test.predict(query)
-    assert np.array_equal(ds_test.DFP_mask, np.atleast_2d([1, 1, 0]))
+
+    DFP_mask = ds_test._frienemy_pruning(neighbors_ex1[0, :])
+    assert np.array_equal(DFP_mask, np.atleast_2d([1, 1, 0]))
 
 
 def test_IH_is_used():
@@ -297,9 +271,7 @@ def test_IH_is_used():
     ds_test.DSEL_target_ = y_dsel_ex1
     ds_test.DSEL_data_ = X_dsel_ex1
 
-    ds_test.neighbors = neighbors_ex1
-    ds_test.distances = distances_ex1
-
+    ds_test._get_region_competence = MagicMock(return_value=(distances_ex1, neighbors_ex1))
     predicted = ds_test.predict(query)
 
     assert np.array_equal(predicted, expected)

@@ -95,8 +95,6 @@ class KNOP(DES):
                                    knn_classifier=knn_classifier,
                                    DSEL_perc=DSEL_perc)
 
-        self.name = 'K-Nearest Output Profiles (KNOP)'
-
     def fit(self, X, y):
         """Train the DS model by setting the KNN algorithm and
         pre-process the information required to apply the DS
@@ -116,7 +114,8 @@ class KNOP(DES):
         self
         """
         super(KNOP, self).fit(X, y)
-
+        if self.n_classes_ == 1:
+            raise ValueError("Error. KNOP  does not accept one class datasets!")
         self._check_predict_proba()
         self.dsel_scores_ = self._preprocess_dsel_scores()
         # Reshape DSEL_scores as a 2-D array for nearest neighbor calculations
@@ -176,7 +175,7 @@ class KNOP(DES):
         dists, idx = self.op_knn_.kneighbors(query_op, n_neighbors=self.k_, return_distance=True)
         return dists, np.atleast_2d(idx)
 
-    def estimate_competence_from_proba(self, query, probabilities):
+    def estimate_competence_from_proba(self, query, probabilities, neighbors=None, distances=None):
         """The competence of the base classifiers is simply estimated as the number of samples
         in the region of competence that it correctly classified. This method received an array with
         the pre-calculated probability  estimates for each query.

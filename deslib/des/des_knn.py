@@ -105,7 +105,6 @@ class DESKNN(DS):
                                      knn_classifier=knn_classifier,
                                      DSEL_perc=DSEL_perc)
 
-        self.name = 'Dynamic Ensemble Selection-KNN (DES-KNN)'
         self.metric = metric
         self.pct_accuracy = pct_accuracy
         self.pct_diversity = pct_diversity
@@ -143,7 +142,7 @@ class DESKNN(DS):
 
         return self
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, neighbors, distances=None, predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}` for
         the classification of the query sample.
 
@@ -157,6 +156,13 @@ class DESKNN(DS):
         ----------
         query : array cf shape  = [n_samples, n_features]
                 The query sample.
+
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for all test examples.
@@ -176,12 +182,11 @@ class DESKNN(DS):
                     Average pairwise diversity of each base classifiers for all test examples.
 
         """
-        _, idx_neighbors = self._get_region_competence(query)
         # calculate the classifiers mean accuracy for all samples/base classifier
-        accuracy = np.mean(self.DSEL_processed_[idx_neighbors, :], axis=1)
+        accuracy = np.mean(self.DSEL_processed_[neighbors, :], axis=1)
 
-        predicted_matrix = self.BKS_DSEL_[idx_neighbors, :]
-        targets = self.DSEL_target_[idx_neighbors]
+        predicted_matrix = self.BKS_DSEL_[neighbors, :]
+        targets = self.DSEL_target_[neighbors]
 
         self._set_diversity_func()
         # TODO: optimize this part with numpy instead of for loops
@@ -190,7 +195,7 @@ class DESKNN(DS):
         diversity = np.zeros((query.shape[0], self.n_classifiers_))
         for sample_idx in range(query.shape[0]):
             this_diversity = compute_pairwise_diversity(targets[sample_idx, :],
-                                                      predicted_matrix[sample_idx, :, :], self.diversity_func_)
+                                                        predicted_matrix[sample_idx, :, :], self.diversity_func_)
 
             diversity[sample_idx, :] = this_diversity
 
@@ -236,7 +241,7 @@ class DESKNN(DS):
 
         return selected_classifiers
 
-    def classify_with_ds(self, query, predictions, probabilities=None):
+    def classify_with_ds(self, query, predictions, probabilities=None, neighbors=None, distances=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
 
         Parameters
@@ -249,6 +254,15 @@ class DESKNN(DS):
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         Probabilities estimates of each base classifier for all test examples.
+
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
+        DFP_mask : array of shape = [n_samples, n_classifiers]
+                   Mask containing 1 for the selected base classifier and 0 otherwise.
 
         Notes
         ------
@@ -272,10 +286,13 @@ class DESKNN(DS):
             raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
                              'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
-        accuracy, diversity = self.estimate_competence(query, predictions)
+        accuracy, diversity = self.estimate_competence(query,
+                                                       neighbors,
+                                                       distances=distances,
+                                                       predictions=predictions)
 
         if self.DFP:
-            accuracy = accuracy * self.DFP_mask
+            accuracy = accuracy * DFP_mask
 
         selected_classifiers = self.select(accuracy, diversity)
         votes = predictions[np.arange(predictions.shape[0])[:, None], selected_classifiers]
@@ -283,7 +300,7 @@ class DESKNN(DS):
 
         return predicted_label
 
-    def predict_proba_with_ds(self, query, predictions, probabilities):
+    def predict_proba_with_ds(self, query, predictions, probabilities, neighbors=None, distances=None, DFP_mask=None):
         """Predicts the posterior probabilities of the corresponding query sample.
 
         Parameters
@@ -296,6 +313,15 @@ class DESKNN(DS):
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         Probabilities estimates of each base classifier for all test examples.
+
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
+        DFP_mask : array of shape = [n_samples, n_classifiers]
+                   Mask containing 1 for the selected base classifier and 0 otherwise.
 
         Notes
         ------
@@ -313,10 +339,12 @@ class DESKNN(DS):
             raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
                              'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
-        accuracy, diversity = self.estimate_competence(query, predictions)
-
+        accuracy, diversity = self.estimate_competence(query,
+                                                       neighbors,
+                                                       distances=distances,
+                                                       predictions=predictions)
         if self.DFP:
-            accuracy = accuracy * self.DFP_mask
+            accuracy = accuracy * DFP_mask
 
         # This method always performs selection. There is no weighted version.
         selected_classifiers = self.select(accuracy, diversity)

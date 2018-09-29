@@ -43,9 +43,8 @@ def test_estimate_competence():
 
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1)
     target.fit(x, y)
-    target._get_region_competence = lambda x: (None, np.array([[0, 1, 2, 3, 4, 5, 6]]))
-
-    competences, diversity = target.estimate_competence(query)
+    neighbors = np.array([[0, 1, 2, 3, 4, 5, 6]])
+    competences, diversity = target.estimate_competence(query, neighbors)
     assert np.allclose(competences, [2./7, 4./7, 5./7])
     assert np.allclose(diversity, [-5./7, -4./7, -3./7])
 
@@ -83,9 +82,9 @@ def test_estimate_competence_batch():
 
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1)
     target.fit(x, y)
-    target._get_region_competence = lambda x: (None, np.tile([0, 1, 2, 3, 4, 5, 6], (10, 1)))
+    neighbors = np.tile([0, 1, 2, 3, 4, 5, 6], (10, 1))
 
-    competences, diversity = target.estimate_competence(query)
+    competences, diversity = target.estimate_competence(query, neighbors)
     assert np.allclose(competences, [2./7, 4./7, 5./7])
     assert np.allclose(diversity, [-5./7, -4./7, -3./7])
 
@@ -104,9 +103,9 @@ def test_estimate_competence_Q():
 
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1, metric='Q')
     target.fit(x, y)
-    target._get_region_competence = lambda x: (None, np.array([[0, 1, 2, 3, 4, 5, 6]]))
+    neighbors = np.array([[0, 1, 2, 3, 4, 5, 6]])
 
-    competences, diversity = target.estimate_competence(query)
+    competences, diversity = target.estimate_competence(query, neighbors)
     assert np.allclose(competences, [2./7, 4./7, 5./7])
     assert np.allclose(diversity, [2, 1.2, 1.2])
 
@@ -126,9 +125,9 @@ def test_estimate_competence_Q_batch():
 
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1, metric='Q')
     target.fit(x, y)
-    target._get_region_competence = lambda x: (None, np.tile([0, 1, 2, 3, 4, 5, 6], (n_samples, 1)))
+    neighbors = np.tile([0, 1, 2, 3, 4, 5, 6], (n_samples, 1))
 
-    competences, diversity = target.estimate_competence(query)
+    competences, diversity = target.estimate_competence(query, neighbors)
     assert np.allclose(competences, [2./7, 4./7, 5./7])
     assert np.allclose(diversity, [2, 1.2, 1.2])
 
@@ -148,9 +147,9 @@ def test_estimate_competence_ratio():
 
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1, metric='ratio')
     target.fit(x, y)
-    target._get_region_competence = lambda x: (None, np.array([[0, 1, 2, 3, 4, 5, 6]]))
+    neighbors = np.array([[0, 1, 2, 3, 4, 5, 6]])
 
-    competences, diversity = target.estimate_competence(query)
+    competences, diversity = target.estimate_competence(query, neighbors)
     assert np.allclose(competences, [2./7, 4./7, 5./7])
     assert np.allclose(diversity, [2.166, 3.666, 4.500], atol=0.01)
 
@@ -171,9 +170,9 @@ def test_estimate_competence_ratio_batch():
 
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1, metric='ratio')
     target.fit(x, y)
-    target._get_region_competence = lambda x: (None, np.tile([0, 1, 2, 3, 4, 5, 6], (n_samples, 1)))
+    neighbors = np.tile([0, 1, 2, 3, 4, 5, 6], (n_samples, 1))
 
-    competences, diversity = target.estimate_competence(query)
+    competences, diversity = target.estimate_competence(query, neighbors)
     assert np.allclose(competences, [2./7, 4./7, 5./7])
     assert np.allclose(diversity, [2.166, 3.666, 4.500], atol=0.01)
 

@@ -130,7 +130,7 @@ class Probabilistic(DES):
         self.C_src_ = self.source_competence()
         return self
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, neighbors, distances, predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` using the source of competence :math:`C_{src}`
         and the potential function model. The source of competence :math:`C_{src}` for all data points in DSEL
         is already pre-computed in the fit() steps.
@@ -143,6 +143,12 @@ class Probabilistic(DES):
         query : array of shape = [n_samples, n_features]
                 The test examples.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for all test examples.
 
@@ -151,14 +157,12 @@ class Probabilistic(DES):
         competences : array of shape = [n_samples, n_classifiers]
                       Competence level estimated for each base classifier and test example.
         """
-        dists, idx_neighbors = self._get_region_competence(query)
-
-        potential_dists = self.potential_func(dists)
+        potential_dists = self.potential_func(distances)
         sum_potential = np.sum(potential_dists, axis=1)
 
         # Using einsum here since it is way more memory efficient. This line is equivalent to
         # competences = self.C_src_[idx_neighbors, :] * potential_dists[:, :, np.newaxis]
-        competences = np.einsum('ijk,ij->ik', self.C_src_[idx_neighbors, :], potential_dists)
+        competences = np.einsum('ijk,ij->ik', self.C_src_[neighbors, :], potential_dists)
         competences = competences / sum_potential.reshape(-1, 1)
 
         return competences
@@ -272,7 +276,7 @@ class Logarithmic(Probabilistic):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
-    DSEL_size : float (Default = 0.5)
+    DSEL_perc : float (Default = 0.5)
                 Percentage of the input data used to fit DSEL.
                 Note: This parameter is only used if the pool of classifier is None or unfitted.
 
@@ -297,8 +301,6 @@ class Logarithmic(Probabilistic):
                                           random_state=random_state,
                                           knn_classifier=knn_classifier,
                                           DSEL_perc=DSEL_perc)
-
-        self.name = "DES-Logarithmic"
 
     def source_competence(self):
         """The source of competence C_src at the validation point :math:`\mathbf{x}_{k}` is calculated by
@@ -371,7 +373,7 @@ class Exponential(Probabilistic):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
-    DSEL_size : float (Default = 0.5)
+    DSEL_perc : float (Default = 0.5)
                 Percentage of the input data used to fit DSEL.
                 Note: This parameter is only used if the pool of classifier is None or unfitted.
 
@@ -399,7 +401,6 @@ class Exponential(Probabilistic):
                                           DSEL_perc=DSEL_perc)
 
         self.selection_threshold = 0
-        self.name = "DES-Exponential"
 
     def source_competence(self):
         """The source of competence C_src at the validation point :math:`\mathbf{x}_{k}` is a product of two factors:
@@ -466,7 +467,7 @@ class RRC(Probabilistic):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
-    DSEL_size : float (Default = 0.5)
+    DSEL_perc : float (Default = 0.5)
                 Percentage of the input data used to fit DSEL.
                 Note: This parameter is only used if the pool of classifier is None or unfitted.
 
@@ -493,7 +494,6 @@ class RRC(Probabilistic):
                                   knn_classifier=knn_classifier,
                                   DSEL_perc=DSEL_perc)
 
-        self.name = "DES-RRC"
         self.selection_threshold = None
 
     def source_competence(self):
@@ -572,7 +572,7 @@ class DESKL(Probabilistic):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
-    DSEL_size : float (Default = 0.5)
+    DSEL_perc : float (Default = 0.5)
                 Percentage of the input data used to fit DSEL.
                 Note: This parameter is only used if the pool of classifier is None or unfitted.
 
@@ -601,8 +601,8 @@ class DESKL(Probabilistic):
                                     random_state=random_state,
                                     knn_classifier=knn_classifier,
                                     DSEL_perc=DSEL_perc)
+
         self.selection_threshold = 0.0
-        self.name = 'DES-Kullback-Leibler (DES-KL)'
 
     def source_competence(self):
         """Calculates the source of competence using the KL divergence method.
@@ -678,7 +678,7 @@ class MinimumDifference(Probabilistic):
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
-    DSEL_size : float (Default = 0.5)
+    DSEL_perc : float (Default = 0.5)
                 Percentage of the input data used to fit DSEL.
                 Note: This parameter is only used if the pool of classifier is None or unfitted.
 
@@ -707,7 +707,6 @@ class MinimumDifference(Probabilistic):
 
         # Threshold is 0 since incompetent classifiers should have a negative competence level
         self.selection_threshold = 0.0
-        self.name = "DES-Minimum Difference (DES-MD)"
 
     def source_competence(self):
         """Calculates the source of competence using the Minimum Difference method.

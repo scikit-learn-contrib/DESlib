@@ -84,9 +84,7 @@ class KNORAU(DES):
                                      knn_classifier=knn_classifier,
                                      DSEL_perc=DSEL_perc)
 
-        self.name = 'k-Nearest Oracles Union (KNORA-U)'
-
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, neighbors, distances=None, predictions=None):
         """The competence of the base classifiers is simply estimated as the number of samples
         in the region of competence that it correctly classified.
 
@@ -97,6 +95,12 @@ class KNORAU(DES):
         query : array of shape = [n_samples, n_features]
                 The test examples.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for all test examples.
 
@@ -106,8 +110,7 @@ class KNORAU(DES):
                       Competence level estimated for each base classifier and test example.
 
         """
-        _, idx_neighbors = self._get_region_competence(query)
-        competences = np.sum(self.DSEL_processed_[idx_neighbors, :], axis=1, dtype=np.float)
+        competences = np.sum(self.DSEL_processed_[neighbors, :], axis=1, dtype=np.float)
 
         return competences
 

@@ -103,9 +103,7 @@ class Rank(DCS):
                                    knn_classifier=knn_classifier,
                                    DSEL_perc=DSEL_perc)
 
-        self.name = 'Modified Classifier Rank'
-
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, neighbors, distances=None, predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}` for
         the classification of the query sample using the modified ranking scheme.
         The rank of the base classifier is estimated by the number of consecutive correctly classified samples
@@ -116,6 +114,12 @@ class Rank(DCS):
         query : array of shape = [n_samples, n_features]
                 The test examples.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for the test examples.
 
@@ -124,8 +128,7 @@ class Rank(DCS):
         competences : array of shape = [n_samples, n_classifiers]
                       Competence level estimated for each base classifier and test example.
         """
-        _, idx_neighbors = self._get_region_competence(query)
-        results_neighbors = self.DSEL_processed_[idx_neighbors, :]
+        results_neighbors = self.DSEL_processed_[neighbors, :]
 
         # Get the shape of the vector in order to know the number of samples, base classifiers and neighbors considered.
         shape = results_neighbors.shape

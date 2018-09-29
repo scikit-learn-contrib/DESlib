@@ -38,7 +38,6 @@ class StaticSelection(StaticEnsemble):
     def __init__(self, pool_classifiers=None, pct_classifiers=0.5, random_state=None):
         super(StaticSelection, self).__init__(pool_classifiers=pool_classifiers, random_state=random_state)
         self.pct_classifiers = pct_classifiers
-        self.name = "Static Selection"
 
     def fit(self, X, y):
         """Fit the static selection model by select an ensemble of classifier containing the base classifiers with
@@ -68,7 +67,7 @@ class StaticSelection(StaticEnsemble):
         performances = np.zeros(self.n_classifiers_)
 
         for clf_idx, clf in enumerate(self.pool_classifiers_):
-            performances[clf_idx] = clf.score(X, y)
+            performances[clf_idx] = clf.score(X, self.y_enc_)
 
         self.clf_indices_ = np.argsort(performances)[::-1][0:self.n_classifiers_ensemble_]
         self.ensemble_ = [self.pool_classifiers_[clf_idx] for clf_idx in self.clf_indices_]

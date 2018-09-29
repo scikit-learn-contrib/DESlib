@@ -23,40 +23,18 @@ def test_estimate_competence_all_ones(index):
     mla_test.DSEL_target_ = y_dsel_ex1
     mla_test.n_classes_ = 2
 
-    mla_test.neighbors = neighbors_ex1[index, :]
-    mla_test.distances = distances_all_ones[index, :]
+    neighbors = neighbors_ex1[index, :].reshape(1, -1)
+    distances = distances_all_ones[index, :].reshape(1, -1)
 
     expected = [1.0, 1.0, 1.0]
 
     predictions = []
     for clf in mla_test.pool_classifiers:
         predictions.append(clf.predict(query))
-    competences = mla_test.estimate_competence(query, predictions=np.array(predictions))
-
-    assert np.isclose(competences, expected).all()
-
-
-@pytest.mark.parametrize('index, expected', [(0, [0.75000,  0.66666,  0.75000]),
-                                             (1, [0.80000,  1.00000,  0.80000]),
-                                             (2, [1.00000,  0.60000,  0.50000])])
-def test_estimate_competence(index, expected):
-    query = np.atleast_2d([1, 1])
-
-    mla_test = MLA(create_pool_classifiers())
-    mla_test.n_classifiers_ = 3
-
-    mla_test.DSEL_processed_ = dsel_processed_ex1
-    mla_test.DSEL_scores = dsel_scores_all_ones
-    mla_test.DSEL_target_ = y_dsel_ex1
-    mla_test.n_classes_ = 2
-
-    mla_test.neighbors = neighbors_ex1[index, :]
-    mla_test.distances = distances_all_ones[index, :]
-
-    predictions = []
-    for clf in mla_test.pool_classifiers:
-        predictions.append(clf.predict(query)[0])
-    competences = mla_test.estimate_competence(query, predictions=np.array(predictions))
+    competences = mla_test.estimate_competence(query,
+                                               neighbors,
+                                               distances=distances,
+                                               predictions=np.array(predictions))
 
     assert np.isclose(competences, expected).all()
 
@@ -74,14 +52,16 @@ def test_estimate_competence_batch():
     mla_test.DSEL_target_ = y_dsel_ex1
     mla_test.n_classes_ = 2
 
-    mla_test.neighbors = neighbors_ex1
-    mla_test.distances = distances_all_ones
-    mla_test.DFP_mask = np.ones((3, 3))
+    neighbors = neighbors_ex1
+    distances = distances_all_ones
 
     predictions = []
     for clf in mla_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    competences = mla_test.estimate_competence(query, predictions=np.array(predictions))
+    competences = mla_test.estimate_competence(query,
+                                               neighbors,
+                                               distances=distances,
+                                               predictions=np.array(predictions))
 
     assert np.allclose(competences, expected, atol=0.01)
 
@@ -98,15 +78,18 @@ def test_estimate_competence_diff_target(index):
     mla_test.DSEL_processed_ = dsel_processed_ex1
     mla_test.DSEL_target_ = np.ones(15, dtype=int) * 3
 
-    mla_test.neighbors = neighbors_ex1[index, :]
-    mla_test.distances = distances_ex1[index, :]
+    neighbors = neighbors_ex1[index, :].reshape(1, -1)
+    distances = distances_ex1[index, :].reshape(1, -1)
 
     expected = [0.0, 0.0, 0.0]
 
     predictions = []
     for clf in mla_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    competences = mla_test.estimate_competence(query, predictions=np.array(predictions))
+    competences = mla_test.estimate_competence(query,
+                                               neighbors,
+                                               distances=distances,
+                                               predictions=np.array(predictions))
 
     assert np.isclose(competences, expected).all()
 
@@ -123,13 +106,16 @@ def test_estimate_competence_kuncheva_ex():
     mla_test.DSEL_target_ = y_dsel_ex_kuncheva_dependent
     mla_test.n_classes_ = n_classes_ex_kuncheva
 
-    mla_test.neighbors = neighbors_ex_kuncheva
-    mla_test.distances = distances_ex_kuncheva
+    neighbors = neighbors_ex_kuncheva.reshape(1, -1)
+    distances = distances_ex_kuncheva.reshape(1, -1)
 
     predictions = []
     for clf in mla_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    competences = mla_test.estimate_competence(query, predictions=np.array(predictions))
+    competences = mla_test.estimate_competence(query,
+                                               neighbors,
+                                               distances=distances,
+                                               predictions=np.array(predictions))
 
     assert np.allclose(competences, [0.95, 0.95], atol=0.01)
 

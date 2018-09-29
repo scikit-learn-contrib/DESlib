@@ -45,11 +45,6 @@ class DS(BaseEstimator, ClassifierMixin):
         self.knn_classifier = knn_classifier
         self.DSEL_perc = DSEL_perc
 
-        # TODO: remove these as class variables
-        self.neighbors = None
-        self.distances = None
-        self.DFP_mask = None                # Mask used to apply the classifier pruning
-
     def _set_region_of_competence_algorithm(self):
 
         if self.knn_classifier is None:
@@ -98,9 +93,9 @@ class DS(BaseEstimator, ClassifierMixin):
         pass
 
     @abstractmethod
-    def estimate_competence(self, query, predictions):
-        """estimate the competence of each base classifier ci
-        the classification of the query sample x.
+    def estimate_competence(self, query, neighbors, distances=None, predictions=None):
+        """estimate the competence of each base classifier :math:`c_{i}`
+        the classification of the query sample :math:`\mathbf{x}`.
         Returns an array containing the level of competence estimated
         for each base classifier. The size of the vector is equals to
         the size of the generated_pool of classifiers.
@@ -109,6 +104,12 @@ class DS(BaseEstimator, ClassifierMixin):
         ----------
         query : array cf shape  = [n_samples, n_features]
                 The query sample
+
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample.
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample.
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for all test examples
@@ -120,7 +121,7 @@ class DS(BaseEstimator, ClassifierMixin):
         pass
 
     @abstractmethod
-    def classify_with_ds(self, query, predictions, probabilities=None):
+    def classify_with_ds(self, query, predictions, probabilities=None, neighbors=None, distances=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
         Returns the predicted label.
 
@@ -136,6 +137,15 @@ class DS(BaseEstimator, ClassifierMixin):
                         Probabilities estimates of each base classifier for all test examples (For methods that
                         always require probabilities from the base classifiers).
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
+        DFP_mask : array of shape = [n_samples, n_classifiers]
+                   Mask containing 1 for the selected base classifier and 0 otherwise.
+
         Returns
         -------
         predicted_label : array of shape = [n_samples]
@@ -144,7 +154,7 @@ class DS(BaseEstimator, ClassifierMixin):
         pass
 
     @abstractmethod
-    def predict_proba_with_ds(self, query, predictions, probabilities):
+    def predict_proba_with_ds(self, query, predictions, probabilities, neighbors=None, distances=None, DFP_mask=None):
         """Predicts the posterior probabilities of the corresponding query sample.
         Returns the probability estimates of each class.
 
@@ -159,6 +169,9 @@ class DS(BaseEstimator, ClassifierMixin):
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         The predictions of each base classifier for all samples (For methods that
                         always require probabilities from the base classifiers).
+
+        DFP_mask : array of shape = [n_samples, n_classifiers]
+                   Mask containing 1 for the selected base classifier and 0 otherwise.
 
         Returns
         -------
@@ -305,16 +318,10 @@ class DS(BaseEstimator, ClassifierMixin):
         idx : list of shape = [n_samples, k]
               Indices of the instances belonging to the region of competence of the given query sample.
         """
-        # Check if the neighborhood was already estimated to avoid unnecessary calculations.
-        if self.distances is None or self.neighbors is None:
-            if k is None:
-                k = self.k_
+        if k is None:
+            k = self.k_
 
-            dists, idx = self.roc_algorithm_.kneighbors(query, n_neighbors=k, return_distance=True)
-
-        else:
-            dists = self.distances
-            idx = self.neighbors
+        dists, idx = self.roc_algorithm_.kneighbors(query, n_neighbors=k, return_distance=True)
 
         return np.atleast_2d(dists), np.atleast_2d(idx)
 
@@ -362,14 +369,14 @@ class DS(BaseEstimator, ClassifierMixin):
 
             X_DS = X[ind_disagreement, :]
 
-            # Estimate the neighbors at this stage if either the DFP or the IH is used during classification
-            if self.DFP or self.with_IH:
-                # Then, we estimate the nearest neighbors for all samples that we need to call DS routines
-                self.distances, self.neighbors = self._get_region_competence(X_DS)
+            # Always calculating the neighborhood. Passing that to classify later
+            # TODO: Check problems with DES Clusterin method. Maybe add a check to prevnt that here. (or do clustering instead)
+            # Then, we estimate the nearest neighbors for all samples that we need to call DS routines
+            distances, neighbors = self._get_region_competence(X_DS)
 
             if self.with_IH:
                 # if IH is used, calculate the hardness level associated with each sample
-                hardness = hardness_region_competence(self.neighbors, self.DSEL_target_, self.safe_k)
+                hardness = hardness_region_competence(neighbors, self.DSEL_target_, self.safe_k)
 
                 # Get the index associated with the easy and hard samples. Samples with low hardness are
                 # passed down to the knn classifier while samples with high hardness are passed down to
@@ -382,7 +389,7 @@ class DS(BaseEstimator, ClassifierMixin):
                 if ind_knn_classifier.size:
                     # all samples with low hardness should be classified by the knn method here:
                     # First get the class associated with each neighbor
-                    y_neighbors = self.DSEL_target_[self.neighbors[ind_knn_classifier, :self.safe_k]]
+                    y_neighbors = self.DSEL_target_[neighbors[ind_knn_classifier, :self.safe_k]]
 
                     # Accessing which samples in the original matrix are associated with the low
                     # instance hardness indices_. This is important since the low hardness indices_
@@ -392,8 +399,8 @@ class DS(BaseEstimator, ClassifierMixin):
                     predicted_labels[ind_knn_original_matrix] = prediction_knn.reshape(-1,)
 
                     # Remove from the neighbors and distance matrices the samples that were classified using the KNN
-                    self.neighbors = np.delete(self.neighbors, ind_knn_classifier, axis=0)
-                    self.distances = np.delete(self.distances, ind_knn_classifier, axis=0)
+                    neighbors = np.delete(neighbors, ind_knn_classifier, axis=0)
+                    distances = np.delete(distances, ind_knn_classifier, axis=0)
             else:
                 # IH was not considered. So all samples with disagreement are passed down to the DS algorithm
                 ind_ds_classifier = np.arange(ind_disagreement.size)
@@ -407,9 +414,9 @@ class DS(BaseEstimator, ClassifierMixin):
 
                 # IF the DFP pruning is considered, calculate the DFP mask for all samples in X
                 if self.DFP:
-                    self.DFP_mask = self._frienemy_pruning()
+                    DFP_mask = self._frienemy_pruning(neighbors)
                 else:
-                    self.DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers_))
+                    DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers_))
 
                 # Get the real indices_ of the samples that will be classified using a DS algorithm.
                 ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
@@ -421,11 +428,11 @@ class DS(BaseEstimator, ClassifierMixin):
 
                 pred_ds = self.classify_with_ds(X_DS[ind_ds_classifier],
                                                 base_predictions[ind_ds_original_matrix],
-                                                selected_probabilities)
+                                                selected_probabilities,
+                                                neighbors=neighbors,
+                                                distances=distances,
+                                                DFP_mask=DFP_mask)
                 predicted_labels[ind_ds_original_matrix] = pred_ds
-
-        self.neighbors = None
-        self.distances = None
 
         return self.classes_.take(predicted_labels)
 
@@ -468,12 +475,14 @@ class DS(BaseEstimator, ClassifierMixin):
         if ind_disagreement.size:
             X_DS = X[ind_disagreement, :]
 
-            if self.with_IH or self.DFP:
-                self.distances, self.neighbors = self._get_region_competence(X_DS)
+            # Always calculating the neighborhood. Passing that to classify later
+            # TODO: Check problems with DES Clusterin method. Maybe add a check to prevnt that here. (or do clustering instead)
+            # Then, we estimate the nearest neighbors for all samples that we need to call DS routines
+            distances, neighbors = self._get_region_competence(X_DS)
 
             if self.with_IH:
                 # if IH is used, calculate the hardness level associated with each sample
-                hardness = hardness_region_competence(self.neighbors, self.DSEL_target_, self.safe_k)
+                hardness = hardness_region_competence(neighbors, self.DSEL_target_, self.safe_k)
 
                 # Get the index associated with the easy and hard samples. Samples with low hardness are
                 # passed down to the knn classifier while samples with high hardness are passed down to
@@ -495,8 +504,8 @@ class DS(BaseEstimator, ClassifierMixin):
                         self.roc_algorithm_.predict_proba(X_DS[ind_knn_classifier])
 
                     # Remove from the neighbors and distance matrices the samples that were classified using the KNN
-                    self.neighbors = np.delete(self.neighbors, ind_knn_classifier, axis=0)
-                    self.distances = np.delete(self.distances, ind_knn_classifier, axis=0)
+                    neighbors = np.delete(neighbors, ind_knn_classifier, axis=0)
+                    distances = np.delete(distances, ind_knn_classifier, axis=0)
             else:
                 # IH was not considered. So all samples with disagreement are passed down to the DS algorithm
                 ind_ds_classifier = np.arange(ind_disagreement.size)
@@ -504,24 +513,24 @@ class DS(BaseEstimator, ClassifierMixin):
             if ind_ds_classifier.size:
                 # Check if the dynamic frienemy pruning should be used
                 if self.DFP:
-                    self.DFP_mask = self._frienemy_pruning()
+                    DFP_mask = self._frienemy_pruning(neighbors)
                 else:
-                    self.DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers_))
+                    DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers_))
 
                 ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
 
                 proba_ds = self.predict_proba_with_ds(X[ind_ds_original_matrix],
                                                       base_predictions[ind_ds_original_matrix],
-                                                      base_probabilities[ind_ds_original_matrix])
+                                                      base_probabilities[ind_ds_original_matrix],
+                                                      neighbors=neighbors,
+                                                      distances=distances,
+                                                      DFP_mask=DFP_mask)
 
                 predicted_proba[ind_ds_original_matrix] = proba_ds
 
-        # Reset the neighbors and the distances as they are specific to a given query.
-        self.neighbors = None
-        self.distances = None
         return predicted_proba
 
-    def _frienemy_pruning(self):
+    def _frienemy_pruning(self, neighbors):
         """Implements the Online Pruning method (frienemy) to remove base classifiers that do not cross the
         region of competence. We consider that a classifier crosses the region of competence if it correctly classify
         at least one sample for each different class in the region.
@@ -531,30 +540,33 @@ class DS(BaseEstimator, ClassifierMixin):
         DFP_mask : array of shape = [n_samples, n_classifiers]
                    Mask containing 1 for the selected base classifier and 0 otherwise.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    indices of the k nearest neighbors according to each instance
+
         References
         ----------
         Oliveira, D.V.R., Cavalcanti, G.D.C. and Sabourin, R., Online Pruning of Base Classifiers for Dynamic
         Ensemble Selection, Pattern Recognition, vol. 72, December 2017, pp 44-58.
         """
         # using a for loop for processing a batch of samples temporarily. Change later to numpy processing
-        if self.neighbors.ndim < 2:
-            self.neighbors = np.atleast_2d(self.neighbors)
+        if neighbors.ndim < 2:
+            neighbors = np.atleast_2d(neighbors)
 
-        n_samples, n_neighbors = self.neighbors.shape
+        n_samples, _ = neighbors.shape
         mask = np.zeros((n_samples, self.n_classifiers_))
 
         for sample_idx in range(n_samples):
             # Check if query is in a indecision region
-            neighbors_y = self.DSEL_target_[self.neighbors[sample_idx, :self.safe_k]]
+            neighbors_y = self.DSEL_target_[neighbors[sample_idx, :self.safe_k]]
 
             if len(set(neighbors_y)) > 1:
                 # There are more than on class in the region of competence (So it is an indecision region).
 
                 # Check if the base classifier predict the correct label for a sample belonging to each class.
                 for clf_index in range(self.n_classifiers_):
-                    predictions = self.DSEL_processed_[self.neighbors[sample_idx, :self.safe_k], clf_index]
+                    predictions = self.DSEL_processed_[neighbors[sample_idx, :self.safe_k], clf_index]
                     correct_class_pred = [self.DSEL_target_[index] for count, index in
-                                          enumerate(self.neighbors[sample_idx, :self.safe_k])
+                                          enumerate(neighbors[sample_idx, :self.safe_k])
                                           if predictions[count] == 1]
 
                     # If that is true, it means that it correctly classified at least one neighbor for each class in

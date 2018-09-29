@@ -89,11 +89,10 @@ class DESMI(DS):
                                     knn_classifier=knn_classifier,
                                     DSEL_perc=DSEL_perc)
 
-        self.name = 'Dynamic Ensemble Selection for multi-class imbalanced datasets (DES-MI)'
         self.alpha = alpha
         self.pct_accuracy = pct_accuracy
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, neighbors, distances=None, predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}` for
         the classification of the query sample. Returns a ndarray containing the competence level
         of each base classifier.
@@ -109,6 +108,12 @@ class DESMI(DS):
         query : array cf shape  = [n_samples, n_features]
                 The query sample.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for all test examples.
 
@@ -119,14 +124,13 @@ class DESMI(DS):
 
 
         """
-        _, idx_neighbors = self._get_region_competence(query)
         # calculate the weight
         class_frequency = np.bincount(self.DSEL_target_)
-        targets = self.DSEL_target_[idx_neighbors]       # [n_samples, K_neighbors]
+        targets = self.DSEL_target_[neighbors]       # [n_samples, K_neighbors]
         num = class_frequency[targets]
         weight = 1./(1 + np.exp(self.alpha * num))
         weight = normalize(weight, norm='l1')
-        correct_num = self.DSEL_processed_[idx_neighbors, :]
+        correct_num = self.DSEL_processed_[neighbors, :]
         correct = np.zeros((query.shape[0], self.k_, self.n_classifiers_))
         for i in range(self.n_classifiers_):
             correct[:, :, i] = correct_num[:, :, i] * weight
@@ -160,7 +164,7 @@ class DESMI(DS):
 
         return selected_classifiers
 
-    def classify_with_ds(self, query, predictions, probabilities=None):
+    def classify_with_ds(self, query, predictions, probabilities=None, neighbors=None, distances=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
 
         Parameters
@@ -173,6 +177,15 @@ class DESMI(DS):
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         Probabilities estimates of each base classifier for all test examples.
+
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
+        DFP_mask : array of shape = [n_samples, n_classifiers]
+                   Mask containing 1 for the selected base classifier and 0 otherwise.
 
         Notes
         ------
@@ -193,10 +206,12 @@ class DESMI(DS):
             raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
                              'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
-        accuracy = self.estimate_competence(query)
+        accuracy = self.estimate_competence(query,
+                                            neighbors=neighbors,
+                                            predictions=predictions)
 
         if self.DFP:
-            accuracy = accuracy * self.DFP_mask
+            accuracy = accuracy * DFP_mask
 
         selected_classifiers = self.select(accuracy)
         votes = predictions[np.arange(predictions.shape[0])[:, None], selected_classifiers]
@@ -204,7 +219,7 @@ class DESMI(DS):
 
         return predicted_label
 
-    def predict_proba_with_ds(self, query, predictions, probabilities):
+    def predict_proba_with_ds(self, query, predictions, probabilities, neighbors=None, distances=None, DFP_mask=None):
         """Predicts the posterior probabilities of the corresponding query sample.
 
         Parameters
@@ -218,6 +233,15 @@ class DESMI(DS):
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         Probabilities estimates of each base classifier for all test examples.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
+        DFP_mask : array of shape = [n_samples, n_classifiers]
+                   Mask containing 1 for the selected base classifier and 0 otherwise.
+
         Returns
         -------
         predicted_proba : array = [n_samples, n_classes]
@@ -227,10 +251,12 @@ class DESMI(DS):
             raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
                              'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
-        accuracy = self.estimate_competence(query)
+        accuracy = self.estimate_competence(query,
+                                            neighbors=neighbors,
+                                            distances=distances)
 
         if self.DFP:
-            accuracy = accuracy * self.DFP_mask
+            accuracy = accuracy * DFP_mask
 
         selected_classifiers = self.select(accuracy)
         ensemble_proba = probabilities[np.arange(probabilities.shape[0])[:, None], selected_classifiers, :]

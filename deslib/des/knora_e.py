@@ -86,9 +86,7 @@ class KNORAE(DES):
                                      knn_classifier=knn_classifier,
                                      DSEL_perc=DSEL_perc)
 
-        self.name = 'k-Nearest Oracles Eliminate (KNORA-E)'
-
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, neighbors, distances=None, predictions=None):
         """Estimate the competence of the base classifiers. In the case of the KNORA-E technique, the classifiers
         are only considered competent when they achieve a 100% accuracy in the region of competence. For each base,
         we estimate the maximum size of the region of competence that it is a local oracle. The
@@ -100,6 +98,12 @@ class KNORAE(DES):
         query : array of shape = [n_samples, n_features]
                 The test examples.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for all test examples.
 
@@ -108,8 +112,7 @@ class KNORAE(DES):
         competences : array of shape = [n_samples, n_classifiers]
                       Competence level estimated for each base classifier and test example.
         """
-        _, idx_neighbors = self._get_region_competence(query)
-        results_neighbors = self.DSEL_processed_[idx_neighbors, :]
+        results_neighbors = self.DSEL_processed_[neighbors, :]
 
         # Get the shape of the vector in order to know the number of samples, base classifiers and neighbors considered.
         shape = results_neighbors.shape

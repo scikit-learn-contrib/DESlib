@@ -88,8 +88,8 @@ class DES(DS):
                                   DSEL_perc=DSEL_perc)
         self.mode = mode
 
-    def estimate_competence(self, query, predictions):
-        """Estimate the competence of each base classifier ci
+    def estimate_competence(self, query, neighbors, distances=None, predictions=None):
+        """Estimate the competence of each base classifier :math:`c_{i}`
         the classification of the query sample x.
         Returns an array containing the level of competence estimated
         for each base classifier. The size of the vector is equals to
@@ -99,6 +99,12 @@ class DES(DS):
         ----------
         query : array of shape  = [n_samples, n_features]
                 The test examples
+
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
 
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for all test examples.
@@ -110,8 +116,8 @@ class DES(DS):
         """
         pass
 
-    def estimate_competence_from_proba(self, query, probabilities):
-        """estimate the competence of each base classifier ci
+    def estimate_competence_from_proba(self, query, neighbors, probabilities, distances=None):
+        """ estimate the competence of each base classifier :math:`c_{i}`
         the classification of the query sample x, for methods that require probabilities.
         Returns an array containing the level of competence estimated
         for each base classifier. The size of the vector is equals to
@@ -121,6 +127,13 @@ class DES(DS):
         ----------
         query : array cf shape  = [n_samples, n_features]
                 The query sample.
+
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         Probabilities estimates of each base classifier for all test examples.
@@ -148,7 +161,7 @@ class DES(DS):
         """
         pass
 
-    def classify_with_ds(self, query, predictions, probabilities=None):
+    def classify_with_ds(self, query, predictions, probabilities=None, neighbors=None, distances=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
 
         If self.mode == "selection", the selected ensemble is combined using the
@@ -174,6 +187,15 @@ class DES(DS):
                         Probabilities estimates of each base classifier for all test examples. (For methods that always
                         require probabilities from the base classifiers).
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
+        DFP_mask : array of shape = [n_samples, n_classifiers]
+                   Mask containing 1 for the selected base classifier and 0 otherwise.
+
         Returns
         -------
         predicted_label : array of shape = [n_samples]
@@ -190,12 +212,18 @@ class DES(DS):
                              'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
         if self.needs_proba:
-            competences = self.estimate_competence_from_proba(query, probabilities)
+            competences = self.estimate_competence_from_proba(query,
+                                                              neighbors=neighbors,
+                                                              distances=distances,
+                                                              probabilities=probabilities)
         else:
-            competences = self.estimate_competence(query, predictions)
+            competences = self.estimate_competence(query,
+                                                   neighbors=neighbors,
+                                                   distances=distances,
+                                                   predictions=predictions)
 
         if self.DFP:
-            competences = competences * self.DFP_mask
+            competences = competences * DFP_mask
 
         if self.mode == "selection":
             # The selected_classifiers matrix is used as a mask to remove the predictions of certain base classifiers.
@@ -213,7 +241,7 @@ class DES(DS):
 
         return predicted_label
 
-    def predict_proba_with_ds(self, query, predictions, probabilities):
+    def predict_proba_with_ds(self, query, predictions, probabilities, neighbors=None, distances=None, DFP_mask=None):
         """Predicts the posterior probabilities of the corresponding query sample.
 
         If self.mode == "selection", the selected ensemble is used to estimate the probabilities. The average rule is
@@ -238,6 +266,15 @@ class DES(DS):
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         Probabilities estimates of each base classifier for all test examples.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
+        DFP_mask : array of shape = [n_samples, n_classifiers]
+                   Mask containing 1 for the selected base classifier and 0 otherwise.
+
         Returns
         -------
         predicted_proba : array = [n_samples, n_classes]
@@ -249,12 +286,18 @@ class DES(DS):
                              'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
         if self.needs_proba:
-            competences = self.estimate_competence_from_proba(query, probabilities)
+            competences = self.estimate_competence_from_proba(query,
+                                                              neighbors=neighbors,
+                                                              distances=distances,
+                                                              probabilities=probabilities)
         else:
-            competences = self.estimate_competence(query, predictions)
+            competences = self.estimate_competence(query,
+                                                   neighbors=neighbors,
+                                                   distances=distances,
+                                                   predictions=predictions)
 
         if self.DFP:
-            competences = competences * self.DFP_mask
+            competences = competences * DFP_mask
 
         if self.mode == "selection":
             selected_classifiers = self.select(competences)

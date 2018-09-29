@@ -12,21 +12,6 @@ def test_check_estimator():
         check_estimator(KNORAE)
 
 
-@pytest.mark.parametrize('index, expected', [(0, [1.0, 0.0, 1.0]),
-                                             (1, [2.0, 0.0, 2.0]),
-                                             (2, [0.0, 3.0, 0.0])])
-def test_estimate_competence(index, expected):
-    query = np.atleast_2d([1, 1])
-
-    knora_e_test = KNORAE(create_pool_classifiers())
-    knora_e_test.fit(X_dsel_ex1, y_dsel_ex1)
-    knora_e_test.DFP_mask = np.ones(knora_e_test .n_classifiers_)
-    knora_e_test.neighbors = neighbors_ex1[index, :]
-    knora_e_test.distances = distances_ex1[index, :]
-    competences = knora_e_test.estimate_competence(query)
-    assert np.isclose(competences, expected).all()
-
-
 def test_estimate_competence_batch():
     query = np.ones((3, 2))
     expected = np.array([[1.0, 0.0, 1.0],
@@ -35,10 +20,9 @@ def test_estimate_competence_batch():
 
     knora_e_test = KNORAE(create_pool_classifiers())
     knora_e_test.fit(X_dsel_ex1, y_dsel_ex1)
-    knora_e_test.DFP_mask = np.ones(knora_e_test .n_classifiers_)
-    knora_e_test.neighbors = neighbors_ex1
-    knora_e_test.distances = distances_ex1
-    competences = knora_e_test.estimate_competence(query)
+    neighbors = neighbors_ex1
+    distances = distances_ex1
+    competences = knora_e_test.estimate_competence(query, neighbors, distances)
     assert np.allclose(competences, expected)
 
 
@@ -50,10 +34,8 @@ def test_select(index, expected):
 
     knora_e_test = KNORAE(create_pool_classifiers())
     knora_e_test.fit(X_dsel_ex1, y_dsel_ex1)
-    knora_e_test.DFP_mask = np.ones(knora_e_test .n_classifiers_)
-    knora_e_test.neighbors = neighbors_ex1[index, :]
-    knora_e_test.distances = distances_ex1[index, :]
-    competences = knora_e_test.estimate_competence(query)
+    neighbors = neighbors_ex1[index, :].reshape(1, -1)
+    competences = knora_e_test.estimate_competence(query, neighbors)
     selected = knora_e_test.select(competences)
 
     assert np.array_equal(selected, expected)

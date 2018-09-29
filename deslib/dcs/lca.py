@@ -102,9 +102,7 @@ class LCA(DCS):
                                       knn_classifier=knn_classifier,
                                       DSEL_perc=DSEL_perc)
 
-            self.name = 'Local Classifier Accuracy (LCA)'
-
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, neighbors, distances=None, predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the local class accuracy method.
 
@@ -125,6 +123,12 @@ class LCA(DCS):
         query : array cf shape  = [n_samples, n_features]
                 The test examples.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for the test examples.
 
@@ -133,16 +137,14 @@ class LCA(DCS):
         competences : array of shape = [n_samples, n_classifiers]
                       The competence level estimated for each base classifier and test example.
         """
-
-        _, idx_neighbors = self._get_region_competence(query)
         predictions = np.atleast_2d(predictions)
 
         # Expanding the dimensions of the predictions and target arrays in order to compare both.
         predictions_3d = np.expand_dims(predictions, axis=1)
-        target_3d = np.expand_dims(self.DSEL_target_[idx_neighbors], axis=2)
+        target_3d = np.expand_dims(self.DSEL_target_[neighbors], axis=2)
         # Create a mask to remove the neighbors belonging to a different class than the predicted by the base classifier
         mask = (predictions_3d != target_3d)
-        masked_preprocessed = np.ma.MaskedArray(self.DSEL_processed_[idx_neighbors, :], mask=mask)
+        masked_preprocessed = np.ma.MaskedArray(self.DSEL_processed_[neighbors, :], mask=mask)
 
         competences_masked = np.mean(masked_preprocessed, axis=1)
         # Fill 0 to the masked values in the resulting array (when no neighbors belongs to the class predicted by

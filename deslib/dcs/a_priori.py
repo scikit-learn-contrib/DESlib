@@ -89,7 +89,7 @@ class APriori(DCS):
     """
 
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
-                 selection_method='diff', diff_thresh=0.1, random_state=None, knn_classifier='knn', DSEL_perc=0.33):
+                 selection_method='diff', diff_thresh=0.1, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
         super(APriori, self).__init__(pool_classifiers=pool_classifiers,
                                       k=k,
@@ -102,8 +102,6 @@ class APriori(DCS):
                                       random_state=random_state,
                                       knn_classifier=knn_classifier,
                                       DSEL_perc=DSEL_perc)
-
-        self.name = 'A Priori'
 
     def fit(self, X, y):
         """Prepare the DS model by setting the KNN algorithm and
@@ -128,7 +126,7 @@ class APriori(DCS):
         self.dsel_scores_ = self._preprocess_dsel_scores()
         return self
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, neighbors, distances, predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the A Priori rule:
 
@@ -149,6 +147,12 @@ class APriori(DCS):
         query : array cf shape  = [n_samples, n_features]
                 The test examples.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for the test examples.
 
@@ -157,11 +161,10 @@ class APriori(DCS):
         competences : array of shape = [n_samples, n_classifiers]
                       Competence level estimated for each base classifier and test example.
         """
-        dists, idx_neighbors = self._get_region_competence(query)
-        dists_normalized = 1.0 / dists
+        dists_normalized = 1.0 / distances
 
         # Get the ndarray containing the scores obtained for the correct class for each neighbor (and test sample)
-        scores_target_class = self.dsel_scores_[idx_neighbors, :, self.DSEL_target_[idx_neighbors]]
+        scores_target_class = self.dsel_scores_[neighbors, :, self.DSEL_target_[neighbors]]
 
         # Multiply the scores obtained for the correct class to the distances of each corresponding neighbor
         scores_target_class *= np.expand_dims(dists_normalized, axis=2)
