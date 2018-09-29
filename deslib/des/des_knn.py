@@ -190,7 +190,7 @@ class DESKNN(DS):
         diversity = np.zeros((query.shape[0], self.n_classifiers_))
         for sample_idx in range(query.shape[0]):
             this_diversity = compute_pairwise_diversity(targets[sample_idx, :],
-                                                      predicted_matrix[sample_idx, :, :], self.diversity_func_)
+                                                        predicted_matrix[sample_idx, :, :], self.diversity_func_)
 
             diversity[sample_idx, :] = this_diversity
 
@@ -236,7 +236,7 @@ class DESKNN(DS):
 
         return selected_classifiers
 
-    def classify_with_ds(self, query, predictions, probabilities=None):
+    def classify_with_ds(self, query, predictions, probabilities=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
 
         Parameters
@@ -249,6 +249,9 @@ class DESKNN(DS):
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         Probabilities estimates of each base classifier for all test examples.
+
+        DFP_mask : array of shape = [n_samples, n_classifiers]
+                   Mask containing 1 for the selected base classifier and 0 otherwise.
 
         Notes
         ------
@@ -275,7 +278,7 @@ class DESKNN(DS):
         accuracy, diversity = self.estimate_competence(query, predictions)
 
         if self.DFP:
-            accuracy = accuracy * self.DFP_mask
+            accuracy = accuracy * DFP_mask
 
         selected_classifiers = self.select(accuracy, diversity)
         votes = predictions[np.arange(predictions.shape[0])[:, None], selected_classifiers]
@@ -283,7 +286,7 @@ class DESKNN(DS):
 
         return predicted_label
 
-    def predict_proba_with_ds(self, query, predictions, probabilities):
+    def predict_proba_with_ds(self, query, predictions, probabilities, DFP_mask=None):
         """Predicts the posterior probabilities of the corresponding query sample.
 
         Parameters
@@ -296,6 +299,9 @@ class DESKNN(DS):
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         Probabilities estimates of each base classifier for all test examples.
+
+        DFP_mask : array of shape = [n_samples, n_classifiers]
+                   Mask containing 1 for the selected base classifier and 0 otherwise.
 
         Notes
         ------
@@ -316,7 +322,7 @@ class DESKNN(DS):
         accuracy, diversity = self.estimate_competence(query, predictions)
 
         if self.DFP:
-            accuracy = accuracy * self.DFP_mask
+            accuracy = accuracy * DFP_mask
 
         # This method always performs selection. There is no weighted version.
         selected_classifiers = self.select(accuracy, diversity)
