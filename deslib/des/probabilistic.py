@@ -157,8 +157,6 @@ class Probabilistic(DES):
         competences : array of shape = [n_samples, n_classifiers]
                       Competence level estimated for each base classifier and test example.
         """
-        distances, neighbors = self._get_region_competence(query)
-
         potential_dists = self.potential_func(distances)
         sum_potential = np.sum(potential_dists, axis=1)
 

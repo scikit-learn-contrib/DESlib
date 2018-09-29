@@ -158,6 +158,13 @@ class DESKNN(DS):
         query : array cf shape  = [n_samples, n_features]
                 The query sample.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
+
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for all test examples.
 
@@ -176,12 +183,11 @@ class DESKNN(DS):
                     Average pairwise diversity of each base classifiers for all test examples.
 
         """
-        _, idx_neighbors = self._get_region_competence(query)
         # calculate the classifiers mean accuracy for all samples/base classifier
-        accuracy = np.mean(self.DSEL_processed_[idx_neighbors, :], axis=1)
+        accuracy = np.mean(self.DSEL_processed_[neighbors, :], axis=1)
 
-        predicted_matrix = self.BKS_DSEL_[idx_neighbors, :]
-        targets = self.DSEL_target_[idx_neighbors]
+        predicted_matrix = self.BKS_DSEL_[neighbors, :]
+        targets = self.DSEL_target_[neighbors]
 
         self._set_diversity_func()
         # TODO: optimize this part with numpy instead of for loops
