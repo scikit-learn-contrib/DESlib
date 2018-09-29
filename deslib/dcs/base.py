@@ -282,6 +282,10 @@ class DCS(DS):
                              'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
         competences = self.estimate_competence(query, predictions)
+
+        if self.DFP:
+            competences = competences * DFP_mask
+
         if self.selection_method != 'all':
             # only one classifier is selected
             clf_index = self.select(competences)
