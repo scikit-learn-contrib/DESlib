@@ -318,16 +318,10 @@ class DS(BaseEstimator, ClassifierMixin):
         idx : list of shape = [n_samples, k]
               Indices of the instances belonging to the region of competence of the given query sample.
         """
-        # # Check if the neighborhood was already estimated to avoid unnecessary calculations.
-        # if self.distances is None or self.neighbors is None:
-        #     if k is None:
-        #         k = self.k_
+        if k is None:
+            k = self.k_
 
         dists, idx = self.roc_algorithm_.kneighbors(query, n_neighbors=k, return_distance=True)
-
-        # else:
-        #     dists = self.distances
-        #     idx = self.neighbors
 
         return np.atleast_2d(dists), np.atleast_2d(idx)
 
