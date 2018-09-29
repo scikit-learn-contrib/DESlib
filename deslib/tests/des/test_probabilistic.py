@@ -99,64 +99,45 @@ def test_potential_function_batch():
     assert np.allclose(value, expected, atol=0.001)
 
 
-# Test the estimate_competence method using a pre-calculated source of competence matrix. The final competence is
-# a result of the competence source and the result of the potential function model at each data point.
-def test_estimate_competence():
-    n_classifiers = 3
-    query = np.atleast_2d([1, 1])
-    probabilistic_test = Probabilistic(create_pool_classifiers())
-    probabilistic_test.distances = [0.5, 1.0, 2.0]
-    probabilistic_test.neighbors = [0, 1, 2]
-    probabilistic_test.DFP_mask = np.ones(n_classifiers)
-
-    probabilistic_test.C_src_ = np.array([[0.5, 0.2, 0.8],
-                                          [1.0, 1.0, 1.0],
-                                          [1.0, 0.6, 0.3]])
-
-    competence = probabilistic_test.estimate_competence(query)
-    assert np.allclose(competence, [0.665, 0.458, 0.855], atol=0.01)
-
-
 def test_estimate_competence_batch():
     n_samples = 10
-    n_classifiers = 3
     query = np.ones((n_samples, 2))
     probabilistic_test = Probabilistic(create_pool_classifiers())
-    probabilistic_test.distances = np.tile([0.5, 1.0, 2.0], (n_samples, 1))
-    probabilistic_test.neighbors = np.tile([0, 1, 2], (n_samples, 1))
-    probabilistic_test.DFP_mask = np.ones((n_samples, n_classifiers))
+    probabilistic_test.k_ = 7
+    distances = np.tile([0.5, 1.0, 2.0], (n_samples, 1))
+    neighbors = np.tile([0, 1, 2], (n_samples, 1))
 
     probabilistic_test.C_src_ = np.array([[0.5, 0.2, 0.8],
                                           [1.0, 1.0, 1.0],
                                           [1.0, 0.6, 0.3]])
     expected = np.tile([0.665, 0.458, 0.855], (n_samples, 1))
-    competence = probabilistic_test.estimate_competence(query)
+    competence = probabilistic_test.estimate_competence(query, neighbors=neighbors, distances=distances)
     assert np.allclose(competence, expected, atol=0.01)
 
 
 # Test the estimate competence function when the competence source is equal to zero. The competence should also be zero.
 def test_estimate_competence_zeros():
     query = np.atleast_2d([1, 1])
-    n_classifiers = 3
     probabilistic_test = Probabilistic(create_pool_classifiers())
-    probabilistic_test.distances = distances_ex1[0, 0:3]
-    probabilistic_test.neighbors = [0, 2, 1]
-    probabilistic_test.DFP_mask = np.zeros(n_classifiers)
+    probabilistic_test.k_ = 7
+
+    distances = distances_ex1[0, 0:3].reshape(1, -1)
+    neighbors = np.array([[0, 2, 1]])
     probabilistic_test.C_src_ = np.zeros((3, 3))
-    competence = probabilistic_test.estimate_competence(query)
+    competence = probabilistic_test.estimate_competence(query, neighbors=neighbors, distances=distances)
     assert np.sum(competence) == 0.0
 
 
 # Test the estimate competence function when the competence source is equal to one. The competence should also be ones.
 def test_estimate_competence_ones():
     query = np.atleast_2d([1, 1])
-    n_classifiers = 3
     probabilistic_test = Probabilistic(create_pool_classifiers())
-    probabilistic_test.distances = distances_ex1[0, 0:3]
-    probabilistic_test.neighbors = [0, 2, 1]
-    probabilistic_test.DFP_mask = np.ones(n_classifiers)
+    probabilistic_test.k_ = 7
+
+    distances = distances_ex1[0, 0:3].reshape(1, -1)
+    neighbors = np.array([[0, 2, 1]])
     probabilistic_test.C_src_ = np.ones((3, 3))
-    competence = probabilistic_test.estimate_competence(query)
+    competence = probabilistic_test.estimate_competence(query, neighbors, distances)
     assert (competence == 1.0).all()
 
 

@@ -45,14 +45,18 @@ def test_estimate_competence(index, expected):
     mcb_test = MCB(create_pool_classifiers())
     mcb_test.n_classifiers_ = 3
     mcb_test.DSEL_processed_ = dsel_processed_ex1
-    mcb_test.neighbors = neighbors_ex1[index, :]
-    mcb_test.distances = distances_ex1[index, :]
+
+    neighbors = neighbors_ex1[index, :].reshape(1, -1)
+    distances = distances_ex1[index, :].reshape(1, -1)
     mcb_test.BKS_DSEL_ = bks_dsel_ex1
 
     predictions = []
     for clf in mcb_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    competences = mcb_test.estimate_competence(query, predictions=np.atleast_2d(predictions))
+    competences = mcb_test.estimate_competence(query,
+                                               neighbors,
+                                               distances=distances,
+                                               predictions=np.atleast_2d(predictions))
     assert np.isclose(competences, expected).all()
 
 # This second test case uses a different KS matrix to filter out some neighbors.
@@ -66,44 +70,24 @@ def test_estimate_competence2(index, expected):
     mcb_test = MCB(create_pool_classifiers())
     mcb_test.n_classifiers_ = 3
     mcb_test.DSEL_processed_ = dsel_processed_ex1
-    mcb_test.neighbors = neighbors_ex1[index, :]
-    mcb_test.distances = distances_ex1[index, :]
-    mcb_test.DFP_mask = [1, 1, 1]
+
+    neighbors = neighbors_ex1[index, :].reshape(1, -1)
+    distances = distances_ex1[index, :].reshape(1, -1)
     # Only changing the pre-processed BKS to see if the filter works.
     mcb_test.BKS_DSEL_ = bks_dsel_ex2
 
     predictions = []
     for clf in mcb_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    competences = mcb_test.estimate_competence(query, predictions=np.atleast_2d(predictions))
+    competences = mcb_test.estimate_competence(query,
+                                               neighbors,
+                                               distances=distances,
+                                               predictions=np.atleast_2d(predictions))
     assert np.isclose(competences, expected).all()
 
 
 # This third test uses an totally wrong bks matrix, so that the technique is obligated to use the whole
-#  region of competence
-
-@pytest.mark.parametrize('index, expected', [(0, [0.57142857,  0.71428571,  0.71428571]),
-                                             (1, [0.71428571,  0.85714286,  0.71428571]),
-                                             (2, [0.57142857,  0.71428571,  0.57142857])])
-def test_estimate_competence3(index, expected):
-    query = np.atleast_2d([1, 1])
-
-    mcb_test = MCB(create_pool_classifiers())
-    mcb_test.n_classifiers_ = 3
-    mcb_test.DSEL_processed_ = dsel_processed_ex1
-    mcb_test.neighbors = neighbors_ex1[index, :]
-    mcb_test.distances = distances_ex1[index, :]
-    mcb_test.DFP_mask = [1, 1, 1]
-    # Only changing the pre-processed BKS to see if the filter works.
-    mcb_test.BKS_DSEL_ = bks_dsel_ex3
-
-    predictions = []
-    for clf in mcb_test.pool_classifiers:
-        predictions.append(clf.predict(query)[0])
-    competences = mcb_test.estimate_competence(query, predictions=np.atleast_2d(predictions))
-    assert np.isclose(competences, expected).all()
-
-
+# it also considers batch processing region of competence
 def test_estimate_competence_batch():
     query = np.ones((3, 2))
     expected = np.array([[0.57142857,  0.71428571,  0.71428571],
@@ -112,16 +96,20 @@ def test_estimate_competence_batch():
     mcb_test = MCB(create_pool_classifiers())
     mcb_test.n_classifiers_ = 3
     mcb_test.DSEL_processed_ = dsel_processed_ex1
-    mcb_test.neighbors = neighbors_ex1
-    mcb_test.distances = distances_ex1
-    mcb_test.DFP_mask = np.ones((3, 3))
+
+    neighbors = neighbors_ex1
+    distances = distances_ex1
+
     # Only changing the pre-processed BKS to see if the filter works.
     mcb_test.BKS_DSEL_ = bks_dsel_ex3
 
     predictions = []
     for clf in mcb_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    competences = mcb_test.estimate_competence(query, predictions=np.tile(predictions, (3, 1)))
+    competences = mcb_test.estimate_competence(query,
+                                               neighbors,
+                                               distances=distances,
+                                               predictions=np.tile(predictions, (3, 1)))
     assert np.isclose(competences, expected).all()
 
 

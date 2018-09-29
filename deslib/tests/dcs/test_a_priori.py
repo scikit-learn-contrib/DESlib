@@ -24,11 +24,10 @@ def test_estimate_competence_all_ones(index, expected):
     a_priori_test.DSEL_target_ = y_dsel_ex1
     a_priori_test.n_classes_ = 2
 
-    a_priori_test.neighbors = neighbors_ex1[index, :]
-    a_priori_test.distances = distances_all_ones[index, :]
-    a_priori_test.DFP_mask = [1, 1, 1]
+    neighbors = neighbors_ex1[index, :].reshape(1, -1)
+    distances = distances_all_ones[index, :].reshape(1, -1)
 
-    competences = a_priori_test.estimate_competence(query.reshape(1, -1))
+    competences = a_priori_test.estimate_competence(query.reshape(1, -1), neighbors, distances)
     assert np.isclose(competences, expected).all()
 
 
@@ -43,34 +42,11 @@ def test_estimate_competence_kuncheva_ex():
     a_priori_test.DSEL_target_ = y_dsel_ex_kuncheva_independent
     a_priori_test.n_classes_ = n_classes_ex_kuncheva
 
-    a_priori_test.neighbors = neighbors_ex_kuncheva
-    a_priori_test.distances = distances_ex_kuncheva
-    a_priori_test.DFP_mask = [1]
+    neighbors = neighbors_ex_kuncheva.reshape(1, -1)
+    distances = distances_ex_kuncheva.reshape(1, -1)
 
-    competences = a_priori_test.estimate_competence(query.reshape(1, -1))
+    competences = a_priori_test.estimate_competence(query.reshape(1, -1), neighbors, distances)
     assert np.isclose(competences, 0.70, atol=0.01)
-
-
-@pytest.mark.parametrize('index, expected', [(0, [0.333333,  0.50000,  0.40000]),
-                                             (1, [0.666666,  0.50000,  0.60000]),
-                                             (2, [0.000000,  0.50000,  0.20000])])
-def test_estimate_competence2(index, expected):
-    query = np.array([1, 1])
-
-    # Using 3 neighbors to facilitate the calculations
-    a_priori_test = APriori(create_pool_classifiers(), 3)
-
-    a_priori_test.DSEL_processed_ = dsel_processed_ex1
-    a_priori_test.dsel_scores_ = dsel_scores_ex1
-    a_priori_test.DSEL_target_ = y_dsel_ex1
-    a_priori_test.n_classes_ = 2
-
-    a_priori_test.neighbors = neighbors_ex1[index, 0:3]
-    a_priori_test.distances = distances_all_ones[index, 0:3]
-    a_priori_test.DFP_mask = [1, 1, 1]
-
-    competences = a_priori_test.estimate_competence(query.reshape(1, -1))
-    assert np.isclose(competences, expected).all()
 
 
 # Test the estimate competence method receiving n samples as input
@@ -88,11 +64,10 @@ def test_estimate_competence_batch():
     a_priori_test.DSEL_target_ = y_dsel_ex1
     a_priori_test.n_classes_ = 2
 
-    a_priori_test.neighbors = neighbors_ex1[:, 0:3]
-    a_priori_test.distances = distances_all_ones[:, 0:3]
-    a_priori_test.DFP_mask = np.ones((3, 3))
+    neighbors = neighbors_ex1[:, 0:3]
+    distances = distances_all_ones[:, 0:3]
 
-    competences = a_priori_test.estimate_competence(query)
+    competences = a_priori_test.estimate_competence(query, neighbors, distances)
     assert np.allclose(competences, expected, atol=0.01)
 
 

@@ -271,9 +271,7 @@ def test_IH_is_used():
     ds_test.DSEL_target_ = y_dsel_ex1
     ds_test.DSEL_data_ = X_dsel_ex1
 
-    ds_test.neighbors = neighbors_ex1
-    ds_test.distances = distances_ex1
-
+    ds_test._get_region_competence = MagicMock(return_value=(distances_ex1, neighbors_ex1))
     predicted = ds_test.predict(query)
 
     assert np.array_equal(predicted, expected)

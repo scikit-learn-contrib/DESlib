@@ -86,8 +86,7 @@ def test_estimate_competence():
     meta_test.n_classes_ = 2
 
     meta_test.meta_classifier_ = GaussianNB()
-    meta_test.neighbors = neighbors_ex1[0, :]
-    meta_test.distances = distances_ex1[0, :]
+    neighbors = neighbors_ex1[0, :]
 
     meta_test._get_similar_out_profiles = MagicMock(return_value=(None, neighbors_ex1[0, 0:meta_test.Kp]))
     meta_test.meta_classifier_.predict_proba = MagicMock(return_value=np.array([[0.2, 0.8], [1.0, 0.0], [0.2, 0.8]]))
@@ -99,7 +98,7 @@ def test_estimate_competence():
     probabilities = np.array(probabilities).transpose((1, 0, 2))
 
     expected = np.array([[0.8, 0.0, 0.8]])
-    competences = meta_test.estimate_competence_from_proba(query, probabilities)
+    competences = meta_test.estimate_competence_from_proba(query, neighbors, probabilities)
     assert np.array_equal(competences, expected)
 
 
@@ -115,8 +114,7 @@ def test_estimate_competence_batch():
     meta_test.DSEL_processed_ = dsel_processed_ex1
     meta_test.dsel_scores_ = dsel_scores_ex1
     meta_test.DSEL_target_ = y_dsel_ex1
-    meta_test.neighbors = neighbors_ex1
-    meta_test.distances = distances_ex1
+    neighbors = neighbors_ex1
 
     meta_test._get_similar_out_profiles = MagicMock(return_value=(None, neighbors_ex1[:, 0:meta_test.Kp]))
     meta_test.compute_meta_features = MagicMock(return_value=np.ones((9, n_meta_features)))
@@ -129,7 +127,7 @@ def test_estimate_competence_batch():
     probabilities = np.array(probabilities).transpose((1, 0, 2))
 
     expected = np.ones((3, 3)) * 0.8
-    competences = meta_test.estimate_competence_from_proba(query, probabilities)
+    competences = meta_test.estimate_competence_from_proba(query, neighbors, probabilities)
     assert np.array_equal(competences, expected)
 
 
