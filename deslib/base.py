@@ -48,7 +48,6 @@ class DS(BaseEstimator, ClassifierMixin):
         # TODO: remove these as class variables
         self.neighbors = None
         self.distances = None
-        self.DFP_mask = None                # Mask used to apply the classifier pruning
 
     def _set_region_of_competence_algorithm(self):
 
@@ -120,7 +119,7 @@ class DS(BaseEstimator, ClassifierMixin):
         pass
 
     @abstractmethod
-    def classify_with_ds(self, query, predictions, probabilities=None):
+    def classify_with_ds(self, query, predictions, probabilities=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
         Returns the predicted label.
 
@@ -144,7 +143,7 @@ class DS(BaseEstimator, ClassifierMixin):
         pass
 
     @abstractmethod
-    def predict_proba_with_ds(self, query, predictions, probabilities):
+    def predict_proba_with_ds(self, query, predictions, probabilities, DFP_mask=None):
         """Predicts the posterior probabilities of the corresponding query sample.
         Returns the probability estimates of each class.
 
@@ -407,9 +406,9 @@ class DS(BaseEstimator, ClassifierMixin):
 
                 # IF the DFP pruning is considered, calculate the DFP mask for all samples in X
                 if self.DFP:
-                    self.DFP_mask = self._frienemy_pruning()
+                    DFP_mask = self._frienemy_pruning()
                 else:
-                    self.DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers_))
+                    DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers_))
 
                 # Get the real indices_ of the samples that will be classified using a DS algorithm.
                 ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
@@ -421,7 +420,8 @@ class DS(BaseEstimator, ClassifierMixin):
 
                 pred_ds = self.classify_with_ds(X_DS[ind_ds_classifier],
                                                 base_predictions[ind_ds_original_matrix],
-                                                selected_probabilities)
+                                                selected_probabilities,
+                                                DFP_mask=DFP_mask)
                 predicted_labels[ind_ds_original_matrix] = pred_ds
 
         self.neighbors = None
@@ -504,15 +504,16 @@ class DS(BaseEstimator, ClassifierMixin):
             if ind_ds_classifier.size:
                 # Check if the dynamic frienemy pruning should be used
                 if self.DFP:
-                    self.DFP_mask = self._frienemy_pruning()
+                    DFP_mask = self._frienemy_pruning()
                 else:
-                    self.DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers_))
+                    DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers_))
 
                 ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
 
                 proba_ds = self.predict_proba_with_ds(X[ind_ds_original_matrix],
                                                       base_predictions[ind_ds_original_matrix],
-                                                      base_probabilities[ind_ds_original_matrix])
+                                                      base_probabilities[ind_ds_original_matrix],
+                                                      DFP_mask=DFP_mask)
 
                 predicted_proba[ind_ds_original_matrix] = proba_ds
 

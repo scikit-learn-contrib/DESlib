@@ -148,7 +148,7 @@ class DES(DS):
         """
         pass
 
-    def classify_with_ds(self, query, predictions, probabilities=None):
+    def classify_with_ds(self, query, predictions, probabilities=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
 
         If self.mode == "selection", the selected ensemble is combined using the
@@ -195,7 +195,7 @@ class DES(DS):
             competences = self.estimate_competence(query, predictions)
 
         if self.DFP:
-            competences = competences * self.DFP_mask
+            competences = competences * DFP_mask
 
         if self.mode == "selection":
             # The selected_classifiers matrix is used as a mask to remove the predictions of certain base classifiers.
@@ -213,7 +213,7 @@ class DES(DS):
 
         return predicted_label
 
-    def predict_proba_with_ds(self, query, predictions, probabilities):
+    def predict_proba_with_ds(self, query, predictions, probabilities, DFP_mask=None):
         """Predicts the posterior probabilities of the corresponding query sample.
 
         If self.mode == "selection", the selected ensemble is used to estimate the probabilities. The average rule is
@@ -254,7 +254,7 @@ class DES(DS):
             competences = self.estimate_competence(query, predictions)
 
         if self.DFP:
-            competences = competences * self.DFP_mask
+            competences = competences * DFP_mask
 
         if self.mode == "selection":
             selected_classifiers = self.select(competences)
