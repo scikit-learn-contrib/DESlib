@@ -238,24 +238,6 @@ def test_frienemy_safe_region_batch():
     assert np.array_equal(result, expected)
 
 
-# In this test, the frienemy pruning is used. So, the value of self.DFP_mask should change.
-def test_predict_proba_DFP():
-    query = np.atleast_2d([1, 1])
-    ds_test = DS(create_pool_classifiers(), DFP=True, safe_k=3)
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-
-    # change the state of the system
-    ds_test.DSEL_processed_ = dsel_processed_ex1
-    ds_test.DSEL_target_ = y_dsel_ex1
-    ds_test.DSEL_data_ = X_dsel_ex1
-    ds_test.neighbors = neighbors_ex1[0, :]
-    ds_test.distances = distances_ex1[0, :]
-
-    ds_test.predict_proba_with_ds = MagicMock(return_value=np.atleast_2d([0.25, 0.75]))
-    ds_test.predict_proba(query)
-    assert np.array_equal(ds_test.DFP_mask, np.atleast_2d([[1, 1, 0]]))
-
-
 @pytest.mark.parametrize('X', [None, [[0.1, 0.2], [0.5, np.nan]]])
 def test_bad_input_X(X):
     ds_test = DS(create_pool_classifiers())
@@ -274,7 +256,6 @@ def test_preprocess_dsel_scores():
 
 
 def test_DFP_is_used():
-    query = np.atleast_2d([1, 0])
     ds_test = DS(create_pool_classifiers(), DFP=True, safe_k=3)
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     ds_test.DSEL_processed_ = dsel_processed_ex1
@@ -282,9 +263,8 @@ def test_DFP_is_used():
     ds_test.DSEL_data_ = X_dsel_ex1
     ds_test.neighbors = neighbors_ex1[0, :]
     ds_test.distances = distances_ex1[0, :]
-    ds_test.classify_with_ds = MagicMock(return_value=0)
-    ds_test.predict(query)
-    assert np.array_equal(ds_test.DFP_mask, np.atleast_2d([1, 1, 0]))
+    DFP_mask = ds_test._frienemy_pruning()
+    assert np.array_equal(DFP_mask, np.atleast_2d([1, 1, 0]))
 
 
 def test_IH_is_used():
