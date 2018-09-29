@@ -78,10 +78,10 @@ def test_classify_with_ds_single_sample():
     predictions = np.array([0, 1, 0])
 
     desmi_test = DESMI(pool_classifiers, DFP=True)
-    desmi_test.DFP_mask = np.ones((1, 3))
+    DFP_mask = np.ones((1, 3))
     desmi_test.estimate_competence = MagicMock(return_value=(np.ones((1, 3))))
     desmi_test.select = MagicMock(return_value=np.array([[0, 2]]))
-    result = desmi_test.classify_with_ds(query, predictions)
+    result = desmi_test.classify_with_ds(query, predictions, DFP_mask=DFP_mask)
     assert np.allclose(result, 0)
 
 
@@ -128,7 +128,7 @@ def test_predict_proba_with_ds():
     query = np.array([-1, 1])
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
     desmi_test = DESMI(pool_classifiers, DFP=True)
-    desmi_test.DFP_mask = np.ones((1, 6))
+    DFP_mask = np.ones((1, 6))
     selected_indices = np.array([[0, 1, 5]])
 
     desmi_test.estimate_competence = MagicMock(return_value=np.ones(6))
@@ -148,5 +148,5 @@ def test_predict_proba_with_ds():
     probabilities = np.array(probabilities)
     probabilities = np.expand_dims(probabilities, axis=0)
 
-    predicted_proba = desmi_test.predict_proba_with_ds(query, predictions, probabilities)
+    predicted_proba = desmi_test.predict_proba_with_ds(query, predictions, probabilities, DFP_mask=DFP_mask)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
