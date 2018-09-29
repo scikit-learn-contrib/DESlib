@@ -217,6 +217,9 @@ class DCS(DS):
                         Probabilities estimates of each base classifier for all test examples. (For methods that
                         always require probabilities from the base classifiers).
 
+        DFP_mask : array of shape = [n_samples, n_classifiers]
+                   Mask containing 1 for the selected base classifier and 0 otherwise.
+
         Returns
         -------
         predicted_label : array of shape = [n_samples]
@@ -265,6 +268,9 @@ class DCS(DS):
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         Probabilities estimates of each base classifier for all test examples.
+
+        DFP_mask : array of shape = [n_samples, n_classifiers]
+                   Mask containing 1 for the selected base classifier and 0 otherwise.
 
         Returns
         -------
