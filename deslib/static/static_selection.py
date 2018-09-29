@@ -67,7 +67,7 @@ class StaticSelection(StaticEnsemble):
         performances = np.zeros(self.n_classifiers_)
 
         for clf_idx, clf in enumerate(self.pool_classifiers_):
-            performances[clf_idx] = clf.score(X, y)
+            performances[clf_idx] = clf.score(X, self.y_enc_)
 
         self.clf_indices_ = np.argsort(performances)[::-1][0:self.n_classifiers_ensemble_]
         self.ensemble_ = [self.pool_classifiers_[clf_idx] for clf_idx in self.clf_indices_]
