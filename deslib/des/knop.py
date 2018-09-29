@@ -114,7 +114,8 @@ class KNOP(DES):
         self
         """
         super(KNOP, self).fit(X, y)
-
+        if self.n_classes_ == 1:
+            raise ValueError("Error. KNOP  does not accept one class datasets!")
         self._check_predict_proba()
         self.dsel_scores_ = self._preprocess_dsel_scores()
         # Reshape DSEL_scores as a 2-D array for nearest neighbor calculations

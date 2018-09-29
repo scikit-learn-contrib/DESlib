@@ -131,7 +131,6 @@ class METADES(DES):
                                       knn_classifier=knn_classifier,
                                       DSEL_perc=DSEL_perc)
 
-
         self.meta_classifier = meta_classifier
         self.Kp = Kp
         self.Hc = Hc
@@ -158,6 +157,9 @@ class METADES(DES):
         self
         """
         super(METADES, self).fit(X, y)
+
+        if self.n_classes_ == 1:
+            raise ValueError("Error. KNOP  does not accept one class datasets!")
 
         # Validate the input parameters
         self._check_input_parameters()
