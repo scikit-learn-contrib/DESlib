@@ -552,7 +552,7 @@ class DS(BaseEstimator, ClassifierMixin):
         if neighbors.ndim < 2:
             neighbors = np.atleast_2d(neighbors)
 
-        n_samples, n_neighbors = neighbors.shape
+        n_samples, _ = neighbors.shape
         mask = np.zeros((n_samples, self.n_classifiers_))
 
         for sample_idx in range(n_samples):

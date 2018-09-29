@@ -92,7 +92,7 @@ class DESMI(DS):
         self.alpha = alpha
         self.pct_accuracy = pct_accuracy
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, neighbors, distances=None, predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}` for
         the classification of the query sample. Returns a ndarray containing the competence level
         of each base classifier.
@@ -108,6 +108,12 @@ class DESMI(DS):
         query : array cf shape  = [n_samples, n_features]
                 The query sample.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    Indices of the k nearest neighbors according for each test sample
+
+        distances : array of shale = [n_samples, n_neighbors]
+                    Distances of the k nearest neighbors according for each test sample
+
         predictions : array of shape = [n_samples, n_classifiers]
                       Predictions of the base classifiers for all test examples.
 
@@ -118,14 +124,13 @@ class DESMI(DS):
 
 
         """
-        _, idx_neighbors = self._get_region_competence(query)
         # calculate the weight
         class_frequency = np.bincount(self.DSEL_target_)
-        targets = self.DSEL_target_[idx_neighbors]       # [n_samples, K_neighbors]
+        targets = self.DSEL_target_[neighbors]       # [n_samples, K_neighbors]
         num = class_frequency[targets]
         weight = 1./(1 + np.exp(self.alpha * num))
         weight = normalize(weight, norm='l1')
-        correct_num = self.DSEL_processed_[idx_neighbors, :]
+        correct_num = self.DSEL_processed_[neighbors, :]
         correct = np.zeros((query.shape[0], self.k_, self.n_classifiers_))
         for i in range(self.n_classifiers_):
             correct[:, :, i] = correct_num[:, :, i] * weight
@@ -201,7 +206,9 @@ class DESMI(DS):
             raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
                              'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
-        accuracy = self.estimate_competence(query)
+        accuracy = self.estimate_competence(query,
+                                            neighbors=neighbors,
+                                            predictions=predictions)
 
         if self.DFP:
             accuracy = accuracy * DFP_mask
@@ -244,7 +251,9 @@ class DESMI(DS):
             raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
                              'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
-        accuracy = self.estimate_competence(query)
+        accuracy = self.estimate_competence(query,
+                                            neighbors=neighbors,
+                                            distances=distances)
 
         if self.DFP:
             accuracy = accuracy * DFP_mask

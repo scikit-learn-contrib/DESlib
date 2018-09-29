@@ -1,4 +1,3 @@
-import pytest
 from sklearn.linear_model import Perceptron
 
 from deslib.des.knora_u import KNORAU

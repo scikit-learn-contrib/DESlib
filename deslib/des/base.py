@@ -116,7 +116,7 @@ class DES(DS):
         """
         pass
 
-    def estimate_competence_from_proba(self, query, neighbors, distances, probabilities):
+    def estimate_competence_from_proba(self, query, neighbors, probabilities, distances=None):
         """ estimate the competence of each base classifier :math:`c_{i}`
         the classification of the query sample x, for methods that require probabilities.
         Returns an array containing the level of competence estimated
