@@ -220,7 +220,7 @@ class DESClustering(DS):
         selected_classifiers = self.indices_[cluster_index, :]
         return selected_classifiers
 
-    def classify_with_ds(self, query, predictions, probabilities=None):
+    def classify_with_ds(self, query, predictions, probabilities=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
 
         Parameters
@@ -233,6 +233,9 @@ class DESClustering(DS):
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         Probabilities estimates of each base classifier for all test examples.
+
+        DFP_mask : array of shape = [n_samples, n_classifiers]
+                   Mask containing 1 for the selected base classifier and 0 otherwise.
 
         Returns
         -------
@@ -255,7 +258,7 @@ class DESClustering(DS):
 
         return predicted_label
 
-    def predict_proba_with_ds(self, query, predictions, probabilities):
+    def predict_proba_with_ds(self, query, predictions, probabilities, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
 
         Parameters
@@ -268,6 +271,9 @@ class DESClustering(DS):
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
                         Probabilities estimates of each base classifier for all test examples.
+
+        DFP_mask : array of shape = [n_samples, n_classifiers]
+                   Mask containing 1 for the selected base classifier and 0 otherwise.
 
         Returns
         -------
