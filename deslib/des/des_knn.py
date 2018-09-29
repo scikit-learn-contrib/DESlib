@@ -286,7 +286,10 @@ class DESKNN(DS):
             raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
                              'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
-        accuracy, diversity = self.estimate_competence(query, predictions)
+        accuracy, diversity = self.estimate_competence(query,
+                                                       neighbors,
+                                                       distances=distances,
+                                                       predictions=predictions)
 
         if self.DFP:
             accuracy = accuracy * DFP_mask
@@ -336,8 +339,10 @@ class DESKNN(DS):
             raise ValueError('The arrays query and predictions must have the same number of samples. query.shape is {}'
                              'and predictions.shape is {}' .format(query.shape, predictions.shape))
 
-        accuracy, diversity = self.estimate_competence(query, predictions)
-
+        accuracy, diversity = self.estimate_competence(query,
+                                                       neighbors,
+                                                       distances=distances,
+                                                       predictions=predictions)
         if self.DFP:
             accuracy = accuracy * DFP_mask
 
