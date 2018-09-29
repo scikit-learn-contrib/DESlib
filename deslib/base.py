@@ -412,7 +412,7 @@ class DS(BaseEstimator, ClassifierMixin):
 
                 # IF the DFP pruning is considered, calculate the DFP mask for all samples in X
                 if self.DFP:
-                    DFP_mask = self._frienemy_pruning()
+                    DFP_mask = self._frienemy_pruning(self.neighbors)
                 else:
                     DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers_))
 
@@ -510,7 +510,7 @@ class DS(BaseEstimator, ClassifierMixin):
             if ind_ds_classifier.size:
                 # Check if the dynamic frienemy pruning should be used
                 if self.DFP:
-                    DFP_mask = self._frienemy_pruning()
+                    DFP_mask = self._frienemy_pruning(self.neighbors)
                 else:
                     DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers_))
 
@@ -528,7 +528,7 @@ class DS(BaseEstimator, ClassifierMixin):
         self.distances = None
         return predicted_proba
 
-    def _frienemy_pruning(self):
+    def _frienemy_pruning(self, neighbors):
         """Implements the Online Pruning method (frienemy) to remove base classifiers that do not cross the
         region of competence. We consider that a classifier crosses the region of competence if it correctly classify
         at least one sample for each different class in the region.
@@ -538,30 +538,33 @@ class DS(BaseEstimator, ClassifierMixin):
         DFP_mask : array of shape = [n_samples, n_classifiers]
                    Mask containing 1 for the selected base classifier and 0 otherwise.
 
+        neighbors : array of shale = [n_samples, n_neighbors]
+                    indices of the k nearest neighbors according to each instance
+
         References
         ----------
         Oliveira, D.V.R., Cavalcanti, G.D.C. and Sabourin, R., Online Pruning of Base Classifiers for Dynamic
         Ensemble Selection, Pattern Recognition, vol. 72, December 2017, pp 44-58.
         """
         # using a for loop for processing a batch of samples temporarily. Change later to numpy processing
-        if self.neighbors.ndim < 2:
-            self.neighbors = np.atleast_2d(self.neighbors)
+        if neighbors.ndim < 2:
+            neighbors = np.atleast_2d(neighbors)
 
-        n_samples, n_neighbors = self.neighbors.shape
+        n_samples, n_neighbors = neighbors.shape
         mask = np.zeros((n_samples, self.n_classifiers_))
 
         for sample_idx in range(n_samples):
             # Check if query is in a indecision region
-            neighbors_y = self.DSEL_target_[self.neighbors[sample_idx, :self.safe_k]]
+            neighbors_y = self.DSEL_target_[neighbors[sample_idx, :self.safe_k]]
 
             if len(set(neighbors_y)) > 1:
                 # There are more than on class in the region of competence (So it is an indecision region).
 
                 # Check if the base classifier predict the correct label for a sample belonging to each class.
                 for clf_index in range(self.n_classifiers_):
-                    predictions = self.DSEL_processed_[self.neighbors[sample_idx, :self.safe_k], clf_index]
+                    predictions = self.DSEL_processed_[neighbors[sample_idx, :self.safe_k], clf_index]
                     correct_class_pred = [self.DSEL_target_[index] for count, index in
-                                          enumerate(self.neighbors[sample_idx, :self.safe_k])
+                                          enumerate(neighbors[sample_idx, :self.safe_k])
                                           if predictions[count] == 1]
 
                     # If that is true, it means that it correctly classified at least one neighbor for each class in
