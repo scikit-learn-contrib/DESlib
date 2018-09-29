@@ -7,7 +7,7 @@ from sklearn.utils.estimator_checks import check_estimator
 
 
 def test_check_estimator():
-    check_estimator(APriori)
+    check_estimator(APriori(selection_method='best'))
 
 
 # Should always be 1.0 since the supports for the correct class is always 1.
