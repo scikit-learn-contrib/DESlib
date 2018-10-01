@@ -77,3 +77,4 @@ Utility functions for ensemble methods such as diversity and aggregation methods
     modules/util/aggregation
     modules/util/prob_functions
     modules/util/instance_hardness
+    modules/util/sgh
