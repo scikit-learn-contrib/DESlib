@@ -63,7 +63,9 @@ README file in the doc/ directory for more information.
 For building the documentation, you will need to install sphinx and sphinx_rtd_theme. This
 can be easily done by installing the requirements for development using the following command:
 
-pip install -r requirements-dev.txt
+.. code-block:: bash
+
+    pip install -r requirements-dev.txt
 
 Contributing with code
 -----------------------
@@ -76,24 +78,32 @@ The preferred way to contribute is to fork the main repository to your account:
 
 2. Clone this copy to your local disk:
 
-        $ git clone git@github.com:YourLogin/DESlib.git
-        $ cd DESlib
+.. code-block:: bash
+
+        git clone git@github.com:YourLogin/DESlib.git
+        cd DESlib
 
 3. Install all requirements for development:
 
-        $ pip install -r requirements-dev.txt
-        $ pip install --editable .
+.. code-block:: bash
+
+        pip install -r requirements-dev.txt
+        pip install --editable .
 
 4. Create a branch to hold your changes:
 
-        $ git checkout -b branch_name
+.. code-block:: bash
+
+        git checkout -b branch_name
 
 Where ``branch_name`` is the new feature or bug to be fixed. Do not work directly on the ``master`` branch.
 
 5. Work on this copy on your computer using Git to do the version
    control. To record your changes in Git, then push them to GitHub with:
 
-        $ git push -u origin branch_name
+.. code-block:: bash
+
+        git push -u origin branch_name
 
 It is important to assert your code is well covered by test routines (coverage of at least 90%), well documented and
 follows PEP8 guidelines.

@@ -94,12 +94,8 @@ class SingleBest(StaticEnsemble):
         Returns
         -------
         predicted_proba : array of shape = [n_samples, n_classes]
-                          Posterior probabilities estimates for each class.
+            Posterior probabilities estimates for each class.
 
-        Returns
-        -------
-        self : object
-            Returns self.
         """
         self._check_is_fitted()
 
