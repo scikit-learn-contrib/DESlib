@@ -28,7 +28,7 @@ These dependencies are automatically installed using the pip commands above.
 
 Optional dependencies
 =====================
-
 To use Faiss (Fair AI Similarity Search), a fast implementation of KNN that can use GPUs, follow the instructions below:
 https://github.com/facebookresearch/faiss/blob/master/INSTALL.md
 
+Note that Faiss is only available on Linux and MacOS.
