@@ -6,10 +6,10 @@
 
 import numpy as np
 
-from deslib.des.base import DES
+from deslib.des.base import BaseDES
 
 
-class KNOP(DES):
+class KNOP(BaseDES):
     """k-Nearest Output Profiles (KNOP).
 
     This method selects all classifiers that correctly classified at least

@@ -6,10 +6,10 @@
 
 import numpy as np
 
-from deslib.dcs.base import DCS
+from deslib.dcs.base import BaseDCS
 
 
-class Rank(DCS):
+class Rank(BaseDCS):
     """Modified Classifier Rank.
 
     The modified classifier rank method evaluates the competence level of each individual classifiers

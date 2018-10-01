@@ -6,10 +6,10 @@
 
 import numpy as np
 
-from deslib.dcs.base import DCS
+from deslib.dcs.base import BaseDCS
 
 
-class OLA(DCS):
+class OLA(BaseDCS):
     """Overall Classifier Accuracy (OLA).
 
     The OLA method evaluates the competence level of each individual classifiers and

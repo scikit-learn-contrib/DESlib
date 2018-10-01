@@ -8,11 +8,11 @@ from abc import abstractmethod, ABCMeta
 
 import numpy as np
 
-from deslib.des.base import DES
+from deslib.des.base import BaseDES
 from deslib.util.prob_functions import entropy_func, ccprmod, log_func, exponential_func, min_difference
 
 
-class Probabilistic(DES):
+class BaseProbabilistic(BaseDES):
     """Base class for a DS method based on the potential function model.
     ALL DS methods based on the Potential function should inherit from this class
 
@@ -84,16 +84,16 @@ class Probabilistic(DES):
     def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
                  mode='selection', selection_threshold=None, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
-        super(Probabilistic, self).__init__(pool_classifiers=pool_classifiers,
-                                            k=k,
-                                            DFP=DFP,
-                                            with_IH=with_IH,
-                                            safe_k=safe_k,
-                                            IH_rate=IH_rate,
-                                            mode=mode,
-                                            random_state=random_state,
-                                            knn_classifier=knn_classifier,
-                                            DSEL_perc=DSEL_perc)
+        super(BaseProbabilistic, self).__init__(pool_classifiers=pool_classifiers,
+                                                k=k,
+                                                DFP=DFP,
+                                                with_IH=with_IH,
+                                                safe_k=safe_k,
+                                                IH_rate=IH_rate,
+                                                mode=mode,
+                                                random_state=random_state,
+                                                knn_classifier=knn_classifier,
+                                                DSEL_perc=DSEL_perc)
 
         self.selection_threshold = selection_threshold
 
@@ -121,7 +121,7 @@ class Probabilistic(DES):
             Returns self.
         """
 
-        super(Probabilistic, self).fit(X, y)
+        super(BaseProbabilistic, self).fit(X, y)
         self._check_predict_proba()
 
         self.dsel_scores_ = self._preprocess_dsel_scores()
@@ -230,7 +230,7 @@ class Probabilistic(DES):
         pass
 
 
-class Logarithmic(Probabilistic):
+class Logarithmic(BaseProbabilistic):
     """ This method estimates the competence of the classifier based on the logarithmic
     difference between the supports obtained by the base classifier.
 
@@ -321,7 +321,7 @@ class Logarithmic(Probabilistic):
         return C_src
 
 
-class Exponential(Probabilistic):
+class Exponential(BaseProbabilistic):
     """The source of competence C_src at the validation point :math:`\mathbf{x}_{k}` is a product of two factors:
     The absolute value of
     the competence and the sign. The value of the source competence is inverse proportional to the normalized entropy
@@ -422,7 +422,7 @@ class Exponential(Probabilistic):
         return C_src
 
 
-class RRC(Probabilistic):
+class RRC(BaseProbabilistic):
     """DES technique based on the Randomized Reference Classifier method (DES-RRC).
 
     Parameters
@@ -520,7 +520,7 @@ class RRC(Probabilistic):
         return c_src
 
 
-class DESKL(Probabilistic):
+class DESKL(BaseProbabilistic):
     """Dynamic Ensemble Selection-Kullback-Leibler divergence (DES-KL).
 
     This method estimates the competence of the classifier from the
@@ -627,7 +627,7 @@ class DESKL(Probabilistic):
         return C_src
 
 
-class MinimumDifference(Probabilistic):
+class MinimumDifference(BaseProbabilistic):
     """
     Computes the competence level of the classifiers based on the difference between the support obtained by each class.
     The competence level at a data point :math:`\mathbf{x}_{k}` is equal to the minimum difference between the

@@ -7,11 +7,11 @@
 import numpy as np
 from sklearn.preprocessing import normalize
 
-from deslib.base import DS
+from deslib.base import BaseDS
 from deslib.util.aggregation import majority_voting_rule
 
 
-class DESMI(DS):
+class DESMI(BaseDS):
     """Dynamic ensemble Selection for multi-class imbalanced datasets (DES-MI).
 
 
