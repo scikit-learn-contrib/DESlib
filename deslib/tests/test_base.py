@@ -107,9 +107,7 @@ def test_import_faiss_mode():
         pass
     with unittest.mock.patch.dict('sys.modules', {'faiss': None}):
         with pytest.raises(ImportError):
-
-            ds = BaseDS(create_pool_classifiers(), knn_classifier="faiss")
-            ds.fit(X_dsel_ex1, y_dsel_ex1)
+            BaseDS(create_pool_classifiers(), knn_classifier="faiss")
 
 
 def test_none_selection_mode():

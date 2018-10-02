@@ -15,6 +15,7 @@ from sklearn.ensemble import BaseEnsemble, BaggingClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import check_X_y, check_is_fitted, check_array, check_random_state
+from deslib.util import faiss_knn_wrapper
 
 from deslib.util.instance_hardness import hardness_region_competence
 import warnings
@@ -45,6 +46,11 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self.knn_classifier = knn_classifier
         self.DSEL_perc = DSEL_perc
 
+        # Check optional dependency
+        if knn_classifier == 'faiss' and not faiss_knn_wrapper.is_available():
+            raise ImportError('Using knn_classifier="faiss" requires that the FAISS library '
+                              'be installed.Please check the Installation Guide.')
+
     def _set_region_of_competence_algorithm(self):
 
         if self.knn_classifier is None:
@@ -53,8 +59,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         elif isinstance(self.knn_classifier, str):
 
             if self.knn_classifier == "faiss":
-                from deslib.util.faiss_knn_wrapper import FaissKNNClassifier
-                self.knn_class_ = functools.partial(FaissKNNClassifier, n_jobs=-1, algorithm="auto")
+                self.knn_class_ = functools.partial(faiss_knn_wrapper.FaissKNNClassifier,
+                                                    n_jobs=-1, algorithm="auto")
 
             elif self.knn_classifier == "knn":
                 self.knn_class_ = functools.partial(KNeighborsClassifier, n_jobs=-1, algorithm="auto")
