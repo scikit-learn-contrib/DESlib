@@ -67,6 +67,31 @@ DESlib is tested to work with Python 3.5, 3.6 and 3.7. The dependency requiremen
 
 These dependencies are automatically installed using the pip commands above.
 
+Examples:
+---------
+
+Here we show an example using the KNORA-E method using random forest as a pool of classifiers:
+
+.. code-block:: python
+
+    from deslib.des.knora_e import KNORAE
+
+    # Train a pool of 10 classifiers
+    pool_classifiers = RandomForestClassifier(n_estimators=10)
+    pool_classifiers.fit(X_train, y_train)
+
+    # Initialize the DES model
+    knorae = KNORAE(pool_classifiers)
+
+    # Preprocess the Dynamic Selection dataset (DSEL)
+    knorae.fit(X_dsel, y_dsel)
+
+    # Predict new examples:
+    knorae.predict(X_test)
+
+The library accepts any list of classifiers (from scikit-learn) as input, including a list containing different classifier models (heterogeneous ensembles).
+More examples to use the API can be found in the documentation and in the Examples directory.
+
 Description:
 ------------
 
@@ -110,32 +135,6 @@ Variations of each DES techniques are also provided by the library (e.g., differ
 Moreover, each DES technique can be used as Dynamic Selection, Dynamic Weighting or a Hybrid version which includes dynamic selection + weighting.
 The library also offers the implementation of methods which can be applied to DS techniques in order to improve the classification
 accuracy such as the Dynamic Frienemy Pruning (DFP) [13]_.
-
-Examples:
----------
-
-Here we show an example using the KNORA-E method using random forest as a pool of classifiers:
-
-.. code-block:: python
-
-    from deslib.des.knora_e import KNORAE
-
-
-    # Train a pool of 10 classifiers
-    pool_classifiers = RandomForestClassifier(n_estimators=10)
-    pool_classifiers.fit(X_train, y_train)
-
-    # Initialize the DES model
-    knorae = KNORAE(pool_classifiers)
-
-    # Preprocess the Dynamic Selection dataset (DSEL)
-    knorae.fit(X_dsel, y_dsel)
-
-    # Predict new examples:
-    knorae.predict(X_test)
-
-The library accepts any list of classifiers (from scikit-learn) as input, including a list containing different classifier models (heterogeneous ensembles).
-More examples to use the API can be found in the documentation and in the Examples directory.
 
 Citation
 ---------
