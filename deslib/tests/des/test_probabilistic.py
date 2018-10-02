@@ -1,7 +1,7 @@
 import pytest
 from sklearn.linear_model import Perceptron
-
-from deslib.des.probabilistic import BaseProbabilistic, RRC, DESKL, Logarithmic, Exponential, MinimumDifference
+from deslib.des.probabilistic import BaseProbabilistic,  Logarithmic,\
+    Exponential, RRC, DESKL, MinimumDifference
 from deslib.tests.examples_test import *
 from sklearn.utils.estimator_checks import check_estimator
 

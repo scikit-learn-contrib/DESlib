@@ -14,9 +14,8 @@ Linear SVM and Gaussian SVM
 from deslib.dcs.a_posteriori import APosteriori
 from deslib.dcs.mcb import MCB
 from deslib.dcs.lca import LCA
-from deslib.des.probabilistic import RRC
+from deslib.des import RRC
 from deslib.des.knop import KNOP
-from deslib.des.knora_e import KNORAE
 
 # Base classifier models:
 from sklearn.linear_model import Perceptron

@@ -11,7 +11,12 @@ from .knop import KNOP
 from .knora_e import KNORAE
 from .knora_u import KNORAU
 from .meta_des import METADES
-from .probabilistic import BaseProbabilistic, RRC, Exponential, DESKL, MinimumDifference, Logarithmic
+from deslib.des.probabilistic.base import BaseProbabilistic
+from deslib.des.probabilistic.minimum_difference import MinimumDifference
+from deslib.des.probabilistic.deskl import DESKL
+from deslib.des.probabilistic.rrc import RRC
+from deslib.des.probabilistic.exponential import Exponential
+from deslib.des.probabilistic.logarithmic import Logarithmic
 
 __all__ = ['BaseDES',
            'METADES',
@@ -21,10 +26,10 @@ __all__ = ['BaseDES',
            'DESP',
            'DESKNN',
            'DESClustering',
+           'DESMI',
            'BaseProbabilistic',
            'RRC',
            'DESKL',
            'MinimumDifference',
            'Exponential',
-           'Logarithmic',
-           'DESMI']
+           'Logarithmic']
