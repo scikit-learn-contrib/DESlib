@@ -18,8 +18,8 @@ class DESClustering(BaseDS):
 
     This method selects an ensemble of classifiers taking into account the
     accuracy and diversity of the base classifiers. The K-means algorithm is used to define the region of competence.
-    For each cluster, the N_ most accurate classifiers are first selected. Then, the J_ more diverse classifiers from the
-    N_ most accurate classifiers are selected to compose the ensemble.
+    For each cluster, the N most accurate classifiers are first selected. Then, the J more diverse classifiers from the
+    N most accurate classifiers are selected to compose the ensemble.
 
     Parameters
     ----------
@@ -88,8 +88,8 @@ class DESClustering(BaseDS):
         pre-processing the information required to apply the DS
         methods.
 
-        First the data is divided into K clusters. Then, for each cluster, the N_ most accurate classifiers
-        are first selected. Then, the J_ more diverse classifiers from the N_ most accurate classifiers are
+        First the data is divided into K clusters. Then, for each cluster, the N most accurate classifiers
+        are first selected. Then, the J more diverse classifiers from the N most accurate classifiers are
         selected to compose the ensemble of the corresponding cluster. An ensemble of classifiers is assigned
         to each of the K clusters.
 
@@ -142,7 +142,6 @@ class DESClustering(BaseDS):
         The class attributes Accuracy_cluster_ and diversity_cluster_ stores the accuracy and diversity information
         respectively of each base classifier for each cluster. The attribute indices_ stores the pre-selected
         base classifiers for each cluster.
-        ----------
         """
         labels = self.clustering_.predict(self.DSEL_data_)
         # For each cluster estimate the most accurate and most competent classifiers for it.
@@ -304,10 +303,10 @@ class DESClustering(BaseDS):
     def _check_parameters(self):
         """Check if the parameters passed as argument are correct.
 
-        The diversity_func_ must be either ['DF', 'Q', 'RATIO']
-
-        The values of N_ and J_ should be higher than 0, and N_ >= J_
-        ----------
+        Raises
+        ------
+        ValueError
+            If the hyper-parameters are incorrect.
         """
         if self.metric not in ['DF', 'Q', 'ratio']:
             raise ValueError('Diversity metric must be one of the following values: "DF", "Q" or "Ratio"')
@@ -327,7 +326,7 @@ class DESClustering(BaseDS):
         """Set the diversity function to be used according to the hyper-parameter metric
 
         The diversity_func_ can be either the Double Fault, Q-Statistics or Ratio of errors.
-        ----------
+
         """
         if self.metric == 'DF':
             self.diversity_func_ = negative_double_fault
