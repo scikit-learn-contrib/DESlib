@@ -1,6 +1,5 @@
 
 import pytest
-import sys
 from sklearn.neighbors import KNeighborsClassifier
 from deslib.tests.examples_test import *
 from deslib.tests.test_des_integration import load_dataset
