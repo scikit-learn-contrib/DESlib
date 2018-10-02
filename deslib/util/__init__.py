@@ -18,4 +18,3 @@ from .aggregation import *
 from .diversity import *
 from .instance_hardness import *
 from .prob_functions import *
-from .faiss_knn_wrapper import FaissKNNClassifier
