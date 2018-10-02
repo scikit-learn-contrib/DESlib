@@ -4,8 +4,15 @@
 #
 # License: BSD 3 clause
 
-import faiss
 import numpy as np
+
+
+def is_available():
+    try:
+        import faiss
+        return True
+    except ImportError:
+        return False
 
 
 class FaissKNNClassifier:
@@ -36,6 +43,9 @@ class FaissKNNClassifier:
         self.y = None
         self.num_of_classes = None
         self.index = None
+
+        import faiss
+        self.faiss = faiss
 
     def predict(self, X):
         """Predict the class label for each sample in X.
@@ -119,7 +129,7 @@ class FaissKNNClassifier:
         """
         X = np.atleast_2d(X).astype(np.float32)
         X = np.ascontiguousarray(X)
-        self.index = faiss.IndexFlatL2(X.shape[1])
+        self.index = self.faiss.IndexFlatL2(X.shape[1])
         self.index.add(X)
         self.y = y
         self.num_of_classes = np.max(self.y) + 1

@@ -33,6 +33,7 @@ from deslib.static.static_selection import StaticSelection
 from sklearn.model_selection import GridSearchCV
 import pytest
 import warnings
+from deslib.util import faiss_knn_wrapper
 import sys
 
 
@@ -53,10 +54,9 @@ def test_grid_search():
 
 knn_methods = [None]
 
-try:
-    from deslib.util.faiss_knn_wrapper import FaissKNNClassifier
-    knn_methods.append(FaissKNNClassifier)
-except ImportError:
+if faiss_knn_wrapper.is_available():
+    knn_methods.append(faiss_knn_wrapper.FaissKNNClassifier)
+else:
     warnings.warn("Not testing FAISS for KNN")
 
 
