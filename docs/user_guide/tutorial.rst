@@ -241,7 +241,7 @@ as well as its impact in the algorithm is presented in the `API Reference <api.h
 Applying the Dynamic Frienemy Pruning (DFP)
 -------------------------------------------
 
-The library also implements the Dynamic Frienemy Pruning (DFP) proposed in [1]_. So any dynamic selection technique can be
+The library also implements the Dynamic Frienemy Pruning (DFP) proposed in [2]_. So any dynamic selection technique can be
 applied using the FIRE (Frienemy Indecision Region Dynamic Ensemble Selection) framework. That is easily done by setting the
 DFP to true when initializing a DS technique. In this example, we show how to start the FIRE-KNORA-U, FIRE-KNORA-E and FIRE-MCB techniques.
 
@@ -272,5 +272,7 @@ More tutorials on how to use different aspects of the library can be found in `e
 References
 -----------
 
-.. [1] : Oliveira, D.V.R., Cavalcanti, G.D.C. and Sabourin, R., Online Pruning of Base Classifiers for Dynamic Ensemble Selection, Pattern Recognition, vol. 72, December 2017, pp 44-58.
+.. [1] : R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,” Information Fusion, vol. 41, pp. 195 – 216, 2018.
+
+.. [2] : Oliveira, D.V.R., Cavalcanti, G.D.C. and Sabourin, R., Online Pruning of Base Classifiers for Dynamic Ensemble Selection, Pattern Recognition, vol. 72, December 2017, pp 44-58.
 
