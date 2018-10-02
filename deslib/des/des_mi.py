@@ -57,7 +57,7 @@ class DESMI(BaseDS):
 
                      - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
-                     wrapper.
+                       wrapper.
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
     DSEL_perc : float (Default = 0.5)
