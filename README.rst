@@ -90,7 +90,7 @@ Here we show an example using the KNORA-E method with random forest as a pool of
     knorae.predict(X_test)
 
 The library accepts any list of classifiers (compatible with scikit-learn) as input, including a list containing different classifier models (heterogeneous ensembles).
-More examples on how to use the API can be found in the [documentation](https://deslib.readthedocs.io) and in the Examples directory.
+More examples on how to use the API can be found in the documentation_ and in the Examples directory.
 
 Organization:
 -------------
@@ -138,7 +138,7 @@ The following techniques are also available for all methods:
  * For all DS techniques, Dynamic Frienemy Pruning (DFP) [13]_ can be used.
  * For all DS techniques, Instance Hardness (IH) can be used to classify easy samples with a KNN and hard samples using the DS technique.
 
-As an optional requirement, the fast KNN implementation from [FAISS](https://github.com/facebookresearch/faiss) can be used to speed-up the computation of the region of competence.
+As an optional requirement, the fast KNN implementation from FAISS_ can be used to speed-up the computation of the region of competence.
 
 Citation
 ---------
@@ -213,3 +213,6 @@ References:
 
 .. _scipy: https://www.scipy.org/
 
+.. _documentation: https://deslib.readthedocs.io
+
+.. _FAISS: https://github.com/facebookresearch/faiss
