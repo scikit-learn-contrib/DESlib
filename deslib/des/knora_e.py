@@ -6,10 +6,10 @@
 
 import numpy as np
 
-from deslib.des.base import DES
+from deslib.des.base import BaseDES
 
 
-class KNORAE(DES):
+class KNORAE(BaseDES):
     """k-Nearest Oracles Eliminate (KNORA-E).
     
     This method searches for a local Oracle, which is a base classifier that correctly classify all

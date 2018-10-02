@@ -6,10 +6,10 @@
 
 import numpy as np
 
-from deslib.dcs.base import DCS
+from deslib.dcs.base import BaseDCS
 
 
-class APriori(DCS):
+class APriori(BaseDCS):
     """A Priori dynamic classifier selection.
 
     The A Priori method uses the probability of correct classification of a given base classifier :math:`c_{i}` for each

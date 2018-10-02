@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 
-from deslib.des.base import DES
+from deslib.des.base import BaseDES
 from deslib.tests.examples_test import create_pool_classifiers
 
 
@@ -12,7 +12,7 @@ def test_valid_selection_mode(mode):
     X = np.random.rand(10, 2)
     y = np.ones(10)
     with pytest.raises(ValueError):
-        des = DES(create_pool_classifiers(), mode=mode)
+        des = BaseDES(create_pool_classifiers(), mode=mode)
         des.fit(X, y)
 
 
@@ -21,7 +21,7 @@ def test_selection_method_type(mode):
     X = np.random.rand(10, 2)
     y = np.ones(10)
     with pytest.raises(TypeError):
-        des = DES(create_pool_classifiers(), mode=mode)
+        des = BaseDES(create_pool_classifiers(), mode=mode)
         des.fit(X, y)
 
 
@@ -36,7 +36,7 @@ while classifiers with indices_ 1 and 4 predicts class 1.
 def test_classify_instance_selection():
     query = np.array([-1, 1])
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
-    des_test = DES(pool_classifiers, mode='selection')
+    des_test = BaseDES(pool_classifiers, mode='selection')
     selected_index = np.array([[True, True, False, False, False, True]])
     des_test.select = MagicMock(return_value=selected_index)
 
@@ -54,7 +54,7 @@ def test_classify_instance_selection_batch():
     n_samples = 3
     query = np.ones((n_samples, 2))
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
-    des_test = DES(pool_classifiers, mode='selection')
+    des_test = BaseDES(pool_classifiers, mode='selection')
     selected_index = np.array([[True, True, False, False, False, True] * n_samples])
     des_test.select = MagicMock(return_value=selected_index)
 
@@ -73,7 +73,7 @@ def test_classify_instance_weighting():
     query = np.array([-1, 1])
 
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
-    des_test = DES(pool_classifiers, mode='weighting')
+    des_test = BaseDES(pool_classifiers, mode='weighting')
     des_test.classes_ = np.array([0, 1])
     des_test.n_classes_ = 2
 
@@ -91,7 +91,7 @@ def test_classify_instance_weighting_batch():
     n_samples = 3
     query = np.ones((n_samples, 2))
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
-    des_test = DES(pool_classifiers, mode='weighting')
+    des_test = BaseDES(pool_classifiers, mode='weighting')
     des_test.classes_ = np.array([0, 1])
     des_test.n_classes_ = 2
 
@@ -112,7 +112,7 @@ def test_classify_instance_hybrid():
     expected = 1
 
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
-    des_test = DES(pool_classifiers, mode='hybrid')
+    des_test = BaseDES(pool_classifiers, mode='hybrid')
     des_test.classes_ = np.array([0, 1])
     des_test.n_classes_ = 2
     selected_indices = np.array([[True, True, False, False, False, True]])
@@ -134,7 +134,7 @@ def test_classify_instance_hybrid_batch():
     query = np.ones((3, 2))
     expected = 1
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
-    des_test = DES(pool_classifiers, mode='hybrid')
+    des_test = BaseDES(pool_classifiers, mode='hybrid')
     des_test.classes_ = np.array([0, 1])
     des_test.n_classes_ = 2
 
@@ -158,7 +158,7 @@ def test_classify_instance_hybrid_batch():
 def test_predict_proba_selection():
     query = np.array([-1, 1])
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
-    des_test = DES(pool_classifiers, mode='selection')
+    des_test = BaseDES(pool_classifiers, mode='selection')
     selected_indices = np.array([0, 1, 5])
     selected_classifiers = np.zeros((1, 6), dtype=bool)
     selected_classifiers[0, selected_indices] = 1
@@ -186,7 +186,7 @@ def test_predict_proba_selection():
 def test_predict_proba_weighting():
     query = np.array([-1, 1])
     pool_classifiers = create_pool_classifiers()
-    des_test = DES(pool_classifiers, mode='weighting')
+    des_test = BaseDES(pool_classifiers, mode='weighting')
     competences = np.array([[0.5, 1.0, 0.2]])
     des_test.estimate_competence = MagicMock(return_value=competences)
 
@@ -212,7 +212,7 @@ def test_predict_proba_weighting():
 def test_predict_proba_hybrid():
     query = np.array([-1, 1])
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
-    des_test = DES(pool_classifiers, mode='hybrid')
+    des_test = BaseDES(pool_classifiers, mode='hybrid')
     des_test.n_classes_ = 2
 
     selected_indices = [0, 1, 5]
@@ -244,7 +244,7 @@ def test_predict_proba_hybrid():
 def test_classify_with_ds_diff_sizes():
     query = np.ones((10, 2))
     predictions = np.ones((5, 3))
-    des_test = DES(create_pool_classifiers())
+    des_test = BaseDES(create_pool_classifiers())
 
     with pytest.raises(ValueError):
         des_test.classify_with_ds(query, predictions)
@@ -254,7 +254,7 @@ def test_proba_with_ds_diff_sizes():
     query = np.ones((10, 2))
     predictions = np.ones((5, 3))
     probabilities = np.ones((5, 3, 2))
-    des_test = DES(create_pool_classifiers())
+    des_test = BaseDES(create_pool_classifiers())
 
     with pytest.raises(ValueError):
         des_test.predict_proba_with_ds(query, predictions, probabilities)

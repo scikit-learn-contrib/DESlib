@@ -1,7 +1,7 @@
 import pytest
 from sklearn.linear_model import Perceptron
-
-from deslib.des.probabilistic import Probabilistic, RRC, DESKL, Logarithmic, Exponential, MinimumDifference
+from deslib.des.probabilistic import BaseProbabilistic,  Logarithmic,\
+    Exponential, RRC, DESKL, MinimumDifference
 from deslib.tests.examples_test import *
 from sklearn.utils.estimator_checks import check_estimator
 
@@ -35,13 +35,13 @@ def test_not_predict_proba():
     clf1 = Perceptron()
     clf1.fit(X, y)
     with pytest.raises(ValueError):
-        Probabilistic([clf1, clf1]).fit(X, y)
+        BaseProbabilistic([clf1, clf1]).fit(X, y)
 
 
 # Being all ones, all base classifiers are deemed competent
 def test_select_all_ones():
     competences = np.ones(100)
-    probabilistic_test = Probabilistic(create_pool_all_agree(1, 100))
+    probabilistic_test = BaseProbabilistic(create_pool_all_agree(1, 100))
     probabilistic_test.n_classes_ = 2
     selected_matrix = probabilistic_test.select(competences)
     assert selected_matrix.all()
@@ -50,7 +50,7 @@ def test_select_all_ones():
 # Being all zeros, no base classifier is deemed competent, so the system selects all of them
 def test_select_all_zeros():
     competences = np.zeros(100)
-    probabilistic_test = Probabilistic(create_pool_all_agree(1, 100))
+    probabilistic_test = BaseProbabilistic(create_pool_all_agree(1, 100))
     probabilistic_test.n_classes_ = 2
     selected_matrix = probabilistic_test.select(competences)
     assert selected_matrix.all()
@@ -60,7 +60,7 @@ def test_select_all_zeros():
 def test_select_random_classifier():
     competences = np.random.rand(1, 100)
     expected = (competences > 0.25)
-    probabilistic_test = Probabilistic(create_pool_all_agree(1, 100))
+    probabilistic_test = BaseProbabilistic(create_pool_all_agree(1, 100))
     probabilistic_test.n_classes_ = 4
     indices = probabilistic_test.select(competences)
     assert np.array_equal(indices, expected)
@@ -71,7 +71,7 @@ def test_select_threshold():
     competences = np.random.rand(1, 100)
     expected =(competences > 0.5)
 
-    probabilistic_test = Probabilistic(create_pool_all_agree(1, 100))
+    probabilistic_test = BaseProbabilistic(create_pool_all_agree(1, 100))
     probabilistic_test.selection_threshold = 0.5
     indices = probabilistic_test.select(competences)
     assert np.array_equal(indices, expected)
@@ -80,21 +80,21 @@ def test_select_threshold():
 # Test the potential function calculation. The return value should be zero in this test.
 def test_potential_function_zeros():
     dists = np.zeros(10)
-    value = Probabilistic.potential_func(dists)
+    value = BaseProbabilistic.potential_func(dists)
     assert np.array_equal(value, np.ones(10))
 
 
 # Test the potential function calculation. Higher values for distances should obtain a lower value in the results
 def test_potential_function():
     dists = np.array([1.0, 0.5, 2, 0.33])
-    value = Probabilistic.potential_func(dists)
+    value = BaseProbabilistic.potential_func(dists)
     assert np.allclose(value, [0.3679, 0.7788, 0.0183, 0.8968], atol=0.001)
 
 
 # Test the potential function calculation. Higher values for distances should obtain a lower value in the results
 def test_potential_function_batch():
     dists = np.tile([1.0, 0.5, 2, 0.33], (10, 1))
-    value = Probabilistic.potential_func(dists)
+    value = BaseProbabilistic.potential_func(dists)
     expected = np.tile([0.3679, 0.7788, 0.0183, 0.8968], (10, 1))
     assert np.allclose(value, expected, atol=0.001)
 
@@ -102,7 +102,7 @@ def test_potential_function_batch():
 def test_estimate_competence_batch():
     n_samples = 10
     query = np.ones((n_samples, 2))
-    probabilistic_test = Probabilistic(create_pool_classifiers())
+    probabilistic_test = BaseProbabilistic(create_pool_classifiers())
     probabilistic_test.k_ = 7
     distances = np.tile([0.5, 1.0, 2.0], (n_samples, 1))
     neighbors = np.tile([0, 1, 2], (n_samples, 1))
@@ -118,7 +118,7 @@ def test_estimate_competence_batch():
 # Test the estimate competence function when the competence source is equal to zero. The competence should also be zero.
 def test_estimate_competence_zeros():
     query = np.atleast_2d([1, 1])
-    probabilistic_test = Probabilistic(create_pool_classifiers())
+    probabilistic_test = BaseProbabilistic(create_pool_classifiers())
     probabilistic_test.k_ = 7
 
     distances = distances_ex1[0, 0:3].reshape(1, -1)
@@ -131,7 +131,7 @@ def test_estimate_competence_zeros():
 # Test the estimate competence function when the competence source is equal to one. The competence should also be ones.
 def test_estimate_competence_ones():
     query = np.atleast_2d([1, 1])
-    probabilistic_test = Probabilistic(create_pool_classifiers())
+    probabilistic_test = BaseProbabilistic(create_pool_classifiers())
     probabilistic_test.k_ = 7
 
     distances = distances_ex1[0, 0:3].reshape(1, -1)

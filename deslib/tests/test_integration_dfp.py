@@ -19,7 +19,7 @@ from deslib.des.knop import KNOP
 from deslib.des.knora_e import KNORAE
 from deslib.des.knora_u import KNORAU
 from deslib.des.meta_des import METADES
-from deslib.des.probabilistic import DESKL
+from deslib.des import DESKL
 # Static techniques
 from deslib.static.oracle import Oracle
 from deslib.static.single_best import SingleBest

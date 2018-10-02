@@ -6,10 +6,10 @@
 
 import numpy as np
 
-from deslib.dcs.base import DCS
+from deslib.dcs.base import BaseDCS
 
 
-class MLA(DCS):
+class MLA(BaseDCS):
     """Modified Local Accuracy (MLA).
     
     Similar to the LCA technique. The only difference is that the output of each base classifier

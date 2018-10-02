@@ -6,10 +6,10 @@
 
 import numpy as np
 
-from deslib.des.base import DES
+from deslib.des.base import BaseDES
 
 
-class KNORAU(DES):
+class KNORAU(BaseDES):
     """k-Nearest Oracles Union (KNORA-U).
     
     This method selects all classifiers that correctly classified at least

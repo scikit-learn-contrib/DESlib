@@ -6,12 +6,12 @@
 
 import numpy as np
 
-from deslib.base import DS
+from deslib.base import BaseDS
 from deslib.util.aggregation import majority_voting_rule
 from deslib.util.diversity import negative_double_fault, Q_statistic, ratio_errors, compute_pairwise_diversity
 
 
-class DESKNN(DS):
+class DESKNN(BaseDS):
     """Dynamic ensemble Selection KNN (DES-KNN).
 
     This method selects an ensemble of classifiers taking into account the

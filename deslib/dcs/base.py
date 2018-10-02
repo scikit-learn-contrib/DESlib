@@ -2,12 +2,12 @@ from abc import ABCMeta
 
 import numpy as np
 
-from deslib.base import DS
+from deslib.base import BaseDS
 from deslib.util.aggregation import majority_voting_rule
 from sklearn.utils.validation import check_random_state
 
 
-class DCS(DS):
+class BaseDCS(BaseDS):
     """Base class for a Dynamic Classifier Selection (dcs) method.
     All dynamic classifier selection classes should inherit from this class.
 
@@ -85,15 +85,15 @@ class DCS(DS):
     def __init__(self, pool_classifiers=None, k=7, DFP=False, safe_k=None, with_IH=False, IH_rate=0.30,
                  selection_method='best', diff_thresh=0.1, random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
-        super(DCS, self).__init__(pool_classifiers=pool_classifiers,
-                                  k=k,
-                                  DFP=DFP,
-                                  with_IH=with_IH,
-                                  safe_k=safe_k,
-                                  IH_rate=IH_rate,
-                                  random_state=random_state,
-                                  knn_classifier=knn_classifier,
-                                  DSEL_perc=DSEL_perc)
+        super(BaseDCS, self).__init__(pool_classifiers=pool_classifiers,
+                                      k=k,
+                                      DFP=DFP,
+                                      with_IH=with_IH,
+                                      safe_k=safe_k,
+                                      IH_rate=IH_rate,
+                                      random_state=random_state,
+                                      knn_classifier=knn_classifier,
+                                      DSEL_perc=DSEL_perc)
 
         self.selection_method = selection_method
         self.diff_thresh = diff_thresh
@@ -324,7 +324,7 @@ class DCS(DS):
 
     def _validate_parameters(self):
 
-        super(DCS, self)._validate_parameters()
+        super(BaseDCS, self)._validate_parameters()
 
         if not isinstance(self.selection_method, str):
             raise TypeError('The parameter selection_method should be a string.'

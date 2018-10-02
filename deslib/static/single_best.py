@@ -5,11 +5,11 @@
 # License: BSD 3 clause
 
 import numpy as np
-from .base import StaticEnsemble
+from .base import BaseStaticEnsemble
 from sklearn.utils.validation import check_X_y, check_is_fitted, check_array
 
 
-class SingleBest(StaticEnsemble):
+class SingleBest(BaseStaticEnsemble):
     """Classification method that selects the classifier in the pool with highest
     score to be used for classification. Usually, the performance of the single best classifier
     is estimated based on the validation data.
@@ -94,12 +94,8 @@ class SingleBest(StaticEnsemble):
         Returns
         -------
         predicted_proba : array of shape = [n_samples, n_classes]
-                          Posterior probabilities estimates for each class.
+            Posterior probabilities estimates for each class.
 
-        Returns
-        -------
-        self : object
-            Returns self.
         """
         self._check_is_fitted()
 

@@ -5,11 +5,11 @@
 # License: BSD 3 clause
 
 import numpy as np
-from .base import StaticEnsemble
+from .base import BaseStaticEnsemble
 from sklearn.utils.validation import check_X_y, check_array
 
 
-class Oracle(StaticEnsemble):
+class Oracle(BaseStaticEnsemble):
     """ Abstract method that always selects the base classifier that predicts the correct label if such classifier
     exists. This method is often used to measure the upper-limit performance that can be achieved by a dynamic
     classifier selection technique. It is used as a benchmark by several dynamic selection algorithms
