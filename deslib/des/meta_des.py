@@ -10,10 +10,10 @@ from sklearn.exceptions import NotFittedError
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.utils.validation import check_is_fitted
 
-from deslib.des.base import DES
+from deslib.des.base import BaseDES
 
 
-class METADES(DES):
+class METADES(BaseDES):
     """Meta learning for dynamic ensemble selection (META-DES).
 
     The META-DES framework is based on the assumption that the dynamic ensemble selection problem can be considered

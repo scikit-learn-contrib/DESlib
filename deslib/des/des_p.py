@@ -6,10 +6,10 @@
 
 import numpy as np
 
-from deslib.des.base import DES
+from deslib.des.base import BaseDES
 
 
-class DESP(DES):
+class DESP(BaseDES):
     """Dynamic ensemble selection-Performance(DES-P).
 
     This method selects all base classifiers that achieve a classification

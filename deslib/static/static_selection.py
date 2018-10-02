@@ -5,12 +5,12 @@
 # License: BSD 3 clause
 
 import numpy as np
-from .base import StaticEnsemble
+from .base import BaseStaticEnsemble
 from deslib.util.aggregation import majority_voting
 from sklearn.utils.validation import check_is_fitted, check_X_y, check_array
 
 
-class StaticSelection(StaticEnsemble):
+class StaticSelection(BaseStaticEnsemble):
     """Ensemble model that selects N classifiers with the best performance in a dataset
 
     Parameters

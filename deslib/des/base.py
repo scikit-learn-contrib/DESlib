@@ -2,12 +2,12 @@ from abc import ABCMeta
 
 import numpy as np
 
-from deslib.base import DS
+from deslib.base import BaseDS
 from deslib.util.aggregation import weighted_majority_voting_rule, majority_voting_rule, \
     aggregate_proba_ensemble_weighted
 
 
-class DES(DS):
+class BaseDES(BaseDS):
     """Base class for a Dynamic Ensemble Selection (DES).
 
     All dynamic ensemble selection techniques should inherit from this class.
@@ -76,16 +76,16 @@ class DES(DS):
                  safe_k=None, IH_rate=0.30, mode='selection', needs_proba=False,
                  random_state=None, knn_classifier='knn', DSEL_perc=0.5):
 
-        super(DES, self).__init__(pool_classifiers=pool_classifiers,
-                                  k=k,
-                                  DFP=DFP,
-                                  with_IH=with_IH,
-                                  safe_k=safe_k,
-                                  IH_rate=IH_rate,
-                                  needs_proba=needs_proba,
-                                  random_state=random_state,
-                                  knn_classifier=knn_classifier,
-                                  DSEL_perc=DSEL_perc)
+        super(BaseDES, self).__init__(pool_classifiers=pool_classifiers,
+                                      k=k,
+                                      DFP=DFP,
+                                      with_IH=with_IH,
+                                      safe_k=safe_k,
+                                      IH_rate=IH_rate,
+                                      needs_proba=needs_proba,
+                                      random_state=random_state,
+                                      knn_classifier=knn_classifier,
+                                      DSEL_perc=DSEL_perc)
         self.mode = mode
 
     def estimate_competence(self, query, neighbors, distances=None, predictions=None):
@@ -325,7 +325,7 @@ class DES(DS):
 
     def _validate_parameters(self):
 
-        super(DES, self)._validate_parameters()
+        super(BaseDES, self)._validate_parameters()
 
         if not isinstance(self.mode, str):
             raise TypeError('Parameter "mode" should be a string. Currently "mode" = {}'.format(type(self.mode)))

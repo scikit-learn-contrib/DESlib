@@ -6,10 +6,10 @@
 
 import numpy as np
 
-from deslib.dcs.base import DCS
+from deslib.dcs.base import BaseDCS
 
 
-class APosteriori(DCS):
+class APosteriori(BaseDCS):
     """A Posteriori Dynamic classifier selection.
 
     The A Posteriori method uses the probability of correct classification of a given base classifier :math:`c_{i}`

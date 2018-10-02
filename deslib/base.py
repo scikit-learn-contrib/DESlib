@@ -20,7 +20,7 @@ from deslib.util.instance_hardness import hardness_region_competence
 import warnings
 
 
-class DS(BaseEstimator, ClassifierMixin):
+class BaseDS(BaseEstimator, ClassifierMixin):
     """Base class for a dynamic classifier (dcs) and ensemble (des) selection methods.
 
     All dcs and des techniques should inherit from this class.
@@ -355,7 +355,7 @@ class DS(BaseEstimator, ClassifierMixin):
             base_probabilities = None
             base_predictions = self._predict_base(X)
 
-        all_agree_vector = DS._all_classifier_agree(base_predictions)
+        all_agree_vector = BaseDS._all_classifier_agree(base_predictions)
         ind_all_agree = np.where(all_agree_vector)[0]
 
         # Since the predictions are always the same, get the predictions of the first base classifier.
@@ -464,7 +464,7 @@ class DS(BaseEstimator, ClassifierMixin):
         n_samples = X.shape[0]
         predicted_proba = np.zeros((n_samples, self.n_classes_))
 
-        all_agree_vector = DS._all_classifier_agree(base_predictions)
+        all_agree_vector = BaseDS._all_classifier_agree(base_predictions)
         ind_all_agree = np.where(all_agree_vector)[0]
 
         if ind_all_agree.size:

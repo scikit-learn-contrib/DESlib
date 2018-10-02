@@ -8,12 +8,12 @@ import numpy as np
 from sklearn.base import ClusterMixin
 from sklearn.cluster import KMeans
 
-from deslib.base import DS
+from deslib.base import BaseDS
 from deslib.util.aggregation import majority_voting_rule
 from deslib.util.diversity import Q_statistic, ratio_errors, negative_double_fault, compute_pairwise_diversity
 
 
-class DESClustering(DS):
+class DESClustering(BaseDS):
     """Dynamic ensemble selection-Clustering (DES-Clustering).
 
     This method selects an ensemble of classifiers taking into account the

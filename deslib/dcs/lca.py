@@ -6,10 +6,10 @@
 
 import numpy as np
 
-from deslib.dcs.base import DCS
+from deslib.dcs.base import BaseDCS
 
 
-class LCA(DCS):
+class LCA(BaseDCS):
     """Local Class Accuracy (LCA).
 
     Evaluates the competence level of each individual classifiers and

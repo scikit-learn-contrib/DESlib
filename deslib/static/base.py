@@ -11,7 +11,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import check_is_fitted, check_random_state
 
 
-class StaticEnsemble(BaseEstimator, ClassifierMixin):
+class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
     """Base class for static ensembles.
 
     All static ensemble techniques should inherit from this class.
