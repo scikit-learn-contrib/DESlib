@@ -10,9 +10,12 @@ deslib.util.prob_functions - Functions to estimate the competence of a base clas
 probability estimates.
 
 deslib.util.instance_hardness - Functions to measure the hardness level of a given instance
+
+deslib.util.faiss_knn_wrapper - Wrapper for Facebook AI fast similarity search on GPU
 """
 
 from .aggregation import *
 from .diversity import *
 from .instance_hardness import *
 from .prob_functions import *
+from .faiss_knn_wrapper import FaissKNNClassifier
