@@ -140,6 +140,7 @@ Three DCS and four DES techniques are considered in this example:
 can now be instantiated without specifying a pool of classifiers:
 
 .. code-block:: python
+
     # DCS techniques
     ola = OLA()
     mcb = MCB()
