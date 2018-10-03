@@ -375,10 +375,12 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
             X_DS = X[ind_disagreement, :]
 
-            # Always calculating the neighborhood. Passing that to classify later
-            # TODO: Check problems with DES Clusterin method. Maybe add a check to prevnt that here. (or do clustering instead)
-            # Then, we estimate the nearest neighbors for all samples that we need to call DS routines
-            distances, neighbors = self._get_region_competence(X_DS)
+            # If the method is based on clustering and does not use IH there is no need to compute the Neighbors
+            if hasattr(self, "clustering_") and not self.with_IH:
+                distances = neighbors = None
+            else:
+                # Then, we estimate the nearest neighbors for all samples that we need to call DS routines
+                distances, neighbors = self._get_region_competence(X_DS)
 
             if self.with_IH:
                 # if IH is used, calculate the hardness level associated with each sample
@@ -767,6 +769,3 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         """
         for clf in self.pool_classifiers:
             check_is_fitted(clf, "classes_")
-
-
-
