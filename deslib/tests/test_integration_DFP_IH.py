@@ -13,6 +13,7 @@ from deslib.dcs.ola import OLA
 # DES techniques
 from deslib.des.des_p import DESP
 from deslib.des.knora_u import KNORAU
+from deslib.des import DESClustering
 
 
 # Static techniques
@@ -81,3 +82,12 @@ def test_aposteriori():
     a_posteriori = APosteriori(pool_classifiers, random_state=rng, DFP=True, with_IH=True, IH_rate=0.1)
     a_posteriori.fit(X_dsel, y_dsel)
     assert np.isclose(a_posteriori.score(X_test, y_test), 0.8303030303030303)
+
+
+def test_des_clustering():
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
+    rng = np.random.RandomState(123456)
+
+    des_clustering = DESClustering(pool_classifiers, random_state=rng, with_IH=True, IH_rate=0.28)
+    des_clustering.fit(X_dsel, y_dsel)
+    assert np.isclose(des_clustering.score(X_test, y_test), 0.906060606060606)
