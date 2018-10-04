@@ -16,8 +16,8 @@ class DESKNN(BaseDS):
 
     This method selects an ensemble of classifiers taking into account the
     accuracy and diversity of the base classifiers. The k-NN algorithm is used to define the region of competence.
-    The N_ most accurate classifiers in the region of competence are first selected.
-    Then, the J_ more diverse classifiers from the N_ most accurate classifiers are selected to compose the ensemble.
+    The N most accurate classifiers in the region of competence are first selected.
+    Then, the J more diverse classifiers from the N most accurate classifiers are selected to compose the ensemble.
 
     Parameters
     ----------
@@ -111,14 +111,9 @@ class DESKNN(BaseDS):
         self.more_diverse = more_diverse
 
     def fit(self, X, y):
-        """ Train the DS model by setting the Clustering algorithm and
+        """ Prepare the DS model by setting the KNN algorithm and
         pre-processing the information required to apply the DS
-        methods.
-
-        First the data is divided into K clusters. Then, for each cluster, the N_ most accurate classifiers
-        are first selected. Then, the J_ more diverse classifiers from the N_ most accurate classifiers are
-        selected to compose the ensemble of the corresponding cluster. An ensemble of classifiers is assigned
-        to each of the K clusters.
+        method.
 
         Parameters
         ----------
@@ -202,7 +197,7 @@ class DESKNN(BaseDS):
         return accuracy, diversity
 
     def select(self, accuracy, diversity):
-        """Select an ensemble containing the N_ most accurate ant the J_ most diverse classifiers for the classification
+        """Select an ensemble containing the N most accurate ant the J most diverse classifiers for the classification
         of the query sample.
 
         Parameters
@@ -215,8 +210,8 @@ class DESKNN(BaseDS):
 
         Returns
         -------
-        selected_classifiers : array of shape = [n_samples, self.J_]
-                               Matrix containing the indices_ of the J_ selected base classifier for each test example.
+        selected_classifiers : array of shape = [n_samples, self.J]
+                               Matrix containing the indices of the J selected base classifier for each test example.
         """
         # Check if the accuracy and diversity arrays have the correct dimensionality.
         if accuracy.ndim < 2:
@@ -269,7 +264,7 @@ class DESKNN(BaseDS):
         Different than other DES techniques, this method is based on a two stage selection, where
         first the most accurate classifier are selected, then the diversity information is used to get the most
         diverse ensemble for the probability estimation. Hence, the weighting mode is not defined. Also, the
-        selected ensemble size is fixed (self.J_), so there is no need to use masked arrays in this class.
+        selected ensemble size is fixed (self.J), so there is no need to use masked arrays in this class.
 
         Returns
         -------
@@ -357,10 +352,10 @@ class DESKNN(BaseDS):
     def _check_parameters(self):
         """Check if the parameters passed as argument are correct.
 
-        The diversity_func_ must be either ['DF', 'Q', 'RATIO']
-
-        The values of N_ and J_ should be higher than 0, and N_ >= J_
-        ----------
+        Raises
+        ------
+        ValueError
+            If the hyper-parameters are incorrect.
         """
 
         if self.metric not in ['DF', 'Q', 'ratio']:

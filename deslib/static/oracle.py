@@ -35,7 +35,6 @@ class Oracle(BaseStaticEnsemble):
     def fit(self, X, y):
         """Fit the model according to the given training data.
 
-        Setup the label encoder and fit
         Parameters
         ----------
         X : array of shape = [n_samples, n_features]

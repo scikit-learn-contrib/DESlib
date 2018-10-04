@@ -68,6 +68,25 @@ class FaissKNNClassifier:
         return preds
 
     def kneighbors(self, X, n_neighbors, return_distance=True):
+        """Finds the K-neighbors of a point.
+
+        Parameters
+        ----------
+
+        X : array of shape = [n_samples, n_features]
+            The input data.
+
+        n_neighbors : Number of neighbors to get (default is the value passed to the constructor).
+
+        Returns
+        -------
+        dists : list of shape = [n_samples, k]
+                The distances between the query and each sample in the region of competence. The vector is ordered
+                in an ascending fashion.
+
+        idx : list of shape = [n_samples, k]
+              Indices of the instances belonging to the region of competence of the given query sample.
+        """
         X = np.atleast_2d(X).astype(np.float32)
         dist, idx = self.index.search(X, n_neighbors)
         return dist, idx

@@ -87,7 +87,7 @@ class MinimumDifference(BaseProbabilistic):
     def source_competence(self):
         """Calculates the source of competence using the Minimum Difference method.
 
-        The source of competence C_src_ at the validation point :math:`\mathbf{x}_{k}` calculated by the
+        The source of competence C_src at the validation point :math:`\mathbf{x}_{k}` calculated by the
         Minimum Difference between the supports obtained to the correct class and the support obtained by
         the other classes
 

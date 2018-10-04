@@ -57,7 +57,7 @@ class DESMI(BaseDS):
 
                      - 'knn' will use the standard KNN :class:`KNeighborsClassifier` from sklearn
                      - 'faiss' will use Facebook's Faiss similarity search through the :class:`FaissKNNClassifier`
-                     wrapper.
+                       wrapper.
                      - None, will use sklearn :class:`KNeighborsClassifier`.
 
     DSEL_perc : float (Default = 0.5)
@@ -143,7 +143,7 @@ class DESMI(BaseDS):
         return competence
 
     def select(self, competences):
-        """Select an ensemble containing the N_ most accurate classifiers for the classification of the query sample.
+        """Select an ensemble containing the N most accurate classifiers for the classification of the query sample.
 
         Parameters
         ----------
@@ -152,8 +152,8 @@ class DESMI(BaseDS):
 
         Returns
         -------
-        selected_classifiers : array of shape = [n_samples, self.N_]
-                               Matrix containing the indices_ of the N_ selected base classifier for each test example.
+        selected_classifiers : array of shape = [n_samples, self.N]
+                               Matrix containing the indices of the N selected base classifier for each test example.
         """
         # Check if the accuracy and diversity arrays have the correct dimensionality.
         if competences.ndim < 2:
@@ -189,7 +189,7 @@ class DESMI(BaseDS):
 
         Notes
         ------
-        Different than other DES techniques, this method only select N_ candidates from the pool of classifiers.
+        Different than other DES techniques, this method only select N candidates from the pool of classifiers.
 
         Returns
         -------
@@ -268,8 +268,10 @@ class DESMI(BaseDS):
     def _validate_parameters(self):
         """Check if the parameters passed as argument are correct.
 
-        The values of N_ should be higher than 0.
-        ----------
+        Raises
+        ------
+        ValueError
+            If the hyper-parameters are incorrect.
         """
         super(DESMI, self)._validate_parameters()
 

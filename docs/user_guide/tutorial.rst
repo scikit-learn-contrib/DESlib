@@ -12,6 +12,7 @@ Running Dynamic selection with Bagging
 ======================================
 
 In this first tutorial, we do a step-by-step run of the example_bagging.py, that is included in the examples part of the DESlib.
+This example uses the Wisconsin breast cancer dataset available on sklearn.datasets package.
 
 The first step is to run the example to check if everything is working as intended:
 
@@ -39,7 +40,7 @@ The example outputs the classification accuracy of each dataset:
 Code analysis:
 ==============
 
-The first thing to do is to import the corresponding DCS and DES algorithms that are tested as well as the other required
+The code starts by importing the corresponding DCS and DES algorithms that are tested as well as the other required
 libraries:
 
 .. code-block:: python
@@ -62,17 +63,17 @@ libraries:
     from deslib.des.knora_e import KNORAE
     from deslib.des.meta_des import METADES
 
-As DESlib is built on top of scikit-learn classifier, code will usually required the import of routines from this library.
+As DESlib is built on top of scikit-learn_, code will usually required the import of routines from it.
 
 Preparing the dataset:
 -----------------------
 
-Before exploiting the models, we need to prepare the dataset. We use the breast cancer dataset from scikit learn. The first step is to
-normalize the dataset so that it has zero mean and unit variance, which is a common requirement for many machine learning algorithms.
-This step can be easily done using the StandardScaler class from scikit-learn_.
-
-Following that we divide it into three partitions: Training, Test, and Dynamic Selection (DSEL). We usually call the dataset
-that is used for the competence level estimation as the dynamic selection dataset (DSEL) instead of the validation dataset.
+The next step is loading the data and dividing it into three partitions: Training, validation and test. In the dynamic
+selection literature [1]_ the validation set is usually called the dynamic selection dataset (DSEL), since
+this partition is used by the dynamic selection techniques in order to select the base classifiers, so in this
+library we use the same terminology. The training set (X_train, y_train) is used to fit the pool of classifiers,
+the validation (X_DSEL, y_DSEL) set is used to fit the dynamic selection models. The performance of the system
+is then evaluated on the test set (X_test, y_test).
 
 .. code-block:: python
 
@@ -90,16 +91,28 @@ that is used for the competence level estimation as the dynamic selection datase
     # Split the data into training and DSEL for DS techniques
     X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train, test_size=0.5)
 
+
+Another important aspect is to normalize the data so that it has
+zero mean and unit variance, which is a common requirement for many machine learning algorithms.
+This step can be easily done using the StandardScaler class from scikit-learn_. Note that the StandardScaler transform
+should be fitted using the training and DSEL data only. Then, it can be applied for the test data.
+
+An important point here is that in case of small datasets or when the base classifier models in the pool
+are weak estimators such as Decision Stumps or Perceptrons, an overlap between the training data and DSEL
+may be beneficial for achieving better performance.
+
 Training a pool of classifiers:
 -------------------------------
 
-The next step is to generate a pool of classifiers. Each implemented method receives as an input a list of classifiers. This list can be either
+The next step is to generate a pool of classifiers. This list can be either
 homogeneous (i.e., all base classifiers are of the same type) or heterogeneous (base classifiers of different types).
-The library supports any type of base classifiers from scikit-learn library.
+The library supports any type of base classifiers that is compatible with the scikit-learn library.
 
 In this example, we generate a pool composed of 10 Perceptron classifiers
 using the Bagging technique. It is important to mention that some DS techniques require that the base classifiers are capable of
-estimating probabilities (i.e., implements the predict_proba function). For the Perceptron model, this can be achieved
+estimating probabilities (i.e., implements the predict_proba function).
+
+For the Perceptron model, this can be achieved
 by calibrating the outputs of the base classifiers using the CalibratedClassifierCV class from scikit-learn.
 
 .. code-block:: python
@@ -114,8 +127,39 @@ by calibrating the outputs of the base classifiers using the CalibratedClassifie
 Building the DS models
 ----------------------
 
-Initializing DS techniques Here we initialize the DS techniques. Three DCS and four DES techniques are considered in this example:
-The only parameter that is required by the techniques is the pool of classifiers.
+Three DCS and four DES techniques are considered in this example:
+
+- Overal Local Accuracy (OLA)
+- Multiple-Classifier Behavior (MCB)
+- A Priori selection
+- K-Nearest Oracles-Union (KNU)
+- K-Nearest Oracles-Eliminate (KNE)
+- META-DES
+
+**NEW:** Since version 0.3, DESlib does not require a trained pool of classifiers for instantiating its estimators. All estimator
+can now be instantiated without specifying a pool of classifiers:
+
+.. code-block:: python
+
+    # DCS techniques
+    ola = OLA()
+    mcb = MCB()
+    apriori = APriori()
+
+    # DES techniques
+    knorau = KNORAU()
+    kne = KNORAE()
+    desp = DESP()
+    meta = METADES()
+
+When the pool of classifiers is not specified, a standard :class:`BaggingClassifier` from sklearn is used, which generates
+a pool composed of 10 decision trees. The parameter **DSEL_perc** controls the percentage of the input data that is used for fitting
+DSEL. The remaining data will be used to fit the pool of classifiers. Note that this parameter is only taken into account if
+the pool is either equals to None (when it was not informed) or still unfitted (when the base classifiers were not fitted)
+
+However, since we already trained a pool of classifiers in the previous step we will continue this tutorial by instantiating the dynamic selection methods with an already fitted pool.
+For more information on using DESlib estimators without specifying a trained pool of classifiers
+see the  `examples page <auto_examples/index.html>`_.
 
 .. code-block:: python
 
@@ -130,7 +174,6 @@ The only parameter that is required by the techniques is the pool of classifiers
     desp = DESP(pool_classifiers)
     meta = METADES(pool_classifiers)
 
-All others are optional parameters which can be specified explicitly changed in the instantiation of each method.
 
 Fitting the DS techniques:
 ---------------------------
@@ -149,6 +192,8 @@ of the base classifiers for each sample in the dynamic selection dataset.
     mcb.fit(X_dsel, y_dsel)
     apriori.fit(X_dsel, y_dsel)
     meta.fit(X_dsel, y_dsel)
+
+Note that if the pool of classifiers is still unfitted, this step will also fit the base classifiers in the pool.
 
 Estimating classification accuracy:
 ------------------------------------
@@ -197,7 +242,7 @@ as well as its impact in the algorithm is presented in the `API Reference <api.h
 Applying the Dynamic Frienemy Pruning (DFP)
 -------------------------------------------
 
-The library also implements the Dynamic Frienemy Pruning (DFP) proposed in [1]_. So any dynamic selection technique can be
+The library also implements the Dynamic Frienemy Pruning (DFP) proposed in [2]_. So any dynamic selection technique can be
 applied using the FIRE (Frienemy Indecision Region Dynamic Ensemble Selection) framework. That is easily done by setting the
 DFP to true when initializing a DS technique. In this example, we show how to start the FIRE-KNORA-U, FIRE-KNORA-E and FIRE-MCB techniques.
 
@@ -228,5 +273,7 @@ More tutorials on how to use different aspects of the library can be found in `e
 References
 -----------
 
-.. [1] : Oliveira, D.V.R., Cavalcanti, G.D.C. and Sabourin, R., Online Pruning of Base Classifiers for Dynamic Ensemble Selection, Pattern Recognition, vol. 72, December 2017, pp 44-58.
+.. [1] : R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,” Information Fusion, vol. 41, pp. 195 – 216, 2018.
+
+.. [2] : Oliveira, D.V.R., Cavalcanti, G.D.C. and Sabourin, R., Online Pruning of Base Classifiers for Dynamic Ensemble Selection, Pattern Recognition, vol. 72, December 2017, pp 44-58.
 
