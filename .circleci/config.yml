@@ -4,7 +4,7 @@
 #
 version: 2
 jobs:
-  build:
+  python3:
     docker:
       # specify the version you desire here
       - image: circleci/python:3.6.1
@@ -58,3 +58,5 @@ jobs:
 workflows:
   version: 2
   build-doc-and-deploy:
+    jobs:
+      - python3
