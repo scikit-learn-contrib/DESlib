@@ -67,7 +67,11 @@ class DESClustering(BaseDS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers=None, clustering=None,
+    def __init__(self, pool_classifiers=None,
+                 clustering=None,
+                 with_IH=False,
+                 safe_k=None,
+                 IH_rate=0.30,
                  pct_accuracy=0.5,
                  pct_diversity=0.33,
                  more_diverse=True,
@@ -75,7 +79,12 @@ class DESClustering(BaseDS):
                  random_state=None,
                  DSEL_perc=0.5):
 
-        super(DESClustering, self).__init__(pool_classifiers, random_state=random_state, DSEL_perc=DSEL_perc)
+        super(DESClustering, self).__init__(pool_classifiers=pool_classifiers,
+                                            with_IH=with_IH,
+                                            safe_k=safe_k,
+                                            IH_rate=IH_rate,
+                                            random_state=random_state,
+                                            DSEL_perc=DSEL_perc)
 
         self.metric = metric
         self.clustering = clustering
