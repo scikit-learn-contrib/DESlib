@@ -2,6 +2,9 @@
     :target: http://deslib.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
+.. image:: https://circleci.com/gh/Menelau/DESlib.svg?style=svg
+    :target: https://circleci.com/gh/Menelau/DESlib
+
 .. image:: https://travis-ci.org/Menelau/DESlib.svg?branch=master
     :target: https://travis-ci.org/Menelau/DESlib
 
