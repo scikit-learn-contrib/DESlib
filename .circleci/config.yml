@@ -27,41 +27,30 @@ jobs:
 
     steps:
       - checkout
-
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "requirements.txt" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-
       - run:
-          name: install dependencies
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt
-
-      - save_cache:
-          paths:
-            - ./venv
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
-
-      # run tests!
-      # this example uses Django's built-in test-runner
-      # other common Python testing frameworks include pytest and nose
-      # https://pytest.org
-      # https://nose.readthedocs.io
-      - run:
-          name: run tests
-          command: |
-            . venv/bin/activate
-            python manage.py test
-
+            wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+            chmod +x miniconda.sh && ./miniconda.sh -b -p ~/miniconda
+            export PATH="~/miniconda/bin:$PATH"
+            conda update --yes --quiet conda
+            conda create -n testenv --yes --quiet python=3
+            source activate testenv
+            conda install --yes pip
+            pip install -r requirements-dev.txt
+            pip install .
+            cd docs
+            make html
       - store_artifacts:
-          path: test-reports
-          destination: test-reports
-
+          path: docs/_build/html
+          destination: docs
+      - store_artifacts:
+          path: ~/log.txt
+      - persist_to_workspace:
+          root: docs/_build/html
+          paths: .
+      - attach_workspace:
+          at: docs/_build/html
+      - run: ls -ltrh docs/_build/html
     filters:
       branches:
         ignore: gh-pages
