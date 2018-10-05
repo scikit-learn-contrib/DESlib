@@ -10,10 +10,10 @@
 
 .. image:: https://codecov.io/gh/Menelau/DESlib/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/Menelau/DESlib
-
-.. image:: https://landscape.io/github/Menelau/DESlib/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/Menelau/DESlib/master
-   :alt: Code Health
+    
+.. image:: https://api.codacy.com/project/badge/Grade/59500eecc5524c59b9eb2284b43ae3e6
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/app/Menelau/DESlib?
 
 .. image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
     :target: https://opensource.org/licenses/BSD-3-Clause
@@ -220,7 +220,4 @@ References:
 
 .. _FAISS: https://github.com/facebookresearch/faiss
 
-
-.. image:: https://api.codacy.com/project/badge/Grade/59500eecc5524c59b9eb2284b43ae3e6
-   :alt: Codacy Badge
-   :target: https://app.codacy.com/app/Menelau/DESlib?utm_source=github.com&utm_medium=referral&utm_content=Menelau/DESlib&utm_campaign=Badge_Grade_Dashboard
+utm_source=github.com&utm_medium=referral&utm_content=Menelau/DESlib&utm_campaign=Badge_Grade_Dashboard
