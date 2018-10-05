@@ -1,4 +1,3 @@
-
 import pytest
 from sklearn.neighbors import KNeighborsClassifier
 from deslib.tests.examples_test import *
