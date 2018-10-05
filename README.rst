@@ -219,3 +219,8 @@ References:
 .. _documentation: https://deslib.readthedocs.io
 
 .. _FAISS: https://github.com/facebookresearch/faiss
+
+
+.. image:: https://api.codacy.com/project/badge/Grade/ac69296e37fc4c7c88349038d9fbadfd
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/app/luizgh/DESlib?utm_source=github.com&utm_medium=referral&utm_content=Menelau/DESlib&utm_campaign=Badge_Grade_Dashboard
