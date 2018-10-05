@@ -219,5 +219,3 @@ References:
 .. _documentation: https://deslib.readthedocs.io
 
 .. _FAISS: https://github.com/facebookresearch/faiss
-
-utm_source=github.com&utm_medium=referral&utm_content=Menelau/DESlib&utm_campaign=Badge_Grade_Dashboard
