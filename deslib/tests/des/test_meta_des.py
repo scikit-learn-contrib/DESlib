@@ -1,9 +1,11 @@
 import pytest
+import numpy as np
+from unittest.mock import MagicMock
 from sklearn.linear_model import Perceptron
 from sklearn.naive_bayes import GaussianNB
 
 from deslib.des.meta_des import METADES
-from deslib.tests.examples_test import *
+from deslib.tests.examples_test import create_pool_classifiers, create_pool_all_agree, setup_example1
 from sklearn.utils.estimator_checks import check_estimator
 
 
@@ -40,6 +42,8 @@ def test_parameter_gamma(selection_threshold):
 
 # -------------------------------------- Testing Methods -----------------------
 def test_compute_meta_features():
+    X, y, neighbors, _, dsel_processed, dsel_scores = setup_example1()
+
     query = np.ones((1, 2))
     pool = create_pool_classifiers()
     meta_test = METADES(pool_classifiers=[pool[0]])
@@ -47,13 +51,12 @@ def test_compute_meta_features():
     meta_test.k_ = 7
     meta_test.Kp_ = 5
     # Considering only one classifier in the pool (index = 0)
-    meta_test.DSEL_processed_ = dsel_processed_ex1[:, 0].reshape(-1, 1)
-    meta_test.dsel_scores_ = dsel_scores_ex1[:, 0, :].reshape(15, 1, 2)  # 15 samples, 1 base classifier, 2 classes
-    meta_test.DSEL_target_ = y_dsel_ex1
+    meta_test.DSEL_processed_ = dsel_processed[:, 0].reshape(-1, 1)
+    meta_test.dsel_scores_ = dsel_scores[:, 0, :].reshape(15, 1, 2)  # 15 samples, 1 base classifier, 2 classes
+    meta_test.DSEL_target_ = y
     meta_test.n_classes_ = 2
 
-    neighbors = neighbors_ex1[0, :]
-    neighbors_op = neighbors_ex1[2, 0:meta_test.Kp]
+    neighbors_op = neighbors[2, 0:meta_test.Kp]
 
 # Expected values for each meta feature based on the data of ex1.
     expected_f1 = [1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0]
@@ -66,13 +69,14 @@ def test_compute_meta_features():
     for index, clf in enumerate(meta_test.pool_classifiers):
         scores[:, index, :] = clf.predict_proba(query)
 
-    meta_features = meta_test.compute_meta_features(scores, neighbors, neighbors_op)
+    meta_features = meta_test.compute_meta_features(scores, neighbors[0, :], neighbors_op)
     expected = np.asarray(expected_f1 + expected_f2 + expected_f3 + expected_f4 + expected_f5)
     assert np.array_equal(meta_features, expected.reshape(1, -1))
 
 
 # Test the estimate competence function considering 3 base classifiers and 1 test sample
 def test_estimate_competence():
+    _, y, neighbors, _, dsel_processed, dsel_scores = setup_example1()
 
     query = np.ones((1, 2))
     meta_test = METADES(pool_classifiers=create_pool_classifiers())
@@ -80,15 +84,14 @@ def test_estimate_competence():
     meta_test.k_ = 7
     meta_test.Kp_ = 5
     # Set the state of the system which is set by the fit method.
-    meta_test.DSEL_processed_ = dsel_processed_ex1
-    meta_test.dsel_scores_ = dsel_scores_ex1
-    meta_test.DSEL_target_ = y_dsel_ex1
+    meta_test.DSEL_processed_ = dsel_processed
+    meta_test.dsel_scores_ = dsel_scores
+    meta_test.DSEL_target_ = y
     meta_test.n_classes_ = 2
 
     meta_test.meta_classifier_ = GaussianNB()
-    neighbors = neighbors_ex1[0, :]
 
-    meta_test._get_similar_out_profiles = MagicMock(return_value=(None, neighbors_ex1[0, 0:meta_test.Kp]))
+    meta_test._get_similar_out_profiles = MagicMock(return_value=(None, neighbors[0, 0:meta_test.Kp]))
     meta_test.meta_classifier_.predict_proba = MagicMock(return_value=np.array([[0.2, 0.8], [1.0, 0.0], [0.2, 0.8]]))
 
     probabilities = []
@@ -98,12 +101,13 @@ def test_estimate_competence():
     probabilities = np.array(probabilities).transpose((1, 0, 2))
 
     expected = np.array([[0.8, 0.0, 0.8]])
-    competences = meta_test.estimate_competence_from_proba(query, neighbors, probabilities)
+    competences = meta_test.estimate_competence_from_proba(query, neighbors[0, :], probabilities)
     assert np.array_equal(competences, expected)
 
 
 # Test the estimate competence function considering 3 base classifiers and 3 test samples.
 def test_estimate_competence_batch():
+    _, y, neighbors, _, dsel_processed, dsel_scores = setup_example1()
 
     query = np.ones((3, 1))
     meta_test = METADES(pool_classifiers=create_pool_classifiers())
@@ -111,12 +115,12 @@ def test_estimate_competence_batch():
     n_meta_features = 21
     meta_test.meta_classifier_ = GaussianNB
     # Set the state of the system which is set by the fit method.
-    meta_test.DSEL_processed_ = dsel_processed_ex1
-    meta_test.dsel_scores_ = dsel_scores_ex1
-    meta_test.DSEL_target_ = y_dsel_ex1
-    neighbors = neighbors_ex1
+    meta_test.DSEL_processed_ = dsel_processed
+    meta_test.dsel_scores_ = dsel_scores
+    meta_test.DSEL_target_ = y
+    neighbors = neighbors
 
-    meta_test._get_similar_out_profiles = MagicMock(return_value=(None, neighbors_ex1[:, 0:meta_test.Kp]))
+    meta_test._get_similar_out_profiles = MagicMock(return_value=(None, neighbors[:, 0:meta_test.Kp]))
     meta_test.compute_meta_features = MagicMock(return_value=np.ones((9, n_meta_features)))
     meta_test.meta_classifier_.predict_proba = MagicMock(return_value=np.tile([0.0, 0.8], (9, 1)))
 
@@ -186,8 +190,8 @@ def test_sample_selection_working():
 # Should raise an exception when the base classifier cannot estimate posterior probabilities (predict_proba)
 # Using Perceptron classifier as it does not implements the predict_proba method.
 def test_not_predict_proba():
-    X = X_dsel_ex1
-    y = y_dsel_ex1
+    X, y = setup_example1()[0:2]
+
     clf1 = Perceptron()
     clf1.fit(X, y)
     with pytest.raises(ValueError):

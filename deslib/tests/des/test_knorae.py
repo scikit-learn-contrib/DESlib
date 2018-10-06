@@ -1,8 +1,9 @@
+import numpy as np
 import pytest
 from sklearn.linear_model import Perceptron
 
 from deslib.des.knora_e import KNORAE
-from deslib.tests.examples_test import *
+from deslib.tests.examples_test import create_pool_classifiers, create_pool_all_agree, setup_example1
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.utils.testing import ignore_warnings
 
@@ -13,16 +14,17 @@ def test_check_estimator():
 
 
 def test_estimate_competence_batch():
+    X, y, neighbors, distances, _, _ = setup_example1()
+
     query = np.ones((3, 2))
     expected = np.array([[1.0, 0.0, 1.0],
                          [2.0, 0.0, 2.0],
                          [0.0, 3.0, 0.0]])
 
     knora_e_test = KNORAE(create_pool_classifiers())
-    knora_e_test.fit(X_dsel_ex1, y_dsel_ex1)
-    neighbors = neighbors_ex1
-    distances = distances_ex1
-    competences = knora_e_test.estimate_competence(query, neighbors, distances)
+    knora_e_test.fit(X, y)
+
+    competences = knora_e_test.estimate_competence(query, neighbors, distances=distances)
     assert np.allclose(competences, expected)
 
 
@@ -30,12 +32,15 @@ def test_estimate_competence_batch():
                                              (1, [[True, False, True]]),
                                              (2, [[False, True, False]])])
 def test_select(index, expected):
+    X, y, neighbors, distances, _, _ = setup_example1()
+
     query = np.atleast_2d([1, 1])
 
     knora_e_test = KNORAE(create_pool_classifiers())
-    knora_e_test.fit(X_dsel_ex1, y_dsel_ex1)
-    neighbors = neighbors_ex1[index, :].reshape(1, -1)
-    competences = knora_e_test.estimate_competence(query, neighbors)
+    knora_e_test.fit(X, y)
+    neighbors = neighbors[index, :].reshape(1, -1)
+    distances = distances[index, :].reshape(1, -1)
+    competences = knora_e_test.estimate_competence(query, neighbors, distances=distances)
     selected = knora_e_test.select(competences)
 
     assert np.array_equal(selected, expected)
@@ -57,8 +62,8 @@ def test_select_none_competent():
 # In this case the test should not raise an error since this class does not require base classifiers that
 # can estimate probabilities
 def test_predict_proba():
-    X = X_dsel_ex1
-    y = y_dsel_ex1
+    X, y = setup_example1()[0:2]
+
     clf1 = Perceptron()
     clf1.fit(X, y)
     KNORAE([clf1, clf1]).fit(X, y)

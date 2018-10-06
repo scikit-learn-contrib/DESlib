@@ -1,8 +1,9 @@
+import numpy as np
 import pytest
 from sklearn.linear_model import Perceptron
-
+from unittest.mock import MagicMock
 from deslib.des.des_mi import DESMI
-from deslib.tests.examples_test import *
+from deslib.tests.examples_test import create_pool_classifiers, setup_example1
 from sklearn.utils.estimator_checks import check_estimator
 
 
@@ -15,27 +16,32 @@ def test_check_estimator():
 
 @pytest.mark.parametrize('alpha', [-1.0, -0.5, 0.0])
 def test_check_alpha_value(alpha):
+    X, y = setup_example1()[0:2]
     pool_classifiers = create_pool_classifiers()
 
     with pytest.raises(ValueError):
         desmi = DESMI(pool_classifiers, alpha=alpha)
-        desmi.fit(X_dsel_ex1, y_dsel_ex1)
+        desmi.fit(X, y)
 
 
 @pytest.mark.parametrize('alpha', ['a', None, 'string', 1])
 def test_check_alpha_type(alpha):
+    X, y = setup_example1()[0:2]
     pool_classifiers = create_pool_classifiers()
+
     with pytest.raises(TypeError):
         desmi = DESMI(pool_classifiers, alpha=alpha)
-        desmi.fit(X_dsel_ex1, y_dsel_ex1)
+        desmi.fit(X, y)
 
 
 @pytest.mark.parametrize('pct_accuracy', [-1.0, -0.5, 0.0, 1.01])
 def test_check_pct_accuracy_value(pct_accuracy):
+    X, y = setup_example1()[0:2]
     pool_classifiers = create_pool_classifiers()
+
     with pytest.raises(ValueError):
         desmi = DESMI(pool_classifiers, pct_accuracy=pct_accuracy)
-        desmi.fit(X_dsel_ex1, y_dsel_ex1)
+        desmi.fit(X, y)
 
 
 # Test if the class is raising an error when the base classifiers do not implements the predict_proba method.

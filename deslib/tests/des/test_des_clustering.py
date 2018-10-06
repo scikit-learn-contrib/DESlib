@@ -1,12 +1,11 @@
-from unittest.mock import MagicMock
-
 import numpy as np
 import pytest
+from unittest.mock import MagicMock
 from sklearn.cluster import KMeans
 from sklearn.linear_model import Perceptron
 
 from deslib.des.des_clustering import DESClustering
-from deslib.tests.examples_test import create_pool_classifiers, X_dsel_ex1, y_dsel_ex1
+from deslib.tests.examples_test import create_pool_classifiers, setup_example1
 from deslib.util.diversity import Q_statistic, ratio_errors, negative_double_fault
 from sklearn.utils.estimator_checks import check_estimator
 
@@ -19,7 +18,7 @@ def test_check_estimator():
 n. 1. For this example, the base classifiers that always predicts 0 should me most accurate on the cluster 0, while
 the base classifiers that predicts 1 for the cluster with index == 1.
 """
-return_cluster_index_ex1 = y_dsel_ex1
+return_cluster_index_ex1 = setup_example1()[1]
 
 
 """ In this test scenario, each cluster contains samples from classes_ 1 and 2.
@@ -35,8 +34,9 @@ def test_fit_homogeneous_clusters():
                                     pct_diversity=0.33)
 
     clustering_test.clustering.predict = MagicMock(return_value=return_cluster_index_ex1)
+    X, y = setup_example1()[0:2]
 
-    clustering_test.fit(X_dsel_ex1, y_dsel_ex1)
+    clustering_test.fit(X, y)
 
     assert clustering_test.accuracy_cluster_[0, 1] == 0.0 and clustering_test.accuracy_cluster_[0, [0, 2]].all() == 1.0
     assert clustering_test.accuracy_cluster_[1, 1] == 1.0 and clustering_test.accuracy_cluster_[1, [0, 2]].all() == 0.0
@@ -50,9 +50,10 @@ def test_fit_heterogeneous_clusters():
                                     clustering=KMeans(n_clusters=2),
                                     pct_accuracy=0.5,
                                     pct_diversity=0.33)
+    X, y = setup_example1()[0:2]
 
     clustering_test.clustering.predict = MagicMock(return_value=return_cluster_index_ex2)
-    clustering_test.fit(X_dsel_ex1, y_dsel_ex1)
+    clustering_test.fit(X, y)
 
     # Index selected should be of any classifier that predicts the class label 0
     assert np.isclose(clustering_test.accuracy_cluster_[:, 1], [0.428, 0.375], atol=0.01).all()
@@ -68,10 +69,11 @@ def test_estimate_competence():
                                     clustering=KMeans(n_clusters=2),
                                     pct_accuracy=0.5,
                                     pct_diversity=0.33)
+    X, y = setup_example1()[0:2]
 
     # Keep the original predict method to change after
     clustering_test.clustering.predict = MagicMock(return_value=return_cluster_index_ex2)
-    clustering_test.fit(X_dsel_ex1, y_dsel_ex1)
+    clustering_test.fit(X, y)
 
     clustering_test.clustering_.predict = MagicMock(return_value=0)
     competences = clustering_test.estimate_competence(query)
@@ -90,9 +92,10 @@ def test_fit_clusters_less_diverse():
                                     pct_accuracy=0.5,
                                     pct_diversity=0.33,
                                     more_diverse=False)
+    X, y = setup_example1()[0:2]
 
     clustering_test.clustering.predict = MagicMock(return_value=return_cluster_index_ex1)
-    clustering_test.fit(X_dsel_ex1, y_dsel_ex1)
+    clustering_test.fit(X, y)
 
     assert clustering_test.accuracy_cluster_[0, 1] == 0.0 and clustering_test.accuracy_cluster_[0, [0, 2]].all() == 1.0
     assert clustering_test.accuracy_cluster_[1, 1] == 1.0 and clustering_test.accuracy_cluster_[1, [0, 2]].all() == 0.0
@@ -130,44 +133,56 @@ def test_classify_instance():
 
 
 def test_input_diversity_parameter():
+    X, y = setup_example1()[0:2]
+
     with pytest.raises(ValueError):
         des_clustering = DESClustering(create_pool_classifiers()*10, metric='abc')
-        des_clustering.fit(X_dsel_ex1, y_dsel_ex1)
+        des_clustering.fit(X, y)
 
 
 def test_J_N_values():
+    X, y = setup_example1()[0:2]
+
     with pytest.raises(ValueError):
         des_clustering = DESClustering(create_pool_classifiers()*10, pct_accuracy=0.5, pct_diversity=0)
-        des_clustering.fit(X_dsel_ex1, y_dsel_ex1)
+        des_clustering.fit(X, y)
 
 
 def test_J_higher_than_N():
+    X, y = setup_example1()[0:2]
+
     with pytest.raises(ValueError):
         des_clustering = DESClustering(create_pool_classifiers()*100, pct_accuracy=0.3, pct_diversity=0.5)
-        des_clustering.fit(X_dsel_ex1, y_dsel_ex1)
+        des_clustering.fit(X, y)
 
 
 def test_diversity_metric_Q():
+    X, y = setup_example1()[0:2]
+
     test = DESClustering(create_pool_classifiers() * 10, metric='Q')
     # Mocking this method to avoid preprocessing the cluster information that is not required in this test.
     test._preprocess_clusters = MagicMock(return_value=1)
-    test.fit(X_dsel_ex1, y_dsel_ex1)
+    test.fit(X, y)
     assert test.diversity_func_ == Q_statistic
 
 
 def test_diversity_metric_DF():
+    X, y = setup_example1()[0:2]
+
     test = DESClustering(create_pool_classifiers() * 10, metric='DF')
     # Mocking this method to avoid preprocessing the cluster information that is not required in this test.
     test._preprocess_clusters = MagicMock(return_value=1)
-    test.fit(X_dsel_ex1, y_dsel_ex1)
+    test.fit(X, y)
     assert test.diversity_func_ == negative_double_fault
 
 
 def test_diversity_metric_ratio():
+    X, y = setup_example1()[0:2]
+
     test = DESClustering(create_pool_classifiers() * 10, metric='ratio')
     # Mocking this method to avoid preprocessing the cluster information that is not required in this test.
     test._preprocess_clusters = MagicMock(return_value=1)
-    test.fit(X_dsel_ex1, y_dsel_ex1)
+    test.fit(X, y)
     assert test.diversity_func_ == ratio_errors
 
 
@@ -175,11 +190,11 @@ def test_diversity_metric_ratio():
 # In this case the test should not raise an error since this class does not require base classifiers that
 # can estimate probabilities
 def test_predict_proba():
-    X = X_dsel_ex1
-    y = y_dsel_ex1
+    X, y = setup_example1()[0:2]
+
     clf1 = Perceptron()
     clf1.fit(X, y)
-    DESClustering([clf1, clf1]).fit(X_dsel_ex1, y_dsel_ex1)
+    DESClustering([clf1, clf1]).fit(X, y)
 
 
 def test_classify_with_ds_single_sample():
@@ -214,7 +229,8 @@ def test_proba_with_ds_diff_sizes():
 
 
 def test_not_clustering_algorithm():
+    X, y = setup_example1()[0:2]
 
     des_clustering = DESClustering(create_pool_classifiers(), clustering=Perceptron())
     with pytest.raises(ValueError):
-        des_clustering.fit(X_dsel_ex1, y_dsel_ex1)
+        des_clustering.fit(X, y)

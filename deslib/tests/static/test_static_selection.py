@@ -5,7 +5,7 @@ import pytest
 from sklearn.exceptions import NotFittedError
 
 from deslib.static.static_selection import StaticSelection
-from deslib.tests.examples_test import create_pool_classifiers, create_pool_all_agree, X_dsel_ex1, y_dsel_ex1
+from deslib.tests.examples_test import create_pool_classifiers, create_pool_all_agree, setup_example1
 from sklearn.utils.estimator_checks import check_estimator
 
 
@@ -22,8 +22,8 @@ def create_pool_classifiers_score(prediction, size, score):
 
 
 def test_fit():
-    X = X_dsel_ex1
-    y = y_dsel_ex1
+    X, y = setup_example1()[0:2]
+
     pool_classifiers = create_pool_classifiers_score(1, 50, 0.5) + create_pool_classifiers_score(1, 50, 1.0)
     static_selection_test = StaticSelection(pool_classifiers, 0.5)
     static_selection_test.fit(X, y)
@@ -35,8 +35,8 @@ def test_fit():
 
 # The classifier with highest accuracy always predicts 0. So the expected prediction should always be equal zero.
 def test_predict():
-    X = X_dsel_ex1
-    y = y_dsel_ex1
+    X, y = setup_example1()[0:2]
+
     pool_classifiers = create_pool_classifiers_score(1, 25, 0.5) + create_pool_classifiers_score(0, 25, 1.0)
     static_selection_test = StaticSelection(pool_classifiers, 0.25)
     static_selection_test.fit(X, y)
@@ -47,8 +47,8 @@ def test_predict():
 
 # Classifiers predicting different labels are selected
 def test_predict_diff():
-    X = X_dsel_ex1
-    y = y_dsel_ex1
+    X, y = setup_example1()[0:2]
+
     pool_classifiers = create_pool_classifiers_score(1, 25, 0.5) + create_pool_classifiers_score(0, 25, 0.5)
     pool_classifiers += create_pool_classifiers_score(1, 25, 0.75)
     static_selection_test = StaticSelection(pool_classifiers, 0.33)

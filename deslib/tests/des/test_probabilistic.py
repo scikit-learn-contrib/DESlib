@@ -1,8 +1,18 @@
 import pytest
+import numpy as np
 from sklearn.linear_model import Perceptron
-from deslib.des.probabilistic import BaseProbabilistic,  Logarithmic,\
-    Exponential, RRC, DESKL, MinimumDifference
-from deslib.tests.examples_test import *
+from deslib.des.probabilistic import (BaseProbabilistic,
+                                      Logarithmic,
+                                      Exponential,
+                                      RRC,
+                                      DESKL,
+                                      MinimumDifference)
+
+from deslib.tests.examples_test import (create_pool_classifiers,
+                                        create_pool_all_agree,
+                                        create_base_classifier,
+                                        setup_example1)
+
 from sklearn.utils.estimator_checks import check_estimator
 
 
@@ -30,8 +40,8 @@ def test_check_estimator_MinimumDifference():
 # Should raise an exception when the base classifier cannot estimate posterior probabilities (predict_proba)
 # Using Perceptron classifier as it does not implements the predict_proba method.
 def test_not_predict_proba():
-    X = X_dsel_ex1
-    y = y_dsel_ex1
+    X, y = setup_example1()[0:2]
+
     clf1 = Perceptron()
     clf1.fit(X, y)
     with pytest.raises(ValueError):
@@ -117,11 +127,12 @@ def test_estimate_competence_batch():
 
 # Test the estimate competence function when the competence source is equal to zero. The competence should also be zero.
 def test_estimate_competence_zeros():
+    distances = setup_example1()[3]
     query = np.atleast_2d([1, 1])
     probabilistic_test = BaseProbabilistic(create_pool_classifiers())
     probabilistic_test.k_ = 7
 
-    distances = distances_ex1[0, 0:3].reshape(1, -1)
+    distances = distances[0, 0:3].reshape(1, -1)
     neighbors = np.array([[0, 2, 1]])
     probabilistic_test.C_src_ = np.zeros((3, 3))
     competence = probabilistic_test.estimate_competence(query, neighbors=neighbors, distances=distances)
@@ -130,11 +141,12 @@ def test_estimate_competence_zeros():
 
 # Test the estimate competence function when the competence source is equal to one. The competence should also be ones.
 def test_estimate_competence_ones():
+    distances = setup_example1()[3]
     query = np.atleast_2d([1, 1])
     probabilistic_test = BaseProbabilistic(create_pool_classifiers())
     probabilistic_test.k_ = 7
 
-    distances = distances_ex1[0, 0:3].reshape(1, -1)
+    distances = distances[0, 0:3].reshape(1, -1)
     neighbors = np.array([[0, 2, 1]])
     probabilistic_test.C_src_ = np.ones((3, 3))
     competence = probabilistic_test.estimate_competence(query, neighbors, distances)

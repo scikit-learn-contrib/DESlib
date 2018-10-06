@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from deslib.tests.examples_test import y_dsel_ex1, neighbors_ex1
+from deslib.tests.examples_test import setup_example1
 from deslib.util.instance_hardness import hardness_region_competence
 
 
@@ -10,24 +10,24 @@ from deslib.util.instance_hardness import hardness_region_competence
                                              (1, 0.28),
                                              (2, 0.28)])
 def test_instance_hardness_region(index, expected):
-    y = y_dsel_ex1
+    _, y, neighbors, _, _, _ = setup_example1()
     k = 7
-    neighbors = neighbors_ex1[index, :]
+    neighbors = neighbors[index, :]
     IH = hardness_region_competence(neighbors, y, k)
     assert np.isclose(IH, expected, atol=0.01)
 
 
 def test_instance_hardness_region_batch():
     expected = np.array([0.42, 0.28, 0.28])
-    y = y_dsel_ex1
+    _, y, neighbors, _, _, _ = setup_example1()
+
     k = 7
-    neighbors = neighbors_ex1
     IH = hardness_region_competence(neighbors, y, k)
     assert np.allclose(IH, expected, atol=0.01)
 
 
 def test_instance_hardness_region_all_same():
-    y = y_dsel_ex1
+    y = setup_example1()[1]
     k = 7
     neighbors = np.array([0, 1, 2, 6, 7, 8, 13])
     IH = hardness_region_competence(neighbors, y, k)

@@ -1,10 +1,10 @@
-from unittest.mock import Mock
-
+import numpy as np
 import pytest
 from sklearn.linear_model import Perceptron
+from unittest.mock import Mock
 
 from deslib.des.knop import KNOP
-from deslib.tests.examples_test import *
+from deslib.tests.examples_test import create_pool_classifiers, setup_example1
 from sklearn.utils.estimator_checks import check_estimator
 
 
@@ -16,15 +16,16 @@ def test_check_estimator():
                                              (1, [5.0, 2.0, 5.0]),
                                              (2, [2.0, 5.0, 2.0])])
 def test_estimate_competence(index, expected):
+    X, y, neighbors, distances, _, _ = setup_example1()
     query = np.atleast_2d([1, 1])
 
     knop_test = KNOP(create_pool_classifiers())
-    knop_test.fit(X_dsel_ex1, y_dsel_ex1)
+    knop_test.fit(X, y)
 
     knop_test.DFP_mask = np.ones(knop_test .n_classifiers_)
-    knop_test.neighbors = neighbors_ex1[index, :]
-    knop_test._get_similar_out_profiles = Mock(return_value=(None, np.atleast_2d(neighbors_ex1[index, :])))
-    knop_test.distances = distances_ex1[index, :]
+    knop_test.neighbors = neighbors[index, :]
+    knop_test._get_similar_out_profiles = Mock(return_value=(None, neighbors[index, :].reshape(1, -1)))
+    knop_test.distances = distances[index, :]
 
     probabilities = []
     for clf in knop_test.pool_classifiers:
@@ -38,19 +39,19 @@ def test_estimate_competence(index, expected):
 
 # Test the estimate competence method receiving n samples as input
 def test_estimate_competence_batch():
+    X, y, neighbors, distances, _, _ = setup_example1()
     query = np.ones((3, 2))
     expected = np.array([[4.0, 3.0, 4.0],
-                          [5.0, 2.0, 5.0],
-                          [2.0, 5.0, 2.0]])
+                         [5.0, 2.0, 5.0],
+                         [2.0, 5.0, 2.0]])
 
     knop_test = KNOP(create_pool_classifiers())
-    knop_test.fit(X_dsel_ex1, y_dsel_ex1)
+    knop_test.fit(X, y)
 
     knop_test.DFP_mask = np.ones(knop_test .n_classifiers_)
-    knop_test.neighbors = neighbors_ex1
-    knop_test._get_similar_out_profiles = Mock(return_value=(None, neighbors_ex1))
-    knop_test.distances = distances_ex1
-
+    knop_test.neighbors = neighbors
+    knop_test._get_similar_out_profiles = Mock(return_value=(None, neighbors))
+    knop_test.distances = distances
     probabilities = np.zeros((3, 6)) # not used in this test
 
     competences = knop_test.estimate_competence_from_proba(query, probabilities)
@@ -58,9 +59,10 @@ def test_estimate_competence_batch():
 
 
 def test_weights_zero():
+    X, y = setup_example1()[0:2]
 
     knop_test = KNOP(create_pool_classifiers())
-    knop_test.fit(X_dsel_ex1, y_dsel_ex1)
+    knop_test.fit(X, y)
     competences = np.zeros((1, 3))
     result = knop_test.select(competences)
 
@@ -68,8 +70,10 @@ def test_weights_zero():
 
 
 def test_fit():
+    X, y = setup_example1()[0:2]
+
     knop_test = KNOP(create_pool_classifiers())
-    knop_test.fit(X_dsel_ex1, y_dsel_ex1)
+    knop_test.fit(X, y)
     expected_scores = np.array([[0.5, 0.5], [1.0, 0.0], [0.33, 0.67]])
     expected_scores = np.tile(expected_scores, (15, 1, 1))
 
@@ -84,8 +88,8 @@ def test_fit():
 # Should raise an exception when the base classifier cannot estimate posterior probabilities (predict_proba)
 # Using Perceptron classifier as it does not implements the predict_proba method.
 def test_not_predict_proba():
-    X = X_dsel_ex1
-    y = y_dsel_ex1
+    X, y = setup_example1()[0:2]
+
     clf1 = Perceptron()
     clf1.fit(X, y)
     with pytest.raises(ValueError):

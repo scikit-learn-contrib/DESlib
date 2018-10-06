@@ -1,8 +1,9 @@
+import numpy as np
 import pytest
 from sklearn.linear_model import Perceptron
 
 from deslib.dcs.lca import LCA
-from deslib.tests.examples_test import *
+from deslib.tests.examples_test import setup_example1, create_pool_classifiers
 from sklearn.utils.estimator_checks import check_estimator
 
 
@@ -11,15 +12,15 @@ def test_check_estimator():
 
 
 def test_estimate_competence_batch():
+    _, y, neighbors, distances, dsel_processed, _ = setup_example1()
+
     expected = np.array([[0.75000000,  0.66666667,  0.75000000],
                          [0.80000000, 1.00000000, 0.80000000],
                          [1.00000000, 0.60000000, 0.50000000]])
     lca_test = LCA(create_pool_classifiers())
-    lca_test.DSEL_processed_ = dsel_processed_ex1
-    neighbors = neighbors_ex1
-    distances = distances_ex1
+    lca_test.DSEL_processed_ = dsel_processed
     lca_test.DFP_mask = np.ones((3, 3))
-    lca_test.DSEL_target_ = y_dsel_ex1
+    lca_test.DSEL_target_ = y
 
     query = np.ones((3, 2))
 
@@ -37,12 +38,14 @@ def test_estimate_competence_batch():
 # the estimation of competence should always be zero
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_estimate_competence_diff_target(index):
+    _, y, neighbors, distances, dsel_processed, _ = setup_example1()
+
     lca_test = LCA(create_pool_classifiers())
-    lca_test.DSEL_processed_ = dsel_processed_ex1
+    lca_test.DSEL_processed_ = dsel_processed
     lca_test.DSEL_target_ = np.ones(15, dtype=int) * 3
 
-    neighbors = neighbors_ex1[index, :].reshape(1, -1)
-    distances = distances_ex1[index, :].reshape(1, -1)
+    neighbors = neighbors[index, :].reshape(1, -1)
+    distances = distances[index, :].reshape(1, -1)
 
     query = np.atleast_2d([1, 1])
     expected = [0.0, 0.0, 0.0]
@@ -62,8 +65,8 @@ def test_estimate_competence_diff_target(index):
 # In this case the test should not raise an error since this class does not require base classifiers that
 # can estimate probabilities
 def test_predict_proba():
-    X = X_dsel_ex1
-    y = y_dsel_ex1
+    X, y = setup_example1()[0:2]
+
     clf1 = Perceptron()
     clf1.fit(X, y)
     LCA([clf1, clf1]).fit(X, y)

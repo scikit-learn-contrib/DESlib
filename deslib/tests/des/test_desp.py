@@ -1,8 +1,9 @@
+import numpy as np
 import pytest
 from sklearn.linear_model import Perceptron
 
 from deslib.des.des_p import DESP
-from deslib.tests.examples_test import *
+from deslib.tests.examples_test import create_pool_classifiers, setup_example1
 from sklearn.utils.estimator_checks import check_estimator
 
 
@@ -12,15 +13,16 @@ def test_check_estimator():
 
 # Test the estimate competence method receiving n samples as input
 def test_estimate_competence_batch():
+    X, y, neighbors, distances, _, _ = setup_example1()
+
     query = np.ones((3, 2))
     expected = np.array([[0.57142857, 0.4285714, 0.57142857],
                         [0.71428571, 0.2857142, 0.71428571],
                         [0.2857142, 0.71428571, 0.2857142]])
 
     des_p_test = DESP(create_pool_classifiers())
-    des_p_test.fit(X_dsel_ex1, y_dsel_ex1)
-    neighbors = neighbors_ex1
-    distances = distances_ex1
+    des_p_test.fit(X, y)
+
     competences = des_p_test.estimate_competence(query, neighbors, distances)
     assert np.allclose(competences, expected, atol=0.01)
 
@@ -29,13 +31,14 @@ def test_estimate_competence_batch():
                                              (1, [[True, False, True]]),
                                              (2, [[False, True, False]])])
 def test_select_two_classes(index, expected):
+    X, y, neighbors, distances, _, _ = setup_example1()
     query = np.atleast_2d([1, 1])
 
     des_p_test = DESP(create_pool_classifiers())
-    des_p_test.fit(X_dsel_ex1, y_dsel_ex1)
+    des_p_test.fit(X, y)
 
-    neighbors = neighbors_ex1[index, :].reshape(1, -1)
-    distances = distances_ex1[index, :].reshape(1, -1)
+    neighbors = neighbors[index, :].reshape(1, -1)
+    distances = distances[index, :].reshape(1, -1)
 
     competences = des_p_test.estimate_competence(query, neighbors, distances)
     selected = des_p_test.select(competences)
@@ -48,14 +51,15 @@ def test_select_two_classes(index, expected):
                                              (1, [[True, False, True]]),
                                              (2, [[False, True, False]])])
 def test_select_three_classes(index, expected):
+    X, y, neighbors, distances, _, _ = setup_example1()
     query = np.atleast_2d([1, 1])
 
     des_p_test = DESP(create_pool_classifiers())
-    des_p_test.fit(X_dsel_ex1, y_dsel_ex1)
+    des_p_test.fit(X, y)
 
     des_p_test.n_classes_ = 3
-    neighbors = neighbors_ex1[index, :].reshape(1, -1)
-    distances = distances_ex1[index, :].reshape(1, -1)
+    neighbors = neighbors[index, :].reshape(1, -1)
+    distances = distances[index, :].reshape(1, -1)
 
     competences = des_p_test.estimate_competence(query, neighbors, distances)
     selected = des_p_test.select(competences)
@@ -77,8 +81,7 @@ def test_select_none_competent():
 # In this case the test should not raise an error since this class does not require base classifiers that
 # can estimate probabilities
 def test_predict_proba():
-    X = X_dsel_ex1
-    y = y_dsel_ex1
+    X, y = setup_example1()[0:2]
     clf1 = Perceptron()
     clf1.fit(X, y)
     DESP([clf1, clf1]).fit(X, y)

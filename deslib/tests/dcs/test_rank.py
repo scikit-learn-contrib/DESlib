@@ -1,7 +1,7 @@
+import numpy as np
 from sklearn.linear_model import Perceptron
-
 from deslib.dcs.rank import Rank
-from deslib.tests.examples_test import *
+from deslib.tests.examples_test import setup_example1, create_pool_classifiers
 from sklearn.utils.estimator_checks import check_estimator
 
 
@@ -10,13 +10,13 @@ def test_check_estimator():
 
 
 def test_estimate_competence_batch():
+    _, _, neighbors, distances, dsel_processed, _ = setup_example1()
+
     expected = np.array([[1, 5, 0],
                          [1, 1, 2],
                          [0, 0, 1]])
     rank_test = Rank(create_pool_classifiers())
-    rank_test.DSEL_processed_ = dsel_processed_ex1
-    neighbors = neighbors_ex1
-    distances = distances_ex1
+    rank_test.DSEL_processed_ = dsel_processed
     query = np.array([[1, 1], [1, 1], [1, 1]])
     competences = rank_test.estimate_competence(query, neighbors, distances=distances)
     assert np.allclose(competences, expected)
@@ -26,8 +26,8 @@ def test_estimate_competence_batch():
 # In this case the test should not raise an error since this class does not require base classifiers that
 # can estimate probabilities
 def test_predict_proba():
-    X = X_dsel_ex1
-    y = y_dsel_ex1
+    X, y = setup_example1()[0:2]
+
     clf1 = Perceptron()
     clf1.fit(X, y)
     Rank([clf1, clf1]).fit(X, y)

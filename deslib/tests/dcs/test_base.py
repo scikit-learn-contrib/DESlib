@@ -1,7 +1,8 @@
 import pytest
-
+import numpy as np
+from unittest.mock import MagicMock
 from deslib.dcs.base import BaseDCS
-from deslib.tests.examples_test import *
+from deslib.tests.examples_test import create_pool_classifiers, setup_example1
 
 
 @pytest.mark.parametrize('selection_method,', ['a', 'test'])
@@ -62,10 +63,11 @@ def test_select_all(competences, expected):
 
 @pytest.mark.parametrize('competences, expected', [([1.0, 0.5, 0.5], 0), ([0.8, 0.9, 1.0], 2), ([0.0, 0.0, 0.15], 2)])
 def test_select_diff(competences, expected):
+    X, y = setup_example1()[0:2]
     rng = np.random.RandomState(123456)
     pool_classifiers = create_pool_classifiers()
     dcs_test = BaseDCS(pool_classifiers, selection_method='diff', diff_thresh=0.15, random_state=rng)
-    dcs_test.fit(X_dsel_ex1, y_dsel_ex1)
+    dcs_test.fit(X, y)
 
     selected_clf = dcs_test.select(np.array(competences))
     assert np.allclose(selected_clf, expected)
@@ -73,10 +75,11 @@ def test_select_diff(competences, expected):
 
 @pytest.mark.parametrize('competences, expected', [([0.5, 0.5, 0.5], 1), ([0.8, 0.9, 1.0], 2), ([0.0, 0.10, 0.0], 1)])
 def test_select_random(competences, expected):
+    X, y = setup_example1()[0:2]
     rng = np.random.RandomState(123456)
     pool_classifiers = create_pool_classifiers()
     dcs_test = BaseDCS(pool_classifiers, selection_method='random', random_state=rng)
-    dcs_test.fit(X_dsel_ex1, y_dsel_ex1)
+    dcs_test.fit(X, y)
 
     selected_clf = dcs_test.select(np.array(competences))
     assert np.allclose(selected_clf, expected)
@@ -101,24 +104,26 @@ def test_select_all_batch():
 
 
 def test_select_diff_batch():
+    X, y = setup_example1()[0:2]
     competences = np.array([[1.0, 0.5, 0.5], [0.8, 0.9, 1.0], [0.0, 0.0, 0.15]])
     expected = np.array([0, 2, 2])
     rng = np.random.RandomState(123456)
     pool_classifiers = create_pool_classifiers()
     dcs_test = BaseDCS(pool_classifiers, selection_method='diff', diff_thresh=0.15, random_state=rng)
-    dcs_test.fit(X_dsel_ex1, y_dsel_ex1)
+    dcs_test.fit(X, y)
 
     selected_clf = dcs_test.select(competences)
     assert np.array_equal(selected_clf, expected)
 
 
 def test_select_random_batch():
+    X, y = setup_example1()[0:2]
     competences = np.array([[0.5, 0.5, 0.5], [0.8, 0.9, 1.0], [0.0, 0.10, 0.0]])
     expected = np.array([1, 2, 1])
     rng = np.random.RandomState(123456)
     pool_classifiers = create_pool_classifiers()
     dcs_test = BaseDCS(pool_classifiers, selection_method='random', random_state=rng)
-    dcs_test.fit(X_dsel_ex1, y_dsel_ex1)
+    dcs_test.fit(X, y)
 
     selected_clf = dcs_test.select(competences)
     assert np.array_equal(selected_clf, expected)
