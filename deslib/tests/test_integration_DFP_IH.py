@@ -16,9 +16,6 @@ from deslib.des.knora_u import KNORAU
 from deslib.des import DESClustering
 
 
-# Static techniques
-
-
 def setup_classifiers():
     rng = np.random.RandomState(654321)
 

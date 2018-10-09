@@ -5,7 +5,7 @@ import unittest.mock
 from sklearn.exceptions import NotFittedError
 from sklearn.neighbors import KNeighborsClassifier
 from deslib.base import BaseDS
-from .conftest import  create_base_classifier
+from .conftest import create_base_classifier
 
 
 def test_all_classifiers_agree():

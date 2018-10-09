@@ -3,15 +3,6 @@ import numpy as np
 import pytest
 
 
-# ----- Test Example #1 ------
-# @pytest.fixture
-# def create_X_y():
-#     X = np.ones((10, 2))
-#     y = np.ones(10)
-#     y[:5] = 0
-#     return X, y
-
-
 @pytest.fixture
 def example_estimate_competence(create_X_y):
 
