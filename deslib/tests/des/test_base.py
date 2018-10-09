@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from deslib.des.base import BaseDES
-from deslib.tests.examples_test import create_pool_classifiers
+from deslib.tests.conftest import create_pool_classifiers
 
 
 @pytest.mark.parametrize('mode,', ['a', 'test'])

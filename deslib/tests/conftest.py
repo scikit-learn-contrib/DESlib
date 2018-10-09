@@ -1,19 +1,21 @@
 from unittest.mock import MagicMock
 import numpy as np
+import pytest
 
 
 # ----- Test Example #1 ------
-def setup_example1():
+# @pytest.fixture
+# def create_X_y():
+#     X = np.ones((10, 2))
+#     y = np.ones(10)
+#     y[:5] = 0
+#     return X, y
 
-    # ex1: The distribution of samples of a test example.
-    X = np.array([[-1, 1], [-0.75, 0.5], [-1.5, 1.5],
-                  [1, 1], [0.75, 0.5], [1.5, 1.5],
-                  [1, -1], [-0.5, 0.5], [0.5, 0.5],
-                  [0, -1], [0.75, -0.5], [0.0, 0.0],
-                  [-1, -1], [0, -0.5], [1, -1]])
 
-    # Labels associated with the samples. This information is used by techniques based on a posteriori information.
-    y = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0])
+@pytest.fixture
+def example_estimate_competence(create_X_y):
+
+    X, y = create_X_y
 
     # Pre-processed results on DSEL. This information is used by the majority
     # of DS techniques to estimate the classifier competence.
@@ -38,9 +40,23 @@ def setup_example1():
     return X, y, neighbors, distances, dsel_processed, dsel_scores
 
 
+@pytest.fixture
+def create_X_y():
+    # ex1: The distribution of samples of a test example.
+    X = np.array([[-1, 1], [-0.75, 0.5], [-1.5, 1.5],
+                  [1, 1], [0.75, 0.5], [1.5, 1.5],
+                  [1, -1], [-0.5, 0.5], [0.5, 0.5],
+                  [0, -1], [0.75, -0.5], [0.0, 0.0],
+                  [-1, -1], [0, -0.5], [1, -1]])
+    # Labels associated with the samples. This information is used by techniques based on a posteriori information.
+    y = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0])
+    return X, y
+
+
 # ----- Test Example all ones ------
-def setup_example_all_ones():
-    X, y, neighbors = setup_example1()[0:3]
+@pytest.fixture
+def example_all_ones(example_estimate_competence):
+    X, y, neighbors = example_estimate_competence[0:3]
     dsel_processed = np.ones((15, 3))
     dsel_scores = np.ones((15, 3, 2))
     distances = np.ones((3, 7))
@@ -49,8 +65,9 @@ def setup_example_all_ones():
 
 
 # ----- Test Example all zeros ------
-def setup_example_all_zeros():
-    X, y, neighbors = setup_example1()[0:3]
+@pytest.fixture
+def example_all_zeros(example_estimate_competence):
+    X, y, neighbors = example_estimate_competence[0:3]
     dsel_processed = np.zeros((15, 3))
     dsel_scores = np.zeros((15, 3, 2))
     distances = np.zeros((3, 7))
@@ -61,7 +78,8 @@ def setup_example_all_zeros():
 
 # ----- Test Example from Combining pattern classifiers  ------
 # This example is used to test the results of the A priori, A posteriori and MLA techniques
-def setup_example_kuncheva():
+@pytest.fixture
+def example_kuncheva():
     distances = np.linspace(1, 15, num=15)
 
     # 10 neighbors used in the example
@@ -109,9 +127,9 @@ def setup_example_kuncheva():
                    "k": k}
 
     return dict_return
+
+
 # ----- Routines to generate a pool of classifiers using MagicMock  ------
-
-
 def create_base_classifier(return_value, return_prob=None):
     classifier = MagicMock()
     classifier.predict.return_value = [return_value]
@@ -119,6 +137,7 @@ def create_base_classifier(return_value, return_prob=None):
     return classifier
 
 
+@pytest.fixture
 def create_pool_classifiers():
     clf_0 = create_base_classifier(return_value=0, return_prob=np.atleast_2d([0.5, 0.5]))
     clf_1 = create_base_classifier(return_value=1, return_prob=np.atleast_2d([1.0, 0.0]))
@@ -127,5 +146,21 @@ def create_pool_classifiers():
     return pool_classifiers
 
 
-def create_pool_all_agree(return_value, size):
-    return [create_base_classifier(return_value=return_value)] * size
+@pytest.fixture
+def create_pool_all_agree():
+    return [create_base_classifier(return_value=0)] * 100
+
+
+@pytest.fixture
+def example_static_selection(create_X_y):
+
+    X, y = create_X_y
+    pool1 = [create_base_classifier(return_value=0)] * 50
+    pool2 = [create_base_classifier(return_value=1)] * 50
+    for clf in pool1:
+        clf.score = MagicMock(return_value=0.5)
+    for clf in pool2:
+        clf.score = MagicMock(return_value=1.0)
+
+    pool = pool1 + pool2
+    return X, y, pool

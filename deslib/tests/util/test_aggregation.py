@@ -1,30 +1,30 @@
 import pytest
 
-from deslib.tests.examples_test import create_pool_all_agree, create_base_classifier, create_pool_classifiers
 from deslib.util.aggregation import *
+from ..conftest import create_base_classifier
 
 
 def test_majority_voting():
     query = np.array([[1, -1], [0, 0], [3, -1]])
-    ensemble_classifiers = create_pool_all_agree(return_value=0, size=10)
-    ensemble_classifiers += create_pool_all_agree(return_value=2, size=9)
+    ensemble_classifiers = [create_base_classifier(return_value=0)] * 10 + [create_base_classifier(return_value=1)] * 9
     predicted = majority_voting(ensemble_classifiers, query)
     assert predicted.all() == 0 and predicted.size == 3
 
 
-def test_majority_voting_single_sample():
+def test_majority_voting_multi_class():
     query = np.array([1, -1])
-    ensemble_classifiers = create_pool_all_agree(return_value=0, size=10)
-    ensemble_classifiers += create_pool_all_agree(return_value=2, size=9)
-    ensemble_classifiers += create_pool_all_agree(return_value=1, size=20)
+    ensemble_classifiers = ([create_base_classifier(return_value=0)] * 10) + \
+                            [create_base_classifier(return_value=2)] * 9 + \
+                            [create_base_classifier(return_value=1)] * 20
+
     predicted = majority_voting(ensemble_classifiers, query)
     assert predicted.all() == 1 and predicted.size == 1
 
 
 def test_weighted_majority_voting():
     query = np.array([[1, -1], [0, 0], [3, -1]])
-    ensemble_classifiers = create_pool_all_agree(return_value=0, size=10)
-    ensemble_classifiers += create_pool_all_agree(return_value=2, size=9)
+    ensemble_classifiers = ([create_base_classifier(return_value=0)] * 10) + \
+                            [create_base_classifier(return_value=2)] * 9
     weights = np.array([([0.5] * 10) + ([0.8] * 9), ([0.5] * 10) + ([0.8] * 9), ([0.5] * 10) + ([0.8] * 9)])
     predicted = weighted_majority_voting(ensemble_classifiers, weights, query)
     assert predicted.all() == 1 and predicted.size == 3
@@ -41,26 +41,26 @@ def test_weighted_majority_voting_single_sample():
     assert predicted == 2 and predicted.size == 1
 
 
-def test_predict_proba():
+def test_predict_proba(create_pool_classifiers):
     query = np.array([[1, -1]])
-    ensemble_classifiers = create_pool_classifiers()
+    ensemble_classifiers = create_pool_classifiers
     predicted_proba = predict_proba_ensemble(ensemble_classifiers, query)
     assert np.isclose(predicted_proba, [0.61, 0.39]).all()
 
 
 # This experiment should raise an error since we have 3 base classifiers and 4 weights.
-def test_wrong_weights_votes():
+def test_wrong_weights_votes(create_pool_classifiers):
     query = np.array([[1, -1]])
-    ensemble_classifiers = create_pool_classifiers()
+    ensemble_classifiers = create_pool_classifiers
     weights = np.array([1.0, 1.0, 1.0, 1.0])
     with pytest.raises(ValueError):
         weighted_majority_voting(ensemble_classifiers, weights, query)
 
 
 # This experiment should raise an error since we have 3 base classifiers and 4 weights.
-def test_wrong_weights_proba():
+def test_wrong_weights_proba(create_pool_classifiers):
     query = np.array([[1, -1]])
-    ensemble_classifiers = create_pool_classifiers()
+    ensemble_classifiers = create_pool_classifiers
     weights = np.array([1.0, 1.0, 1.0, 1.0])
     with pytest.raises(ValueError):
         predict_proba_ensemble_weighted(ensemble_classifiers, weights, query)
@@ -70,41 +70,41 @@ def test_wrong_weights_proba():
 # These routines calculates the matrix with the supports given for each class for each base classifier and them
 # Aggregates the supports
 
-def test_product_combiner():
+def test_product_combiner(create_pool_classifiers):
     query = np.array([[1, -1]])
-    ensemble_classifiers = create_pool_classifiers()
+    ensemble_classifiers = create_pool_classifiers
     expected = 0
     result = product_combiner(ensemble_classifiers, query)
     assert np.allclose(expected, result)
 
 
-def test_average_combiner():
+def test_average_combiner(create_pool_classifiers):
     query = np.array([[1, -1]])
-    ensemble_classifiers = create_pool_classifiers()
+    ensemble_classifiers = create_pool_classifiers
     expected = 0
     result = average_combiner(ensemble_classifiers, query)
     assert result == expected
 
 
-def test_minimum_combiner():
+def test_minimum_combiner(create_pool_classifiers):
     query = np.array([[1, -1]])
-    ensemble_classifiers = create_pool_classifiers()
+    ensemble_classifiers = create_pool_classifiers
     expected = 0
     result = minimum_combiner(ensemble_classifiers, query)
     assert np.allclose(expected, result)
 
 
-def test_maximum_combiner():
+def test_maximum_combiner(create_pool_classifiers):
     query = np.array([[1, -1]])
-    ensemble_classifiers = create_pool_classifiers()
+    ensemble_classifiers = create_pool_classifiers
     expected = 0
     result = maximum_combiner(ensemble_classifiers, query)
     assert np.allclose(expected, result)
 
 
-def test_median_combiner():
+def test_median_combiner(create_pool_classifiers):
     query = np.array([[1, -1]])
-    ensemble_classifiers = create_pool_classifiers()
+    ensemble_classifiers = create_pool_classifiers
     expected = 0
     result = median_combiner(ensemble_classifiers, query)
     assert np.allclose(expected, result)
