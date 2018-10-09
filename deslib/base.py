@@ -495,7 +495,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 # Get the index associated with the easy and hard samples. Samples with low hardness are
                 # passed down to the knn classifier while samples with high hardness are passed down to
                 # the DS methods. So, here we split the samples that are passed to down to each stage by
-                # calculating their indices_.
+                # calculating their indices.
                 easy_samples_mask = hardness <= self.IH_rate
                 ind_knn_classifier = np.where(easy_samples_mask)[0]
                 ind_ds_classifier = np.where(~easy_samples_mask)[0]

@@ -34,7 +34,14 @@ from sklearn.model_selection import GridSearchCV
 import pytest
 import warnings
 from deslib.util import faiss_knn_wrapper
-import sys
+
+
+knn_methods = [None]
+
+if faiss_knn_wrapper.is_available():
+    knn_methods.append(faiss_knn_wrapper.FaissKNNClassifier)
+else:
+    warnings.warn("Not testing FAISS for KNN")
 
 
 @pytest.mark.skip(reason='Need to wait for changes on scikit-learn (see issue #89)')
@@ -51,13 +58,6 @@ def test_grid_search():
     grid.fit(X_dsel, y_dsel)
 
     grid.best_estimator_.score(X_test, y_test)
-
-knn_methods = [None]
-
-if faiss_knn_wrapper.is_available():
-    knn_methods.append(faiss_knn_wrapper.FaissKNNClassifier)
-else:
-    warnings.warn("Not testing FAISS for KNN")
 
 
 def test_label_encoder_integration_list_classifiers():
@@ -369,6 +369,7 @@ def test_des_clustering_proba():
     probas = des_clustering.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/des_clustering_proba_integration.npy')
     assert np.allclose(probas, expected)
+
 
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_knop_proba(knn_methods):

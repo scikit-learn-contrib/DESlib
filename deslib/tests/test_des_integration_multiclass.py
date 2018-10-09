@@ -24,7 +24,7 @@ def setup_classifiers(encode_labels=None):
     return pool_classifiers, X_dsel, y_dsel, X_test, y_test
 
 
-def load_dataset(encode_labels, rng):
+def load_dataset(rng):
     # Generate a classification dataset
     weights = [0.1, 0.2, 0.7]
     X, y = make_classification(n_classes=3, n_samples=2000, n_informative=3, random_state=rng, weights=weights)
