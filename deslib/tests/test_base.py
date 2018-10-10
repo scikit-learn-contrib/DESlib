@@ -8,6 +8,7 @@ from deslib.base import BaseDS
 from deslib.tests.examples_test import *
 import unittest.mock
 
+
 def test_all_classifiers_agree():
     # 10 classifiers that return 1
     predictions = np.ones((1, 10))

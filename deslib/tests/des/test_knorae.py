@@ -62,6 +62,3 @@ def test_predict_proba():
     clf1 = Perceptron()
     clf1.fit(X, y)
     KNORAE([clf1, clf1]).fit(X, y)
-
-
-

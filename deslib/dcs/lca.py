@@ -14,7 +14,7 @@ class LCA(BaseDCS):
 
     Evaluates the competence level of each individual classifiers and
     select the most competent one to predict the label of each test sample.
-    The competence of each base classifier is calculated based on its local 
+    The competence of each base classifier is calculated based on its local
     accuracy with respect to some output class. Consider a classifier :math:`c_{i}` that assigns
     a test sample to class :math:`w_{l}`. The competence level of :math:`c_{i}` is estimated by the percentage of the
     local training samples assigned to class :math:`w_{l}` that it predicts the correct class label.

@@ -164,13 +164,13 @@ class BaseDCS(BaseDS):
             selected_classifiers = best_index
 
         elif self.selection_method == 'diff':
-            """Selects a base classifier if its competence level is significant better than the rest. 
-            If there is no such classifier, select randomly a base model.
+            # Selects a base classifier if its competence level is significant better than the rest.
+            # If there is no such classifier, select randomly a base model.
+            #
+            # the best classifier will always have diff < diff_thresh. In a case it is
+            # superior than all others, it will be the only member selected. Otherwise,
+            # a random classifier from this list is selected.
 
-            the best classifier will always have diff < diff_thresh. In a case it is
-            superior than all others, it will be the only member selected. Otherwise,
-            a random classifier from this list is selected.
-            """
             rng = check_random_state(self.random_state)
             best_competence = competences[np.arange(competences.shape[0]), best_index]
             # best_competence = np.max(competences)

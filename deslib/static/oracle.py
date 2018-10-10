@@ -104,5 +104,3 @@ class Oracle(BaseStaticEnsemble):
         from sklearn.metrics import accuracy_score
         accuracy = accuracy_score(y, self.predict(X, y))
         return accuracy
-
-

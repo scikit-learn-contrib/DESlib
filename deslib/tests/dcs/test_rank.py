@@ -31,6 +31,3 @@ def test_predict_proba():
     clf1 = Perceptron()
     clf1.fit(X, y)
     Rank([clf1, clf1]).fit(X, y)
-
-
-

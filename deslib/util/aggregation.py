@@ -10,7 +10,7 @@ from deslib.util.prob_functions import softmax
 
 """
 This file contains the implementation of different aggregation functions to combine the outputs of the base
-classifiers to give the final decision. 
+classifiers to give the final decision.
 
 References
 ----------

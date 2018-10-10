@@ -71,7 +71,7 @@ class KNOP(BaseDES):
     systems." Neural Computing and Applications 22.3-4 (2013): 673-688.
 
     Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr. "From dynamic classifier selection to dynamic ensemble
-    selection." Pattern Recognition 41.5 (2008): 1718-1731.   
+    selection." Pattern Recognition 41.5 (2008): 1718-1731.
 
     Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection of classifiers—a comprehensive review."
     Pattern Recognition 47.11 (2014): 3665-3680.

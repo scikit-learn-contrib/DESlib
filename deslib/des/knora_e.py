@@ -11,7 +11,7 @@ from deslib.des.base import BaseDES
 
 class KNORAE(BaseDES):
     """k-Nearest Oracles Eliminate (KNORA-E).
-    
+
     This method searches for a local Oracle, which is a base classifier that correctly classify all
     samples belonging to the region of competence of the test sample. All classifiers
     with a perfect performance in the region of competence are selected (local Oracles). In the case that
@@ -19,7 +19,7 @@ class KNORAE(BaseDES):
     (by removing the farthest neighbor) and the performance of the classifiers are re-evaluated. The outputs
     of the selected ensemble of classifiers is combined using the majority voting scheme.
     If no base classifier is selected, the whole pool is used for classification.
-    
+
     Parameters
     ----------
     pool_classifiers : list of classifiers (Default = None)
@@ -63,7 +63,7 @@ class KNORAE(BaseDES):
     References
     ----------
     Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr. "From dynamic classifier selection to dynamic ensemble
-    selection." Pattern Recognition 41.5 (2008): 1718-1731.   
+    selection." Pattern Recognition 41.5 (2008): 1718-1731.
 
     Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection of classifiers—a comprehensive review."
     Pattern Recognition 47.11 (2014): 3665-3680.

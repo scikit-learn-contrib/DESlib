@@ -11,7 +11,7 @@ import numpy as np
 """
 This file contains the implementation of key diversity measures found in the ensemble literature:
 
-- Double Fault 
+- Double Fault
 - Negative Double fault
 - Q-statistics
 - Ratio of errors

@@ -195,6 +195,7 @@ def test_classify_instance_all_batch():
     predicted_label = dcs_test.classify_with_ds(query, np.tile(predictions, (n_samples, 1)))
     assert np.array_equal(predicted_label, expected)
 
+
 def test_predict_proba_instance():
     query = np.array([-1, 1])
     n_classifiers = 3

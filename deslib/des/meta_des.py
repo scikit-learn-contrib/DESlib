@@ -280,7 +280,7 @@ class METADES(BaseDES):
         """
         # first compute the agreement of each sample for the sample selection mechanism
         agreement = self._sample_selection_agreement()
-        indices_selected = np.hstack( (np.where(self.Hc > agreement)[0], np.where(agreement > (1 - self.Hc))[0]))
+        indices_selected = np.hstack((np.where(self.Hc > agreement)[0], np.where(agreement > (1 - self.Hc))[0]))
         indices_selected = np.unique(indices_selected)
         # Get the region of competence using the feature space and the decision space. Use K + 1 to later remove itself
         # from the set.
@@ -456,4 +456,3 @@ class METADES(BaseDES):
             self.Kp_ = self.n_samples_ - 1
         else:
             self.Kp_ = self.Kp
-

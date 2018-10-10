@@ -69,7 +69,7 @@ def test_select_random_classifier():
 # Being all zeros, no base classifier is deemed competent, so the system selects all of them
 def test_select_threshold():
     competences = np.random.rand(1, 100)
-    expected =(competences > 0.5)
+    expected = (competences > 0.5)
 
     probabilistic_test = BaseProbabilistic(create_pool_all_agree(1, 100))
     probabilistic_test.selection_threshold = 0.5
@@ -167,14 +167,13 @@ def test_source_competence_rrc():
     assert np.allclose(C_src, expected, atol=0.01)
 
 
-""" Test the source_competence estimation for the Kullback-Leibler method. Here we consider the same values 
-applied in the test_prob_functions.py to assert if the source_competence function fill the competence source
-(C_src) with the correct results.
-
-The scores used are: [[0.33, 0.33, 0.33], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]]
-The matrix with correct predictions is: [False, True, False]
-The expected value should be: an np.array (3,1) with the values = [[0.0], [1.0], [-1.0]]
-"""
+# Test the source_competence estimation for the Kullback-Leibler method. Here we consider the same values
+# applied in the test_prob_functions.py to assert if the source_competence function fill the competence source
+# (C_src) with the correct results.
+#
+# The scores used are: [[0.33, 0.33, 0.33], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]]
+# The matrix with correct predictions is: [False, True, False]
+# The expected value should be: an np.array (3,1) with the values = [[0.0], [1.0], [-1.0]]
 
 
 def test_source_competence_kl():
@@ -192,14 +191,13 @@ def test_source_competence_kl():
     assert np.allclose(C_src, expected, atol=0.01)
 
 
-""" Test the source_competence estimation for the Minimum difference  method. Here we consider the same values 
-applied in the test_prob_functions.py to assert if the source_competence function fill the competence source
-(C_src) with the correct results.
-
-The scores used are: [[0.3, 0.6, 0.1], [1.0 / 3, 1.0 / 3, 1.0 / 3], [0.5, 0.2, 0.3], [0.5, 0.2, 0.3]]
-The correct labels are: [1, 0, 0, 1]
-The expected value should be: an np.array (4,1) with the values = [[0.7849], [0.3328], [0.6428], [0.1194]]
-"""
+# Test the source_competence estimation for the Minimum difference  method. Here we consider the same values
+# applied in the test_prob_functions.py to assert if the source_competence function fill the competence source
+# (C_src) with the correct results.
+#
+# The scores used are: [[0.3, 0.6, 0.1], [1.0 / 3, 1.0 / 3, 1.0 / 3], [0.5, 0.2, 0.3], [0.5, 0.2, 0.3]]
+# The correct labels are: [1, 0, 0, 1]
+# The expected value should be: an np.array (4,1) with the values = [[0.7849], [0.3328], [0.6428], [0.1194]]
 
 
 def test_source_competence_minimum_difference():
@@ -219,14 +217,13 @@ def test_source_competence_minimum_difference():
     assert np.allclose(C_src, expected, atol=0.01)
 
 
-""" Test the source_competence using the logarithmic method. Here we consider the same values 
-applied in the test_prob_functions.py to assert if the source_competence function fill the competence source
-(C_src) with the correct results.
-
-The scores used are: [[0.67, 0.33, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
-The correct labels are: [1, 1, 1], so the supports for the correct class are: [0.33, 0.0, 1.0]
-The expected value should be: an np.array (3,1) with the values = [[0.0], [-1.0], [1.0]]]
-"""
+# Test the source_competence using the logarithmic method. Here we consider the same values
+# applied in the test_prob_functions.py to assert if the source_competence function fill the competence source
+# (C_src) with the correct results.
+#
+# The scores used are: [[0.67, 0.33, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
+# The correct labels are: [1, 1, 1], so the supports for the correct class are: [0.33, 0.0, 1.0]
+# The expected value should be: an np.array (3,1) with the values = [[0.0], [-1.0], [1.0]]]
 
 
 def test_source_competence_logarithmic():
@@ -245,15 +242,14 @@ def test_source_competence_logarithmic():
     assert np.allclose(C_src, expected, atol=0.01)
 
 
-""" Test the source_competence using the exponential method. Here we consider the same values 
-applied in the test_prob_functions.py to assert if the source_competence function fill the competence source
-(C_src) with the correct results. 
-
-Only two classes_ are considered in this example.
-The scores used are: [[0.5, 0.5], [1.0, 0.0], [0.0, 1.0]].
-The correct labels are: [1, 1, 1], so the supports for the correct class are: [0.5, 0.0, 1.0].
-The expected value should be: an np.array (3,1) with the values = [[0.0], [-1.0], [1.0]]].
-"""
+# Test the source_competence using the exponential method. Here we consider the same values
+# applied in the test_prob_functions.py to assert if the source_competence function fill the competence source
+# (C_src) with the correct results.
+#
+# Only two classes_ are considered in this example.
+# The scores used are: [[0.5, 0.5], [1.0, 0.0], [0.0, 1.0]].
+# The correct labels are: [1, 1, 1], so the supports for the correct class are: [0.5, 0.0, 1.0].
+# The expected value should be: an np.array (3,1) with the values = [[0.0], [-1.0], [1.0]]].
 
 
 def test_source_competence_exponential():
@@ -270,4 +266,3 @@ def test_source_competence_exponential():
     C_src = exp_test.source_competence()
     expected = np.array([[0.0], [-1.0], [1.0]])
     assert np.allclose(C_src, expected, atol=0.01)
-
