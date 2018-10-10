@@ -34,7 +34,6 @@ from sklearn.model_selection import GridSearchCV
 import pytest
 import warnings
 from deslib.util import faiss_knn_wrapper
-import sys
 
 
 @pytest.mark.skip(reason='Need to wait for changes on scikit-learn (see issue #89)')
@@ -314,6 +313,7 @@ def test_kne_proba(knn_methods):
     expected = np.load('deslib/tests/expected_values/kne_proba_integration.npy')
     assert np.allclose(probas, expected)
 
+
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_desp_proba(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
@@ -369,6 +369,7 @@ def test_des_clustering_proba():
     probas = des_clustering.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/des_clustering_proba_integration.npy')
     assert np.allclose(probas, expected)
+
 
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_knop_proba(knn_methods):

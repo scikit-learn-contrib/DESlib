@@ -40,8 +40,8 @@ def test_estimate_competence(index, expected):
 def test_estimate_competence_batch():
     query = np.ones((3, 2))
     expected = np.array([[4.0, 3.0, 4.0],
-                          [5.0, 2.0, 5.0],
-                          [2.0, 5.0, 2.0]])
+                        [5.0, 2.0, 5.0],
+                        [2.0, 5.0, 2.0]])
 
     knop_test = KNOP(create_pool_classifiers())
     knop_test.fit(X_dsel_ex1, y_dsel_ex1)
@@ -51,7 +51,7 @@ def test_estimate_competence_batch():
     knop_test._get_similar_out_profiles = Mock(return_value=(None, neighbors_ex1))
     knop_test.distances = distances_ex1
 
-    probabilities = np.zeros((3, 6)) # not used in this test
+    probabilities = np.zeros((3, 6))  # not used in this test
 
     competences = knop_test.estimate_competence_from_proba(query, probabilities)
     assert np.allclose(competences, expected, atol=0.01)

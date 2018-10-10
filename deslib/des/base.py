@@ -304,7 +304,7 @@ class BaseDES(BaseDS):
 
             # Broadcast the selected classifiers mask (to cover the last axis (nClasses):
             selected_classifiers = np.expand_dims(selected_classifiers, axis=2)
-            selected_classifiers = np.broadcast_to(selected_classifiers , probabilities.shape)
+            selected_classifiers = np.broadcast_to(selected_classifiers, probabilities.shape)
             masked_proba = np.ma.MaskedArray(probabilities, ~selected_classifiers)
 
             predicted_proba = np.mean(masked_proba, axis=1)
@@ -333,4 +333,3 @@ class BaseDES(BaseDS):
         if self.mode not in ['selection', 'hybrid', 'weighting']:
             raise ValueError('Invalid value for parameter "mode". "mode" should be one of these options '
                              '{selection, hybrid, weighting}')
-

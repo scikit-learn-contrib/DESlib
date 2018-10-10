@@ -225,5 +225,3 @@ class BaseProbabilistic(BaseDES):
                 The competence source for each base classifier at each data point.
         """
         pass
-
-

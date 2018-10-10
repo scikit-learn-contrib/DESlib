@@ -234,7 +234,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         # validate the value of k
         self._validate_k()
         self._set_region_of_competence_algorithm()
-        self._fit_region_competence(X, y_ind, self.k_)
+        self._fit_region_competence(X, y_ind)
 
         return self
 
@@ -268,7 +268,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         else:
             return self.enc_.transform(y)
 
-    def _fit_region_competence(self, X, y, k):
+    def _fit_region_competence(self, X, y):
         """Fit the k-NN classifier inside the dynamic selection method.
 
         Parameters
@@ -279,8 +279,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         y : array of shape = [n_samples]
             class labels of each sample in X.
 
-        k : int (Default=self.k)
-            Number of neighbors used in the k-NN method.
         """
         self.roc_algorithm_.fit(X, y)
 
@@ -710,7 +708,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         if not isinstance(self.IH_rate, float):
             raise TypeError("parameter IH_rate should be a float between [0.0, 0.5]")
 
-        if 0 > self.IH_rate or self.IH_rate > 0.5:
+        if self.IH_rate < 0 or self.IH_rate > 0.5:
             raise ValueError("Parameter IH_rate should be between [0.0, 0.5]."
                              "IH_rate = {}" .format(self.IH_rate))
         self._validate_pool()

@@ -11,7 +11,7 @@ from deslib.des.base import BaseDES
 
 class KNORAU(BaseDES):
     """k-Nearest Oracles Union (KNORA-U).
-    
+
     This method selects all classifiers that correctly classified at least
     one sample belonging to the region of competence of the query sample. Each
     selected classifier has a number of votes equals to the number of samples in the
@@ -62,7 +62,7 @@ class KNORAU(BaseDES):
     References
     ----------
     Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr. "From dynamic classifier selection to dynamic ensemble
-    selection." Pattern Recognition 41.5 (2008): 1718-1731.   
+    selection." Pattern Recognition 41.5 (2008): 1718-1731.
 
     Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection of classifiers—a comprehensive review."
     Pattern Recognition 47.11 (2014): 3665-3680.

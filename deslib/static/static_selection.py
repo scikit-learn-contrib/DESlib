@@ -104,4 +104,3 @@ class StaticSelection(BaseStaticEnsemble):
             raise TypeError('pct_classifiers should be a float.')
         if self.pct_classifiers > 1 or self.pct_classifiers < 0:
             raise ValueError('The parameter pct_classifiers should be a number between 0 and 1.')
-

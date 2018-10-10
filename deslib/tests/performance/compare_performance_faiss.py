@@ -10,12 +10,14 @@ import urllib.request
 import gzip
 import shutil
 
+
 def sk_knn(Xtrain, Y, k, Xtest):
     start = time.clock()
-    s_knn = KNeighborsClassifier(k, n_jobs=4) #Half of current cores
+    s_knn = KNeighborsClassifier(k, n_jobs=4)  # Half of current cores
     s_knn.fit(Xtrain, Y)
     s_knn.predict(Xtest)
     print("sklearn_knn run_time: {}".format(time.clock() - start))
+
 
 def faiss_knn(Xtrain, Y, k, Xtest):
     start = time.clock()

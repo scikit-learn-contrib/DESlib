@@ -10,7 +10,7 @@ from sklearn.neighbors import NearestNeighbors
 
 """
 This file contains the implementation of different functions to measure instance hardness. Instance hardness can be
-defined as the likelihood that a given sample will be misclassified by different learning algorithms. 
+defined as the likelihood that a given sample will be misclassified by different learning algorithms.
 
 References
 ----------

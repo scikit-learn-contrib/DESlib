@@ -51,8 +51,3 @@ def test_select():
     expected = np.atleast_2d([False, True, True])
     selected = knorau_test.select(competences)
     assert np.array_equal(expected, selected)
-
-
-
-
-

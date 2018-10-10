@@ -11,9 +11,9 @@ from deslib.dcs.base import BaseDCS
 
 class MLA(BaseDCS):
     """Modified Local Accuracy (MLA).
-    
+
     Similar to the LCA technique. The only difference is that the output of each base classifier
-    is weighted by the distance between the test sample and each pattern in the region of competence 
+    is weighted by the distance between the test sample and each pattern in the region of competence
     for the estimation of the classifiers competences. Only the classifier that achieved the highest
     competence level is select to predict the label of the test sample x.
 
