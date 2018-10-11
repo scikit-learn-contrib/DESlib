@@ -38,9 +38,10 @@ def test_check_pct_accuracy_value(pct_accuracy):
         desmi.fit(X_dsel_ex1, y_dsel_ex1)
 
 
-# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
-# In this case the test should not raise an error since this class does not require base classifiers that
-# can estimate probabilities
+# Test if the class is raising an error when the base classifiers do not
+# implements the predict_proba method.
+# In this case the test should not raise an error since this class does not
+# require base classifiers that can estimate probabilities
 def test_require_proba():
     X = np.random.randn(5, 5)
     y = np.array([0, 1, 0, 0, 0])
@@ -95,8 +96,10 @@ def test_classify_with_ds_batch_samples():
     predictions = np.tile(np.array([0, 1, 0]), (n_samples, 1))
 
     desmi_test = DESMI(pool_classifiers)
-    desmi_test.estimate_competence = MagicMock(return_value=(np.ones((n_samples, 3))))
-    desmi_test.select = MagicMock(return_value=np.tile(np.array([[0, 2]]), (n_samples, 1)))
+    desmi_test.estimate_competence = MagicMock(
+        return_value=(np.ones((n_samples, 3))))
+    desmi_test.select = MagicMock(
+        return_value=np.tile(np.array([[0, 2]]), (n_samples, 1)))
     result = desmi_test.classify_with_ds(query, predictions)
     assert np.allclose(result, np.zeros(10))
 
@@ -148,5 +151,7 @@ def test_predict_proba_with_ds():
     probabilities = np.array(probabilities)
     probabilities = np.expand_dims(probabilities, axis=0)
 
-    predicted_proba = desmi_test.predict_proba_with_ds(query, predictions, probabilities, DFP_mask=DFP_mask)
+    predicted_proba = desmi_test.predict_proba_with_ds(query, predictions,
+                                                       probabilities,
+                                                       DFP_mask=DFP_mask)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
