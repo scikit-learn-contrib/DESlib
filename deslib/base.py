@@ -87,7 +87,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        query : array cf shape  = [n_samples, n_features]
+        query : array of shape  = [n_samples, n_features]
                 The query sample
 
         neighbors : array of shale = [n_samples, n_neighbors]
@@ -115,33 +115,30 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        query : array cf shape  = [n_samples, n_features]
-                The query sample
+        query : array of shape  = [n_samples, n_features]
+            The test examples.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Predictions of the base classifiers for all test examples
+            Predictions of the base classifiers for all test examples
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                        Probabilities estimates of each base classifier for all
-                        test examples (For methods that always require
-                        probabilities from the base classifiers)
+            Probabilities estimates of each base classifier for all test
+            examples (For methods that always require probabilities from the
+            base classifiers)
 
         neighbors : array of shale = [n_samples, n_neighbors]
-                    Indices of the k nearest neighbors according for each
-                    test sample
+            Indices of the k nearest neighbors according for each test sample
 
         distances : array of shale = [n_samples, n_neighbors]
-                    Distances of the k nearest neighbors according for each
-                    test sample
+            Distances of the k nearest neighbors according for each test sample
 
         DFP_mask : array of shape = [n_samples, n_classifiers]
-                   Mask containing 1 for the selected base classifier and 0
-                   otherwise.
+            Mask containing 1 for the selected base classifier and 0 otherwise.
 
         Returns
         -------
         predicted_label : array of shape = [n_samples]
-                          The predicted label for each query
+            The predicted label for each query
         """
         pass
 
@@ -153,34 +150,30 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        query : array cf shape  = [n_samples, n_features]
-                The query sample.
+        query : array of shape  = [n_samples, n_features]
+            The test examples.
 
         predictions : array of shape = [n_samples, n_classifiers]
-                      Predictions of the base classifiers for all test examples
+            Predictions of the base classifiers for all test examples
 
         probabilities : array of shape = [n_samples, n_classifiers, n_classes]
-                        The predictions of each base classifier for all samples
-                        (For methods that always require probabilities from the
-                        base classifiers).
+            The predictions of each base classifier for all samples (For
+            methods that always require probabilities from the base
+            classifiers).
 
         neighbors : array of shape = [n_samples, n_neighbors]
-                    Indices of the k nearest neighbors according for each
-                    test sample
+            Indices of the k nearest neighbors according for each test sample
 
         distances : array of shale = [n_samples, n_neighbors]
-                    Distances of the k nearest neighbors according for each
-                    test sample
+            Distances of the k nearest neighbors according for each test sample
 
         DFP_mask : array of shape = [n_samples, n_classifiers]
-                   Mask containing 1 for the selected base classifier and 0
-                   otherwise.
+           Mask containing 1 for the selected base classifier and 0 otherwise.
 
         Returns
         -------
         predicted_proba: array of shape = [n_samples, n_classes]
-                         Posterior probabilities estimates for each
-                         test example.
+            Posterior probabilities estimates for each test example.
         """
         pass
 
