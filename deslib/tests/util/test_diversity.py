@@ -4,8 +4,10 @@ import numpy as np
 import pytest
 
 from deslib.tests.examples_test import y_dsel_ex1
-from deslib.util.diversity import _process_predictions, double_fault, Q_statistic, ratio_errors, agreement_measure, \
-    disagreement_measure, correlation_coefficient
+from deslib.util.diversity import (_process_predictions, double_fault,
+                                   Q_statistic, ratio_errors,
+                                   agreement_measure, disagreement_measure,
+                                   correlation_coefficient)
 
 y_pred_ones = np.ones(15)
 y_pred_zeros = np.zeros(15)
@@ -17,23 +19,31 @@ y_real = np.array([0, 0, 1, 0, 0, 0, 0, 1, 1, 1])
 
 
 def test_process_predictions_ones_zeros():
-    N00, N10, N01, N11 = _process_predictions(y_dsel_ex1, y_pred_ones, y_pred_zeros)
-    assert N00 == 0.0 and N11 == 0.0 and N01 == 9.0/15.0 and N10 == 6.0/15.0
+    N00, N10, N01, N11 = _process_predictions(y_dsel_ex1, y_pred_ones,
+                                              y_pred_zeros)
+    assert (N00 == 0.0 and N11 == 0.0 and
+            N01 == 9.0 / 15.0 and N10 == 6.0 / 15.0)
 
 
 def test_process_predictions_zeros_ones():
-    N00, N10, N01, N11 = _process_predictions(y_dsel_ex1, y_pred_zeros, y_pred_ones)
-    assert N00 == 0.0 and N11 == 0.0 and N01 == 6.0/15.0 and N10 == 9.0/15.0
+    N00, N10, N01, N11 = _process_predictions(y_dsel_ex1, y_pred_zeros,
+                                              y_pred_ones)
+    assert (N00 == 0.0 and N11 == 0.0 and
+            N01 == 6.0 / 15.0 and N10 == 9.0 / 15.0)
 
 
 def test_process_predictions_zeros():
-    N00, N10, N01, N11 = _process_predictions(y_dsel_ex1, y_pred_zeros, y_pred_zeros)
-    assert N00 == 6.0/15.0 and N11 == 9.0/15.0 and N01 == 0.0 and N10 == 0.0
+    N00, N10, N01, N11 = _process_predictions(y_dsel_ex1, y_pred_zeros,
+                                              y_pred_zeros)
+    assert (N00 == 6.0 / 15.0 and N11 == 9.0 / 15.0 and
+            N01 == 0.0 and N10 == 0.0)
 
 
 def test_process_predictions_ones():
-    N00, N10, N01, N11 = _process_predictions(y_dsel_ex1, y_pred_ones, y_pred_ones)
-    assert N00 == 9.0/15.0 and N11 == 6.0/15.0 and N01 == 0.0 and N10 == 0.0
+    N00, N10, N01, N11 = _process_predictions(y_dsel_ex1, y_pred_ones,
+                                              y_pred_ones)
+    assert (N00 == 9.0 / 15.0 and N11 == 6.0 / 15.0 and
+            N01 == 0.0 and N10 == 0.0)
 
 
 def test_process_predictions_diff_sizes():
@@ -56,12 +66,12 @@ def test_double_fault_order():
 
 def test_double_fault_zeros():
     df = double_fault(y_dsel_ex1, y_pred_zeros, y_pred_zeros)
-    assert df == 6.0/15.0
+    assert df == 6.0 / 15.0
 
 
 def test_double_fault_ones():
     df = double_fault(y_dsel_ex1, y_pred_ones, y_pred_ones)
-    assert df == 9.0/15.0
+    assert df == 9.0 / 15.0
 
 
 def test_double_fault():
@@ -69,11 +79,9 @@ def test_double_fault():
     pred1 = np.array([1, 0, 1, 0, 0, 0, 0])
     pred2 = np.array([1, 0, 0, 0, 1, 0, 0])
 
-    actual = double_fault(labels,
-                          pred1,
-                          pred2)
+    actual = double_fault(labels, pred1, pred2)
 
-    assert actual == 3./7  # three common errors out of 7 predictions
+    assert actual == 3. / 7  # three common errors out of 7 predictions
 
 
 def test_q_statistic_ones_zeros():
@@ -118,15 +126,18 @@ def test_ratio_errors_diff_classifiers():
 
 
 def test_agreement():
-    agreement = agreement_measure(y_real, y_pred_classifier1, y_pred_classifier2)
+    agreement = agreement_measure(y_real, y_pred_classifier1,
+                                  y_pred_classifier2)
     assert np.isclose(agreement, 0.5)
 
 
 def test_disagreement():
-    disagreement = disagreement_measure(y_real, y_pred_classifier1, y_pred_classifier2)
+    disagreement = disagreement_measure(y_real, y_pred_classifier1,
+                                        y_pred_classifier2)
     assert np.isclose(disagreement, 0.5)
 
 
 def test_coefficient_correlation():
-    coefficient = correlation_coefficient(y_real, y_pred_classifier1, y_pred_classifier2)
+    coefficient = correlation_coefficient(y_real, y_pred_classifier1,
+                                          y_pred_classifier2)
     assert np.isclose(coefficient, 0.0)

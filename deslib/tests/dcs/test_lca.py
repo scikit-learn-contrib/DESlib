@@ -11,7 +11,7 @@ def test_check_estimator():
 
 
 def test_estimate_competence_batch():
-    expected = np.array([[0.75000000,  0.66666667,  0.75000000],
+    expected = np.array([[0.75000000, 0.66666667, 0.75000000],
                          [0.80000000, 1.00000000, 0.80000000],
                          [1.00000000, 0.60000000, 0.50000000]])
     lca_test = LCA(create_pool_classifiers())
@@ -28,13 +28,14 @@ def test_estimate_competence_batch():
         predictions.append(clf.predict(query)[0])
     competences = lca_test.estimate_competence(query, neighbors,
                                                distances=distances,
-                                               predictions=np.array(predictions))
+                                               predictions=np.array(
+                                                   predictions))
 
     assert np.isclose(competences, expected).all()
 
 
-# in this test case, the target of the neighbors is always different than the predicted class. So
-# the estimation of competence should always be zero
+# in this test case, the target of the neighbors is always different than
+# the predicted class. So the estimation of competence should always be zero
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_estimate_competence_diff_target(index):
     lca_test = LCA(create_pool_classifiers())
@@ -50,17 +51,18 @@ def test_estimate_competence_diff_target(index):
     predictions = []
     for clf in lca_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    competences = lca_test.estimate_competence(query,
-                                               neighbors,
+    competences = lca_test.estimate_competence(query, neighbors,
                                                distances=distances,
-                                               predictions=np.array(predictions))
+                                               predictions=np.array(
+                                                   predictions))
 
     assert np.isclose(competences, expected).all()
 
 
-# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
-# In this case the test should not raise an error since this class does not require base classifiers that
-# can estimate probabilities
+# Test if the class is raising an error when the base classifiers do not
+# implements the predict_proba method.
+# In this case the test should not raise an error since this class does not
+# require base classifiers that can estimate probabilities
 def test_predict_proba():
     X = X_dsel_ex1
     y = y_dsel_ex1

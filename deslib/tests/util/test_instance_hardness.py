@@ -5,7 +5,7 @@ from deslib.tests.examples_test import y_dsel_ex1, neighbors_ex1
 from deslib.util.instance_hardness import hardness_region_competence
 
 
-# -----------------------Test routines for the Instance Hardness calculation--------------------
+# ------Test routines for the Instance Hardness calculation------------------
 @pytest.mark.parametrize('index, expected', [(0, 0.42),
                                              (1, 0.28),
                                              (2, 0.28)])

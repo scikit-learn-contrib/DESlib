@@ -31,10 +31,11 @@ def test_estimate_competence_all_ones(index):
     predictions = []
     for clf in mla_test.pool_classifiers:
         predictions.append(clf.predict(query))
+    predictions = np.array(predictions)
     competences = mla_test.estimate_competence(query,
                                                neighbors,
                                                distances=distances,
-                                               predictions=np.array(predictions))
+                                               predictions=predictions)
 
     assert np.isclose(competences, expected).all()
 
@@ -58,16 +59,17 @@ def test_estimate_competence_batch():
     predictions = []
     for clf in mla_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
+    predictions = np.array(predictions)
     competences = mla_test.estimate_competence(query,
                                                neighbors,
                                                distances=distances,
-                                               predictions=np.array(predictions))
+                                               predictions=predictions)
 
     assert np.allclose(competences, expected, atol=0.01)
 
 
-# in this test case, the target of the neighbors is always different than the predicted. So
-# the estimation of competence should always be zero
+# in this test case, the target of the neighbors is always different than the
+# predicted. So the estimation of competence should always be zero
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_estimate_competence_diff_target(index):
     query = np.atleast_2d([1, 1])
@@ -86,10 +88,11 @@ def test_estimate_competence_diff_target(index):
     predictions = []
     for clf in mla_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
+    predictions = np.array(predictions)
     competences = mla_test.estimate_competence(query,
                                                neighbors,
                                                distances=distances,
-                                               predictions=np.array(predictions))
+                                               predictions=predictions)
 
     assert np.isclose(competences, expected).all()
 
@@ -112,17 +115,19 @@ def test_estimate_competence_kuncheva_ex():
     predictions = []
     for clf in mla_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
+    predictions = np.array(predictions)
     competences = mla_test.estimate_competence(query,
                                                neighbors,
                                                distances=distances,
-                                               predictions=np.array(predictions))
+                                               predictions=predictions)
 
     assert np.allclose(competences, [0.95, 0.95], atol=0.01)
 
 
-# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
-# In this case the test should not raise an error since this class does not require base classifiers that
-# can estimate probabilities
+# Test if the class is raising an error when the base classifiers do not
+# implements the predict_proba method.
+# In this case the test should not raise an error since this class does not
+# require base classifiers that can estimate probabilities
 def test_predict_proba():
     X = X_dsel_ex1
     y = y_dsel_ex1

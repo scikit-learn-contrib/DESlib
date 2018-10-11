@@ -36,7 +36,8 @@ import warnings
 from deslib.util import faiss_knn_wrapper
 
 
-@pytest.mark.skip(reason='Need to wait for changes on scikit-learn (see issue #89)')
+@pytest.mark.skip(
+    reason='Need to wait for changes on scikit-learn (see issue #89)')
 def test_grid_search():
     # This tests if the estimator can be cloned and used in a grid search
 
@@ -51,6 +52,7 @@ def test_grid_search():
 
     grid.best_estimator_.score(X_test, y_test)
 
+
 knn_methods = [None]
 
 if faiss_knn_wrapper.is_available():
@@ -61,7 +63,8 @@ else:
 
 def test_label_encoder_integration_list_classifiers():
     rng = np.random.RandomState(123456)
-    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(encode_labels=['no', 'yes'], rng=rng)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
+        encode_labels=['no', 'yes'], rng=rng)
 
     pool_classifiers = [LogisticRegression(), SVC(probability=True)]
     [clf.fit(X_train, y_train) for clf in pool_classifiers]
@@ -74,7 +77,8 @@ def test_label_encoder_integration_list_classifiers():
 
 
 def test_label_encoder_integration_sklearn_ensembles():
-    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers(encode_labels=['no', 'yes'])
+    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers(
+        encode_labels=['no', 'yes'])
 
     knorau = KNORAU(pool_classifiers)
     knorau.fit(X_dsel, y_dsel)
@@ -84,10 +88,12 @@ def test_label_encoder_integration_sklearn_ensembles():
 def setup_classifiers(encode_labels=None):
     rng = np.random.RandomState(123456)
 
-    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(encode_labels, rng)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
+        encode_labels, rng)
     model = CalibratedClassifierCV(Perceptron(max_iter=5))
     # Train a pool of 100 classifiers
-    pool_classifiers = BaggingClassifier(model, n_estimators=10, random_state=rng)
+    pool_classifiers = BaggingClassifier(model, n_estimators=10,
+                                         random_state=rng)
     pool_classifiers.fit(X_train, y_train)
     return pool_classifiers, X_dsel, y_dsel, X_test, y_test
 
@@ -100,13 +106,16 @@ def load_dataset(encode_labels, rng):
     if encode_labels is not None:
         y = np.take(encode_labels, y)
     # split the data into training and test data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=rng)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33,
+                                                        random_state=rng)
     # Scale the variables to have 0 mean and unit variance
     scalar = StandardScaler()
     X_train = scalar.fit_transform(X_train)
     X_test = scalar.transform(X_test)
     # Split the data into training and DSEL for DS techniques
-    X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train, test_size=0.5, random_state=rng)
+    X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train,
+                                                        test_size=0.5,
+                                                        random_state=rng)
     # Considering a pool composed of 10 base classifiers
     # Calibrating Perceptrons to estimate probabilities
     return X_dsel, X_test, X_train, y_dsel, y_test, y_train
@@ -181,7 +190,8 @@ def test_apriori(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    apriori = APriori(pool_classifiers, random_state=rng, knn_classifier=knn_methods)
+    apriori = APriori(pool_classifiers, random_state=rng,
+                      knn_classifier=knn_methods)
     apriori.fit(X_dsel, y_dsel)
     assert np.isclose(apriori.score(X_test, y_test), 0.97872340425531912)
 
@@ -200,7 +210,8 @@ def test_aposteriori(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    a_posteriori = APosteriori(pool_classifiers, random_state=rng, knn_classifier=knn_methods)
+    a_posteriori = APosteriori(pool_classifiers, random_state=rng,
+                               knn_classifier=knn_methods)
     a_posteriori.fit(X_dsel, y_dsel)
     assert np.isclose(a_posteriori.score(X_test, y_test), 0.96276595744680848)
 
@@ -236,7 +247,8 @@ def test_deskl(knn_methods):
 def test_minimum_diff(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    minimum_diff = MinimumDifference(pool_classifiers, knn_classifier=knn_methods)
+    minimum_diff = MinimumDifference(pool_classifiers,
+                                     knn_classifier=knn_methods)
     minimum_diff.fit(X_dsel, y_dsel)
     assert np.isclose(minimum_diff.score(X_test, y_test), 0.97340425531914898)
 
@@ -266,7 +278,8 @@ def test_des_clustering():
     cluster = KMeans(n_clusters=5, random_state=rng)
     des_clustering = DESClustering(pool_classifiers, clustering=cluster)
     des_clustering.fit(X_dsel, y_dsel)
-    assert np.isclose(des_clustering.score(X_test, y_test), 0.97872340425531912)
+    assert np.isclose(des_clustering.score(X_test, y_test),
+                      0.97872340425531912)
 
 
 @pytest.mark.parametrize('knn_methods', knn_methods)
@@ -299,10 +312,11 @@ def test_static_selection():
 
     static_selection = StaticSelection(pool_classifiers)
     static_selection.fit(X_dsel, y_dsel)
-    assert np.isclose(static_selection.score(X_test, y_test), 0.96808510638297873)
+    assert np.isclose(static_selection.score(X_test, y_test),
+                      0.96808510638297873)
 
 
-# ------------------------------------------ Testing predict_proba -----------------------------------
+# ------------------------ Testing predict_proba ------------------------------
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_kne_proba(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
@@ -310,7 +324,8 @@ def test_kne_proba(knn_methods):
     kne = KNORAE(pool_classifiers, knn_classifier=knn_methods)
     kne.fit(X_dsel, y_dsel)
     probas = kne.predict_proba(X_test)
-    expected = np.load('deslib/tests/expected_values/kne_proba_integration.npy')
+    expected = np.load(
+        'deslib/tests/expected_values/kne_proba_integration.npy')
     assert np.allclose(probas, expected)
 
 
@@ -320,7 +335,8 @@ def test_desp_proba(knn_methods):
     desp = DESP(pool_classifiers, knn_classifier=knn_methods)
     desp.fit(X_dsel, y_dsel)
     probas = desp.predict_proba(X_test)
-    expected = np.load('deslib/tests/expected_values/desp_proba_integration.npy')
+    expected = np.load(
+        'deslib/tests/expected_values/desp_proba_integration.npy')
     assert np.allclose(probas, expected)
 
 
@@ -331,7 +347,8 @@ def test_ola_proba(knn_methods):
     ola = OLA(pool_classifiers, knn_classifier=knn_methods)
     ola.fit(X_dsel, y_dsel)
     probas = ola.predict_proba(X_test)
-    expected = np.load('deslib/tests/expected_values/ola_proba_integration.npy')
+    expected = np.load(
+        'deslib/tests/expected_values/ola_proba_integration.npy')
     assert np.allclose(probas, expected)
 
 
@@ -344,7 +361,8 @@ def test_mcb_proba(knn_methods):
 
     mcb.fit(X_dsel, y_dsel)
     probas = mcb.predict_proba(X_test)
-    expected = np.load('deslib/tests/expected_values/mcb_proba_integration.npy')
+    expected = np.load(
+        'deslib/tests/expected_values/mcb_proba_integration.npy')
     assert np.allclose(probas, expected)
 
 
@@ -355,7 +373,8 @@ def test_desknn_proba(knn_methods):
     desknn = DESKNN(pool_classifiers, knn_classifier=knn_methods)
     desknn.fit(X_dsel, y_dsel)
     probas = desknn.predict_proba(X_test)
-    expected = np.load('deslib/tests/expected_values/desknn_proba_integration.npy')
+    expected = np.load(
+        'deslib/tests/expected_values/desknn_proba_integration.npy')
     assert np.allclose(probas, expected)
 
 
@@ -367,7 +386,8 @@ def test_des_clustering_proba():
     des_clustering = DESClustering(pool_classifiers, clustering=cluster)
     des_clustering.fit(X_dsel, y_dsel)
     probas = des_clustering.predict_proba(X_test)
-    expected = np.load('deslib/tests/expected_values/des_clustering_proba_integration.npy')
+    expected = np.load(
+        'deslib/tests/expected_values/des_clustering_proba_integration.npy')
     assert np.allclose(probas, expected)
 
 
@@ -378,5 +398,6 @@ def test_knop_proba(knn_methods):
     knop = KNOP(pool_classifiers, knn_classifier=knn_methods)
     knop.fit(X_dsel, y_dsel)
     probas = knop.predict_proba(X_test)
-    expected = np.load('deslib/tests/expected_values/knop_proba_integration.npy')
+    expected = np.load(
+        'deslib/tests/expected_values/knop_proba_integration.npy')
     assert np.allclose(probas, expected)

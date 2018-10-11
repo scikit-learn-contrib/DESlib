@@ -123,7 +123,8 @@ def test_string_selection_mode():
     assert(isinstance(ds.roc_algorithm_, KNeighborsClassifier))
 
 
-# In this test the system was trained for a sample containing 2 features and we are passing a sample with 3 as argument.
+# In this test the system was trained for a sample containing 2 features and
+# we are passing a sample with 3 as argument.
 # So it should raise a value error.
 def test_different_input_shape():
     query = np.array([[1.0, 1.0, 2.0]])
@@ -142,7 +143,8 @@ def test_empty_pool():
         ds.fit(X, y)
 
 
-# Should raise a NotFittedError since the function 'fit' was not called before predict
+# Should raise a NotFittedError since the function 'fit' was not called before
+# predict
 def test_not_fitted_ds():
     query = np.array([[1.0, 1.0]])
 
@@ -160,9 +162,10 @@ def test_input_shape_fit():
         ds_test.fit(X, y)
 
 
-# -----------------------Test routines for the DFP (fire DS)--------------------
+# -----------------------Test routines for the DFP (fire DS)-------------------
 
-# Since no classifier crosses the region of competence, all of them must be selected
+# Since no classifier crosses the region of competence, all of them must be
+# selected
 def test_frienemy_no_classifier_crosses():
     X = X_dsel_ex1
     y = y_dsel_ex1
@@ -172,8 +175,9 @@ def test_frienemy_no_classifier_crosses():
     assert mask.shape == (1, 3) and np.allclose(mask, 1)
 
 
-# In this example, all base classifier should be considered crossing the region of competence since they always
-# predicts the correct label for the samples in DSEL.
+# In this example, all base classifier should be considered crossing the region
+# of competence since they always predicts the correct label for the samples
+# in DSEL.
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_frienemy_all_classifiers_crosses(index):
     ds_test = BaseDS(create_pool_classifiers())
@@ -193,7 +197,8 @@ def test_frienemy_not_all_classifiers_crosses():
     assert np.array_equal(result, np.array([[1, 1, 0]]))
 
 
-# Check if the batch processing is working by passing multiple samples at the same time.
+# Check if the batch processing is working by passing multiple samples at the
+# same time.
 def test_frienemy_not_all_classifiers_crosses_batch():
     expected = np.array([[1, 1, 0], [0, 1, 0], [1, 1, 1]])
     ds_test = BaseDS(create_pool_classifiers(), safe_k=3)
@@ -206,7 +211,8 @@ def test_frienemy_not_all_classifiers_crosses_batch():
     assert np.array_equal(result, expected)
 
 
-# Test the case where the sample is located in a safe region (i.e., all neighbors comes from the same class)
+# Test the case where the sample is located in a safe region (i.e., all
+# neighbors comes from the same class)
 def test_frienemy_safe_region():
     ds_test = BaseDS(create_pool_classifiers(), safe_k=3)
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
@@ -216,7 +222,8 @@ def test_frienemy_safe_region():
     assert np.array_equal(result, np.array([[1, 1, 1]]))
 
 
-# Check if the batch processing is working by passing multiple samples at the same time. Testing sample in a safe region
+# Check if the batch processing is working by passing multiple samples at the
+# same time. Testing sample in a safe region
 def test_frienemy_safe_region_batch():
     n_samples = 10
     n_classifiers = 3
@@ -270,7 +277,8 @@ def test_IH_is_used():
     ds_test.DSEL_target_ = y_dsel_ex1
     ds_test.DSEL_data_ = X_dsel_ex1
 
-    ds_test._get_region_competence = MagicMock(return_value=(distances_ex1, neighbors_ex1))
+    ds_test._get_region_competence = MagicMock(return_value=(distances_ex1,
+                                                             neighbors_ex1))
     predicted = ds_test.predict(query)
 
     assert np.array_equal(predicted, expected)
@@ -298,7 +306,8 @@ def test_predict_proba_all_agree():
     assert np.allclose(proba, np.atleast_2d([0.61, 0.39]))
 
 
-# In this test, the three neighborhoods have an hardness level lower than the parameter IH_rate (0.5). Thus, the KNN
+# In this test, the three neighborhoods have an hardness level lower than the
+# parameter IH_rate (0.5). Thus, the KNN
 # Should be used to predict probabilities
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_predict_proba_IH_knn(index):
@@ -310,12 +319,14 @@ def test_predict_proba_IH_knn(index):
     ds_test.neighbors = neighbors_ex1[index, :]
     ds_test.distances = distances_ex1[index, :]
 
-    ds_test.roc_algorithm_.predict_proba = MagicMock(return_value=np.atleast_2d([0.45, 0.55]))
+    ds_test.roc_algorithm_.predict_proba = MagicMock(
+        return_value=np.atleast_2d([0.45, 0.55]))
     proba = ds_test.predict_proba(query)
     assert np.allclose(proba, np.atleast_2d([0.45, 0.55]))
 
 
-# In this test, the three neighborhoods have an hardness level higher than the parameter IH_rate. Thus, the prediction
+# In this test, the three neighborhoods have an hardness level higher than the
+# parameter IH_rate. Thus, the prediction
 # should be passed down to the predict_proba_with_ds function.
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_predict_proba_instance_called(index):
@@ -326,22 +337,27 @@ def test_predict_proba_instance_called(index):
     ds_test.neighbors = neighbors_ex1[index, :]
     ds_test.distances = distances_ex1[index, :]
 
-    ds_test.predict_proba_with_ds = MagicMock(return_value=np.atleast_2d([0.25, 0.75]))
+    ds_test.predict_proba_with_ds = MagicMock(
+        return_value=np.atleast_2d([0.25, 0.75]))
     proba = ds_test.predict_proba(query)
     assert np.allclose(proba, np.atleast_2d([0.25, 0.75]))
 
 
-# ----------------------------------------- Testing label encoder-------------------------------------
+# ------------------------------ Testing label encoder-------------------------
 def create_pool_classifiers_dog_cat_plane():
-    clf_0 = create_base_classifier(return_value='cat', return_prob=np.atleast_2d([0.5, 0.5]))
-    clf_1 = create_base_classifier(return_value='dog', return_prob=np.atleast_2d([1.0, 0.0]))
-    clf_2 = create_base_classifier(return_value='plane', return_prob=np.atleast_2d([0.33, 0.67]))
+    clf_0 = create_base_classifier(return_value='cat',
+                                   return_prob=np.atleast_2d([0.5, 0.5]))
+    clf_1 = create_base_classifier(return_value='dog',
+                                   return_prob=np.atleast_2d([1.0, 0.0]))
+    clf_2 = create_base_classifier(return_value='plane',
+                                   return_prob=np.atleast_2d([0.33, 0.67]))
     pool_classifiers = [clf_0, clf_1, clf_2]
     return pool_classifiers
 
 
 def create_pool_classifiers_dog():
-    clf_0 = create_base_classifier(return_value='dog', return_prob=np.atleast_2d([0.5, 0.5]))
+    clf_0 = create_base_classifier(return_value='dog',
+                                   return_prob=np.atleast_2d([0.5, 0.5]))
     pool_classifiers = [clf_0, clf_0, clf_0]
     return pool_classifiers
 
@@ -369,7 +385,7 @@ def test_label_encoder_only_dsel():
     ds_test.neighbors = neighbors_ex1[0, :]
     ds_test.distances = distances_ex1[0, :]
     ds_test.classify_with_ds = Mock()
-    ds_test.classify_with_ds.return_value = [1, 0]  # changed here due to batch processing
+    ds_test.classify_with_ds.return_value = [1, 0]
     predictions = ds_test.predict(query)
     assert np.array_equal(predictions, ['dog', 'cat'])
 

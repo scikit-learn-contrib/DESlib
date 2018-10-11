@@ -1,7 +1,9 @@
 import numpy as np
 
 from deslib.static.oracle import Oracle
-from deslib.tests.examples_test import X_dsel_ex1, y_dsel_ex1, create_pool_classifiers, create_pool_all_agree
+from deslib.tests.examples_test import (X_dsel_ex1, y_dsel_ex1,
+                                        create_pool_classifiers,
+                                        create_pool_all_agree)
 
 
 def test_predict():
@@ -15,8 +17,9 @@ def test_predict():
     assert oracle_test.score(X, y) == 1.0
 
 
-# All classifiers predicts the same label. This test only the samples with label == 0
-# are correctly classified by the Oracle. The misclassified samples are set to -1.
+# All classifiers predicts the same label. This test only the samples with
+# label == 0 are correctly classified by the Oracle. The misclassified samples
+# are set to -1.
 def test_predict_all_same():
     X = X_dsel_ex1
     y = np.copy(y_dsel_ex1)
