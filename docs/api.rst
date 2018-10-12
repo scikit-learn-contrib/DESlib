@@ -45,6 +45,7 @@ All base classifiers that attain a minimum competence level are selected to comp
     modules/des/knop
     modules/des/knora_e
     modules/des/knora_u
+    modules/des/desmi
     modules/des/probabilistic
 
 Static ensembles
@@ -76,3 +77,5 @@ Utility functions for ensemble methods such as diversity and aggregation methods
     modules/util/aggregation
     modules/util/prob_functions
     modules/util/instance_hardness
+    modules/util/faiss_knn_wrapper
+    modules/util/datasets
