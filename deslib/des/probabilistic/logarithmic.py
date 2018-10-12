@@ -89,7 +89,7 @@ class Logarithmic(BaseProbabilistic):
 
     def source_competence(self):
         """The source of competence C_src at the validation point
-        :math:`\mathbf{x}_{k}` is calculated by
+        :math:`\\mathbf{x}_{k}` is calculated by
         logarithm function in the support obtained by the base classifier.
 
         Returns

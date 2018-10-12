@@ -94,7 +94,7 @@ class RRC(BaseProbabilistic):
         classifier (RRC) method.
 
         The source of competence C_src at the validation point
-        :math:`\mathbf{x}_{k}` calculated using the probabilistic model
+        :math:`\\mathbf{x}_{k}` calculated using the probabilistic model
         based on the supports obtained by the base classifier and
         randomized reference classifier (RRC) model. The probabilistic
         modeling of the classifier competence is calculated using

@@ -102,11 +102,11 @@ class DESKL(BaseProbabilistic):
         """Calculates the source of competence using the KL divergence method.
 
         The source of competence C_src at the validation point
-        :math:`\mathbf{x}_{k}` is calculated by the KL divergence
+        :math:`\\mathbf{x}_{k}` is calculated by the KL divergence
         between the vector of class supports produced by the base classifier
         and the outputs of a random classifier (RC) RC = 1/L, L being the
         number of classes in the problem. The value of C_src is negative if
-        the base classifier misclassified the instance :math:`\mathbf{x}_{k}`.
+        the base classifier misclassified the instance :math:`\\mathbf{x}_{k}`.
 
         Returns
         ----------

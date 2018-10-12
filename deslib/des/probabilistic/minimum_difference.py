@@ -8,8 +8,8 @@ class MinimumDifference(BaseProbabilistic):
     """
     Computes the competence level of the classifiers based on the difference
     between the support obtained by each class. The competence level at a data
-    point :math:`\mathbf{x}_{k}` is equal to the minimum difference between the
-    support obtained to the correct class and the support obtained for
+    point :math:`\\mathbf{x}_{k}` is equal to the minimum difference between
+    the support obtained to the correct class and the support obtained for
     different classes.
 
     The influence of each sample xk is defined according to a Gaussian function
@@ -106,7 +106,7 @@ class MinimumDifference(BaseProbabilistic):
         Minimum Difference method.
 
         The source of competence C_src at the validation point
-        :math:`\mathbf{x}_{k}` calculated by the Minimum Difference between
+        :math:`\\mathbf{x}_{k}` calculated by the Minimum Difference between
         the supports obtained to the correct class and the support obtained by
         the other classes
 

@@ -6,13 +6,13 @@ from deslib.util import exponential_func
 
 class Exponential(BaseProbabilistic):
     """The source of competence C_src at the validation point
-    :math:`\mathbf{x}_{k}` is a product of two factors: The absolute value of
+    :math:`\\mathbf{x}_{k}` is a product of two factors: The absolute value of
     the competence and the sign. The value of the source competence is
     inverse proportional to the normalized entropy of its supports vector.
     The sign of competence is simply determined by correct/incorrect
-    classification of :math:`\mathbf{x}_{k}` [1].
+    classification of :math:`\\mathbf{x}_{k}` [1].
 
-    The influence of each sample :math:`\mathbf{x}_{k}` is defined according
+    The influence of each sample :math:`\\mathbf{x}_{k}` is defined according
     to a Gaussian function model[2]. Samples that are closer to the query have
     a higher influence in the competence estimation.
 
@@ -99,11 +99,11 @@ class Exponential(BaseProbabilistic):
 
     def source_competence(self):
         """The source of competence C_src at the validation point
-        :math:`\mathbf{x}_{k}` is a product of two factors: The absolute
+        :math:`\\mathbf{x}_{k}` is a product of two factors: The absolute
         value of  the competence and the sign. The value of the source
         competence is inverse proportional to the normalized entropy of its
         supports vector.The sign of competence is simply determined by
-        correct/incorrect classification of the instance :math:`\mathbf{x}_k`.
+        correct/incorrect classification of the instance :math:`\\mathbf{x}_k`.
 
         Returns
         ----------

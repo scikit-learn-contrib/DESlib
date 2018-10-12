@@ -223,13 +223,14 @@ class BaseProbabilistic(BaseDES):
     def potential_func(dist):
         """Gaussian potential function to decrease the
         influence of the source of competence as the distance between
-        :math:`\mathbf{x}_{k}` and the query :math:`\mathbf{x}_{q}` increases.
-        The function is computed using the following equation:
+        :math:`\\mathbf{x}_{k}` and the query :math:`\\mathbf{x}_{q}`
+        increases. The function is computed using the following equation:
 
-        .. math:: potential = exp( -dist (\mathbf{x}_{k}, \mathbf{x}_{q})^{2} )
+        .. math:: potential = exp( -dist (\\mathbf{x}_{k},
+         \\mathbf{x}_{q})^{2} )
 
         where dist represents the Euclidean distance between
-        :math:`\mathbf{x}_{k}` and :math:`\mathbf{x}_{q}`
+        :math:`\\mathbf{x}_{k}` and :math:`\\mathbf{x}_{q}`
 
         Parameters
         ----------
