@@ -1,5 +1,6 @@
 """
-The :mod:`deslib.des` provides a set of key dynamic ensemble selection algorithms (DES).
+The :mod:`deslib.des` provides a set of key dynamic ensemble selection
+algorithms (DES).
 """
 
 from .base import BaseDES
