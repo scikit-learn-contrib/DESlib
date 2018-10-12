@@ -12,9 +12,7 @@ def test_check_estimator():
 # Test the estimate competence method receiving n samples as input
 def test_estimate_competence_batch():
     query = np.ones((3, 2))
-    expected = np.array([[4.0, 3.0, 4.0],
-                         [5.0, 2.0, 5.0],
-                         [2.0, 5.0, 2.0]])
+    expected = np.array([[4.0, 3.0, 4.0], [5.0, 2.0, 5.0], [2.0, 5.0, 2.0]])
     knora_u_test = KNORAU(create_pool_classifiers())
     knora_u_test.fit(X_dsel_ex1, y_dsel_ex1)
     neighbors = neighbors_ex1
@@ -24,7 +22,6 @@ def test_estimate_competence_batch():
 
 
 def test_weights_zero():
-
     knorau_test = KNORAU(create_pool_classifiers())
     knorau_test.fit(X_dsel_ex1, y_dsel_ex1)
     competences = np.zeros((1, 3))
@@ -33,9 +30,10 @@ def test_weights_zero():
     assert np.all(result)
 
 
-# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
-# In this case the test should not raise an error since this class does not require base classifiers that
-# can estimate probabilities
+# Test if the class is raising an error when the base classifiers do not
+# implements the predict_proba method.
+# In this case the test should not raise an error since this class does not
+# require base classifiers that can estimate probabilities
 def test_predict_proba():
     X = X_dsel_ex1
     y = y_dsel_ex1

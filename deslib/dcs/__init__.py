@@ -1,5 +1,6 @@
 """
-The :mod:`deslib.dcs` provides a set of key dynamic classifier selection algorithms (DCS).
+The :mod:`deslib.dcs` provides a set of key dynamic classifier selection
+algorithms (DCS).
 """
 
 from .a_posteriori import APosteriori

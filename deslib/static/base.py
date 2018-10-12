@@ -16,26 +16,30 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
 
     All static ensemble techniques should inherit from this class.
 
-    Warning: This class should not be instantiated directly, use derived classes instead.
+    Warning: This class should not be instantiated directly, use derived
+    classes instead.
 
     Parameters
     ----------
-
-    pool_classifiers : list of classifiers
-                       The generated_pool of classifiers trained for the corresponding classification problem.
-                       The classifiers should support methods "predict".
+    pool_classifiers : list of classifiers (Default = None)
+        The generated_pool of classifiers trained for the corresponding
+        classification problem. Each base classifiers should support the method
+        "predict". If None, then the pool of classifiers is a bagging
+        classifier.
 
     random_state : int, RandomState instance or None, optional (default=None)
-                   If int, random_state is the seed used by the random number generator;
-                   If RandomState instance, random_state is the random number generator;
-                   If None, the random number generator is the RandomState instance used
-                   by `np.random`.
+        If int, random_state is the seed used by the random number generator;
+        If RandomState instance, random_state is the random number generator;
+        If None, the random number generator is the RandomState instance used
+        by `np.random`.
 
     References
     ----------
-    Kuncheva, Ludmila I. Combining pattern classifiers: methods and algorithms. John Wiley & Sons, 2004.
+    Kuncheva, Ludmila I. Combining pattern classifiers: methods and algorithms.
+    John Wiley & Sons, 2004.
 
-    R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
+    R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier
+    selection: Recent advances and perspectives,”
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
@@ -64,18 +68,20 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
         """
         self.random_state_ = check_random_state(self.random_state)
 
-        # Check if the pool of classifiers is None. If yes, use a BaggingClassifier for the pool.
+        # Check if the pool of classifiers is None. If yes, use a
+        # BaggingClassifier for the pool.
         if self.pool_classifiers is None:
-            self.pool_classifiers_ = BaggingClassifier(random_state=self.random_state_)
+            self.pool_classifiers_ = BaggingClassifier(
+                random_state=self.random_state_)
             self.pool_classifiers_.fit(X, y)
-            # raise Warning("Pool of classifiers not yet fitted! Using the training data to fit the method.")
 
         else:
             self.pool_classifiers_ = self.pool_classifiers
 
         self.n_classifiers_ = len(self.pool_classifiers_)
 
-        # Check if base classifiers are not using LabelEncoder (the case for scikit-learn's ensembles):
+        # Check if base classifiers are not using LabelEncoder (the case for
+        # scikit-learn's ensembles):
         if isinstance(self.pool_classifiers_, BaseEnsemble):
             self.base_already_encoded_ = True
         else:
@@ -89,7 +95,8 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
         return self
 
     def _check_is_fitted(self):
-        """Verify if the estimator algorithm was fitted. Raises an error if it is not fitted.
+        """Verify if the estimator algorithm was fitted. Raises an error if it
+        is not fitted.
         """
         check_is_fitted(self, "estimator_")
 

@@ -5,7 +5,9 @@ import pytest
 from sklearn.exceptions import NotFittedError
 
 from deslib.static.static_selection import StaticSelection
-from deslib.tests.examples_test import create_pool_classifiers, create_pool_all_agree, X_dsel_ex1, y_dsel_ex1
+from deslib.tests.examples_test import (create_pool_classifiers,
+                                        create_pool_all_agree, X_dsel_ex1,
+                                        y_dsel_ex1)
 from sklearn.utils.estimator_checks import check_estimator
 
 
@@ -18,26 +20,32 @@ def create_pool_classifiers_score(prediction, size, score):
     for clf in pool:
         clf.score = MagicMock(return_value=score)
     return pool
-# Testing if the fit function selects the correct classifiers. The 50 last classifiers should be selected.
 
 
+# Testing if the fit function selects the correct classifiers. The 50 last
+# classifiers should be selected.
 def test_fit():
     X = X_dsel_ex1
     y = y_dsel_ex1
-    pool_classifiers = create_pool_classifiers_score(1, 50, 0.5) + create_pool_classifiers_score(1, 50, 1.0)
+    pool_classifiers = create_pool_classifiers_score(1, 50, 0.5) + \
+        create_pool_classifiers_score(1, 50, 1.0)
     static_selection_test = StaticSelection(pool_classifiers, 0.5)
     static_selection_test.fit(X, y)
 
     assert static_selection_test.n_classifiers_ensemble_ == 50
-    assert static_selection_test.n_classifiers_ensemble_ == len(static_selection_test.clf_indices_)
-    assert np.array_equal(np.sort(static_selection_test.clf_indices_), list(range(50, 100)))
+    assert static_selection_test.n_classifiers_ensemble_ == len(
+        static_selection_test.clf_indices_)
+    assert np.array_equal(np.sort(static_selection_test.clf_indices_),
+                          list(range(50, 100)))
 
 
-# The classifier with highest accuracy always predicts 0. So the expected prediction should always be equal zero.
+# The classifier with highest accuracy always predicts 0. So the expected
+# prediction should always be equal zero.
 def test_predict():
     X = X_dsel_ex1
     y = y_dsel_ex1
-    pool_classifiers = create_pool_classifiers_score(1, 25, 0.5) + create_pool_classifiers_score(0, 25, 1.0)
+    pool_classifiers = create_pool_classifiers_score(1, 25, 0.5) + \
+        create_pool_classifiers_score(0, 25, 1.0)
     static_selection_test = StaticSelection(pool_classifiers, 0.25)
     static_selection_test.fit(X, y)
 
@@ -49,7 +57,8 @@ def test_predict():
 def test_predict_diff():
     X = X_dsel_ex1
     y = y_dsel_ex1
-    pool_classifiers = create_pool_classifiers_score(1, 25, 0.5) + create_pool_classifiers_score(0, 25, 0.5)
+    pool_classifiers = create_pool_classifiers_score(1, 25, 0.5) + \
+        create_pool_classifiers_score(0, 25, 0.5)
     pool_classifiers += create_pool_classifiers_score(1, 25, 0.75)
     static_selection_test = StaticSelection(pool_classifiers, 0.33)
     static_selection_test.fit(X, y)
@@ -66,7 +75,8 @@ def test_not_fitted():
 
 def test_invalid_pct():
     with pytest.raises(TypeError):
-        test = StaticSelection(create_pool_classifiers(), pct_classifiers='something')
+        test = StaticSelection(create_pool_classifiers(),
+                               pct_classifiers='something')
         test.fit(np.random.rand(10, 2), np.ones(10))
 
 

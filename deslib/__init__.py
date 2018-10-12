@@ -16,7 +16,8 @@ static
     The implementation of baseline ensemble methods.
 
 util
-    A collection of aggregation functions and diversity measures for ensemble of classifiers.
+    A collection of aggregation functions and diversity measures for ensemble
+    of classifiers.
 """
 
 # list of all modules available in the library

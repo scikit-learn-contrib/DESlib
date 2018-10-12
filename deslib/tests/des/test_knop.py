@@ -12,18 +12,19 @@ def test_check_estimator():
     check_estimator(KNOP)
 
 
-@pytest.mark.parametrize('index, expected', [(0, [4.0, 3.0, 4.0]),
-                                             (1, [5.0, 2.0, 5.0]),
-                                             (2, [2.0, 5.0, 2.0])])
+@pytest.mark.parametrize('index, expected',
+                         [(0, [4.0, 3.0, 4.0]), (1, [5.0, 2.0, 5.0]),
+                          (2, [2.0, 5.0, 2.0])])
 def test_estimate_competence(index, expected):
     query = np.atleast_2d([1, 1])
 
     knop_test = KNOP(create_pool_classifiers())
     knop_test.fit(X_dsel_ex1, y_dsel_ex1)
 
-    knop_test.DFP_mask = np.ones(knop_test .n_classifiers_)
+    knop_test.DFP_mask = np.ones(knop_test.n_classifiers_)
     knop_test.neighbors = neighbors_ex1[index, :]
-    knop_test._get_similar_out_profiles = Mock(return_value=(None, np.atleast_2d(neighbors_ex1[index, :])))
+    knop_test._get_similar_out_profiles = Mock(
+        return_value=(None, np.atleast_2d(neighbors_ex1[index, :])))
     knop_test.distances = distances_ex1[index, :]
 
     probabilities = []
@@ -32,33 +33,33 @@ def test_estimate_competence(index, expected):
 
     probabilities = np.array(probabilities).transpose((1, 0, 2))
 
-    competences = knop_test.estimate_competence_from_proba(query, probabilities)
+    competences = knop_test.estimate_competence_from_proba(query,
+                                                           probabilities)
     assert np.allclose(competences, expected, atol=0.01)
 
 
 # Test the estimate competence method receiving n samples as input
 def test_estimate_competence_batch():
     query = np.ones((3, 2))
-    expected = np.array([[4.0, 3.0, 4.0],
-                        [5.0, 2.0, 5.0],
-                        [2.0, 5.0, 2.0]])
+    expected = np.array([[4.0, 3.0, 4.0], [5.0, 2.0, 5.0], [2.0, 5.0, 2.0]])
 
     knop_test = KNOP(create_pool_classifiers())
     knop_test.fit(X_dsel_ex1, y_dsel_ex1)
 
-    knop_test.DFP_mask = np.ones(knop_test .n_classifiers_)
+    knop_test.DFP_mask = np.ones(knop_test.n_classifiers_)
     knop_test.neighbors = neighbors_ex1
-    knop_test._get_similar_out_profiles = Mock(return_value=(None, neighbors_ex1))
+    knop_test._get_similar_out_profiles = Mock(
+        return_value=(None, neighbors_ex1))
     knop_test.distances = distances_ex1
 
     probabilities = np.zeros((3, 6))  # not used in this test
 
-    competences = knop_test.estimate_competence_from_proba(query, probabilities)
+    competences = knop_test.estimate_competence_from_proba(query,
+                                                           probabilities)
     assert np.allclose(competences, expected, atol=0.01)
 
 
 def test_weights_zero():
-
     knop_test = KNOP(create_pool_classifiers())
     knop_test.fit(X_dsel_ex1, y_dsel_ex1)
     competences = np.zeros((1, 3))
@@ -75,14 +76,17 @@ def test_fit():
 
     assert np.array_equal(expected_scores, knop_test.dsel_scores_)
 
-    # Assert the roc_algorithm_ is fitted to the scores (decision space) rather than the features (feature space)
+    # Assert the roc_algorithm_ is fitted to the scores (decision space) rather
+    # than the features (feature space)
     expected_roc_data = knop_test.dsel_scores_[:, :, 0]
     assert np.array_equal(knop_test.op_knn_._fit_X, expected_roc_data)
 
 
-# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
-# Should raise an exception when the base classifier cannot estimate posterior probabilities (predict_proba)
-# Using Perceptron classifier as it does not implements the predict_proba method.
+# Test if the class is raising an error when the base classifiers do not
+# implements the predict_proba method.
+# Should raise an exception when the base classifier cannot estimate posterior
+# probabilities (predict_proba) Using Perceptron classifier as it does not
+# implements the predict_proba method.
 def test_not_predict_proba():
     X = X_dsel_ex1
     y = y_dsel_ex1

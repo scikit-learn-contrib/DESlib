@@ -17,7 +17,8 @@ from deslib.des.meta_des import METADES
 def setup_classifiers(encode_labels=None):
     rng = np.random.RandomState(123456)
 
-    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(encode_labels, rng)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
+        encode_labels, rng)
     # Train a pool of 100 classifiers
     pool_classifiers = AdaBoostClassifier(random_state=rng)
     pool_classifiers.fit(X_train, y_train)
@@ -27,16 +28,20 @@ def setup_classifiers(encode_labels=None):
 def load_dataset(encode_labels, rng):
     # Generate a classification dataset
     weights = [0.1, 0.2, 0.7]
-    X, y = make_classification(n_classes=3, n_samples=2000, n_informative=3, random_state=rng, weights=weights)
+    X, y = make_classification(n_classes=3, n_samples=2000, n_informative=3,
+                               random_state=rng, weights=weights)
 
     # split the data into training and test data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=rng)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33,
+                                                        random_state=rng)
     # Scale the variables to have 0 mean and unit variance
     scalar = StandardScaler()
     X_train = scalar.fit_transform(X_train)
     X_test = scalar.transform(X_test)
     # Split the data into training and DSEL for DS techniques
-    X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train, test_size=0.5, random_state=rng)
+    X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train,
+                                                        test_size=0.5,
+                                                        random_state=rng)
     # Considering a pool composed of 10 base classifiers
     # Calibrating Perceptrons to estimate probabilities
     return X_dsel, X_test, X_train, y_dsel, y_test, y_train
