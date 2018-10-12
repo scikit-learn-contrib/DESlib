@@ -286,7 +286,7 @@ class METADES(BaseDES):
 
         f2_all_classifiers =\
             self.dsel_scores_[idx_neighbors, :,
-            self.DSEL_target_[idx_neighbors]]
+                              self.DSEL_target_[idx_neighbors]]
 
         f2_all_classifiers = f2_all_classifiers.swapaxes(1, 2)
 
