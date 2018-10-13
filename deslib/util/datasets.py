@@ -1,11 +1,9 @@
 # coding=utf-8
 
 # Author: Rafael Menelau Oliveira e Cruz <rafaelmenelau@gmail.com>
-# coding=utf-8
-
-# Author: Rafael Menelau Oliveira e Cruz <rafaelmenelau@gmail.com>
 #
 # License: BSD 3 clause
+
 import numpy as np
 
 """
@@ -19,6 +17,7 @@ Datasets:
 - Circle and Square
 - Banana
 - Banana 2
+- XOR
 
 """
 
@@ -157,7 +156,7 @@ def make_banana(size_classes, na=0.1):
     na : float (Default = 0.2),
         Noise amplitude. It must be < 1.0
 
-    returns
+    Returns
     -------
     X : array of shape = [size_classes, 2]
         The generated data points.
@@ -198,7 +197,7 @@ def make_banana2(size_classes, sigma=1):
     sigma : float (Default = 1),
         variance of the normal distribution
 
-    returns
+    Returns
     -------
     X : array of shape = [size_classes, 2]
         The generated data points.
@@ -233,3 +232,27 @@ def make_banana2(size_classes, sigma=1):
     y = np.hstack((np.zeros(size_classes[0]), np.ones(size_classes[1])))
 
     return X, y
+
+
+def make_xor(n_samples):
+    """Generate the Banana dataset similar to the Matlab PRTools toolbox.
+
+    Parameters
+    ----------
+    n_samples : int
+                Number of generated data points.
+
+    Returns
+    -------
+    X : array of shape = [size_classes, 2]
+        The generated data points.
+
+    y : array of shape = [size_classes]
+        Class labels associated with each class.
+
+    """
+    X = np.random.uniform(low=0, high=1, size=(n_samples, 2))
+    y = np.logical_xor(X[:, 0] > 0.5, X[:, 1] > 0.5)
+
+    return X, y
+
