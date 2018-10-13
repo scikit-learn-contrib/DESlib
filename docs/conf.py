@@ -65,7 +65,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'deslib'
-copyright = u'2017, Rafael M. O. Cruz'
+copyright = u'2018, Rafael M. O. Cruz'
 author = u'Rafael M. O. Cruz'
 
 import deslib
@@ -239,7 +239,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   (master_doc, 'deslib.tex', u'deslib Documentation',
-   u'Rafael Cruz', 'manual'),
+   u'Rafael M. O. Cruz', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -264,10 +264,10 @@ latex_documents = [
 
 # sphinx-gallery configuration
 sphinx_gallery_conf = {
-    'doc_module': 'imblearn',
+    'doc_module': 'deslib',
     'backreferences_dir': os.path.join('generated'),
     'reference_url': {
-        'imblearn': None}
+        'deslib': None}
 }
 
 # -- Options for manual page output ---------------------------------------
