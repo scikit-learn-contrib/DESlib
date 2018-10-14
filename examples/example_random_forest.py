@@ -1,15 +1,22 @@
+# coding=utf-8
+
+# Author: Rafael Menelau Oliveira e Cruz <rafaelmenelau@gmail.com>
+#
+# License: BSD 3 clause
 """
 ====================================================================
 Example Random Forest
 ====================================================================
 
-In this example we use a pool of classifiers generated using the Random Forest method rather than Bagging. We also
-show how to change the size of the region of competence, used to estimate the local competence of the base classifiers.
+In this example we use a pool of classifiers generated using the Random Forest
+method rather than Bagging. We also show how to change the size of the region
+of competence, used to estimate the local competence of the base classifiers.
 
-This demonstrates that the library accepts any kind of base classifiers as long as they implement the predict and
-predict proba functions. Moreover, any ensemble generation method such as Boosting or Rotation Trees can be used
-to generate a pool containing diverse base classifiers. We also included the performance of the RandomForest classifier
-as a baseline comparison.
+This demonstrates that the library accepts any kind of base classifiers as
+long as they implement the predict and predict proba functions. Moreover,
+any ensemble generation method such as Boosting or Rotation Trees can be used
+to generate a pool containing diverse base classifiers. We also included the
+performance of the RandomForest classifier as a baseline comparison.
 """
 
 # Example of a dcs techniques
@@ -38,12 +45,14 @@ if __name__ == "__main__":
 
     X_train, X_dsel, y_train, y_dsel = train_test_split(X, y, test_size=0.50)
 
-    # Training a random forest to be used as the pool of classifiers. We set the maximum depth of the tree so that it
+    # Training a random forest to be used as the pool of classifiers.
+    # We set the maximum depth of the tree so that it
     # can estimate probabilities
     pool_classifiers = RandomForestClassifier(n_estimators=10, max_depth=5)
     pool_classifiers.fit(X_train, y_train)
 
-    # Initialize a DS technique. Here we specify the size of the region of competence (5 neighbors)
+    # Initialize a DS technique. Here we specify the size of
+    # the region of competence (5 neighbors)
     knorau = KNORAU(pool_classifiers)
     kne = KNORAE(pool_classifiers, k=5)
     desp = DESP(pool_classifiers, k=5)
@@ -62,8 +71,8 @@ if __name__ == "__main__":
     # Calculate classification accuracy of each technique
     print('Classification accuracy RF: ', RF.score(X_test, y_test))
     print('Evaluating DS techniques:')
-    print('Classification accuracy KNORAU: ', knorau.score(X_test, y_test))
-    print('Classification accuracy KNORA-Eliminate: ', kne.score(X_test, y_test))
+    print('Classification accuracy KNORA-U: ', knorau.score(X_test, y_test))
+    print('Classification accuracy KNORA-E: ', kne.score(X_test, y_test))
     print('Classification accuracy DESP: ', desp.score(X_test, y_test))
     print('Classification accuracy OLA: ', ola.score(X_test, y_test))
     print('Classification accuracy MCB: ', mcb.score(X_test, y_test))

@@ -1,37 +1,40 @@
+# coding=utf-8
+
+# Author: Rafael Menelau Oliveira e Cruz <rafaelmenelau@gmail.com>
+#
+# License: BSD 3 clause
 """
 ====================================================================
 Example Heterogeneous
 ====================================================================
 
-In this example we show that the framework can also be used using different classifier models in the pool
-of classifiers. Such pool of classifiers are called Heterogeneous.
+In this example we show that the framework can also be used using different
+classifier models in the pool of classifiers. Such pool of classifiers are
+called Heterogeneous.
 
-Here we consider a pool of classifiers composed of a Gaussian Naive Bayes, Perceptron, k-NN, Decision tree
-Linear SVM and Gaussian SVM
+Here we consider a pool of classifiers composed of a Gaussian Naive Bayes,
+Perceptron, k-NN, Decision tree Linear SVM and Gaussian SVM
 """
 
-# Importing dynamic selection techniques:
-from deslib.dcs.a_posteriori import APosteriori
-from deslib.dcs.mcb import MCB
-from deslib.dcs.lca import LCA
-from deslib.des.probabilistic import RRC
-from deslib.des.knop import KNOP
-from deslib.des.knora_e import KNORAE
-
+from sklearn.calibration import CalibratedClassifierCV
+# Importing dataset
+from sklearn.datasets import load_breast_cancer
 # Base classifier models:
 from sklearn.linear_model import Perceptron
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.calibration import CalibratedClassifierCV
 
-# Importing dataset
-from sklearn.datasets import load_breast_cancer
-from sklearn.preprocessing import StandardScaler
-
+# Importing dynamic selection techniques:
+from deslib.dcs.a_posteriori import APosteriori
+from deslib.dcs.lca import LCA
+from deslib.dcs.mcb import MCB
+from deslib.des.knop import KNOP
+from deslib.des.probabilistic import RRC
 
 if __name__ == "__main__":
     # Generate a classification dataset
@@ -50,13 +53,16 @@ if __name__ == "__main__":
     # Split the data into training and DSEL for DS techniques
     X_train, X_dsel, y_train, y_dsel = train_test_split(X, y, test_size=0.5)
 
-    model_perceptron = CalibratedClassifierCV(Perceptron(max_iter=100)).fit(X_train, y_train)
-    model_linear_svm = CalibratedClassifierCV(LinearSVC()).fit(X_train, y_train)
+    model_perceptron = CalibratedClassifierCV(Perceptron(max_iter=100)).fit(
+        X_train, y_train)
+    model_linear_svm = CalibratedClassifierCV(LinearSVC()).fit(X_train,
+                                                               y_train)
     model_svc = SVC(probability=True).fit(X_train, y_train)
     model_bayes = GaussianNB().fit(X_train, y_train)
     model_tree = DecisionTreeClassifier().fit(X_train, y_train)
     model_knn = KNeighborsClassifier(n_neighbors=5).fit(X_train, y_train)
-    pool_classifiers = [model_perceptron, model_linear_svm, model_svc, model_bayes,  model_tree, model_knn]
+    pool_classifiers = [model_perceptron, model_linear_svm, model_svc,
+                        model_bayes, model_tree, model_knn]
 
     # Initializing the DS techniques
     knop = KNOP(pool_classifiers)
@@ -77,9 +83,5 @@ if __name__ == "__main__":
     print('Classification accuracy KNOP: ', knop.score(X_test, y_test))
     print('Classification accuracy RRC: ', rrc.score(X_test, y_test))
     print('Classification accuracy LCA: ', lca.score(X_test, y_test))
-    print('Classification accuracy A posteriori: ', aposteriori.score(X_test, y_test))
-
-
-
-
-
+    print('Classification accuracy A posteriori: ',
+          aposteriori.score(X_test, y_test))
