@@ -76,32 +76,55 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
 fig, axs = plt.subplots(1, 2, figsize=(15, 5))
 plt.subplots_adjust(wspace=0.4, hspace=0.4)
 plot_dataset(X_train, y_train, ax=axs[0], title='Training set')
-plot_dataset(X_test, y_test, ax=axs[1], title='Test set')
+# plot_dataset(X_test, y_test, ax=axs[1], title='Test set')
 
-# Baseline using standard classification methods
-# 
-# First we analyze the performance of a few baseline classifiers:
-# 
-# - SVM with RBF kernel;
-# - MLP neural network
-# - Random Forest
-# - AdaBoost
+# Evaluating the performance of dynamic selection methods
 
-# Setting classifiers
+# First generating a pool composed of 5 Decision Stumps using AdaBoost.
+# 
+# These are weak linear models. Each base classifier
+# has a classification performance close to 50%.
+pool_classifiers = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1),
+                                      n_estimators=5).fit(X_train, y_train)
+ax = plot_dataset(X_train, y_train, title='Five Decision Stumps generated')
+for clf in pool_classifiers:
+    plot_classifier_decision(ax, clf, X_train)
+    ax.set_xlim((0, 1))
+    ax.set_ylim((0, 1))
+plt.show()
+
+# Comparison with Dynamic Selection techniques.
+knora_e = KNORAE(pool_classifiers).fit(X_train, y_train)
+desp = DESP(pool_classifiers).fit(X_train, y_train)
+ola = OLA(pool_classifiers).fit(X_train, y_train)
+rank = Rank(pool_classifiers).fit(X_train, y_train)
+
+# Plotting the Decision Border of the DS methods.
+fig2, sub = plt.subplots(2, 2, figsize=(15, 10))
+plt.suptitle("Performance of DS techniques using 5 Decision Stumps")
+plt.subplots_adjust(wspace=0.4, hspace=0.4)
+titles = ['KNORA-Eliminate', 'DES-P', 'Overall Local Accuracy (OLA)',
+          'Modified Rank']
+
+
+classifiers = [knora_e, desp, ola, rank]
+for clf, ax, title in zip(classifiers, sub.flatten(), titles):
+    plot_classifier_decision(ax, clf, X_train)
+    plot_dataset(X_test, y_test, ax=ax)
+    ax.set_xlim(np.min(X[:, 0]), np.max(X[:, 0]))
+    ax.set_ylim(np.min(X[:, 1]), np.max(X[:, 1]))
+    ax.set_title(title)
+
+plt.show()
+
+
+# Setting a baseline using standard classification methods
 svm = SVC(gamma='scale').fit(X_train, y_train)
 mlp = MLPClassifier(max_iter=10000).fit(X_train, y_train)
-forest = RandomForestClassifier(n_estimators=10).fit(X_train,
-                                                     y_train)
+forest = RandomForestClassifier(n_estimators=10).fit(X_train, y_train)
 boosting = AdaBoostClassifier().fit(X_train, y_train)
 
-# evaluating classifiers
-print('SVM score = {}'.format(svm.score(X_test, y_test)))
-print('MLP score = {}'.format(mlp.score(X_test, y_test)))
-print('RF score = {}'.format(forest.score(X_test, y_test)))
-print('Boosting score = {}'.format(boosting.score(X_test, y_test)))
-
-# # Plotting the decision of the baseline methods
-
+# Plotting the decision of the baseline methods
 fig2, sub = plt.subplots(2, 2, figsize=(15, 10))
 plt.subplots_adjust(wspace=0.4, hspace=0.4)
 titles = ['SVM decision', 'MLP decision', 'RF decision', 'Boosting decision']
@@ -113,51 +136,14 @@ for clf, ax, title in zip(classifiers, sub.flatten(), titles):
     ax.set_ylim(np.min(X[:, 1]), np.max(X[:, 1]))
     ax.set_title(title)
 
-# Evaluating the performance of dynamic selection methods
+plt.show()
 
-# First generating a pool composed of 5 Decision Stumps using AdaBoost.
-# 
-# These are weak linear models. Each base classifier
-# has a classification performance close to 50%.
-
-pool_classifiers = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1),
-                                      n_estimators=5).fit(X_train, y_train)
-ax = plot_dataset(X_train, y_train, title='Five Decision Stumps set')
-for clf in pool_classifiers:
-    plot_classifier_decision(ax, clf, X_train)
-    ax.set_xlim((0, 1))
-    ax.set_ylim((0, 1))
-
-# Comparison with Dynamic Selection techniques.
-# In this example we evaluate the performance of two DES:
-# - KNORA-Eliminate (KNORAE)
-# - DES-Performance (DESP)
-# 
-# and two DCS: 
-# - Overall local accuracy (OLA)
-# - Modified rank (Rank)
-knora_e = KNORAE(pool_classifiers).fit(X_train, y_train)
-desp = DESP(pool_classifiers).fit(X_train, y_train)
-ola = OLA(pool_classifiers).fit(X_train, y_train)
-rank = Rank(pool_classifiers).fit(X_train, y_train)
-
+# evaluating classifiers on the test set
 print('KNORAE score = {}'.format(knora_e.score(X_test, y_test)))
 print('DESP score = {}'.format(desp.score(X_test, y_test)))
 print('OLA score = {}'.format(ola.score(X_test, y_test)))
 print('Rank score = {}'.format(rank.score(X_test, y_test)))
-
-# Plotting the Decision Border of the DS methods.
-fig2, sub = plt.subplots(2, 2, figsize=(15, 10))
-plt.subplots_adjust(wspace=0.4, hspace=0.4)
-titles = ['KNORA-Eliminate', 'DES-P', 'Overal Local Accuracy (OLA)',
-          'Modified Rank']
-
-classifiers = [knora_e, desp, ola, rank]
-for clf, ax, title in zip(classifiers, sub.flatten(), titles):
-    plot_classifier_decision(ax, clf, X_train)
-    plot_dataset(X_test, y_test, ax=ax)
-    ax.set_xlim(np.min(X[:, 0]), np.max(X[:, 0]))
-    ax.set_ylim(np.min(X[:, 1]), np.max(X[:, 1]))
-    ax.set_title(title)
-
-plt.show()
+print('SVM score = {}'.format(svm.score(X_test, y_test)))
+print('MLP score = {}'.format(mlp.score(X_test, y_test)))
+print('RF score = {}'.format(forest.score(X_test, y_test)))
+print('Boosting score = {}'.format(boosting.score(X_test, y_test)))

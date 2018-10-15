@@ -1,4 +1,8 @@
-# coding: utf-8
+# coding=utf-8
+
+# Author: Rafael Menelau Oliveira e Cruz <rafaelmenelau@gmail.com>
+#
+# License: BSD 3 clause
 """
 ====================================================================
 Dynamic selection on non-linear problems (XOR example)
@@ -17,12 +21,9 @@ only linear classifiers.
 """
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.calibration import CalibratedClassifierCV
 from sklearn.ensemble import BaggingClassifier
-from sklearn.linear_model import Perceptron
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
-from syndata.plot_tools import plot_classifier_decision, plot_dataset
 
 from deslib.dcs.a_posteriori import APosteriori
 from deslib.dcs.a_priori import APriori
@@ -41,37 +42,53 @@ from deslib.des.knora_u import KNORAU
 from deslib.des.meta_des import METADES
 from deslib.util.datasets import make_xor
 
-# ## Create the XOR problem with 1000 examples and plot its distribution
 
+# ## Create the XOR problem with 1000 examples and plot its distribution
+def plot_classifier_decision(ax, clf, X, mode='line', **params):
+
+    xx, yy = make_grid(X[:, 0], X[:, 1])
+
+    Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z = Z.reshape(xx.shape)
+    if mode == 'line':
+       ax.contour(xx, yy, Z, **params)
+    else:
+       ax.contourf(xx, yy, Z, **params)
+    ax.set_xlim((np.min(X[:, 0]), np.max(X[:, 0])))
+    ax.set_ylim((np.min(X[:, 1]), np.max(X[:, 0])))
+
+
+def plot_dataset(X, y, ax=None, title=None, **params):
+
+    if ax is None:
+        ax = plt.gca()
+    ax.scatter(X[:, 0], X[:, 1], marker='o', c=y, s=25,
+               edgecolor='k', **params)
+    ax.set_xlabel('Feature 1')
+    ax.set_ylabel('Feature 2')
+    if title is not None:
+        ax.set_title(title)
+    return ax
+
+
+def make_grid(x, y, h=.02):
+
+    x_min, x_max = x.min() - 1, x.max() + 1
+    y_min, y_max = y.min() - 1, y.max() + 1
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+                         np.arange(y_min, y_max, h))
+    return xx, yy
 
 X, y = make_xor(1000)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
 X_DSEL, X_test, y_DSEL, y_test = train_test_split(X_test, y_test,
                                                   test_size=0.5)
-axdata = plot_dataset(X, y)
-axdata.axvline(x=0.5, color='k')
-axdata.axhline(y=0.5, color='k')
 
-# Train the pool of classifiers
-pool_perceptron = BaggingClassifier(Perceptron(max_iter=5),
-                                    n_estimators=100).fit(X_train, y_train)
 pool_stumps = BaggingClassifier(DecisionTreeClassifier(max_depth=1),
                                 n_estimators=100).fit(X_train, y_train)
 
-# Calibrate pool for probabilities estimates
-
-pool_perceptron_calibrated = []
-for clf in pool_perceptron:
-    calibrated_clf = CalibratedClassifierCV(clf, cv='prefit')
-    calibrated_clf.fit(X_DSEL, y_DSEL)
-    pool_perceptron_calibrated.append(calibrated_clf)
-
 
 # Prepare the DS techniques
-# 
-# Initialize all DS techniques. Since all DS methods have the same
-# signature,  we can easily create a list containing
-# all of them to evaluate the performance later.
 def initialize_ds(pool_classifiers, X, y, k=7):
     knorau = KNORAU(pool_classifiers, k=k)
     kne = KNORAE(pool_classifiers, k=k)
@@ -112,7 +129,7 @@ for ds in list_ds_stumps:
 
 X_DSEL = np.vstack((X_DSEL, X_train))
 y_DSEL = np.hstack((y_DSEL, y_train))
-list_ds_stumps = initialize_ds(pool_stumps, X_DSEL, y_DSEL, k=10)
+list_ds_stumps = initialize_ds(pool_stumps, X_DSEL, y_DSEL, k=7)
 for ds in list_ds_stumps:
     print('Accuracy ' + ds.name + ': ' + str(ds.score(X_test, y_test)))
 print('Accuracy Bagging: ' + str(pool_stumps.score(X_test, y_test)))
@@ -124,4 +141,5 @@ for ds in list_ds_stumps:
     ax.set_xlim((np.min(X_test[:, 0]) - 0.1, np.max(X_test[:, 0] + 0.1)))
     ax.set_ylim((np.min(X_test[:, 1]) - 0.1, np.max(X_test[:, 1] + 0.1)))
     ax.set_title(ds.name)
-    plt.show()
+plt.show()
+
