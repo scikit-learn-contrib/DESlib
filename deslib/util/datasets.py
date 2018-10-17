@@ -5,6 +5,7 @@
 # License: BSD 3 clause
 
 import numpy as np
+from sklearn.utils.validation import check_random_state
 
 """
 This file contains routines to generate 2D classification datasets
@@ -22,7 +23,7 @@ Datasets:
 """
 
 
-def make_P2(size_classes):
+def make_P2(size_classes, random_state=None):
     """Generate the P2 Dataset:
 
     The P2 is a two-class problem, presented by Valentini[1], in which each
@@ -44,6 +45,12 @@ def make_P2(size_classes):
     ----------
     size_classes : list with the number of samples for each class.
 
+    random_state : int, RandomState instance or None, optional (default=None)
+        If int, random_state is the seed used by the random number generator;
+        If RandomState instance, random_state is the random number generator;
+        If None, the random number generator is the RandomState instance used
+        by `np.random`.
+
     returns
     -------
     X : array of shape = [size_classes, 2]
@@ -59,12 +66,13 @@ def make_P2(size_classes):
     and Cybernetics, Part B 35 (2005) 1252–1271.
 
     """
+    rng = check_random_state(random_state)
     n_samples = sum(size_classes) * 6
     class_1 = np.zeros((size_classes[0], 2))
     class_2 = np.zeros((size_classes[1], 2))
     size_class1 = 0
     size_class2 = 0
-    data = np.random.rand(n_samples, 2)
+    data = rng.rand(n_samples, 2)
     for x in data:
         if (size_class1 + size_class2) >= sum(size_classes) * 2:
             break
@@ -97,12 +105,18 @@ def make_P2(size_classes):
     return X, y
 
 
-def make_circle_square(size_classes):
+def make_circle_square(size_classes, random_state=None):
     """Generate the circle square dataset.
 
     Parameters
     ----------
     size_classes : list with the number of samples for each class.
+
+    random_state : int, RandomState instance or None, optional (default=None)
+        If int, random_state is the seed used by the random number generator;
+        If RandomState instance, random_state is the random number generator;
+        If None, the random number generator is the RandomState instance used
+        by `np.random`.
 
     returns
     -------
@@ -119,12 +133,13 @@ def make_circle_square(size_classes):
     on Neural Networks (2005) 1075–1080.
 
     """
+    rng = check_random_state(random_state)
     n_samples = sum(size_classes) * 2
     class_1 = np.zeros((size_classes[0], 2))
     class_2 = np.zeros((size_classes[1], 2))
     size_class1 = 0
     size_class2 = 0
-    data = np.random.rand(n_samples * 10, 2)
+    data = rng.rand(n_samples * 10, 2)
     r = 0.398942
     for x in data:
         test_class = ((x[0] - 0.5) ** 2) + ((x[1] - 0.5) ** 2)
@@ -146,7 +161,7 @@ def make_circle_square(size_classes):
     return X, y
 
 
-def make_banana(size_classes, na=0.1):
+def make_banana(size_classes, na=0.1, random_state=None):
     """Generate the Banana dataset.
 
     Parameters
@@ -155,6 +170,12 @@ def make_banana(size_classes, na=0.1):
 
     na : float (Default = 0.2),
         Noise amplitude. It must be < 1.0
+
+    random_state : int, RandomState instance or None, optional (default=None)
+        If int, random_state is the seed used by the random number generator;
+        If RandomState instance, random_state is the random number generator;
+        If None, the random number generator is the RandomState instance used
+        by `np.random`.
 
     Returns
     -------
@@ -170,24 +191,25 @@ def make_banana(size_classes, na=0.1):
     John Wiley & Sons, 2004.
 
     """
+    rng = check_random_state(random_state)
     if not isinstance(na, float) or na > 1.:
         raise ValueError(
             'Parameter na must be a float lower than 1. na = {}'.format(na))
 
     t1 = np.transpose(-np.linspace(-np.pi / 4, np.pi, size_classes[0]))
     z1 = np.transpose((np.sin(t1), np.cos(t1)))
-    class_1 = 1.5 * z1 + np.random.randn(size_classes[0], 2) * na
+    class_1 = 1.5 * z1 + rng.randn(size_classes[0], 2) * na
 
     t2 = np.transpose(-np.linspace(-np.pi / 4, np.pi, size_classes[1]))
     z2 = np.transpose((np.sin(t2), np.cos(t2)))
-    class_2 = z2 - np.random.randn(size_classes[1], 2) * na
+    class_2 = z2 - rng.randn(size_classes[1], 2) * na
     y = np.hstack((np.zeros(size_classes[0]), np.ones(size_classes[1])))
     X = np.vstack((class_1, class_2))
 
     return X, y
 
 
-def make_banana2(size_classes, sigma=1):
+def make_banana2(size_classes, sigma=1, random_state=None):
     """Generate the Banana dataset similar to the Matlab PRTools toolbox.
 
     Parameters
@@ -196,6 +218,12 @@ def make_banana2(size_classes, sigma=1):
 
     sigma : float (Default = 1),
         variance of the normal distribution
+
+    random_state : int, RandomState instance or None, optional (default=None)
+        If int, random_state is the seed used by the random number generator;
+        If RandomState instance, random_state is the random number generator;
+        If None, the random number generator is the RandomState instance used
+        by `np.random`.
 
     Returns
     -------
@@ -212,20 +240,21 @@ def make_banana2(size_classes, sigma=1):
     pattern recognition, 2004. URL 〈http://www.prtools.org〉.
 
     """
+    rng = check_random_state(random_state)
     banana_size = 5
-    region_class_1 = 0.125 * np.pi + np.random.rand(
+    region_class_1 = 0.125 * np.pi + rng.rand(
         size_classes[0]) * 1.25 * np.pi
     data_class_1 = banana_size * np.transpose(
         [np.sin(region_class_1), np.cos(region_class_1)]) + \
-        np.random.randn(size_classes[0], 2) * sigma
+        rng.randn(size_classes[0], 2) * sigma
 
-    region_class_2 = 0.375 * np.pi - np.random.rand(
+    region_class_2 = 0.375 * np.pi - rng.rand(
         size_classes[1]) * 1.25 * np.pi
 
     tmp = np.transpose(
         [np.sin(region_class_2), np.cos(region_class_2)]) * banana_size
 
-    data_class_2 = (tmp + np.random.randn(size_classes[1], 2) * sigma) + (
+    data_class_2 = (tmp + rng.randn(size_classes[1], 2) * sigma) + (
         np.ones((size_classes[1], 2)) * (-0.75 * banana_size))
 
     X = np.vstack((data_class_1, data_class_2))
@@ -234,13 +263,19 @@ def make_banana2(size_classes, sigma=1):
     return X, y
 
 
-def make_xor(n_samples):
-    """Generate the Banana dataset similar to the Matlab PRTools toolbox.
+def make_xor(n_samples, random_state=None):
+    """Generate the exclusive-or (XOR) dataset.
 
     Parameters
     ----------
     n_samples : int
                 Number of generated data points.
+
+    random_state : int, RandomState instance or None, optional (default=None)
+        If int, random_state is the seed used by the random number generator;
+        If RandomState instance, random_state is the random number generator;
+        If None, the random number generator is the RandomState instance used
+        by `np.random`.
 
     Returns
     -------
@@ -251,7 +286,8 @@ def make_xor(n_samples):
         Class labels associated with each class.
 
     """
-    X = np.random.uniform(low=0, high=1, size=(n_samples, 2))
+    rng = check_random_state(random_state)
+    X = rng.uniform(low=0, high=1, size=(n_samples, 2))
     y = np.logical_xor(X[:, 0] > 0.5, X[:, 1] > 0.5)
 
     return X, y
