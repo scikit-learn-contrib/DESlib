@@ -255,4 +255,3 @@ def make_xor(n_samples):
     y = np.logical_xor(X[:, 0] > 0.5, X[:, 1] > 0.5)
 
     return X, y
-
