@@ -50,9 +50,9 @@ def plot_classifier_decision(ax, clf, X, mode='line', **params):
     Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
     Z = Z.reshape(xx.shape)
     if mode == 'line':
-       ax.contour(xx, yy, Z, **params)
+        ax.contour(xx, yy, Z, **params)
     else:
-       ax.contourf(xx, yy, Z, **params)
+        ax.contourf(xx, yy, Z, **params)
     ax.set_xlim((np.min(X[:, 0]), np.max(X[:, 0])))
     ax.set_ylim((np.min(X[:, 1]), np.max(X[:, 0])))
 
@@ -81,7 +81,7 @@ plot_dataset(X_train, y_train, ax=axs[0], title='Training set')
 # Evaluating the performance of dynamic selection methods
 
 # First generating a pool composed of 5 Decision Stumps using AdaBoost.
-# 
+
 # These are weak linear models. Each base classifier
 # has a classification performance close to 50%.
 pool_classifiers = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1),

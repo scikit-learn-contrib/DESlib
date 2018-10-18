@@ -77,8 +77,3 @@ if __name__ == "__main__":
     print('Classification accuracy OLA: ', ola.score(X_test, y_test))
     print('Classification accuracy MCB: ', mcb.score(X_test, y_test))
     print('Classification accuracy META-DES: ', meta.score(X_test, y_test))
-
-
-
-
-
