@@ -19,7 +19,7 @@ from deslib.des.knop import KNOP
 from deslib.des.knora_e import KNORAE
 from deslib.des.knora_u import KNORAU
 from deslib.des.meta_des import METADES
-from deslib.des.probabilistic import DESKL
+from deslib.des import DESKL
 # Static techniques
 from deslib.static.oracle import Oracle
 from deslib.static.single_best import SingleBest
@@ -30,9 +30,11 @@ def setup_classifiers():
     rng = np.random.RandomState(654321)
 
     # Generate a classification dataset
-    X, y = make_classification(n_classes=2, n_samples=1000, weights=[0.2, 0.8], random_state=rng)
+    X, y = make_classification(n_classes=2, n_samples=1000, weights=[0.2, 0.8],
+                               random_state=rng)
     # split the data into training and test data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=rng)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33,
+                                                        random_state=rng)
 
     # Scale the variables to have 0 mean and unit variance
     scalar = StandardScaler()
@@ -40,9 +42,12 @@ def setup_classifiers():
     X_test = scalar.transform(X_test)
 
     # Split the data into training and DSEL for DS techniques
-    X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train, test_size=0.5, random_state=rng)
+    X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train,
+                                                        test_size=0.5,
+                                                        random_state=rng)
     # Considering a pool composed of 10 base classifiers
-    pool_classifiers = RandomForestClassifier(n_estimators=10, random_state=rng, max_depth=10)
+    pool_classifiers = RandomForestClassifier(n_estimators=10,
+                                              random_state=rng, max_depth=10)
     pool_classifiers.fit(X_train, y_train)
     return pool_classifiers, X_dsel, y_dsel, X_test, y_test
 
@@ -99,7 +104,7 @@ def test_mcb():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    mcb = MCB(pool_classifiers, rng=rng, DFP=True)
+    mcb = MCB(pool_classifiers, random_state=rng, DFP=True)
     mcb.fit(X_dsel, y_dsel)
     assert np.isclose(mcb.score(X_test, y_test), 0.8606060606060606)
 
@@ -108,7 +113,7 @@ def test_apriori():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    apriori = APriori(pool_classifiers, rng=rng, DFP=True)
+    apriori = APriori(pool_classifiers, random_state=rng, DFP=True)
     apriori.fit(X_dsel, y_dsel)
     assert np.isclose(apriori.score(X_test, y_test), 0.87272727272727268)
 
@@ -125,20 +130,20 @@ def test_aposteriori():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    a_posteriori = APosteriori(pool_classifiers, rng=rng, DFP=True)
+    a_posteriori = APosteriori(pool_classifiers, random_state=rng, DFP=True)
     a_posteriori.fit(X_dsel, y_dsel)
     assert np.isclose(a_posteriori.score(X_test, y_test), 0.90000000000000002)
 
 
-# for some reason, the result of the META-DES is different if all tests are executed together than if this test script
-# is executed alone. So, here we are accepting both values.
+# for some reason, the result of the META-DES is different if all tests are
+# executed together than if this test script is executed alone. So, here we are
+# accepting both values.
 def test_meta():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
     meta_des = METADES(pool_classifiers, DFP=True)
     meta_des.fit(X_dsel, y_dsel)
-    assert np.isclose(meta_des.score(X_test, y_test), 0.9121212121212121) or \
-        np.isclose(meta_des.score(X_test, y_test), 0.8909090909090909)
+    assert np.isclose(meta_des.score(X_test, y_test), 0.9121212121212121)
 
 
 def test_knop():
@@ -170,6 +175,7 @@ def test_oracle():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
     oracle = Oracle(pool_classifiers)
+    oracle.fit(X_dsel, y_dsel)
     assert np.isclose(oracle.score(X_test, y_test), 0.98787878787878791)
 
 
@@ -186,10 +192,11 @@ def test_static_selection():
 
     static_selection = StaticSelection(pool_classifiers)
     static_selection.fit(X_dsel, y_dsel)
-    assert np.isclose(static_selection.score(X_test, y_test), 0.90606060606060601)
+    assert np.isclose(static_selection.score(X_test, y_test),
+                      0.90606060606060601)
 
 
-# ------------------------------------------ Testing predict_proba -----------------------------------
+# --------------------- Testing predict_proba ---------------------------------
 def test_kne_proba():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
@@ -224,7 +231,7 @@ def test_mcb_proba():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    mcb = MCB(pool_classifiers, rng=rng, DFP=True)
+    mcb = MCB(pool_classifiers, random_state=rng, DFP=True)
     mcb.fit(X_dsel, y_dsel)
     probas = mcb.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/mcb_proba_DFP.npy')

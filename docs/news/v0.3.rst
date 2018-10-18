@@ -1,0 +1,34 @@
+Version 0.3
+===========
+
+- Third release of the stable API. By `Rafael M O Cruz`_ , `Luiz G Hafemann`_ and `Le Thanh`_
+
+Changes
+~~~~~~~~~~~~~~~~~~~~~
+* All techniques are now sklearn estimators and passes the check_estimator tests.
+* All techniques can now be instantiated without a trained pool of classifiers.
+* Pool of classifiers can now be fitted together with the ensemble techniques.
+* Added support for Faiss (Facebook AI Similarity Search) for fast region of competence estimation on GPU.
+* Added DES Multi-class Imbalance (DES-MI).
+* Added a new Instance Hardness measure (KND_score).
+* Added Instance Hardness support when using DES-Clustering.
+* Added label encoder for the static ensemble module.
+* Changed name of base classes (Adding Base to their name to follow scikit-learn standards).
+* Removal of **DFP_mask**, **neighbors** and **distances** as class variables.
+* Changed signature of methods **estimate_competence**, **predict_with_ds**, **predict_proba_with_ds**. They now require the neighbors and distances to be passed as input arguments.
+* Added Python 3.7 support.
+* New and updated examples.
+
+Bug Fixes
+~~~~~~~~~~~~
+
+* Fixed bug with META-DES when checking if the meta-classifier was already fitted.
+* Fixed bug with random state on DCS techniques.
+* Fixed high memory consumption on DES probabilistic methods.
+* Fixed bug on Heterogeneous ensembles example and notebooks examples.
+
+
+.. _Rafael M O Cruz: https://github.com/Menelau
+.. _Luiz G Hafemann: https://github.com/luizgh
+.. _Le Thanh: https://github.com/Natlem
+

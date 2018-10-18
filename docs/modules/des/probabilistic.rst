@@ -3,7 +3,7 @@ Probabilistic
 
 .. automodule:: deslib.des.probabilistic
 
-.. autoclass:: Probabilistic
+.. autoclass:: BaseProbabilistic
     :members:
 
 .. toctree::

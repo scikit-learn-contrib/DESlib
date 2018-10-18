@@ -2,38 +2,43 @@
     :target: http://deslib.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
+.. image:: https://circleci.com/gh/Menelau/DESlib.svg?style=shield
+    :target: https://circleci.com/gh/Menelau/DESlib
+
 .. image:: https://travis-ci.org/Menelau/DESlib.svg?branch=master
     :target: https://travis-ci.org/Menelau/DESlib
 
 .. image:: https://codecov.io/gh/Menelau/DESlib/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/Menelau/DESlib
-
-.. image:: https://landscape.io/github/Menelau/DESlib/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/Menelau/DESlib/master
-   :alt: Code Health
+    
+.. image:: https://api.codacy.com/project/badge/Grade/59500eecc5524c59b9eb2284b43ae3e6
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/app/Menelau/DESlib?
 
 .. image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
     :target: https://opensource.org/licenses/BSD-3-Clause
 
+.. image:: https://badges.gitter.im/DESlib/gitter.png
+    :target: https://gitter.im/deslib/Lobby
 
 DESlib
 ========
 
-DESlib is an easy to use ensemble learning library focusing the implementation of the state-of-the-art techniques for dynamic classifier and ensemble selection.
-The library is is based on scikit-learn_, using the same method signature: **fit**, **predict**, **predict_proba** and **score**.
+DESlib is an easy-to-use ensemble learning library focused on the implementation of the state-of-the-art techniques for dynamic classifier and ensemble selection.
+The library is is based on scikit-learn_, using the same method signatures: **fit**, **predict**, **predict_proba** and **score**.
 All dynamic selection techniques were implemented according to the definitions from [1]_.
 
 Dynamic Selection:
 -------------------
 
 Dynamic Selection (DS) refers to techniques in which the base classifiers are selected
-on the fly, according to each new sample to be classified. Only the most competent, or an ensemble containing the most competent classifiers is selected to predict
-the label of a specific test sample. The rationale for such techniques is that not every classifier in
-the pool is an expert in classifying all unknown samples; rather, each base classifier is an expert in
+dynamically at test time, according to each new sample to be classified. Only the most competent, or an ensemble of the most competent classifiers is selected to predict
+the label of a specific test sample. The rationale for these techniques is that not every classifier in
+the pool is an expert in classifying all unknown samples, but rather each base classifier is an expert in
 a different local region of the feature space.
 
-DS is one of the most promising MCS approaches due to the fact that
-more and more works are reporting the superior performance of such techniques over static combination methods. Such techniques
+DS is one of the most promising MCS approaches (Multiple Classifier Systems) due to an increasing number of empirical studies
+reporting superior performance over static combination methods. Such techniques
 have achieved better classification performance especially when dealing with small-sized and imbalanced datasets.
 
 Installation:
@@ -57,21 +62,46 @@ Latest version (under development):
 Dependencies:
 -------------
 
-DESlib is tested to work with Python 3.5, and 3.6. The dependency requirements are:
+DESlib is tested to work with Python 3.5, 3.6 and 3.7. The dependency requirements are:
 
 * scipy(>=0.13.3)
 * numpy(>=1.10.4)
 * scikit-learn(>=0.19.0)
 
-These dependencies are automaticatically installed using the pip commands above.
+These dependencies are automatically installed using the pip commands above.
 
-Description:
-------------
+Examples:
+---------
+
+Here we show an example using the KNORA-E method with random forest as a pool of classifiers:
+
+.. code-block:: python
+
+    from deslib.des.knora_e import KNORAE
+
+    # Train a pool of 10 classifiers
+    pool_classifiers = RandomForestClassifier(n_estimators=10)
+    pool_classifiers.fit(X_train, y_train)
+
+    # Initialize the DES model
+    knorae = KNORAE(pool_classifiers)
+
+    # Preprocess the Dynamic Selection dataset (DSEL)
+    knorae.fit(X_dsel, y_dsel)
+
+    # Predict new examples:
+    knorae.predict(X_test)
+
+The library accepts any list of classifiers (compatible with scikit-learn) as input, including a list containing different classifier models (heterogeneous ensembles).
+More examples on how to use the API can be found in the documentation_ and in the Examples directory.
+
+Organization:
+-------------
 
 The library is divided into four modules:
 
-1. deslib.des: Implementation of DES techniques.
-2. deslib.dcs: Implementation of DCS techniques.
+1. deslib.des: Implementation of DES techniques (Dynamic Ensemble Selection).
+2. deslib.dcs: Implementation of DCS techniques (Dynamic Classifier Selection).
 3. deslib.static: Implementation of baseline ensemble methods.
 4. deslib.util: A collection of aggregation functions and diversity measures for ensemble of classifiers.
 
@@ -88,10 +118,11 @@ The library is divided into four modules:
     10. DES-Minimum Difference [21]_
     11. DES-Clustering [16]_
     12. DES-KNN [16]_
+    13. DES Multiclass Imbalance (DES-MI) [24]_
 
 * DCS techniques currently available are:
     1. Modified Classifier Rank (Rank) [19]_
-    2. Overall Locall Accuracy (OLA) [4]_
+    2. Overall Local Accuracy (OLA) [4]_
     3. Local Class Accuracy (LCA) [4]_
     4. Modified Local Accuracy (MLA) [23]_
     5. Multiple Classifier Behaviour (MCB) [5]_
@@ -104,36 +135,13 @@ The library is divided into four modules:
     3. Static Selection [2]_
 
 Variations of each DES techniques are also provided by the library (e.g., different versions of the META-DES framework).
-Moreover, each DES technique can be used as Dynamic Selection, Dynamic Weighting or a Hybrid version which includes dynamic selection + weighting.
-The library also offers the implementation of methods which can be applied to DS techniques in order to improve the classification
-accuracy such as the Dynamic Frienemy Pruning (DFP) [13]_.
 
-Examples:
----------
+The following techniques are also available for all methods:
+ * For DES techniques, the combination of the selected classifiers can be done as Dynamic Selection (majority voting), Dynamic Weighting  (weighted majority voting) or a Hybrid (selection + weighting).
+ * For all DS techniques, Dynamic Frienemy Pruning (DFP) [13]_ can be used.
+ * For all DS techniques, Instance Hardness (IH) can be used to classify easy samples with a KNN and hard samples using the DS technique.
 
-Here we show an example using the KNORA-E method using random forest as a pool of classifiers:
-
-.. code-block:: python
-
-    from sklearn.ensemble import RandomForestClassifier
-    from deslib.des.knora_e import KNORAE
-
-
-    # Train a pool of 10 classifiers
-    pool_classifiers = RandomForestClassifier(n_estimators=10)
-    pool_classifiers.fit(X_train, y_train)
-
-    # Initialize the DES model
-    knorae = KNORAE(pool_classifiers)
-
-    # Preprocess the Dynamic Selection dataset (DSEL)
-    knorae.fit(X_dsel, y_dsel)
-
-    # Predict new examples:
-    knorae.predict(X_test)
-
-The library accepts any list of classifiers (from scikit-learn) as input, including a list containing different classifier models (heterogeneous ensembles).
-More examples to use the API can be found in the documentation and im the Examples directory.
+As an optional requirement, the fast KNN implementation from FAISS_ can be used to speed-up the computation of the region of competence.
 
 Citation
 ---------
@@ -196,9 +204,11 @@ References:
 
 .. [21] : B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197–206.
 
-.. [22] : Smith, M.R., Martinez, T. and Giraud-Carrier, C., 2014. An instance level analysis of data complexity. Machine learning, 95(2), pp.225-256
+.. [22] : Smith, Michael R., Tony Martinez, and Christophe Giraud-Carrier. "An instance level analysis of data complexity." Machine learning 95.2 (2014), pp 225-256.
 
 .. [23] : P. C. Smits, Multiple classifier systems for supervised remote sensing image classification based on dynamic classifier selection, IEEE Transactions on Geoscience and Remote Sensing 40 (4) (2002) 801–813.
+
+.. [24] : García, S., Zhang, Z.L., Altalhi, A., Alshomrani, S. and Herrera, F., "Dynamic ensemble selection for multi-class imbalanced datasets." Information Sciences 445 (2018): 22-37.
 
 .. _scikit-learn: http://scikit-learn.org/stable/
 
@@ -206,3 +216,6 @@ References:
 
 .. _scipy: https://www.scipy.org/
 
+.. _documentation: https://deslib.readthedocs.io
+
+.. _FAISS: https://github.com/facebookresearch/faiss
