@@ -119,7 +119,7 @@ plt.show()
 
 
 # Setting a baseline using standard classification methods
-svm = SVC(gamma='scale').fit(X_train, y_train)
+svm = SVC().fit(X_train, y_train)
 mlp = MLPClassifier(max_iter=10000).fit(X_train, y_train)
 forest = RandomForestClassifier(n_estimators=10).fit(X_train, y_train)
 boosting = AdaBoostClassifier().fit(X_train, y_train)
