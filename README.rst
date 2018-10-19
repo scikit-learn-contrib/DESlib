@@ -148,7 +148,7 @@ Citation
 
 If you use DESLib in a scientific paper, please consider citing the following paper:
 
-Rafael M. O. Cruz, Luiz G. Hafemann, Robert Sabourin and George D. C. Cavalcanti **DESlib: A Dynamic ensemble selection library in Python.** arXiv preprint arXiv:1802.04967 (2018).
+Rafael M. O. Cruz, Luiz G. Hafemann, Robert Sabourin and George D. C. Cavalcanti `DESlib: A Dynamic ensemble selection library in Python. <https://arxiv.org/abs/1802.04967>`_ arXiv preprint arXiv:1802.04967 (2018).
 
 .. code-block:: text
 
