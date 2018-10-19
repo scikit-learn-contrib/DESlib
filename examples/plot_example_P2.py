@@ -33,7 +33,6 @@ from deslib.dcs.rank import Rank
 from deslib.des.des_p import DESP
 from deslib.des.knora_e import KNORAE
 
-
 def make_grid(x, y, h=.02):
 
     x_min, x_max = x.min() - 1, x.max() + 1
@@ -69,19 +68,26 @@ def plot_dataset(X, y, ax=None, title=None, **params):
         ax.set_title(title)
     return ax
 
-
+###############################################################################
+# Visualizing the decision boundaries on the P2 problem
+# ----------------
+#
+# In this example we will ...
 # Generating and plotting the P2 Dataset:
+
 X, y = make_P2([1000, 1000])
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
 fig, axs = plt.subplots(1, 2, figsize=(15, 5))
 plt.subplots_adjust(wspace=0.4, hspace=0.4)
 plot_dataset(X_train, y_train, ax=axs[0], title='Training set')
-# plot_dataset(X_test, y_test, ax=axs[1], title='Test set')
+plot_dataset(X_test, y_test, ax=axs[1], title='Test set')
 
+
+###############################################################################
 # Evaluating the performance of dynamic selection methods
-
+#
 # First generating a pool composed of 5 Decision Stumps using AdaBoost.
-
+#
 # These are weak linear models. Each base classifier
 # has a classification performance close to 50%.
 pool_classifiers = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1),
@@ -93,7 +99,9 @@ for clf in pool_classifiers:
     ax.set_ylim((0, 1))
 plt.show()
 
+###############################################################################
 # Comparison with Dynamic Selection techniques.
+
 knora_e = KNORAE(pool_classifiers).fit(X_train, y_train)
 desp = DESP(pool_classifiers).fit(X_train, y_train)
 ola = OLA(pool_classifiers).fit(X_train, y_train)
@@ -124,6 +132,7 @@ mlp = MLPClassifier(max_iter=10000).fit(X_train, y_train)
 forest = RandomForestClassifier(n_estimators=10).fit(X_train, y_train)
 boosting = AdaBoostClassifier().fit(X_train, y_train)
 
+###############################################################################
 # Plotting the decision of the baseline methods
 fig2, sub = plt.subplots(2, 2, figsize=(15, 10))
 plt.subplots_adjust(wspace=0.4, hspace=0.4)
