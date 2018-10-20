@@ -79,7 +79,10 @@ def make_grid(x, y, h=.02):
                          np.arange(y_min, y_max, h))
     return xx, yy
 
-X, y = make_xor(1000)
+
+# Generating and plotting the P2 Dataset:
+rng = np.random.RandomState(1234)
+X, y = make_xor(1000, random_state=rng)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
 X_DSEL, X_test, y_DSEL, y_test = train_test_split(X_test, y_test,
                                                   test_size=0.5)
