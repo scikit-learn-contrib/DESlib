@@ -1,7 +1,7 @@
 # coding: utf-8
 """
 ====================================================================
-Example P2 Problem
+Visualizing decision boundaries on the P2 problem
 ====================================================================
 
 This example shows the power of dynamic selection (DS) techniques which can
@@ -11,12 +11,16 @@ such as Random Forests, AdaBoost and SVMs.
 
 The P2 is a two-class problem, presented by Valentini, in which each class
 is defined in multiple decision regions delimited by polynomial and
-trigonometric functions. Here, $E4$ was modified such that the area of
-each class is equal (Henniges, 2005). It is impossible to solve this problem
+trigonometric functions. It is impossible to solve this problem
 using a single linear classifier, and the performance of the best possible
 linear classifier is around 50\%.
 
 """
+
+###############################################################################
+# Let's start by importing all required modules, and defining helper functions
+# to facilitate plotting the decision boundaries:
+
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -33,6 +37,7 @@ from deslib.dcs.rank import Rank
 from deslib.des.des_p import DESP
 from deslib.des.knora_e import KNORAE
 
+# Plotting-related functions
 def make_grid(x, y, h=.02):
 
     x_min, x_max = x.min() - 1, x.max() + 1
@@ -69,11 +74,9 @@ def plot_dataset(X, y, ax=None, title=None, **params):
     return ax
 
 ###############################################################################
-# Visualizing the decision boundaries on the P2 problem
-# ----------------
-#
-# In this example we will ...
-# Generating and plotting the P2 Dataset:
+# Visualizing the dataset
+# -----------------------
+# Now let's generate and plot the dataset:
 
 X, y = make_P2([1000, 1000])
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
@@ -85,8 +88,9 @@ plot_dataset(X_test, y_test, ax=axs[1], title='Test set')
 
 ###############################################################################
 # Evaluating the performance of dynamic selection methods
+# -------------------------------------------------------
 #
-# First generating a pool composed of 5 Decision Stumps using AdaBoost.
+# We will now generate a pool composed of 5 Decision Stumps using AdaBoost.
 #
 # These are weak linear models. Each base classifier
 # has a classification performance close to 50%.
@@ -100,7 +104,13 @@ for clf in pool_classifiers:
 plt.show()
 
 ###############################################################################
-# Comparison with Dynamic Selection techniques.
+# Comparison with Dynamic Selection techniques
+# --------------------------------------------
+#
+# We will now consider four DS methods: k-Nearest Oracle-Eliminate (KNORA-E),
+# Dynamic Ensemble Selection performance (DES-P), Overall Local Accuracy (OLA)
+# and Rank. Let's train the classifiers and plot their decision boundaries:
+
 
 knora_e = KNORAE(pool_classifiers).fit(X_train, y_train)
 desp = DESP(pool_classifiers).fit(X_train, y_train)
@@ -125,15 +135,21 @@ for clf, ax, title in zip(classifiers, sub.flatten(), titles):
 
 plt.show()
 
+###############################################################################
+# Comparison to baselines
+# -----------------------
+#
+# Let's now compare the results with four baselines: Support Vector Machine
+# (SVM) with an RBF kernel; Multi-Layer Perceptron (MLP), Random Forest and
+# Adabost. We will also plot their decision boundaries:
 
-# Setting a baseline using standard classification methods
 svm = SVC().fit(X_train, y_train)
 mlp = MLPClassifier(max_iter=10000).fit(X_train, y_train)
 forest = RandomForestClassifier(n_estimators=10).fit(X_train, y_train)
 boosting = AdaBoostClassifier().fit(X_train, y_train)
 
 ###############################################################################
-# Plotting the decision of the baseline methods
+
 fig2, sub = plt.subplots(2, 2, figsize=(15, 10))
 plt.subplots_adjust(wspace=0.4, hspace=0.4)
 titles = ['SVM decision', 'MLP decision', 'RF decision', 'Boosting decision']
@@ -147,7 +163,14 @@ for clf, ax, title in zip(classifiers, sub.flatten(), titles):
 
 plt.show()
 
-# evaluating classifiers on the test set
+
+###############################################################################
+# Evaluation on the test set
+# --------------------------
+#
+# Finally, let's evaluate the baselines and the Dynamic Selection methods on
+# the test set:
+
 print('KNORAE score = {}'.format(knora_e.score(X_test, y_test)))
 print('DESP score = {}'.format(desp.score(X_test, y_test)))
 print('OLA score = {}'.format(ola.score(X_test, y_test)))
