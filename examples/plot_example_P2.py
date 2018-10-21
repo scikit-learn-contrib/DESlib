@@ -13,7 +13,7 @@ The P2 is a two-class problem, presented by Valentini, in which each class
 is defined in multiple decision regions delimited by polynomial and
 trigonometric functions. It is impossible to solve this problem
 using a single linear classifier, and the performance of the best possible
-linear classifier is around 50\%.
+linear classifier is around 50\\%.
 
 """
 
@@ -35,6 +35,7 @@ from deslib.dcs.ola import OLA
 from deslib.dcs.rank import Rank
 from deslib.des.des_p import DESP
 from deslib.des.knora_e import KNORAE
+
 
 # Plotting-related functions
 def make_grid(x, y, h=.02):
@@ -76,6 +77,7 @@ def plot_dataset(X, y, ax=None, title=None, **params):
 # Visualizing the dataset
 # -----------------------
 # Now let's generate and plot the dataset:
+
 
 X, y = make_P2([1000, 1000])
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
