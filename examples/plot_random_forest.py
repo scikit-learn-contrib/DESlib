@@ -20,6 +20,7 @@ performance of the RandomForest classifier as a baseline comparison.
 """
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 from matplotlib.cm import get_cmap
 import numpy as np
 
@@ -100,11 +101,16 @@ cmap = get_cmap('Dark2')
 colors = [cmap(i) for i in np.linspace(0, 1, 7)]
 labels = ['RF', 'KNORA-U', 'KNORA-E', 'DESP', 'OLA', 'MCB',
           'META-DES']
+
 fig, ax = plt.subplots()
+pct_formatter = FuncFormatter(lambda x, pos: '{:.1f}'.format(x * 100))
 ax.bar(np.arange(7),
        [rf_score, knorau_score, kne_score, desp_score,
         ola_score, mcb_score, meta_score],
        color=colors,
        tick_label=labels)
 ax.set_ylim(0.93, 1)
+ax.set_xlabel('Method', fontsize=13)
+ax.set_ylabel('Accuracy on the test set (%)', fontsize=13)
+ax.yaxis.set_major_formatter(pct_formatter)
 plt.show()
