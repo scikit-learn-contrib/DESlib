@@ -21,7 +21,6 @@ linear classifier is around 50\%.
 # Let's start by importing all required modules, and defining helper functions
 # to facilitate plotting the decision boundaries:
 
-
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
@@ -80,10 +79,8 @@ def plot_dataset(X, y, ax=None, title=None, **params):
 
 X, y = make_P2([1000, 1000])
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
-fig, axs = plt.subplots(1, 2, figsize=(15, 5))
-plt.subplots_adjust(wspace=0.4, hspace=0.4)
-plot_dataset(X_train, y_train, ax=axs[0], title='Training set')
-plot_dataset(X_test, y_test, ax=axs[1], title='Test set')
+fig, ax = plt.subplots()
+plot_dataset(X_train, y_train, ax=ax, title='Training set')
 
 
 ###############################################################################
