@@ -5,20 +5,21 @@
 # License: BSD 3 clause
 """
 ====================================================================
-Dynamic selection on non-linear problems (XOR example)
+Dynamic selection with linear classifiers: XOR example
 ====================================================================
 
 This example shows that DS can deal with non-linear problem (XOR) using
 a combination of a few linear base classifiers.
 
-- 14 dynamic selection methods (7 DES and 7 DCS) are evaluated with
-  a pool composed of either Perceptrons or Decision stumps as base classifiers.
+- 6 dynamic selection methods (3 DES and 3 DCS) are evaluated with
+  a pool composed of Decision stumps.
 
-- This example also compares the performance of Bagging and Boosting (AdaBoost)
-  techniques, showing that they fail to properly solve this problem using
-  only linear classifiers.
 
 """
+###############################################################################
+# Let's start by importing all required modules, and defining helper functions
+# to facilitate plotting the decision boundaries:
+
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.ensemble import BaggingClassifier
@@ -43,7 +44,7 @@ from deslib.des.meta_des import METADES
 from deslib.util.datasets import make_xor
 
 
-# ## Create the XOR problem with 1000 examples and plot its distribution
+# Plotting-related functions
 def plot_classifier_decision(ax, clf, X, mode='line', **params):
 
     xx, yy = make_grid(X[:, 0], X[:, 1])
@@ -80,6 +81,21 @@ def make_grid(x, y, h=.02):
     return xx, yy
 
 
+# Prepare the DS techniques. Changing k value to 5.
+def initialize_ds(pool_classifiers, X, y, k=5):
+    knorau = KNORAU(pool_classifiers, k=k)
+    kne = KNORAE(pool_classifiers, k=k)
+    desknn = DESKNN(pool_classifiers, k=k)
+    ola = OLA(pool_classifiers, k=k)
+    lca = LCA(pool_classifiers, k=k)
+    mla = MLA(pool_classifiers, k=k)
+    list_ds = [knorau, kne, ola, lca, mla, desknn]
+    # fit the ds techniques
+    for ds in list_ds:
+        ds.fit(X, y)
+    return list_ds
+
+
 rng = np.random.RandomState(1234)
 X, y = make_xor(1000, random_state=rng)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
@@ -87,41 +103,19 @@ X_DSEL, X_test, y_DSEL, y_test = train_test_split(X_test, y_test,
                                                   test_size=0.5)
 
 pool_stumps = BaggingClassifier(DecisionTreeClassifier(max_depth=1),
-                                n_estimators=100).fit(X_train, y_train)
-
-
-# Prepare the DS techniques
-def initialize_ds(pool_classifiers, X, y, k=7):
-    knorau = KNORAU(pool_classifiers, k=k)
-    kne = KNORAE(pool_classifiers, k=k)
-    desknn = DESKNN(pool_classifiers, k=k)
-    ola = OLA(pool_classifiers, k=k)
-    lca = LCA(pool_classifiers, k=k)
-    mla = MLA(pool_classifiers, k=k)
-    mcb = MCB(pool_classifiers, k=k)
-    desp = DESP(pool_classifiers, k=k)
-    rank = Rank(pool_classifiers, k=k)
-    apri = APriori(pool_classifiers, k=k)
-    apos = APosteriori(pool_classifiers, k=k)
-    des_clustering = DESClustering(pool_classifiers)
-    metades = METADES(pool_classifiers, k=k)
-
-    list_ds = [knorau, kne, ola, lca, mcb, desp, rank, apri, apos,
-               des_clustering, metades, mla, desknn]
-
-    # fit the ds techniques
-    for ds in list_ds:
-        ds.fit(X, y)
-    return list_ds
-
+                                n_estimators=100,
+                                random_state=rng)
+pool_stumps.fit(X_train, y_train)
 
 list_ds_stumps = initialize_ds(pool_stumps, X_DSEL, y_DSEL)
 for ds in list_ds_stumps:
     print('Accuracy ' + ds.name + ': ' + str(ds.score(X_test, y_test)))
 
+###############################################################################
 # Get the classification accuracy of the DS abd Bagging methods
 # using the same pool of classifiers.
-#
+
+###############################################################################
 # This example merge the training data with the validation, to create a
 # DSEL having more examples for the competence estimation. Using the training
 # data for dynamic selection can be beneficial  when dealing with small sample

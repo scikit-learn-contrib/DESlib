@@ -30,21 +30,21 @@ of the samples are classified by the DS method.
 import numpy as np
 import matplotlib.pyplot as plt
 # DCS techniques
-from deslib.dcs.mcb import MCB
-from deslib.dcs.ola import OLA
-from deslib.dcs.rank import Rank
+from deslib.dcs import MCB
+from deslib.dcs import OLA
+from deslib.dcs import Rank
+from deslib.dcs import LCA
 
 # DES techniques
-from deslib.des.des_p import DESP
-from deslib.des.knora_e import KNORAE
-from deslib.des.knora_u import KNORAU
+from deslib.des import DESP
+from deslib.des import KNORAU
+from deslib.des import KNORAE
 
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import BaggingClassifier
 from sklearn.linear_model import Perceptron
 from sklearn.preprocessing import StandardScaler
 from sklearn.datasets import fetch_openml
-from sklearn.neighbors import KNeighborsClassifier
 
 rng = np.random.RandomState(123456)
 
@@ -63,31 +63,30 @@ pool_classifiers = BaggingClassifier(Perceptron(), random_state=rng)
 pool_classifiers.fit(X_train, y_train)
 
 # Setting with_IH
-mcb = MCB(pool_classifiers, with_IH=True).fit(X_train, y_train)
-ola = OLA(pool_classifiers, with_IH=True).fit(X_train, y_train)
-rank = Rank(pool_classifiers, with_IH=True).fit(X_train, y_train)
-des_p = DESP(pool_classifiers, with_IH=True).fit(X_train, y_train)
-kne = KNORAE(pool_classifiers, with_IH=True).fit(X_train, y_train)
-knu = KNORAU(pool_classifiers, with_IH=True).fit(X_train, y_train)
-list_ds_methods = [mcb, ola, rank, des_p, kne, knu]
-names = ['MCB', 'OLA', 'Mod. Rank', 'DES-P', 'KNORA-E', 'KNORA-U']
-# Get the performance of KNN as baseline comparison
-knn = KNeighborsClassifier(n_neighbors=7).fit(X_train, y_train)
+mcb = MCB(pool_classifiers)
+ola = OLA(pool_classifiers)
+des_p = DESP(pool_classifiers)
+knu = KNORAU(pool_classifiers)
+lca = LCA(pool_classifiers)
+kne = KNORAE(pool_classifiers)
+rank = Rank(pool_classifiers)
+list_ds_methods = [mcb, ola, des_p, knu, lca, kne, rank]
+names = ['MCB', 'OLA', 'DES-P', 'KNORA-U', 'LCA', 'KNORA-E', 'Rank']
 
-list_ih_values = [0.0, 0.14, 0.28, 0.42]
+k_value_list = range(3, 15)
 # Plot accuracy x IH
 fig, ax = plt.subplots()
 for ds_method, name in zip(list_ds_methods, names):
     accuracy = []
-    for idx_ih, ih_rate in enumerate([0.0, 0.14, 0.28, 0.42]):
-        ds_method.IH_rate = ih_rate
+    for k in k_value_list:
+        ds_method.k = k
+        ds_method.fit(X_train, y_train)
         accuracy.append(ds_method.score(X_test, y_test))
-    ax.plot(list_ih_values, accuracy, label=name)
+    ax.plot(k_value_list, accuracy, label=name)
 
-plt.xticks(list_ih_values)
-ax.set_ylim(0.65, 0.80)
-ax.set_xlabel('IH value', fontsize=13)
+plt.xticks(k_value_list)
+ax.set_ylim(0.63, 0.80)
+ax.set_xlabel('K value', fontsize=13)
 ax.set_ylabel('Accuracy on the test set (%)', fontsize=13)
 ax.legend()
-
 plt.show()
