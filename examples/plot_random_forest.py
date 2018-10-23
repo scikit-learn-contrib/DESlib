@@ -5,7 +5,7 @@
 # License: BSD 3 clause
 """
 ====================================================================
-Example Random Forest
+Comparing dynamic selection with Random Forest
 ====================================================================
 
 In this example we use a pool of classifiers generated using the Random Forest
