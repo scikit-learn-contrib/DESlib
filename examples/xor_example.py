@@ -12,11 +12,11 @@ This example shows that DS can deal with non-linear problem (XOR) using
 a combination of a few linear base classifiers.
 
 - 14 dynamic selection methods (7 DES and 7 DCS) are evaluated with
-a pool composed of either Perceptrons or Decision stumps as base classifiers.
+  a pool composed of either Perceptrons or Decision stumps as base classifiers.
 
 - This example also compares the performance of Bagging and Boosting (AdaBoost)
-techniques, showing that they fail to properly solve this problem using
-only linear classifiers.
+  techniques, showing that they fail to properly solve this problem using
+  only linear classifiers.
 
 """
 import matplotlib.pyplot as plt
@@ -51,9 +51,9 @@ def plot_classifier_decision(ax, clf, X, mode='line', **params):
     Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
     Z = Z.reshape(xx.shape)
     if mode == 'line':
-       ax.contour(xx, yy, Z, **params)
+        ax.contour(xx, yy, Z, **params)
     else:
-       ax.contourf(xx, yy, Z, **params)
+        ax.contourf(xx, yy, Z, **params)
     ax.set_xlim((np.min(X[:, 0]), np.max(X[:, 0])))
     ax.set_ylim((np.min(X[:, 1]), np.max(X[:, 0])))
 
@@ -80,7 +80,6 @@ def make_grid(x, y, h=.02):
     return xx, yy
 
 
-# Generating and plotting the P2 Dataset:
 rng = np.random.RandomState(1234)
 X, y = make_xor(1000, random_state=rng)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
@@ -145,4 +144,3 @@ for ds in list_ds_stumps:
     ax.set_ylim((np.min(X_test[:, 1]) - 0.1, np.max(X_test[:, 1] + 0.1)))
     ax.set_title(ds.name)
 plt.show()
-

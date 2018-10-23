@@ -291,4 +291,3 @@ def make_xor(n_samples, random_state=None):
     y = np.logical_xor(X[:, 0] > 0.5, X[:, 1] > 0.5)
 
     return X, y
-

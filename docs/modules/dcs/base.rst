@@ -3,5 +3,5 @@ DCS base class
 
 .. automodule:: deslib.dcs.base
 
-.. autoclass:: DCS
+.. autoclass:: BaseDCS
     :members:

@@ -11,5 +11,5 @@ algorithms.
 - Banana 2
 
 
-.. automodule:: deslib.util.diversity
+.. automodule:: deslib.util.datasets
     :members:

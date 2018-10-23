@@ -5,6 +5,7 @@ include = */deslib/*
 omit =
     */setup.py
     deslib/tests/*
+    deslib/util/datasets.py
 
 [report]
 exclude_lines =

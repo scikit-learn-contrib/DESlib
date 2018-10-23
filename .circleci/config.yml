@@ -1,0 +1,62 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version: 2
+jobs:
+  python3:
+    docker:
+      # specify the version you desire here
+      - image: circleci/python:3.6.1
+      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
+    environment:
+      - USERNAME: "Menelau"
+      - DOC_REPO: "DESlib"
+      - DOC_URL: ""
+      - EMAIL: "rafaelmenelau@gmail.com"
+      - MINICONDA_PATH: ~/miniconda
+      - CONDA_ENV_NAME: testenv
+      - PYTHON_VERSION: 3
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+      - run:
+          command: |
+            wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+            chmod +x miniconda.sh && ./miniconda.sh -b -p ~/miniconda
+            export PATH="~/miniconda/bin:$PATH"
+            conda update --yes --quiet conda
+            conda create -n testenv --yes --quiet python=3
+            source activate testenv
+            conda install --yes pip
+            pip install -r requirements-dev.txt
+            pip install .
+            cd docs
+            make html
+      - store_artifacts:
+          path: docs/_build/html
+          destination: docs
+      - store_artifacts:
+          path: ~/log.txt
+      - persist_to_workspace:
+          root: docs/_build/html
+          paths: .
+      - attach_workspace:
+          at: docs/_build/html
+      - run: ls -ltrh docs/_build/html
+    filters:
+      branches:
+        ignore: gh-pages
+
+workflows:
+  version: 2
+  build-doc-and-deploy:
+    jobs:
+      - python3
