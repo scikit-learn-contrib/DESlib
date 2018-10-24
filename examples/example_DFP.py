@@ -5,7 +5,7 @@
 # License: BSD 3 clause
 """
 ====================================================================
-Example DFP
+Using Dynamic Frienemy Pruning (DFP)
 ====================================================================
 
 In this example we show how to apply the dynamic frienemy pruning (DFP) to

@@ -139,6 +139,9 @@ for clf, ax, title in zip(classifiers, sub.flatten(), titles):
     ax.set_ylim(np.min(X[:, 1]), np.max(X[:, 1]))
     ax.set_title(title)
 
+# Setting figure to show
+# sphinx_gallery_thumbnail_number = 3
+
 plt.show()
 
 ###############################################################################
