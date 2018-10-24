@@ -22,6 +22,11 @@ by combining this pool of classifiers using the standard Bagging combination
 approach versus the application of dynamic selection technique to select the
 set of most competent classifiers
 """
+
+###############################################################################
+# Let's start by importing all required modules, and defining helper functions
+# to facilitate plotting the decision boundaries:
+
 import numpy as np
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.datasets import load_breast_cancer
@@ -38,9 +43,16 @@ from deslib.des.knora_e import KNORAE
 from deslib.des.knora_u import KNORAU
 from deslib.des.meta_des import METADES
 
-rng = np.random.RandomState(123)
+###############################################################################
+# Preparing the dataset
+# ---------------------
+# In this part we load the breast cancer dataset from scikit-learn and
+# preprocess it in order to pass to the DS models. An important point here is
+# to normalize the data so that it has zero mean and unit variance, which is
+# a common requirement for many machine learning algorithms.
+# This step can be easily done using the StandardScaler class.
 
-# Generate a classification dataset
+rng = np.random.RandomState(123)
 data = load_breast_cancer()
 X = data.data
 y = data.target
@@ -57,41 +69,57 @@ X_test = scaler.transform(X_test)
 X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train,
                                                     test_size=0.5,
                                                     random_state=rng)
-# Considering a pool composed of 10 base classifiers
 
-# Train a pool of 100 classifiers
+# Train a pool of 100 base classifiers
 pool_classifiers = BaggingClassifier(Perceptron(max_iter=10),
                                      n_estimators=100, random_state=rng)
 pool_classifiers.fit(X_train, y_train)
 
-# Calibrating Perceptrons to estimate probabilities
+# Initialize the DS techniques
+knorau = KNORAU(pool_classifiers)
+kne = KNORAE(pool_classifiers)
+desp = DESP(pool_classifiers)
+ola = OLA(pool_classifiers)
+mcb = MCB(pool_classifiers, random_state=rng)
+
+###############################################################################
+# Calibrating base classifiers
+# -----------------------------
+# Some dynamic selection techniques requires that the base classifiers estimate
+# probabilities in order to estimate its competence level. Since the Perceptron
+# model is not a probabilistic classifier (does not implements the
+# predict_proba method, it needs to be calibrated for
+# probability estimation before being used by such DS techniques. This step can
+# be conducted using the CalibrateClassifierCV class from scikit-learn. Note
+# that in this example we pass a prefited pool of classifiers to the
+# calibration method in order to use exactly the same pool used in the other
+# DS methods.
 calibrated_pool = []
 for clf in pool_classifiers:
     calibrated = CalibratedClassifierCV(base_estimator=clf, cv='prefit')
     calibrated.fit(X_dsel, y_dsel)
     calibrated_pool.append(calibrated)
 
-# Initialize the DS techniques
-knorau = KNORAU(calibrated_pool)
-kne = KNORAE(calibrated_pool)
-desp = DESP(calibrated_pool)
-ola = OLA(calibrated_pool)
-mcb = MCB(calibrated_pool, random_state=rng)
 apriori = APriori(calibrated_pool, random_state=rng)
 meta = METADES(calibrated_pool)
 
-# Fit the des techniques
+
 knorau.fit(X_dsel, y_dsel)
 kne.fit(X_dsel, y_dsel)
 desp.fit(X_dsel, y_dsel)
-
-# Fit the dcs techniques
 ola.fit(X_dsel, y_dsel)
 mcb.fit(X_dsel, y_dsel)
 apriori.fit(X_dsel, y_dsel)
 meta.fit(X_dsel, y_dsel)
 
-# Calculate classification accuracy of each technique
+###############################################################################
+# Evaluating the methods
+# -----------------------
+# Let's now evaluate the methods on the test set. We also use the performance
+# of Bagging (pool of classifiers without any selection) as a baseline
+# comparison. We can see that  the majority of DS methods achieve higher
+# classification accuracy.
+
 print('Evaluating DS techniques:')
 print('Classification accuracy KNORA-Union: ',
       knorau.score(X_test, y_test))
