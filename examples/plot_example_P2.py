@@ -78,6 +78,7 @@ def plot_dataset(X, y, ax=None, title=None, **params):
 # -----------------------
 # Now let's generate and plot the dataset:
 
+
 # Generating and plotting the P2 Dataset:
 rng = np.random.RandomState(1234)
 X, y = make_P2([1000, 1000], random_state=rng)
