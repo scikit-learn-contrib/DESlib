@@ -52,7 +52,8 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-pool_classifiers = BaggingClassifier(Perceptron(), random_state=rng)
+pool_classifiers = BaggingClassifier(Perceptron(max_iter=100),
+                                     random_state=rng)
 pool_classifiers.fit(X_train, y_train)
 
 # Setting with_IH
