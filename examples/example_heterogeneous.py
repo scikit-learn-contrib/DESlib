@@ -1,13 +1,7 @@
-# coding=utf-8
-
-# Author: Rafael Menelau Oliveira e Cruz <rafaelmenelau@gmail.com>
-#
-# License: BSD 3 clause
 """
 ====================================================================
-Using an heterogeneous pool of classifiers
+Example Heterogeneous
 ====================================================================
-
 In this example we show that the framework can also be used using different
 classifier models in the pool of classifiers. Such pool of classifiers are
 called Heterogeneous.
@@ -16,6 +10,7 @@ Here we consider a pool of classifiers composed of a Gaussian Naive Bayes,
 Perceptron, k-NN, Decision tree Linear SVM and Gaussian SVM
 """
 
+# Importing dynamic selection techniques:
 from sklearn.calibration import CalibratedClassifierCV
 # Importing dataset
 from sklearn.datasets import load_breast_cancer
@@ -29,12 +24,11 @@ from sklearn.svm import LinearSVC
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
-# Importing dynamic selection techniques:
 from deslib.dcs.a_posteriori import APosteriori
 from deslib.dcs.lca import LCA
 from deslib.dcs.mcb import MCB
+from deslib.des import RRC
 from deslib.des.knop import KNOP
-from deslib.des.probabilistic import RRC
 
 # Generate a classification dataset
 data = load_breast_cancer()
@@ -54,14 +48,13 @@ X_train, X_dsel, y_train, y_dsel = train_test_split(X, y, test_size=0.5)
 
 model_perceptron = CalibratedClassifierCV(Perceptron(max_iter=100)).fit(
     X_train, y_train)
-model_linear_svm = CalibratedClassifierCV(LinearSVC()).fit(X_train,
-                                                           y_train)
+model_linear_svm = CalibratedClassifierCV(LinearSVC()).fit(X_train, y_train)
 model_svc = SVC(probability=True).fit(X_train, y_train)
 model_bayes = GaussianNB().fit(X_train, y_train)
 model_tree = DecisionTreeClassifier().fit(X_train, y_train)
 model_knn = KNeighborsClassifier(n_neighbors=5).fit(X_train, y_train)
-pool_classifiers = [model_perceptron, model_linear_svm, model_svc,
-                    model_bayes, model_tree, model_knn]
+pool_classifiers = [model_perceptron, model_linear_svm, model_svc, model_bayes,
+                    model_tree, model_knn]
 
 # Initializing the DS techniques
 knop = KNOP(pool_classifiers)
