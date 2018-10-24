@@ -79,7 +79,7 @@ mcb.fit(X_dsel, y_dsel)
 ###############################################################################
 # Plotting the results
 # -----------------------
-# Let's now evaluate the methods on the test set
+# Let's now evaluate the methods on the test set.
 
 rf_score = RF.score(X_test, y_test)
 knorau_score = knorau.score(X_test, y_test)

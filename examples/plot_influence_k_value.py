@@ -5,28 +5,22 @@
 # License: BSD 3 clause
 """
 ====================================================================
-Dynamic selection vs K-NN: Using instance hardness
+Measuring the influence of the region of competence size
 ====================================================================
 
-One aspect about dynamic selection techniques is that it can better deal with
-the classification of test examples associated with high degree of instance
-hardness. Such examples are often found close to the border of the classes,
-with the majority of its neighbors belongind to different classes.
+This example shows how the size of the region of competence (parameter k)
+can influence the final performance of DS techniques.
 
-DESlib already implements a switch mechanism between DS techniques and the KNN
-classifier according to the hardness level of an instance. This example
-varies the threshold in which KNN is used for classification instead of DS
-methods. It also compares the classification results with the standard KNN
-as a baseline.
-
-The switch mechanism also reduces the computational cost involved since part
-of the samples are classified by the DS method.
+In this example we vary the value of the parameter k from 3 to 15 and measure
+the performance of 7 different dynamic selection technique using the same
+pool of classifiers.
 
 """
 
 ###############################################################################
 # Let's start by importing all required modules. In this example we use the
-# new sklearn-OpenML interface to fetch a different classification problem.
+# new sklearn-OpenML interface to fetch the diabetes classification problem.
+
 import numpy as np
 import matplotlib.pyplot as plt
 # DCS techniques
@@ -58,7 +52,6 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-# Training a pool of classifiers using the bagging technique.
 pool_classifiers = BaggingClassifier(Perceptron(), random_state=rng)
 pool_classifiers.fit(X_train, y_train)
 
@@ -73,8 +66,16 @@ rank = Rank(pool_classifiers)
 list_ds_methods = [mcb, ola, des_p, knu, lca, kne, rank]
 names = ['MCB', 'OLA', 'DES-P', 'KNORA-U', 'LCA', 'KNORA-E', 'Rank']
 
-k_value_list = range(3, 15)
-# Plot accuracy x IH
+k_value_list = range(3, 16)
+
+###############################################################################
+# Plot accuracy x region of competence size.
+# -------------------------------------------
+# We can see the this parameter can have a huge influence in the performance
+# of certain DS techniques. The main exception being the KNORA-E and Rank
+# which have built-in mechanism to automatically adjust the region
+# of competence size during the competence level estimation.
+
 fig, ax = plt.subplots()
 for ds_method, name in zip(list_ds_methods, names):
     accuracy = []
@@ -85,8 +86,8 @@ for ds_method, name in zip(list_ds_methods, names):
     ax.plot(k_value_list, accuracy, label=name)
 
 plt.xticks(k_value_list)
-ax.set_ylim(0.63, 0.80)
-ax.set_xlabel('K value', fontsize=13)
+ax.set_ylim(0.60, 0.80)
+ax.set_xlabel('Region of competence size (K value)', fontsize=13)
 ax.set_ylabel('Accuracy on the test set (%)', fontsize=13)
 ax.legend()
 plt.show()

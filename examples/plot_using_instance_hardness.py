@@ -11,7 +11,7 @@ Dynamic selection vs K-NN: Using instance hardness
 One aspect about dynamic selection techniques is that it can better deal with
 the classification of test examples associated with high degree of instance
 hardness. Such examples are often found close to the border of the classes,
-with the majority of its neighbors belongind to different classes.
+with the majority of its neighbors belonging to different classes.
 
 DESlib already implements a switch mechanism between DS techniques and the KNN
 classifier according to the hardness level of an instance. This example
@@ -26,18 +26,17 @@ of the samples are classified by the DS method.
 
 ###############################################################################
 # Let's start by importing all required modules. In this example we use the
-# new sklearn-OpenML interface to fetch a different classification problem.
+# new sklearn-OpenML interface to fetch the diabetes classification problem.
+
 import numpy as np
 import matplotlib.pyplot as plt
-# DCS techniques
-from deslib.dcs.mcb import MCB
-from deslib.dcs.ola import OLA
-from deslib.dcs.rank import Rank
 
-# DES techniques
-from deslib.des.des_p import DESP
-from deslib.des.knora_e import KNORAE
-from deslib.des.knora_u import KNORAU
+from deslib.dcs import MCB
+from deslib.dcs import OLA
+from deslib.dcs import Rank
+from deslib.des import DESP
+from deslib.des import KNORAE
+from deslib.des import KNORAU
 
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import BaggingClassifier
@@ -69,8 +68,10 @@ rank = Rank(pool_classifiers, with_IH=True).fit(X_train, y_train)
 des_p = DESP(pool_classifiers, with_IH=True).fit(X_train, y_train)
 kne = KNORAE(pool_classifiers, with_IH=True).fit(X_train, y_train)
 knu = KNORAU(pool_classifiers, with_IH=True).fit(X_train, y_train)
+
 list_ds_methods = [mcb, ola, rank, des_p, kne, knu]
 names = ['MCB', 'OLA', 'Mod. Rank', 'DES-P', 'KNORA-E', 'KNORA-U']
+
 # Get the performance of KNN as baseline comparison
 knn = KNeighborsClassifier(n_neighbors=7).fit(X_train, y_train)
 
