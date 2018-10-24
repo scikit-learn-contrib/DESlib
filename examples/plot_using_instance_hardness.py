@@ -12,6 +12,9 @@ One aspect about dynamic selection techniques is that it can better deal with
 the classification of test examples associated with high degree of instance
 hardness. Such examples are often found close to the border of the classes,
 with the majority of its neighbors belonging to different classes.
+On the other hand, the KNN method, which is often used to estimate the region
+of competence in DS methods works better in the classification of examples
+associated with low instance hardness [1].
 
 DESlib already implements a switch mechanism between DS techniques and the KNN
 classifier according to the hardness level of an instance. This example
@@ -19,9 +22,14 @@ varies the threshold in which KNN is used for classification instead of DS
 methods. It also compares the classification results with the standard KNN
 as a baseline.
 
-The switch mechanism also reduces the computational cost involved since part
-of the samples are classified by the DS method.
+The switch mechanism also reduces the computational cost involved since only
+part of the test samples are classified by the DS method.
 
+References
+----------
+[1] Cruz, Rafael MO, et al. "Dynamic Ensemble Selection VS K-NN: why and
+when Dynamic Selection obtains higher classification performance?."
+arXiv preprint arXiv:1804.07882 (2018).
 """
 
 ###############################################################################
@@ -30,20 +38,17 @@ of the samples are classified by the DS method.
 
 import numpy as np
 import matplotlib.pyplot as plt
-
 from deslib.dcs import MCB
 from deslib.dcs import OLA
 from deslib.dcs import Rank
 from deslib.des import DESP
 from deslib.des import KNORAE
 from deslib.des import KNORAU
-
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import BaggingClassifier
-from sklearn.linear_model import Perceptron
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.datasets import fetch_openml
-from sklearn.neighbors import KNeighborsClassifier
 
 rng = np.random.RandomState(123456)
 
@@ -58,24 +63,28 @@ X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
 # Training a pool of classifiers using the bagging technique.
-pool_classifiers = BaggingClassifier(Perceptron(), random_state=rng)
+pool_classifiers = BaggingClassifier(DecisionTreeClassifier(),
+                                     random_state=rng)
 pool_classifiers.fit(X_train, y_train)
 
-# Setting with_IH
+###############################################################################
+# Setting DS method to use the switch mechanism
+# ----------------------------------------------
+# In order to activate the functionality to switch between DS and KNN according
+# to the instance hardness level we need to set the DS techniques to use this
+# information. This is done by setting the hyperparameter `with_IH` to True.
+# In this example we consider four different values for te threshold
 mcb = MCB(pool_classifiers, with_IH=True).fit(X_train, y_train)
 ola = OLA(pool_classifiers, with_IH=True).fit(X_train, y_train)
 rank = Rank(pool_classifiers, with_IH=True).fit(X_train, y_train)
 des_p = DESP(pool_classifiers, with_IH=True).fit(X_train, y_train)
 kne = KNORAE(pool_classifiers, with_IH=True).fit(X_train, y_train)
 knu = KNORAU(pool_classifiers, with_IH=True).fit(X_train, y_train)
+list_ih_values = [0.0, 1./7., 2./7., 3./7.]
 
 list_ds_methods = [mcb, ola, rank, des_p, kne, knu]
 names = ['MCB', 'OLA', 'Mod. Rank', 'DES-P', 'KNORA-E', 'KNORA-U']
 
-# Get the performance of KNN as baseline comparison
-knn = KNeighborsClassifier(n_neighbors=7).fit(X_train, y_train)
-
-list_ih_values = [0.0, 0.14, 0.28, 0.42]
 # Plot accuracy x IH
 fig, ax = plt.subplots()
 for ds_method, name in zip(list_ds_methods, names):
