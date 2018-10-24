@@ -16,9 +16,6 @@ a combination of a few linear base classifiers.
 
 
 """
-###############################################################################
-# Let's start by importing all required modules, and defining helper functions
-# to facilitate plotting the decision boundaries:
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,25 +23,23 @@ from sklearn.ensemble import BaggingClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 
-from deslib.dcs.a_posteriori import APosteriori
-from deslib.dcs.a_priori import APriori
-from deslib.dcs.lca import LCA
-from deslib.dcs.mcb import MCB
-from deslib.dcs.mla import MLA
-# DCS techniques
-from deslib.dcs.ola import OLA
-from deslib.dcs.rank import Rank
-from deslib.des.des_clustering import DESClustering
-from deslib.des.des_knn import DESKNN
-# DES techniques
-from deslib.des.des_p import DESP
-from deslib.des.knora_e import KNORAE
-from deslib.des.knora_u import KNORAU
-from deslib.des.meta_des import METADES
+from deslib.dcs import LCA
+from deslib.dcs import MLA
+from deslib.dcs import OLA
+from deslib.dcs import MCB
+from deslib.dcs import Rank
+
+from deslib.des import DESKNN
+from deslib.des import KNORAE
+from deslib.des import KNORAU
+from deslib.des import KNOP
+from deslib.des import METADES
 from deslib.util.datasets import make_xor
 
 
-# Plotting-related functions
+###############################################################################
+# Defining helper functions to facilitate plotting the decision boundaries:
+
 def plot_classifier_decision(ax, clf, X, mode='line', **params):
 
     xx, yy = make_grid(X[:, 0], X[:, 1])
@@ -89,34 +84,41 @@ def initialize_ds(pool_classifiers, X, y, k=5):
     ola = OLA(pool_classifiers, k=k)
     lca = LCA(pool_classifiers, k=k)
     mla = MLA(pool_classifiers, k=k)
-    list_ds = [knorau, kne, ola, lca, mla, desknn]
+    mcb = MCB(pool_classifiers, k=k)
+    rank = Rank(pool_classifiers, k=k)
+    knop = KNOP(pool_classifiers, k=k)
+    meta = METADES(pool_classifiers, k=k)
+
+    list_ds = [knorau, kne, ola, lca, mla, desknn, mcb, rank, knop, meta]
+    names = ['KNORA-U', 'KNORA-E', 'OLA', 'LCA', 'MLA', 'DESKNN', 'MCB',
+             'RANK', 'KNOP', 'META-DES']
     # fit the ds techniques
     for ds in list_ds:
         ds.fit(X, y)
-    return list_ds
+
+    return list_ds, names
 
 
+###############################################################################
+# Generating the dataset and training the pool of classifiers.
+#
 rng = np.random.RandomState(1234)
 X, y = make_xor(1000, random_state=rng)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5,
+                                                    random_state=rng)
 X_DSEL, X_test, y_DSEL, y_test = train_test_split(X_test, y_test,
-                                                  test_size=0.5)
+                                                  test_size=0.5,
+                                                  random_state=rng)
 
-pool_stumps = BaggingClassifier(DecisionTreeClassifier(max_depth=1),
-                                n_estimators=100,
-                                random_state=rng)
-pool_stumps.fit(X_train, y_train)
-
-list_ds_stumps = initialize_ds(pool_stumps, X_DSEL, y_DSEL)
-for ds in list_ds_stumps:
-    print('Accuracy ' + ds.name + ': ' + str(ds.score(X_test, y_test)))
+pool_classifiers = BaggingClassifier(DecisionTreeClassifier(max_depth=1),
+                                     n_estimators=10,
+                                     random_state=rng)
+pool_classifiers.fit(X_train, y_train)
 
 ###############################################################################
-# Get the classification accuracy of the DS abd Bagging methods
-# using the same pool of classifiers.
-
-###############################################################################
-# This example merge the training data with the validation, to create a
+# Merging training and validation data to compose DSEL
+# -----------------------------------------------------
+# In this example merge the training data with the validation, to create a
 # DSEL having more examples for the competence estimation. Using the training
 # data for dynamic selection can be beneficial  when dealing with small sample
 # size datasets. However, in this case we need to have a pool composed of weak
@@ -125,16 +127,36 @@ for ds in list_ds_stumps:
 
 X_DSEL = np.vstack((X_DSEL, X_train))
 y_DSEL = np.hstack((y_DSEL, y_train))
-list_ds_stumps = initialize_ds(pool_stumps, X_DSEL, y_DSEL, k=7)
-for ds in list_ds_stumps:
-    print('Accuracy ' + ds.name + ': ' + str(ds.score(X_test, y_test)))
-print('Accuracy Bagging: ' + str(pool_stumps.score(X_test, y_test)))
+list_ds, names = initialize_ds(pool_classifiers, X_DSEL, y_DSEL, k=7)
+
+fig, sub = plt.subplots(4, 3, figsize=(15, 10))
+plt.subplots_adjust(wspace=0.4, hspace=0.4)
+
+ax_data = sub.flatten()[0]
+ax_bagging = sub.flatten()[1]
+plot_dataset(X_train, y_train, ax=ax_data, title="Training data")
+
+plot_dataset(X_train, y_train, ax=ax_bagging)
+plot_classifier_decision(ax_bagging, pool_classifiers,
+                         X_train, mode='filled', alpha=0.4)
+ax_bagging.set_title("Bagging")
 
 # Plotting the decision border of the DS methods
-for ds in list_ds_stumps:
-    ax = plot_dataset(X, y)
-    plot_classifier_decision(ax, ds, X_test)
-    ax.set_xlim((np.min(X_test[:, 0]) - 0.1, np.max(X_test[:, 0] + 0.1)))
-    ax.set_ylim((np.min(X_test[:, 1]) - 0.1, np.max(X_test[:, 1] + 0.1)))
-    ax.set_title(ds.name)
+for ds, name, ax in zip(list_ds, names, sub.flatten()[2:]):
+    plot_dataset(X_train, y_train, ax=ax)
+    plot_classifier_decision(ax, ds, X_train, mode='filled', alpha=0.4)
+    ax.set_xlim((np.min(X_train[:, 0]) - 0.1, np.max(X_train[:, 0] + 0.1)))
+    ax.set_ylim((np.min(X_train[:, 1]) - 0.1, np.max(X_train[:, 1] + 0.1)))
+    ax.set_title(name)
 plt.show()
+
+###############################################################################
+# Evaluation on the test set
+# --------------------------
+#
+# Finally, let's evaluate the classification accuracy of DS techniques and
+# Bagging on the test set:
+
+for ds, name in zip(list_ds, names):
+    print('Accuracy ' + name + ': ' + str(ds.score(X_test, y_test)))
+print('Accuracy Bagging: ' + str(pool_classifiers.score(X_test, y_test)))
