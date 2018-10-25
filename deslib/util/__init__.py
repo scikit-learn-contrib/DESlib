@@ -18,9 +18,12 @@ given instance
 
 deslib.util.faiss_knn_wrapper - Wrapper for Facebook AI fast similarity search
 on GPU
+
+deslib.util.datasets - Provides methods to generate synthetic data.
 """
 
 from .aggregation import *
 from .diversity import *
 from .instance_hardness import *
 from .prob_functions import *
+from .datasets import *

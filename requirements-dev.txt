@@ -9,5 +9,5 @@ coverage
 pytest-cov
 pillow
 sphinx_gallery
-matplotlib
+matplotlib>=2
 nose
