@@ -1,15 +1,15 @@
 """
 ====================================================================
-Example Heterogeneous
+Example using heterogeneous ensemble
 ====================================================================
-In this example we show that the framework can also be used using different
-classifier models in the pool of classifiers. Such pool of classifiers are
-called Heterogeneous.
+DESlib accepts different classifier models in the pool of classifiers.
+Such pool of classifiers is called Heterogeneous.
 
-Here we consider a pool of classifiers composed of a Gaussian Naive Bayes,
-Perceptron, k-NN, Decision tree Linear SVM and Gaussian SVM
+In this example, we consider a pool of classifiers composed of a
+Gaussian Naive Bayes, Perceptron, k-NN, Decision tree and Gaussian SVM. We
+also compare the result of DS methods with the voting classifier from sklean.
 """
-
+import numpy as np
 # Importing dynamic selection techniques:
 from sklearn.calibration import CalibratedClassifierCV
 # Importing dataset
@@ -19,61 +19,80 @@ from sklearn.linear_model import Perceptron
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import LinearSVC
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble.voting_classifier import VotingClassifier
 
-from deslib.dcs.a_posteriori import APosteriori
-from deslib.dcs.lca import LCA
-from deslib.dcs.mcb import MCB
-from deslib.des import RRC
-from deslib.des.knop import KNOP
+# Example of DCS techniques
+from deslib.dcs import OLA
+from deslib.dcs import MCB
+# Example of DES techniques
+from deslib.des import KNORAE
+from deslib.des import DESP
+from deslib.des import KNORAU
 
-# Generate a classification dataset
+rng = np.random.RandomState(42)
 data = load_breast_cancer()
 X = data.data
 y = data.target
 
 # split the data into training and test data
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)
-
-# Scale the variables to have 0 mean and unit variance
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33,
+                                                    random_state=rng)
 
 # Split the data into training and DSEL for DS techniques
-X_train, X_dsel, y_train, y_dsel = train_test_split(X, y, test_size=0.5)
+X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train,
+                                                    test_size=0.5,
+                                                    random_state=rng)
 
-model_perceptron = CalibratedClassifierCV(Perceptron(max_iter=100)).fit(
+# Split the data into training and DSEL for DS techniques
+X_train, X_dsel, y_train, y_dsel = train_test_split(X, y, test_size=0.5,
+                                                    random_state=rng)
+
+model_perceptron = CalibratedClassifierCV(Perceptron(max_iter=100,
+                                                     random_state=rng)).fit(
     X_train, y_train)
-model_linear_svm = CalibratedClassifierCV(LinearSVC()).fit(X_train, y_train)
-model_svc = SVC(probability=True).fit(X_train, y_train)
+
+model_svc = SVC(probability=True, gamma='auto').fit(X_train, y_train)
 model_bayes = GaussianNB().fit(X_train, y_train)
-model_tree = DecisionTreeClassifier().fit(X_train, y_train)
-model_knn = KNeighborsClassifier(n_neighbors=5).fit(X_train, y_train)
-pool_classifiers = [model_perceptron, model_linear_svm, model_svc, model_bayes,
-                    model_tree, model_knn]
+model_tree = DecisionTreeClassifier(random_state=rng).fit(X_train, y_train)
+model_knn = KNeighborsClassifier(n_neighbors=1).fit(X_train, y_train)
+
+pool_classifiers = [model_perceptron,
+                    model_svc,
+                    model_bayes,
+                    model_tree,
+                    model_knn]
+
+voting_classifiers = [("perceptron", model_perceptron),
+                      ("svc", model_svc),
+                      ("bayes", model_bayes),
+                      ("tree", model_tree),
+                      ("knn", model_knn)]
+
+model_voting = VotingClassifier(estimators=voting_classifiers).fit(
+    X_train, y_train)
 
 # Initializing the DS techniques
-knop = KNOP(pool_classifiers)
-rrc = RRC(pool_classifiers)
-lca = LCA(pool_classifiers)
+knorau = KNORAU(pool_classifiers)
+kne = KNORAE(pool_classifiers)
+desp = DESP(pool_classifiers)
+# DCS techniques
+ola = OLA(pool_classifiers)
 mcb = MCB(pool_classifiers)
-aposteriori = APosteriori(pool_classifiers)
 
 # Fitting the techniques
-knop.fit(X_dsel, y_dsel)
-rrc.fit(X_dsel, y_dsel)
-lca.fit(X_dsel, y_dsel)
+knorau.fit(X_dsel, y_dsel)
+kne.fit(X_dsel, y_dsel)
+desp.fit(X_dsel, y_dsel)
+ola.fit(X_dsel, y_dsel)
 mcb.fit(X_dsel, y_dsel)
-aposteriori.fit(X_dsel, y_dsel)
 
 # Calculate classification accuracy of each technique
 print('Evaluating DS techniques:')
-print('Classification accuracy KNOP: ', knop.score(X_test, y_test))
-print('Classification accuracy RRC: ', rrc.score(X_test, y_test))
-print('Classification accuracy LCA: ', lca.score(X_test, y_test))
-print('Classification accuracy A posteriori: ',
-      aposteriori.score(X_test, y_test))
+print('Classification accuracy of Majority voting the pool: '
+      , model_voting.score(X_test, y_test))
+print('Classification accuracy of KNORA-U: ', knorau.score(X_test, y_test))
+print('Classification accuracy of KNORA-E: ', kne.score(X_test, y_test))
+print('Classification accuracy of DESP: ', desp.score(X_test, y_test))
+print('Classification accuracy of OLA: ', ola.score(X_test, y_test))
