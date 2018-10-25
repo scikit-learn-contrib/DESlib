@@ -87,6 +87,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5,
 fig, axs = plt.subplots(1, 2, figsize=(15, 5))
 plt.subplots_adjust(wspace=0.4, hspace=0.4)
 plot_dataset(X_train, y_train, ax=axs[0], title='P2 Training set')
+plot_dataset(X_test, y_test, ax=axs[1], title='P2 Test set')
 
 
 ###############################################################################
