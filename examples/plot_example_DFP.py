@@ -101,7 +101,7 @@ for fire_ds in list_fire_ds:
 
 ###############################################################################
 # Comparing DS techniques with FIRE-DES techniques
-# -----------------------------------------------
+# ------------------------------------------------
 # Let's now evaluate the DES methods on the test set. Since we are dealing with
 # imbalanced data, we use the area under the roc curve (AUC) as performance
 # metric instead of classification accuracy. The AUC can be easily calculated
