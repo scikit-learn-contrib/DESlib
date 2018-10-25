@@ -48,4 +48,3 @@ print('Evaluating DS techniques:')
 print('Classification accuracy KNORA-Eliminate: ',
       kne.score(X_test, y_test))
 print('Classification accuracy META-DES: ', meta.score(X_test, y_test))
-

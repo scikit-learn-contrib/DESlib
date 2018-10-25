@@ -90,8 +90,8 @@ mcb.fit(X_dsel, y_dsel)
 
 # Calculate classification accuracy of each technique
 print('Evaluating DS techniques:')
-print('Classification accuracy of Majority voting the pool: '
-      , model_voting.score(X_test, y_test))
+print('Classification accuracy of Majority voting the pool: ',
+      model_voting.score(X_test, y_test))
 print('Classification accuracy of KNORA-U: ', knorau.score(X_test, y_test))
 print('Classification accuracy of KNORA-E: ', kne.score(X_test, y_test))
 print('Classification accuracy of DESP: ', desp.score(X_test, y_test))
