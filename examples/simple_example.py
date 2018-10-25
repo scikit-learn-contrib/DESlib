@@ -14,12 +14,12 @@ classification dataset.
 """
 import numpy as np
 from sklearn.datasets import make_classification
-from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from deslib.des import METADES
 from deslib.des import KNORAE
 
 
+# Setting up the random state to have consistent results
 rng = np.random.RandomState(42)
 
 # Generate a classification dataset
@@ -28,17 +28,14 @@ X, y = make_classification(n_samples=1000, random_state=rng)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33,
                                                     random_state=rng)
 
-# Scale the variables to have 0 mean and unit variance
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
-
 # Split the data into training and DSEL for DS techniques
 X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train,
                                                     test_size=0.5,
                                                     random_state=rng)
 
-# Initialize the DS techniques
+# Initialize the DS techniques. DS methods can be initialized without
+# specifying a single input parameter. In this example, we just pass the random
+# state in order to always have the same result.
 kne = KNORAE(random_state=rng)
 meta = METADES(random_state=rng)
 
