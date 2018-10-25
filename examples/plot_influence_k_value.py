@@ -5,7 +5,7 @@
 # License: BSD 3 clause
 """
 ====================================================================
-Measuring the influence of the region of competence size
+Measuring the influence of the region of competence
 ====================================================================
 
 This example shows how the size of the region of competence (parameter k)
@@ -90,5 +90,5 @@ plt.xticks(k_value_list)
 ax.set_ylim(0.60, 0.80)
 ax.set_xlabel('Region of competence size (K value)', fontsize=13)
 ax.set_ylabel('Accuracy on the test set (%)', fontsize=13)
-ax.legend()
+ax.legend(loc='best')
 plt.show()
