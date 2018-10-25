@@ -63,7 +63,7 @@ X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
 # Training a pool of classifiers using the bagging technique.
-pool_classifiers = BaggingClassifier(DecisionTreeClassifier(),
+pool_classifiers = BaggingClassifier(DecisionTreeClassifier(random_state=rng),
                                      random_state=rng)
 pool_classifiers.fit(X_train, y_train)
 
@@ -74,15 +74,16 @@ pool_classifiers.fit(X_train, y_train)
 # to the instance hardness level we need to set the DS techniques to use this
 # information. This is done by setting the hyperparameter `with_IH` to True.
 # In this example we consider four different values for te threshold
-mcb = MCB(pool_classifiers, with_IH=True).fit(X_train, y_train)
-ola = OLA(pool_classifiers, with_IH=True).fit(X_train, y_train)
-rank = Rank(pool_classifiers, with_IH=True).fit(X_train, y_train)
-des_p = DESP(pool_classifiers, with_IH=True).fit(X_train, y_train)
-kne = KNORAE(pool_classifiers, with_IH=True).fit(X_train, y_train)
-knu = KNORAU(pool_classifiers, with_IH=True).fit(X_train, y_train)
+mcb = MCB(pool_classifiers, with_IH=True, random_state=rng)
+ola = OLA(pool_classifiers, with_IH=True, random_state=rng)
+rank = Rank(pool_classifiers, with_IH=True, random_state=rng)
+des_p = DESP(pool_classifiers, with_IH=True, random_state=rng)
+kne = KNORAE(pool_classifiers, with_IH=True, random_state=rng)
+knu = KNORAU(pool_classifiers, with_IH=True, random_state=rng)
 list_ih_values = [0.0, 1./7., 2./7., 3./7.]
 
-list_ds_methods = [mcb, ola, rank, des_p, kne, knu]
+list_ds_methods = [method.fit(X_train, y_train) for method in
+                   [mcb, ola, rank, des_p, kne, knu]]
 names = ['MCB', 'OLA', 'Mod. Rank', 'DES-P', 'KNORA-E', 'KNORA-U']
 
 # Plot accuracy x IH
