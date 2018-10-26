@@ -37,6 +37,11 @@ from sklearn.model_selection import train_test_split
 # Example of a des techniques
 from deslib.des.knora_e import KNORAE
 
+# Example of stacked model
+from deslib.static.stacked import StackedClassifier
+from sklearn.linear_model import LogisticRegression
+
+
 rng = np.random.RandomState(42)
 
 # Generate a classification dataset
@@ -59,6 +64,9 @@ X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train,
 pool_classifiers = RandomForestClassifier(n_estimators=10, max_depth=5,
                                           random_state=rng)
 pool_classifiers.fit(X_train, y_train)
+
+stacked = StackedClassifier(pool_classifiers, LogisticRegression())
+stacked.fit(X_dsel, y_dsel)
 
 # Initialize a DS technique. Here we specify the size of
 # the region of competence (5 neighbors)
@@ -83,6 +91,7 @@ mcb.fit(X_dsel, y_dsel)
 # Let's now evaluate the methods on the test set.
 
 rf_score = RF.score(X_test, y_test)
+stacked_score = stacked.score(X_test, y_test)
 knorau_score = knorau.score(X_test, y_test)
 kne_score = kne.score(X_test, y_test)
 desp_score = desp.score(X_test, y_test)
@@ -90,6 +99,7 @@ ola_score = ola.score(X_test, y_test)
 mcb_score = mcb.score(X_test, y_test)
 meta_score = meta.score(X_test, y_test)
 print('Classification accuracy RF: ', rf_score)
+print('Classification accuracy Stacked: ', stacked_score)
 print('Evaluating DS techniques:')
 print('Classification accuracy KNORA-U: ', knorau_score)
 print('Classification accuracy KNORA-E: ', kne_score)
@@ -100,18 +110,21 @@ print('Classification accuracy META-DES: ', meta_score)
 
 cmap = get_cmap('Dark2')
 colors = [cmap(i) for i in np.linspace(0, 1, 7)]
-labels = ['RF', 'KNORA-U', 'KNORA-E', 'DESP', 'OLA', 'MCB',
+labels = ['RF', 'Stacked', 'KNORA-U', 'KNORA-E', 'DESP', 'OLA', 'MCB',
           'META-DES']
 
 fig, ax = plt.subplots()
 pct_formatter = FuncFormatter(lambda x, pos: '{:.1f}'.format(x * 100))
-ax.bar(np.arange(7),
-       [rf_score, knorau_score, kne_score, desp_score,
+ax.bar(np.arange(8),
+       [rf_score, stacked_score, knorau_score, kne_score, desp_score,
         ola_score, mcb_score, meta_score],
        color=colors,
        tick_label=labels)
-ax.set_ylim(0.93, 0.97)
+ax.set_ylim(0.93, 0.98)
 ax.set_xlabel('Method', fontsize=13)
 ax.set_ylabel('Accuracy on the test set (%)', fontsize=13)
 ax.yaxis.set_major_formatter(pct_formatter)
+for tick in ax.get_xticklabels():
+    tick.set_rotation(45)
+plt.subplots_adjust(bottom=0.15)
 plt.show()
