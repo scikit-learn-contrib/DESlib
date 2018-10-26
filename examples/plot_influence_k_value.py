@@ -57,7 +57,7 @@ pool_classifiers = BaggingClassifier(Perceptron(max_iter=100),
 pool_classifiers.fit(X_train, y_train)
 
 # Setting with_IH
-mcb = MCB(pool_classifiers)
+mcb = MCB(pool_classifiers, random_state=rng)
 ola = OLA(pool_classifiers)
 des_p = DESP(pool_classifiers)
 knu = KNORAU(pool_classifiers)
