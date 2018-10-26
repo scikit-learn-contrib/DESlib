@@ -49,7 +49,8 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25,
 RF = RandomForestClassifier(random_state=rng)
 RF.fit(X_train, y_train)
 
-X_train, X_dsel, y_train, y_dsel = train_test_split(X, y, test_size=0.50,
+X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train,
+                                                    test_size=0.50,
                                                     random_state=rng)
 
 # Training a random forest to be used as the pool of classifiers.
@@ -109,7 +110,7 @@ ax.bar(np.arange(7),
         ola_score, mcb_score, meta_score],
        color=colors,
        tick_label=labels)
-ax.set_ylim(0.93, 1)
+ax.set_ylim(0.93, 0.97)
 ax.set_xlabel('Method', fontsize=13)
 ax.set_ylabel('Accuracy on the test set (%)', fontsize=13)
 ax.yaxis.set_major_formatter(pct_formatter)

@@ -45,10 +45,6 @@ X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train,
                                                     test_size=0.5,
                                                     random_state=rng)
 
-# Split the data into training and DSEL for DS techniques
-X_train, X_dsel, y_train, y_dsel = train_test_split(X, y, test_size=0.5,
-                                                    random_state=rng)
-
 model_perceptron = CalibratedClassifierCV(Perceptron(max_iter=100,
                                                      random_state=rng)).fit(
     X_train, y_train)
