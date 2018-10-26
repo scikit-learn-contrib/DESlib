@@ -11,9 +11,11 @@ Dynamic selection with linear classifiers: XOR example
 This example shows that DS can deal with non-linear problem (XOR) using
 a combination of a few linear base classifiers.
 
-- 6 dynamic selection methods (3 DES and 3 DCS) are evaluated with
+- 10 dynamic selection methods (5 DES and 5 DCS) are evaluated with
   a pool composed of Decision stumps.
 
+- Since we use Bagging to generate the base classifiers, we also
+  included its performance as a baseline comparison.
 
 """
 
