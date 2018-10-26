@@ -25,4 +25,3 @@ def test_predict_all_same(create_X_y, create_pool_all_agree):
     expected[expected == 1] = 0
     predicted_labels = oracle_test.predict(X, y)
     assert np.equal(predicted_labels, expected).all()
-

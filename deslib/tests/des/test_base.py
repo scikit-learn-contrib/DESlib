@@ -26,13 +26,15 @@ def test_selection_method_type(mode):
 
 
 # ------------------------ Testing classify_with_ds -----------------
-"""Example considering a pool composed of 6 base classifiers. The classifiers with index 0, 2, 3 and 5 predicts class 0
+"""Example considering a pool composed of 6 base classifiers. The classifiers
+with index 0, 2, 3 and 5 predicts class 0
 while classifiers with indices_ 1 and 4 predicts class 1.
 """
 
 
-# In this first example only dynamic selection is considered.  Since the selected indices_ are 0, 1 and 5 the expected
-# prediction should be 0 (2 votes).
+# In this first example only dynamic selection is considered.  Since the
+# selected indices_ are 0, 1 and 5 the expected prediction should be 0
+# (2 votes).
 def test_classify_instance_selection():
     query = np.array([-1, 1])
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
@@ -48,26 +50,30 @@ def test_classify_instance_selection():
     assert predicted_label == 0.0
 
 
-# In this first example only dynamic selection is considered.  Since the selected indices_ are 0, 1 and 5 the expected
+# In this first example only dynamic selection is considered.  Since the
+# selected indices_ are 0, 1 and 5 the expected
 # prediction should be 0 (2 votes).
 def test_classify_instance_selection_batch():
     n_samples = 3
     query = np.ones((n_samples, 2))
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
     des_test = BaseDES(pool_classifiers, mode='selection')
-    selected_index = np.array([[True, True, False, False, False, True] * n_samples])
+    selected_index = np.array(
+        [[True, True, False, False, False, True] * n_samples])
     des_test.select = MagicMock(return_value=selected_index)
 
     predictions = []
     for clf in des_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
 
-    predicted_label = des_test.classify_with_ds(query, np.tile(predictions, (n_samples, 1)))
+    predicted_label = des_test.classify_with_ds(query, np.tile(predictions,
+                                                               (n_samples, 1)))
     assert np.allclose(predicted_label, 0) and predicted_label.size == 3
 
 
-# In this example all classifiers are combined, however they are weighted based on the competence level. Even
-# though there is four classifiers giving label 0 and only classifiers 2 giving label 1, the prediction should
+# In this example all classifiers are combined, however they are weighted based
+# on the competence level. Even though there is four classifiers giving label 0
+# and only classifiers 2 giving label 1, the prediction should
 # be 1 due to the classifiers weights
 def test_classify_instance_weighting():
     query = np.array([-1, 1])
@@ -101,11 +107,13 @@ def test_classify_instance_weighting_batch():
     predictions = []
     for clf in des_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    predicted_label = des_test.classify_with_ds(query, np.tile(predictions, (3, 1)))
+    predicted_label = des_test.classify_with_ds(query,
+                                                np.tile(predictions, (3, 1)))
     assert np.allclose(predicted_label, 1) and predicted_label.size == 3
 
 
-# Same example of test_classify_instance_selection, however, since the weights are also used in the hybrid scheme,
+# Same example of test_classify_instance_selection, however, since the weights
+# are also used in the hybrid scheme,
 # the function should return 1 instead of 0.
 def test_classify_instance_hybrid():
     query = np.array([-1, 1])
@@ -128,7 +136,8 @@ def test_classify_instance_hybrid():
     assert expected == predicted_label
 
 
-# Same example of test_classify_instance_selection, however, since the weights are also used in the hybrid scheme,
+# Same example of test_classify_instance_selection, however, since the weights
+# are also used in the hybrid scheme,
 # the function should return 1 instead of 0.
 def test_classify_instance_hybrid_batch():
     query = np.ones((3, 2))
@@ -147,14 +156,16 @@ def test_classify_instance_hybrid_batch():
     for clf in des_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
 
-    predicted_label = des_test.classify_with_ds(query, np.tile(predictions, (3, 1)))
+    predicted_label = des_test.classify_with_ds(query,
+                                                np.tile(predictions, (3, 1)))
     assert np.allclose(predicted_label, expected)
+
 
 # ------------------------ Testing predict_proba -----------------
 
 
-# The prediction of probability here should be an average_rule of the probabilities estimates of the three selected
-# base classifiers
+# The prediction of probability here should be an average_rule of the
+# probabilities estimates of the three selected base classifiers
 def test_predict_proba_selection():
     query = np.array([-1, 1])
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
@@ -178,11 +189,13 @@ def test_predict_proba_selection():
     probabilities = np.array(probabilities)
     probabilities = np.expand_dims(probabilities, axis=0)
 
-    predicted_proba = des_test.predict_proba_with_ds(query, predictions, probabilities)
+    predicted_proba = des_test.predict_proba_with_ds(query, predictions,
+                                                     probabilities)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
 
 
-# The predicted probabilities must also consider the assigned weights of each base classifier
+# The predicted probabilities must also consider the assigned weights of each
+# base classifier
 def test_predict_proba_weighting():
     query = np.array([-1, 1])
     pool_classifiers = create_pool_classifiers()
@@ -204,11 +217,13 @@ def test_predict_proba_weighting():
     probabilities = np.array(probabilities)
     probabilities = np.expand_dims(probabilities, axis=0)
 
-    predicted_proba = des_test.predict_proba_with_ds(query, predictions, probabilities)
+    predicted_proba = des_test.predict_proba_with_ds(query, predictions,
+                                                     probabilities)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
 
 
-# The predicted probabilities must also consider the assigned weights of each base classifier selected
+# The predicted probabilities must also consider the assigned weights of each
+# base classifier selected
 def test_predict_proba_hybrid():
     query = np.array([-1, 1])
     pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
@@ -237,7 +252,8 @@ def test_predict_proba_hybrid():
     probabilities = np.array(probabilities)
     probabilities = np.expand_dims(probabilities, axis=0)
 
-    predicted_proba = des_test.predict_proba_with_ds(query, predictions, probabilities)
+    predicted_proba = des_test.predict_proba_with_ds(query, predictions,
+                                                     probabilities)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
 
 

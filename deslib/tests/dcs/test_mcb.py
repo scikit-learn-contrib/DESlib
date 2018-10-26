@@ -5,12 +5,13 @@ from sklearn.linear_model import Perceptron
 from deslib.dcs.mcb import MCB
 from sklearn.utils.estimator_checks import check_estimator
 
-
 # ex1 the similarity will always be 100%
-bks_dsel_ex1 = np.hstack((np.hstack((np.zeros((15, 1)), np.ones((15, 1)))), np.zeros((15, 1))))
+bks_dsel_ex1 = np.hstack(
+    (np.hstack((np.zeros((15, 1)), np.ones((15, 1)))), np.zeros((15, 1))))
 
 # Change a bit to check if the filtering by similarity is working as intended.
-bks_dsel_ex2 = np.hstack((np.hstack((np.zeros((15, 1)), np.ones((15, 1)))), np.zeros((15, 1))))
+bks_dsel_ex2 = np.hstack(
+    (np.hstack((np.zeros((15, 1)), np.ones((15, 1)))), np.zeros((15, 1))))
 bks_dsel_ex2[1, :] = 2
 
 bks_dsel_ex3 = bks_dsel_ex1 + 1
@@ -57,7 +58,8 @@ def test_estimate_competence2(index, expected, example_estimate_competence):
     competences = mcb_test.estimate_competence(query,
                                                neighbors,
                                                distances=distances,
-                                               predictions=np.atleast_2d(predictions))
+                                               predictions=np.atleast_2d(
+                                                   predictions))
     assert np.isclose(competences, expected).all()
 
 
@@ -67,7 +69,7 @@ def test_estimate_competence_batch(example_estimate_competence):
     _, _, neighbors, distances, dsel_processed, _ = example_estimate_competence
 
     query = np.ones((3, 2))
-    expected = np.array([[0.57142857,  0.71428571,  0.71428571],
+    expected = np.array([[0.57142857, 0.71428571, 0.71428571],
                          [0.71428571, 0.85714286, 0.71428571],
                          [0.57142857, 0.71428571, 0.57142857]])
     mcb_test = MCB()
@@ -82,7 +84,8 @@ def test_estimate_competence_batch(example_estimate_competence):
     competences = mcb_test.estimate_competence(query,
                                                neighbors,
                                                distances=distances,
-                                               predictions=np.tile(predictions, (3, 1)))
+                                               predictions=np.tile(predictions,
+                                                                   (3, 1)))
     assert np.isclose(competences, expected).all()
 
 

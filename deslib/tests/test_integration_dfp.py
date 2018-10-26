@@ -30,9 +30,11 @@ def setup_classifiers():
     rng = np.random.RandomState(654321)
 
     # Generate a classification dataset
-    X, y = make_classification(n_classes=2, n_samples=1000, weights=[0.2, 0.8], random_state=rng)
+    X, y = make_classification(n_classes=2, n_samples=1000, weights=[0.2, 0.8],
+                               random_state=rng)
     # split the data into training and test data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=rng)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33,
+                                                        random_state=rng)
 
     # Scale the variables to have 0 mean and unit variance
     scalar = StandardScaler()
@@ -40,9 +42,12 @@ def setup_classifiers():
     X_test = scalar.transform(X_test)
 
     # Split the data into training and DSEL for DS techniques
-    X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train, test_size=0.5, random_state=rng)
+    X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train,
+                                                        test_size=0.5,
+                                                        random_state=rng)
     # Considering a pool composed of 10 base classifiers
-    pool_classifiers = RandomForestClassifier(n_estimators=10, random_state=rng, max_depth=10)
+    pool_classifiers = RandomForestClassifier(n_estimators=10,
+                                              random_state=rng, max_depth=10)
     pool_classifiers.fit(X_train, y_train)
     return pool_classifiers, X_dsel, y_dsel, X_test, y_test
 
@@ -130,8 +135,9 @@ def test_aposteriori():
     assert np.isclose(a_posteriori.score(X_test, y_test), 0.90000000000000002)
 
 
-# for some reason, the result of the META-DES is different if all tests are executed together than if this test script
-# is executed alone. So, here we are accepting both values.
+# for some reason, the result of the META-DES is different if all tests are
+# executed together than if this test script is executed alone. So, here we are
+# accepting both values.
 def test_meta():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
@@ -186,10 +192,11 @@ def test_static_selection():
 
     static_selection = StaticSelection(pool_classifiers)
     static_selection.fit(X_dsel, y_dsel)
-    assert np.isclose(static_selection.score(X_test, y_test), 0.90606060606060601)
+    assert np.isclose(static_selection.score(X_test, y_test),
+                      0.90606060606060601)
 
 
-# ------------------------------------------ Testing predict_proba -----------------------------------
+# --------------------- Testing predict_proba ---------------------------------
 def test_kne_proba():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 

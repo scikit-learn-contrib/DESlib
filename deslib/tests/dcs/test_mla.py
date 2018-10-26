@@ -36,7 +36,7 @@ def test_estimate_competence_all_ones(index, example_all_ones):
     competences = mla_test.estimate_competence(query,
                                                neighbors,
                                                distances=distances,
-                                               predictions=np.array(predictions))
+                                               predictions=predictions)
 
     assert np.isclose(competences, expected).all()
 
@@ -62,13 +62,13 @@ def test_estimate_competence_batch(example_estimate_competence):
     competences = mla_test.estimate_competence(query,
                                                neighbors=neighbors,
                                                distances=distances,
-                                               predictions=np.array(predictions))
+                                               predictions=predictions)
 
     assert np.allclose(competences, expected, atol=0.01)
 
 
-# in this test case, the target of the neighbors is always different than the predicted. So
-# the estimation of competence should always be zero
+# in this test case, the target of the neighbors is always different than the
+# predicted. So the estimation of competence should always be zero
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_estimate_competence_diff_target(index, example_estimate_competence):
     _, _, neighbors, distances, dsel_processed, _ = example_estimate_competence
@@ -91,7 +91,7 @@ def test_estimate_competence_diff_target(index, example_estimate_competence):
     competences = mla_test.estimate_competence(query,
                                                neighbors,
                                                distances=distances,
-                                               predictions=np.array(predictions))
+                                               predictions=predictions)
 
     assert np.isclose(competences, expected).all()
 
@@ -116,7 +116,7 @@ def test_estimate_competence_kuncheva_ex(example_kuncheva):
     competences = mla_test.estimate_competence(query,
                                                neighbors,
                                                distances=distances,
-                                               predictions=np.array(predictions))
+                                               predictions=predictions)
 
     assert np.allclose(competences, [0.95, 0.95], atol=0.01)
 

@@ -33,9 +33,11 @@ class FaissKNNClassifier:
 
     References
     ----------
-    Johnson, Jeff, Matthijs Douze, and Hervé Jégou. "Billion-scale similarity search with gpus."
+    Johnson, Jeff, Matthijs Douze, and Hervé Jégou. "Billion-scale similarity
+    search with gpus."
     arXiv preprint arXiv:1702.08734 (2017).
     """
+
     def __init__(self, n_neighbors=5, n_jobs=None, algorithm=None):
         self.n_neighbors = n_neighbors
         self.n_jobs = n_jobs
@@ -63,7 +65,9 @@ class FaissKNNClassifier:
         """
         _, idx = self.kneighbors(X, self.n_neighbors)
         class_idx = self.y[idx]
-        counts = np.apply_along_axis(lambda x: np.bincount(x, minlength=self.num_of_classes), axis=1, arr=class_idx.astype(np.int64))
+        counts = np.apply_along_axis(
+            lambda x: np.bincount(x, minlength=self.num_of_classes), axis=1,
+            arr=class_idx.astype(np.int64))
         preds = np.argmax(counts, axis=1)
         return preds
 
@@ -76,16 +80,19 @@ class FaissKNNClassifier:
         X : array of shape = [n_samples, n_features]
             The input data.
 
-        n_neighbors : Number of neighbors to get (default is the value passed to the constructor).
+        n_neighbors : int
+            Number of neighbors to get (default is the value passed to the
+            constructor).
 
         Returns
         -------
         dists : list of shape = [n_samples, k]
-                The distances between the query and each sample in the region of competence. The vector is ordered
-                in an ascending fashion.
+            The distances between the query and each sample in the region of
+            competence. The vector is ordered in an ascending fashion.
 
         idx : list of shape = [n_samples, k]
-              Indices of the instances belonging to the region of competence of the given query sample.
+            Indices of the instances belonging to the region of competence of
+            the given query sample.
         """
         X = np.atleast_2d(X).astype(np.float32)
         dist, idx = self.index.search(X, n_neighbors)
@@ -106,10 +113,11 @@ class FaissKNNClassifier:
         """
         _, idx = self.kneighbors(X, self.n_neighbors)
         class_idx = self.y[idx]
-        counts = np.apply_along_axis(lambda x: np.bincount(x, minlength=self.num_of_classes), axis=1, arr=class_idx.astype(np.int64))
+        counts = np.apply_along_axis(
+            lambda x: np.bincount(x, minlength=self.num_of_classes), axis=1,
+            arr=class_idx.astype(np.int64))
         preds = np.argmax(counts, axis=1)
 
-        #TODO: can probably be improved for a vectorized version
         preds_proba = np.zeros((X.shape[0], self.num_of_classes))
         for i in range(preds.shape[0]):
             preds_proba[i] = counts[i] / self.n_neighbors

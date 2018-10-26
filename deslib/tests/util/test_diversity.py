@@ -96,11 +96,9 @@ def test_double_fault():
     pred1 = np.array([1, 0, 1, 0, 0, 0, 0])
     pred2 = np.array([1, 0, 0, 0, 1, 0, 0])
 
-    actual = double_fault(labels,
-                          pred1,
-                          pred2)
+    actual = double_fault(labels, pred1, pred2)
 
-    assert actual == 3./7  # three common errors out of 7 predictions
+    assert actual == 3. / 7  # three common errors out of 7 predictions
 
 
 def test_q_statistic_ones_zeros(example_diversity_ones_zeros):

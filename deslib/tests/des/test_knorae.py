@@ -45,7 +45,8 @@ def test_select(index, expected, create_pool_classifiers, example_estimate_compe
     assert np.array_equal(selected, expected)
 
 
-# No classifier here is selected, since the always predict class 2 where there are only samples labeled as class 0 and 1
+# No classifier here is selected, since the always predict class 2 where there
+# are only samples labeled as class 0 and 1
 # in the region of competence
 def test_select_none_competent():
 
@@ -66,6 +67,3 @@ def test_predict_proba(create_X_y):
     clf1 = Perceptron()
     clf1.fit(X, y)
     KNORAE([clf1, clf1]).fit(X, y)
-
-
-

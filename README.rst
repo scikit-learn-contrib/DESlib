@@ -2,7 +2,7 @@
     :target: http://deslib.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-.. image:: https://circleci.com/gh/Menelau/DESlib.svg?style=svg
+.. image:: https://circleci.com/gh/Menelau/DESlib.svg?style=shield
     :target: https://circleci.com/gh/Menelau/DESlib
 
 .. image:: https://travis-ci.org/Menelau/DESlib.svg?branch=master
@@ -10,10 +10,10 @@
 
 .. image:: https://codecov.io/gh/Menelau/DESlib/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/Menelau/DESlib
-
-.. image:: https://landscape.io/github/Menelau/DESlib/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/Menelau/DESlib/master
-   :alt: Code Health
+    
+.. image:: https://api.codacy.com/project/badge/Grade/59500eecc5524c59b9eb2284b43ae3e6
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/app/Menelau/DESlib?
 
 .. image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
     :target: https://opensource.org/licenses/BSD-3-Clause
@@ -148,7 +148,7 @@ Citation
 
 If you use DESLib in a scientific paper, please consider citing the following paper:
 
-Rafael M. O. Cruz, Luiz G. Hafemann, Robert Sabourin and George D. C. Cavalcanti **DESlib: A Dynamic ensemble selection library in Python.** arXiv preprint arXiv:1802.04967 (2018).
+Rafael M. O. Cruz, Luiz G. Hafemann, Robert Sabourin and George D. C. Cavalcanti `DESlib: A Dynamic ensemble selection library in Python. <https://arxiv.org/abs/1802.04967>`_ arXiv preprint arXiv:1802.04967 (2018).
 
 .. code-block:: text
 

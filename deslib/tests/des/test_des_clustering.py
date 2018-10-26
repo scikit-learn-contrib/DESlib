@@ -13,30 +13,33 @@ def test_check_estimator():
     check_estimator(DESClustering)
 
 
-""" Considering a test scenario in which all samples from class 0 are indexed in cluster n. 0 and classes_ 1 to cluster
-n. 1. For this example, the base classifiers that always predicts 0 should me most accurate on the cluster 0, while
-the base classifiers that predicts 1 for the cluster with index == 1.
+""" Considering a test scenario in which all samples from class 0 are indexed
+in cluster n. 0 and classes_ 1 to cluster n. 1. For this example, the base
+classifiers that always predicts 0 should me most accurate on the cluster 0,
+while the base classifiers that predicts 1 for the cluster with index == 1.
 """
 
 """ In this test scenario, each cluster contains samples from classes_ 1 and 2.
 """
-return_cluster_index_ex2 = np.array([0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1])
+return_cluster_index_ex2 = np.array(
+    [0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1])
 
 
 def test_fit_homogeneous_clusters(create_pool_classifiers, example_estimate_competence):
 
     clustering_test = DESClustering(create_pool_classifiers*2,
                                     clustering=KMeans(n_clusters=2),
-                                    pct_accuracy=0.5,
-                                    pct_diversity=0.33)
+                                    pct_accuracy=0.5, pct_diversity=0.33)
 
     X, y = example_estimate_competence[0:2]
     clustering_test.clustering.predict = MagicMock(return_value=y)
 
     clustering_test.fit(X, y)
 
-    assert clustering_test.accuracy_cluster_[0, 1] == 0.0 and clustering_test.accuracy_cluster_[0, [0, 2]].all() == 1.0
-    assert clustering_test.accuracy_cluster_[1, 1] == 1.0 and clustering_test.accuracy_cluster_[1, [0, 2]].all() == 0.0
+    assert (clustering_test.accuracy_cluster_[0, 1] == 0.0 and
+            clustering_test.accuracy_cluster_[0, [0, 2]].all() == 1.0)
+    assert (clustering_test.accuracy_cluster_[1, 1] == 1.0 and
+            clustering_test.accuracy_cluster_[1, [0, 2]].all() == 0.0)
     for idx in clustering_test.indices_[0, :]:
         assert idx in (0, 2, 3, 5)
 
@@ -52,11 +55,15 @@ def test_fit_heterogeneous_clusters(example_estimate_competence, create_pool_cla
     clustering_test.clustering.predict = MagicMock(return_value=return_cluster_index_ex2)
     clustering_test.fit(X, y)
 
-    # Index selected should be of any classifier that predicts the class label 0
-    assert np.isclose(clustering_test.accuracy_cluster_[:, 1], [0.428, 0.375], atol=0.01).all()
-    assert np.isclose(clustering_test.accuracy_cluster_[:, 0], [0.572, 0.625], atol=0.01).all()
-    assert clustering_test.indices_[0, 0] == 0 or clustering_test.indices_[0, 0] == 2
-    assert clustering_test.indices_[1, 0] == 0 or clustering_test.indices_[1, 0] == 2
+    # Index selected should be of any classifier that predicts the label 0
+    assert np.isclose(clustering_test.accuracy_cluster_[:, 1], [0.428, 0.375],
+                      atol=0.01).all()
+    assert np.isclose(clustering_test.accuracy_cluster_[:, 0], [0.572, 0.625],
+                      atol=0.01).all()
+    assert clustering_test.indices_[0, 0] == 0 or clustering_test.indices_[
+        0, 0] == 2
+    assert clustering_test.indices_[1, 0] == 0 or clustering_test.indices_[
+        1, 0] == 2
 
 
 def test_estimate_competence(create_pool_classifiers, example_estimate_competence):
@@ -64,8 +71,7 @@ def test_estimate_competence(create_pool_classifiers, example_estimate_competenc
     query = np.atleast_2d([1, 1])
     clustering_test = DESClustering(create_pool_classifiers*2,
                                     clustering=KMeans(n_clusters=2),
-                                    pct_accuracy=0.5,
-                                    pct_diversity=0.33)
+                                    pct_accuracy=0.5, pct_diversity=0.33)
 
     X, y = example_estimate_competence[0:2]
 
@@ -87,16 +93,17 @@ def test_fit_clusters_less_diverse(example_estimate_competence, create_pool_clas
 
     clustering_test = DESClustering(create_pool_classifiers*2,
                                     clustering=KMeans(n_clusters=2),
-                                    pct_accuracy=0.5,
-                                    pct_diversity=0.33,
+                                    pct_accuracy=0.5, pct_diversity=0.33,
                                     more_diverse=False)
     X, y = example_estimate_competence[0:2]
 
     clustering_test.clustering.predict = MagicMock(return_value=y)
     clustering_test.fit(X, y)
 
-    assert clustering_test.accuracy_cluster_[0, 1] == 0.0 and clustering_test.accuracy_cluster_[0, [0, 2]].all() == 1.0
-    assert clustering_test.accuracy_cluster_[1, 1] == 1.0 and clustering_test.accuracy_cluster_[1, [0, 2]].all() == 0.0
+    assert (clustering_test.accuracy_cluster_[0, 1] == 0.0 and
+            clustering_test.accuracy_cluster_[0, [0, 2]].all() == 1.0)
+    assert (clustering_test.accuracy_cluster_[1, 1] == 1.0 and
+            clustering_test.accuracy_cluster_[1, [0, 2]].all() == 0.0)
     for idx in clustering_test.indices_[0, :]:
         assert idx in (1, 3, 4, 5)
 

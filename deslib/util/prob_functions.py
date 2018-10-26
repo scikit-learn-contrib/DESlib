@@ -8,19 +8,23 @@ import numpy.matlib as npm
 from scipy.special import betainc
 from scipy.stats import entropy
 
-"""This file contains the implementation of several functions used to estimate the competence
-level of a base classifiers based on posterior probabilities predicted for each class.
+"""This file contains the implementation of several functions used to estimate
+the competence level of a base classifiers based on posterior probabilities
+predicted for each class.
 
 Reference
 ----------
-T.Woloszynski, M. Kurzynski, A probabilistic model of classifier competence for dynamic ensemble selection,
+T.Woloszynski, M. Kurzynski, A probabilistic model of classifier competence for
+dynamic ensemble selection,
 Pattern Recognition 44 (2011) 2656–2668.
 
-R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier selection: Recent advances and perspectives,”
+R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier
+selection: Recent advances and perspectives,”
 Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
-B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
-multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197–206.
+B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics
+and application to the design of multiple classifier systems., in: Computer
+recognition systems 4., 2011, pp. 197–206.
 """
 
 
@@ -31,20 +35,22 @@ def exponential_func(n_classes, support_correct):
     Parameters
     ----------
     n_classes : int
-                The number of classes in the problem
+        The number of classes in the problem
 
     support_correct: array of shape = [n_samples]
-                    containing the supports obtained by the base classifier for the correct class
+        containing the supports obtained by the base classifier for the correct
+        class
 
     Returns
     -------
     C_src : array of shape = [n_samples]
-            representing the classifier competences at each data point
+        Representing the classifier competences at each data point
     """
     support_correct[support_correct > 1.0] = 1.0
     support_correct[support_correct < 0.0] = 0.0
-    temp = (1.0 - ((n_classes - 1.0) * support_correct) / (1.0 - support_correct))
-    C_src = (1.0 - (2**temp))
+    temp = (1.0 - ((n_classes - 1.0) * support_correct) / (
+                1.0 - support_correct))
+    C_src = (1.0 - (2 ** temp))
     return C_src
 
 
@@ -55,10 +61,11 @@ def log_func(n_classes, support_correct):
     Parameters
     ----------
     n_classes : int
-                The number of classes in the problem
+        The number of classes in the problem
 
     support_correct: array of shape = [n_samples]
-                    containing the supports obtained by the base classifier for the correct class
+        Containing the supports obtained by the base classifier for the correct
+        class
 
     Returns
     -------
@@ -67,8 +74,9 @@ def log_func(n_classes, support_correct):
 
     References
     ----------
-    T.Woloszynski, M. Kurzynski, A measure of competence based on randomized reference classifier for dynamic
-    ensemble selection, in: International Conference on Pattern Recognition (ICPR), 2010, pp. 4194–4197.
+    T.Woloszynski, M. Kurzynski, A measure of competence based on randomized
+    reference classifier for dynamic ensemble selection, in: International
+    Conference on Pattern Recognition (ICPR), 2010, pp. 4194–4197.
     """
 
     support_correct[support_correct > 1] = 1
@@ -85,62 +93,67 @@ def log_func(n_classes, support_correct):
 
 def entropy_func(n_classes, supports, is_correct):
     """Calculate the entropy in the support obtained by
-    the base classifier. The value of the source competence is inverse proportional to
-    the normalized entropy of its supports vector and the sign of competence is simply
-    determined  by the correct/incorrect classification.
+    the base classifier. The value of the source competence is inverse
+    proportional to the normalized entropy of its supports vector and the sign
+    of competence is simply determined  by the correct/incorrect classification
 
     Parameters
     ----------
     n_classes : int
-                The number of classes in the problem
+        The number of classes in the problem
 
     supports: array of shape = [n_samples, n_classes]
-              containing the supports obtained by the base classifier for each class.
+        Containing the supports obtained by the base classifier for each class.
 
     is_correct: array of shape = [n_samples]
-                array with 1 whether the base classifier predicted the correct label and -1 otherwise
+        Array with 1 whether the base classifier predicted the correct label
+        and -1 otherwise
 
     Returns
     -------
     C_src : array of shape = [n_samples]
-            representing the classifier competences at each data point
+        Representing the classifier competences at each data point
 
     References
     ----------
-    B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
-    multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197–206.
+    B. Antosik, M. Kurzynski, New measures of classifier competence –
+    heuristics and application to the design of multiple classifier systems.,
+    in: Computer recognition systems 4., 2011, pp. 197–206.
     """
     n_samples = is_correct.shape[0]
     if n_samples != supports.shape[0]:
         raise ValueError("The number of samples in X and y must be the same"
-                         "n_samples X = {}, n_samples y = {} " .format(n_samples, supports.shape[0]))
+                         "n_samples X = {}, n_samples y = {} ".format(
+                           n_samples, supports.shape[0]))
 
     supports[supports > 1.0] = 1.0
     supports[supports < 0.0] = 0.0
 
     C_src = np.zeros(n_samples)
     for index in range(n_samples):
-        C_src[index] = (1.0/np.log(n_classes)) * (entropy(supports[index, :]))
+        C_src[index] = (1.0 / np.log(n_classes)) * (
+            entropy(supports[index, :]))
         C_src[index] += ((2 * is_correct[index]) - 1)
     return C_src
 
 
 def ccprmod(supports, idx_correct_label, B=20):
-    """Python implementation of the ccprmod.m (Classifier competence based on probabilistic modelling)
+    """Python implementation of the ccprmod.m (Classifier competence based on
+    probabilistic modelling)
     function. Matlab code is available at:
     http://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/28391/versions/6/previews/ccprmod.m/index.html
 
     Parameters
     ----------
     supports: array of shape = [n_samples, n_classes]
-              containing the supports obtained by the base classifier for each class.
+        Containing the supports obtained by the base classifier for each class.
 
     idx_correct_label: array of shape = [n_samples]
                        containing the index of the correct class.
 
     B : int (Default = 20)
-        number of points used in the calculation of the competence, higher values result
-        in a more accurate estimation.
+        number of points used in the calculation of the competence, higher
+        values result in a more accurate estimation.
 
     Returns
     -------
@@ -156,14 +169,19 @@ def ccprmod(supports, idx_correct_label, B=20):
 
     References
     ----------
-    T.Woloszynski, M. Kurzynski, A probabilistic model of classifier competence for dynamic ensemble selection,
+    T.Woloszynski, M. Kurzynski, A probabilistic model of classifier competence
+    for dynamic ensemble selection,
     Pattern Recognition 44 (2011) 2656–2668.
     """
     if not isinstance(B, int):
-        raise TypeError('Parameter B should be an integer. Currently B is {0}' .format(type(B)))
+        raise TypeError(
+            'Parameter B should be an integer. '
+            'Currently B is {0}'.format(type(B)))
 
     if B <= 0 or B is None:
-        raise ValueError('The parameter B should be higher than 0. Currently B is {0}' .format(B))
+        raise ValueError(
+            'The parameter B should be higher than 0. '
+            'Currently B is {0}'.format(B))
 
     supports = np.asarray(supports)
     idx_correct_label = np.array(idx_correct_label)
@@ -177,7 +195,7 @@ def ccprmod(supports, idx_correct_label, B=20):
     a = npm.zeros(x.shape)
 
     for c in range(C):
-        a[:, c*B:(c+1)*B] = C * supports[:, c:c+1]
+        a[:, c * B:(c + 1) * B] = C * supports[:, c:c + 1]
 
     b = C - a
 
@@ -189,36 +207,40 @@ def ccprmod(supports, idx_correct_label, B=20):
 
     C_src = np.zeros(N)
     for n in range(N):
-        t = range((idx_correct_label[n])*B, (idx_correct_label[n]+1)*B)
+        t = range((idx_correct_label[n]) * B, (idx_correct_label[n] + 1) * B)
         bc = betaincj[n, t]
-        bi = betaincj[n, list(set(range(0, (C*B))) - set(t))]
-        bi = npm.transpose(npm.reshape(bi, (B, C-1), order='F'))
-        C_src[n] = np.sum(np.multiply((bc[0, 1:] - bc[0, 0:-1]), np.prod((bi[:, 0:-1] + bi[:, 1:])/2, 0)))
+        bi = betaincj[n, list(set(range(0, (C * B))) - set(t))]
+        bi = npm.transpose(npm.reshape(bi, (B, C - 1), order='F'))
+        C_src[n] = np.sum(np.multiply((bc[0, 1:] - bc[0, 0:-1]),
+                                      np.prod((bi[:, 0:-1] + bi[:, 1:]) / 2,
+                                              0)))
 
     return C_src
 
 
 def min_difference(supports, idx_correct_label):
-    """The minimum difference between the supports obtained for the correct class and the vector of class supports.
-    The value of the source competence is negative if the sample is misclassified and positive otherwise.
+    """The minimum difference between the supports obtained for the correct
+    class and the vector of class supports. The value of the source competence
+    is negative if the sample is misclassified and positive otherwise.
 
     Parameters
     ----------
     supports: array of shape = [n_samples, n_classes]
-              containing the supports obtained by the base classifier for each class
+        Containing the supports obtained by the base classifier for each class
 
     idx_correct_label: array of shape = [n_samples]
-                       containing the index of the correct class
+        Containing the index of the correct class
 
     Returns
     -------
     C_src : array of shape = [n_samples]
-            representing the classifier competences at each data point
+        Representing the classifier competences at each data point
 
     References
     ----------
-    B. Antosik, M. Kurzynski, New measures of classifier competence – heuristics and application to the design of
-    multiple classifier systems., in: Computer recognition systems 4., 2011, pp. 197–206.
+    B. Antosik, M. Kurzynski, New measures of classifier competence –
+    heuristics and application to the design of multiple classifier systems.,
+    in: Computer recognition systems 4., 2011, pp. 197–206.
     """
     n_samples = len(idx_correct_label)
     # Boolean mask for the correct class
@@ -229,17 +251,19 @@ def min_difference(supports, idx_correct_label):
     # Get supports for the other classes
     supports_others = supports[~mask]
 
-    if len(supports_others) == 0:  # Corner case where there is a single class in y_train
+    if len(supports_others) == 0:
+        # Corner case where there is a single class in y_train
         supports_others = np.zeros_like(supports_correct)
 
-    difference = supports_correct.reshape(-1, 1) - supports_others.reshape(supports_correct.size, -1)
+    difference = supports_correct.reshape(-1, 1) - supports_others.reshape(
+        supports_correct.size, -1)
     C_src = np.sort(difference, axis=1)[:, 0]
     return C_src
 
 
 def softmax(w, theta=1.0):
-    """Takes an vector w of S N-element and returns a vectors where each column of the
-    vector sums to 1, with elements exponentially proportional to the
+    """Takes an vector w of S N-element and returns a vectors where each column
+    of the vector sums to 1, with elements exponentially proportional to the
     respective elements in N.
 
     Parameters
@@ -252,8 +276,8 @@ def softmax(w, theta=1.0):
     Returns
     -------
     dist : array of shape = [N, M]
-           which the sum of each row sums to 1 and the elements are exponentially proportional to the
-           respective elements in N
+        Which the sum of each row sums to 1 and the elements are exponentially
+        proportional to the respective elements in N
 
     """
     w = np.atleast_2d(w)

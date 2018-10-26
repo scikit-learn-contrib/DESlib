@@ -27,13 +27,14 @@ def test_estimate_competence_batch(example_estimate_competence):
     predictions = np.array([[0, 1, 0]])
     competences = lca_test.estimate_competence(query, neighbors,
                                                distances=distances,
-                                               predictions=np.array(predictions))
+                                               predictions=np.array(
+                                                   predictions))
 
     assert np.isclose(competences, expected).all()
 
 
-# in this test case, the target of the neighbors is always different than the predicted class. So
-# the estimation of competence should always be zero
+# in this test case, the target of the neighbors is always different than
+# the predicted class. So the estimation of competence should always be zero
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_estimate_competence_diff_target(index, example_estimate_competence):
     _, y, neighbors, distances, dsel_processed, _ = example_estimate_competence
@@ -52,7 +53,8 @@ def test_estimate_competence_diff_target(index, example_estimate_competence):
     competences = lca_test.estimate_competence(query,
                                                neighbors,
                                                distances=distances,
-                                               predictions=np.array(predictions))
+                                               predictions=np.array(
+                                                   predictions))
 
     assert np.isclose(competences, expected).all()
 

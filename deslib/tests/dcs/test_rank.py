@@ -17,7 +17,8 @@ def test_estimate_competence_batch(example_estimate_competence):
     rank_test = Rank()
     rank_test.DSEL_processed_ = dsel_processed
     query = np.array([[1, 1], [1, 1], [1, 1]])
-    competences = rank_test.estimate_competence(query, neighbors, distances=distances)
+    competences = rank_test.estimate_competence(query, neighbors,
+                                                distances=distances)
     assert np.allclose(competences, expected)
 
 
@@ -30,6 +31,3 @@ def test_predict_proba(create_X_y):
     clf1 = Perceptron()
     clf1.fit(X, y)
     Rank([clf1, clf1]).fit(X, y)
-
-
-

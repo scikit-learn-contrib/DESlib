@@ -57,14 +57,15 @@ def test_compute_meta_features(example_estimate_competence, create_pool_classifi
 
     neighbors_op = neighbors[2, 0:meta_test.Kp]
 
-# Expected values for each meta feature based on the data of ex1.
+    # Expected values for each meta feature based on the data of ex1.
     expected_f1 = [1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0]
     expected_f2 = [1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0]
-    expected_f3 = [4.0/7.0]
+    expected_f3 = [4.0 / 7.0]
     expected_f4 = [0.0, 1.0, 1.0, 1.0, 0.0]
     expected_f5 = [0.5]
 
-    scores = np.empty((query.shape[0], meta_test.n_classifiers_, meta_test.n_classes_))
+    scores = np.empty(
+        (query.shape[0], meta_test.n_classifiers_, meta_test.n_classes_))
     for index, clf in enumerate(meta_test.pool_classifiers):
         scores[:, index, :] = clf.predict_proba(query)
 
@@ -130,7 +131,8 @@ def test_estimate_competence_batch(example_estimate_competence, create_pool_clas
     probabilities = np.array(probabilities).transpose((1, 0, 2))
 
     expected = np.ones((3, 3)) * 0.8
-    competences = meta_test.estimate_competence_from_proba(query, neighbors, probabilities)
+    competences = meta_test.estimate_competence_from_proba(query, neighbors,
+                                                           probabilities)
     assert np.array_equal(competences, expected)
 
 
@@ -152,7 +154,8 @@ def test_select_batch():
     assert np.array_equal(selected_matrix, expected)
 
 
-# 10 samples, no classifier is selected so the array should return all True (10 x 3)
+# 10 samples, no classifier is selected so the array should return all
+# True (10 x 3)
 def test_select_no_competent_classifiers_batch():
     meta_test = METADES()
     meta_test.n_classifiers_ = 3
@@ -161,14 +164,15 @@ def test_select_no_competent_classifiers_batch():
     assert np.all(selected_matrix)
 
 
-# Test the sample selection mechanism considering 5 test samples and 15 base classifiers. The agreement is computed
+# Test the sample selection mechanism considering 5 test samples and 15 base
+# classifiers. The agreement is computed
 # for all samples at the same time
 def test_sample_selection():
     meta_test = METADES()
     meta_test.n_classifiers_ = 15
     meta_test.DSEL_processed_ = np.ones((5, 15))
     meta_test.DSEL_processed_[(1, 3, 4), 5:] = 0
-    expected = np.asarray([1, 1/3, 1, 1/3, 1/3])
+    expected = np.asarray([1, 1 / 3, 1, 1 / 3, 1 / 3])
     value = meta_test._sample_selection_agreement()
     assert np.array_equal(value, expected)
 
@@ -178,7 +182,7 @@ def test_sample_selection_working():
     meta_test.n_classifiers_ = 15
     meta_test.DSEL_processed_ = np.ones((5, 15))
     meta_test.DSEL_processed_[(1, 3, 4), 5:] = 0
-    expected = np.asarray([1, 1/3, 1, 1/3, 1/3])
+    expected = np.asarray([1, 1 / 3, 1, 1 / 3, 1 / 3])
     value = meta_test._sample_selection_agreement()
     assert np.array_equal(value, expected)
 

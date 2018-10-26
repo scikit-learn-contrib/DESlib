@@ -25,8 +25,10 @@ def test_fit(example_static_selection):
     static_selection_test.fit(X, y)
 
     assert static_selection_test.n_classifiers_ensemble_ == 50
-    assert static_selection_test.n_classifiers_ensemble_ == len(static_selection_test.clf_indices_)
-    assert np.array_equal(np.sort(static_selection_test.clf_indices_), list(range(50, 100)))
+    assert static_selection_test.n_classifiers_ensemble_ == len(
+        static_selection_test.clf_indices_)
+    assert np.array_equal(np.sort(static_selection_test.clf_indices_),
+                          list(range(50, 100)))
 
 
 # The classifier with highest accuracy always predicts 0. So the expected prediction should always be equal zero.

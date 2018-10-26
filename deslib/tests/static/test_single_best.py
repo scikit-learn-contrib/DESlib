@@ -21,7 +21,8 @@ def test_fit(create_X_y, create_pool_classifiers):
     single_best_test = SingleBest(pool_classifiers)
     single_best_test.fit(X, y)
 
-    assert single_best_test.best_clf_index_ == 0 or single_best_test.best_clf_index_ == 2
+    assert (single_best_test.best_clf_index_ == 0 or
+            single_best_test.best_clf_index_ == 2)
 
 
 # The classifier with highest accuracy always predicts 0. So the expected prediction should always be equal zero.
@@ -45,7 +46,8 @@ def test_predict_proba(create_X_y, create_pool_classifiers):
     single_best_test.fit(X, y)
 
     predicted_proba = single_best_test.predict_proba(X)
-    assert np.equal(predicted_proba, pool_classifiers[0].predict_proba(X)).all()
+    assert np.equal(predicted_proba,
+                    pool_classifiers[0].predict_proba(X)).all()
 
 
 def test_not_fitted():
@@ -60,7 +62,7 @@ def test_not_predict_proba(create_X_y):
 
     classifier = MagicMock()
     classifier.predict.return_value = [0]
-    single_best_test = SingleBest([classifier]*10)
+    single_best_test = SingleBest([classifier] * 10)
     single_best_test.fit(X, y)
     with pytest.raises(ValueError):
         single_best_test.predict_proba(X)
