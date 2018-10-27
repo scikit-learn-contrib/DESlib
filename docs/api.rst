@@ -52,7 +52,7 @@ Static ensembles
 -----------------------------------
 
 This module provides the implementation of static ensemble techniques that are usually used as a baseline for the
-comparison of DS methods: Single Best (SB), Static Selection (SS) and Oracle.
+comparison of DS methods: Single Best (SB), Static Selection (SS), Stacked classifier and Oracle.
 
 
 .. automodule:: deslib.static
@@ -63,6 +63,7 @@ comparison of DS methods: Single Best (SB), Static Selection (SS) and Oracle.
     modules/static/oracle
     modules/static/single_best
     modules/static/static_selection
+    modules/static/stacked
 
 Utils
 -----------------------------------

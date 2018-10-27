@@ -5,9 +5,7 @@ from deslib.static.base import BaseStaticEnsemble
 
 
 class StackedClassifier(BaseStaticEnsemble):
-    """Classification method that selects the classifier in the pool with
-    highest score to be used for classification. Usually, the performance of
-    the single best classifier is estimated based on the validation data.
+    """ A Stacking classifier.
 
     Parameters
     ----------
