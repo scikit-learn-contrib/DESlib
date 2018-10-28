@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+
 from deslib.static.base import BaseStaticEnsemble
 
 
@@ -33,6 +34,7 @@ class StackedClassifier(BaseStaticEnsemble):
     Kuncheva, Ludmila I. Combining pattern classifiers: methods and algorithms.
     John Wiley & Sons, 2004.
     """
+
     def __init__(self,
                  pool_classifiers=None,
                  meta_classifier=None,
@@ -64,7 +66,9 @@ class StackedClassifier(BaseStaticEnsemble):
 
         # Prepare the meta-classifier
         if self.meta_classifier is None:
-            self.meta_classifier_ = LogisticRegression(
+            self.meta_classifier_ = LogisticRegression(solver='lbfgs',
+                                                       multi_class='auto',
+                                                       max_iter=1000,
                 random_state=self.random_state_)
 
         else:
