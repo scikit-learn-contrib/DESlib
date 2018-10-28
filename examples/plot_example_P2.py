@@ -28,18 +28,18 @@ from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-from deslib.util.datasets import make_P2
 
 # Importing DS techniques
 from deslib.dcs.ola import OLA
 from deslib.dcs.rank import Rank
 from deslib.des.des_p import DESP
 from deslib.des.knora_e import KNORAE
+from deslib.static import StackedClassifier
+from deslib.util.datasets import make_P2
 
 
 # Plotting-related functions
 def make_grid(x, y, h=.02):
-
     x_min, x_max = x.min() - 1, x.max() + 1
     y_min, y_max = y.min() - 1, y.max() + 1
     xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
@@ -48,7 +48,6 @@ def make_grid(x, y, h=.02):
 
 
 def plot_classifier_decision(ax, clf, X, mode='line', **params):
-
     xx, yy = make_grid(X[:, 0], X[:, 1])
 
     Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
@@ -62,7 +61,6 @@ def plot_classifier_decision(ax, clf, X, mode='line', **params):
 
 
 def plot_dataset(X, y, ax=None, title=None, **params):
-
     if ax is None:
         ax = plt.gca()
     ax.scatter(X[:, 0], X[:, 1], marker='o', c=y, s=25,
@@ -72,6 +70,7 @@ def plot_dataset(X, y, ax=None, title=None, **params):
     if title is not None:
         ax.set_title(title)
     return ax
+
 
 ###############################################################################
 # Visualizing the dataset
@@ -88,7 +87,6 @@ fig, axs = plt.subplots(1, 2, figsize=(15, 5))
 plt.subplots_adjust(wspace=0.4, hspace=0.4)
 plot_dataset(X_train, y_train, ax=axs[0], title='P2 Training set')
 plot_dataset(X_test, y_test, ax=axs[1], title='P2 Test set')
-
 
 ###############################################################################
 # Evaluating the performance of dynamic selection methods
@@ -109,6 +107,7 @@ for clf in pool_classifiers:
     ax.set_ylim((0, 1))
 
 plt.show()
+plt.tight_layout()
 
 ###############################################################################
 # Comparison with Dynamic Selection techniques
@@ -131,7 +130,6 @@ plt.subplots_adjust(wspace=0.4, hspace=0.4)
 titles = ['KNORA-Eliminate', 'DES-P', 'Overall Local Accuracy (OLA)',
           'Modified Rank']
 
-
 classifiers = [knora_e, desp, ola, rank]
 for clf, ax, title in zip(classifiers, sub.flatten(), titles):
     plot_classifier_decision(ax, clf, X_train, mode='filled', alpha=0.4)
@@ -144,14 +142,15 @@ for clf, ax, title in zip(classifiers, sub.flatten(), titles):
 # sphinx_gallery_thumbnail_number = 3
 
 plt.show()
+plt.tight_layout()
 
 ###############################################################################
 # Comparison to baselines
 # -----------------------
 #
 # Let's now compare the results with four baselines: Support Vector Machine
-# (SVM) with an RBF kernel; Multi-Layer Perceptron (MLP), Random Forest and
-# Adabost. We will also plot their decision boundaries:
+# (SVM) with an RBF kernel; Multi-Layer Perceptron (MLP), Random Forest,
+# Adaboost, and Stacking.
 
 # Setting a baseline using standard classification methods
 svm = SVC(gamma='scale', random_state=rng).fit(X_train, y_train)
@@ -159,13 +158,22 @@ mlp = MLPClassifier(max_iter=10000, random_state=rng).fit(X_train, y_train)
 forest = RandomForestClassifier(n_estimators=10,
                                 random_state=rng).fit(X_train, y_train)
 boosting = AdaBoostClassifier(random_state=rng).fit(X_train, y_train)
+stacked_lr = StackedClassifier(pool_classifiers=pool_classifiers,
+                               random_state=rng)
+stacked_lr.fit(X_train, y_train)
+
+stacked_dt = StackedClassifier(pool_classifiers=pool_classifiers,
+                               random_state=rng,
+                               meta_classifier=DecisionTreeClassifier())
+stacked_dt.fit(X_train, y_train)
 
 ###############################################################################
 
-fig2, sub = plt.subplots(2, 2, figsize=(15, 10))
+fig2, sub = plt.subplots(3, 2, figsize=(15, 10))
 plt.subplots_adjust(wspace=0.4, hspace=0.4)
-titles = ['SVM decision', 'MLP decision', 'RF decision', 'Boosting decision']
-classifiers = [svm, mlp, forest, boosting]
+titles = ['SVM decision', 'MLP decision', 'RF decision',
+          'Boosting decision', 'Stacked LR', 'Stacked Decision Tree']
+classifiers = [svm, mlp, forest, boosting, stacked_lr, stacked_dt]
 for clf, ax, title in zip(classifiers, sub.flatten(), titles):
     plot_classifier_decision(ax, clf, X_test, mode='filled', alpha=0.4)
     plot_dataset(X_test, y_test, ax=ax)
@@ -174,7 +182,7 @@ for clf, ax, title in zip(classifiers, sub.flatten(), titles):
     ax.set_title(title)
 
 plt.show()
-
+plt.tight_layout()
 
 ###############################################################################
 # Evaluation on the test set
@@ -191,3 +199,5 @@ print('SVM score = {}'.format(svm.score(X_test, y_test)))
 print('MLP score = {}'.format(mlp.score(X_test, y_test)))
 print('RF score = {}'.format(forest.score(X_test, y_test)))
 print('Boosting score = {}'.format(boosting.score(X_test, y_test)))
+print('Stacking LR score = {}' .format(stacked_lr.score(X_test, y_test)))
+print('Staking Decision Tree = {}' .format(stacked_dt.score(X_test, y_test)))

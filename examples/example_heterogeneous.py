@@ -30,6 +30,7 @@ from deslib.dcs import MCB
 from deslib.des import KNORAE
 from deslib.des import DESP
 from deslib.des import KNORAU
+from deslib.static import StackedClassifier
 
 rng = np.random.RandomState(42)
 data = load_breast_cancer()
@@ -69,7 +70,7 @@ voting_classifiers = [("perceptron", model_perceptron),
 model_voting = VotingClassifier(estimators=voting_classifiers).fit(
     X_train, y_train)
 
-# Initializing the DS techniques
+# Initializing the techniques
 knorau = KNORAU(pool_classifiers)
 kne = KNORAE(pool_classifiers)
 desp = DESP(pool_classifiers)
@@ -77,12 +78,25 @@ desp = DESP(pool_classifiers)
 ola = OLA(pool_classifiers)
 mcb = MCB(pool_classifiers)
 
-# Fitting the techniques
+##############################################################################
+# Adding stacked classifier as baseline comparison. Stacked classifier can
+# be found in the static module. In this experiment we consider two types
+# of stacking: one using logistic regression as meta-classifier
+# (default configuration) and the other using a Decision Tree.
+stacked_lr = StackedClassifier(pool_classifiers, random_state=rng)
+stacked_dt = StackedClassifier(pool_classifiers,
+                               random_state=rng,
+                               meta_classifier=DecisionTreeClassifier())
+# Fitting the DS techniques
 knorau.fit(X_dsel, y_dsel)
 kne.fit(X_dsel, y_dsel)
 desp.fit(X_dsel, y_dsel)
 ola.fit(X_dsel, y_dsel)
 mcb.fit(X_dsel, y_dsel)
+
+# Fitting the tacking models
+stacked_lr.fit(X_dsel, y_dsel)
+stacked_dt.fit(X_dsel, y_dsel)
 
 # Calculate classification accuracy of each technique
 print('Evaluating DS techniques:')
@@ -92,3 +106,5 @@ print('Classification accuracy of KNORA-U: ', knorau.score(X_test, y_test))
 print('Classification accuracy of KNORA-E: ', kne.score(X_test, y_test))
 print('Classification accuracy of DESP: ', desp.score(X_test, y_test))
 print('Classification accuracy of OLA: ', ola.score(X_test, y_test))
+print('Classification accuracy Stacking LR', stacked_lr.score(X_test, y_test))
+print('Classification accuracy Stacking DT', stacked_dt.score(X_test, y_test))
