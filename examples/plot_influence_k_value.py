@@ -42,7 +42,7 @@ from sklearn.datasets import fetch_openml
 
 rng = np.random.RandomState(123456)
 
-data = fetch_openml(name='diabetes')
+data = fetch_openml(name='diabetes', cache=False)
 X = data.data
 y = data.target
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=rng)
@@ -90,5 +90,5 @@ plt.xticks(k_value_list)
 ax.set_ylim(0.60, 0.80)
 ax.set_xlabel('Region of competence size (K value)', fontsize=13)
 ax.set_ylabel('Accuracy on the test set (%)', fontsize=13)
-ax.legend(loc='best')
+ax.legend(loc='lower right')
 plt.show()
