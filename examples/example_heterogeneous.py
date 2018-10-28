@@ -47,9 +47,9 @@ X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train,
                                                     random_state=rng)
 
 model_perceptron = CalibratedClassifierCV(Perceptron(max_iter=100,
-                                                     random_state=rng)).fit(
-    X_train, y_train)
+                                                     random_state=rng))
 
+model_perceptron.fit(X_train, y_train)
 model_svc = SVC(probability=True, gamma='auto').fit(X_train, y_train)
 model_bayes = GaussianNB().fit(X_train, y_train)
 model_tree = DecisionTreeClassifier(random_state=rng).fit(X_train, y_train)

@@ -125,7 +125,6 @@ rank = Rank(pool_classifiers).fit(X_train, y_train)
 
 # Plotting the Decision Border of the DS methods.
 fig2, sub = plt.subplots(2, 2, figsize=(15, 10))
-plt.suptitle("Performance of DS techniques using 5 Decision Stumps")
 plt.subplots_adjust(wspace=0.4, hspace=0.4)
 titles = ['KNORA-Eliminate', 'DES-P', 'Overall Local Accuracy (OLA)',
           'Modified Rank']
@@ -136,7 +135,7 @@ for clf, ax, title in zip(classifiers, sub.flatten(), titles):
     plot_dataset(X_test, y_test, ax=ax)
     ax.set_xlim(np.min(X[:, 0]), np.max(X[:, 0]))
     ax.set_ylim(np.min(X[:, 1]), np.max(X[:, 1]))
-    ax.set_title(title)
+    ax.set_title(title, fontsize=15)
 
 # Setting figure to show
 # sphinx_gallery_thumbnail_number = 3
@@ -169,7 +168,7 @@ stacked_dt.fit(X_train, y_train)
 
 ###############################################################################
 
-fig2, sub = plt.subplots(3, 2, figsize=(15, 10))
+fig2, sub = plt.subplots(2, 3, figsize=(15, 7))
 plt.subplots_adjust(wspace=0.4, hspace=0.4)
 titles = ['SVM decision', 'MLP decision', 'RF decision',
           'Boosting decision', 'Stacked LR', 'Stacked Decision Tree']
@@ -179,7 +178,7 @@ for clf, ax, title in zip(classifiers, sub.flatten(), titles):
     plot_dataset(X_test, y_test, ax=ax)
     ax.set_xlim(np.min(X[:, 0]), np.max(X[:, 0]))
     ax.set_ylim(np.min(X[:, 1]), np.max(X[:, 1]))
-    ax.set_title(title)
+    ax.set_title(title, fontsize=15)
 
 plt.show()
 plt.tight_layout()
