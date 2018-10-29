@@ -11,8 +11,21 @@ such as Random Forests, AdaBoost and SVMs.
 
 The P2 is a two-class problem, presented by Valentini, in which each class
 is defined in multiple decision regions delimited by polynomial and
-trigonometric functions. It is impossible to solve this problem
-using a single linear classifier, and the performance of the best possible
+trigonometric functions:
+
+    .. math:: \\begin{eqnarray}
+        \\label{eq:problem1}
+        E1(x) = sin(x) + 5 \\\\
+        \\label{eq:problem2}
+        E2(x) = (x - 2)^{2} + 1 \\\\
+        \\label{eq:problem3}
+        E3(x) = -0.1 \\cdot x^{2} + 0.6sin(4x) + 8 \\\\
+        \\label{eq:problem4}
+        E4(x) = \\frac{(x - 10)^{2}}{2} + 7.902
+        \\end{eqnarray}
+
+It is impossible to solve this problem
+using a single linear classifier. The performance of the best possible
 linear classifier is around 50\\%.
 
 """
