@@ -482,9 +482,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 else:
                     selected_probabilities = None
 
-                # Handle cases when distance = 0
-                distances[distances == 0] = 1e-10
-
                 pred_ds = self.classify_with_ds(X_DS[ind_ds_classifier],
                                                 base_predictions[
                                                     ind_ds_original_matrix],
