@@ -9,9 +9,47 @@ Comparing dynamic selection with baseline static methods
 ====================================================================
 
 In this example we compare the performance of DS techinques with the
-static ensemble methods.
+static ensemble methods. DESlib offer the implementation of static ensemble
+methods in the `deslib.static` module. The following techniques are here
+considered:
 
-Static methods used as baseline comparison are in the `deslib.static` module
+Static methods used as baseline comparison are in the `deslib.static` module.
+They are:
+
+- Majority Voting: The outputs of all base classifiers in the pool are combined
+ using the majority voting rule
+
+- Static Selection: A fraction of the best performing classifiers (based on the
+validation data, is selected to compose the ensemble).
+
+- Single Best: The base classifier with the highest classification accuracy in
+    the validation set is selected for classification
+
+- Stacked classifier: The outputs of all base classifiers are passed down to
+a meta-estimator which combines the . The meta-estimator is trained based on
+the outputs of the base classifiers on the training data.
+
+These techniques are used in the dynamic selection literature as a baseline
+comparison (see references [1] and [2])
+
+At the end we also present the result of the **Oracle**, which is an abastract
+model which always selects the base classifier that predicted the correct label
+if such classifier exists. From the dynamic selection point of view, the Oracle
+is seen as the upper limit performance that can be achieved with the given
+pool of classifiers.
+
+References
+----------
+[1] Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection
+of classifiers—a comprehensive review." Pattern Recognition 47.11
+(2014): 3665-3680.
+
+[2] R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier
+selection: Recent advances and perspectives,” Information Fusion,
+vol. 41, pp. 195 – 216, 2018.
+
+[3] Kuncheva, Ludmila I. Combining pattern classifiers: methods and algorithms.
+    John Wiley & Sons, 2004.
 """
 
 import matplotlib.pyplot as plt
