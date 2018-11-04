@@ -48,8 +48,9 @@ of classifiers—a comprehensive review." Pattern Recognition 47.11
 selection: Recent advances and perspectives,” Information Fusion,
 vol. 41, pp. 195 – 216, 2018.
 
-[3] Kuncheva, Ludmila I. Combining pattern classifiers: methods and algorithms.
-    John Wiley & Sons, 2004.
+[3] Kuncheva, Ludmila I. "A theoretical study on six classifier fusion
+    strategies." IEEE Transactions on Pattern Analysis & Machine Intelligence,
+    (2002): 281-286.
 """
 
 import matplotlib.pyplot as plt
