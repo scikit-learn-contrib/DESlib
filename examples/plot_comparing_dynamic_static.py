@@ -10,27 +10,27 @@ Comparing dynamic selection with baseline static methods
 
 In this example we compare the performance of DS techinques with the
 static ensemble methods. DESlib offer the implementation of static ensemble
-methods in the `deslib.static` module. The following techniques are here
+methods in the `deslib.static` module. The following techniques are
 considered:
 
 Static methods used as baseline comparison are in the `deslib.static` module.
 They are:
 
-- Majority Voting: The outputs of all base classifiers in the pool are combined
- using the majority voting rule
+**Majority Voting**: The outputs of all base classifiers in the pool are combined
+using the majority voting rule
 
-- Static Selection: A fraction of the best performing classifiers (based on the
+**Static Selection**: A fraction of the best performing classifiers (based on the
 validation data, is selected to compose the ensemble).
 
-- Single Best: The base classifier with the highest classification accuracy in
-    the validation set is selected for classification
+**Single Best**: The base classifier with the highest classification accuracy in
+the validation set is selected for classification
 
-- Stacked classifier: The outputs of all base classifiers are passed down to
-a meta-estimator which combines the . The meta-estimator is trained based on
-the outputs of the base classifiers on the training data.
+**Stacked classifier**: The outputs of all base classifiers are passed down to
+a meta-estimator which combines the . The meta-estimator is trained based
+on the outputs of the base classifiers on the training data.
 
 These techniques are used in the dynamic selection literature as a baseline
-comparison (see references [1] and [2])
+comparison (for more information see references [1] and [2])
 
 At the end we also present the result of the **Oracle**, which is an abastract
 model which always selects the base classifier that predicted the correct label
