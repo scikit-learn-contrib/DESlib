@@ -9,29 +9,31 @@ from deslib.tests.examples_test import *
 import unittest.mock
 import warnings
 
+
 @pytest.mark.parametrize('IH', [0.25, 0.4285])
 def test_check_valid_IH(IH):
     X = np.random.rand(6, 1)
     y = np.array([0, 0, 0, 1, 1, 1])
     pool_classifiers = create_pool_classifiers()
-    
+
     with warnings.catch_warnings(record=True) as w_list:
         ds_test = BaseDS(pool_classifiers, with_IH=True, IH_rate=IH)
         ds_test.fit(X, y)
-        
+
         for w in w_list:
             assert 'bigger than the highest possible IH' not in str(w.message)
+
 
 @pytest.mark.parametrize('IH', [0.48, 0.5])
 def test_check_IH_toohigh(IH):
     X = np.random.rand(6, 1)
     y = np.array([0, 0, 0, 1, 1, 1])
     pool_classifiers = create_pool_classifiers()
-    
+
     with warnings.catch_warnings(record=True) as w_list:
         ds_test = BaseDS(pool_classifiers, with_IH=True, IH_rate=IH)
         ds_test.fit(X, y)
-        
+
         found_warning = False
         for w in w_list:
             if 'bigger than the highest possible IH' in str(w.message):

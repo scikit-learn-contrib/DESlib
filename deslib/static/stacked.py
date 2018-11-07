@@ -66,9 +66,10 @@ class StackedClassifier(BaseStaticEnsemble):
 
         # Prepare the meta-classifier
         if self.meta_classifier is None:
-            self.meta_classifier_ = LogisticRegression(solver='lbfgs',
-                                                       multi_class='auto',
-                                                       max_iter=1000,
+            self.meta_classifier_ = LogisticRegression(
+                solver='lbfgs',
+                multi_class='auto',
+                max_iter=1000,
                 random_state=self.random_state_)
 
         else:
