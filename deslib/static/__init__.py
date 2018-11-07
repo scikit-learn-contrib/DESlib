@@ -7,7 +7,9 @@ algorithms.
 from .oracle import Oracle
 from .single_best import SingleBest
 from .static_selection import StaticSelection
+from .stacked import StackedClassifier
 
 __all__ = ['Oracle',
            'SingleBest',
-           'StaticSelection', ]
+           'StaticSelection',
+           'StackedClassifier']

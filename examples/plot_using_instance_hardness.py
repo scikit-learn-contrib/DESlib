@@ -52,7 +52,7 @@ from sklearn.datasets import fetch_openml
 
 rng = np.random.RandomState(123456)
 
-data = fetch_openml(name='diabetes')
+data = fetch_openml(name='diabetes', cache=False)
 X = data.data
 y = data.target
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=rng)

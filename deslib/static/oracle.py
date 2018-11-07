@@ -33,8 +33,9 @@ class Oracle(BaseStaticEnsemble):
 
     References
     ----------
-    Kuncheva, Ludmila I. Combining pattern classifiers: methods and algorithms.
-    John Wiley & Sons, 2004.
+    Kuncheva, Ludmila I. "A theoretical study on six classifier fusion
+    strategies." IEEE Transactions on Pattern Analysis & Machine Intelligence,
+    (2002): 281-286.
 
     R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier
     selection: Recent advances and perspectives,”
