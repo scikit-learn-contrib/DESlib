@@ -24,8 +24,9 @@ def test_estimate_competence_batch(example_estimate_competence):
     assert np.allclose(competences, expected)
 
 
-# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
-# In this case the test should not raise an error since this class does not require base classifiers that
+# Test if the class is raising an error when the base classifiers do not
+# implements the predict_proba method. In this case the test should not raise
+# an error since this class does not require base classifiers that
 # can estimate probabilities
 def test_predict_proba(create_X_y):
     X, y = create_X_y

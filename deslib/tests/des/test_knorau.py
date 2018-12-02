@@ -1,7 +1,8 @@
 import numpy as np
 from sklearn.linear_model import Perceptron
-from deslib.des.knora_u import KNORAU
 from sklearn.utils.estimator_checks import check_estimator
+
+from deslib.des.knora_u import KNORAU
 
 
 def test_check_estimator():
@@ -9,7 +10,9 @@ def test_check_estimator():
 
 
 # Test the estimate competence method receiving n samples as input
-def test_estimate_competence_batch(example_estimate_competence, create_pool_classifiers):
+def test_estimate_competence_batch(example_estimate_competence,
+                                   create_pool_classifiers):
+
     X, y, neighbors = example_estimate_competence[0:3]
 
     query = np.ones((3, 2))
@@ -24,7 +27,6 @@ def test_estimate_competence_batch(example_estimate_competence, create_pool_clas
 
 
 def test_weights_zero():
-
     knorau_test = KNORAU()
     competences = np.zeros((1, 3))
     result = knorau_test.select(competences)
@@ -32,8 +34,9 @@ def test_weights_zero():
     assert np.all(result)
 
 
-# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
-# In this case the test should not raise an error since this class does not require base classifiers that
+# Test if the class is raising an error when the base classifiers do not
+# implements the predict_proba method. In this case the test should not raise
+# an error since this class does not require base classifiers that
 # can estimate probabilities
 def test_predict_proba(create_X_y):
     X, y = create_X_y

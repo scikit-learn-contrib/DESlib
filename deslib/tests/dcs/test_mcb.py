@@ -37,8 +37,12 @@ def test_similarity_threshold_type(similarity_threshold, create_X_y):
         mcb.fit(X, y)
 
 
-@pytest.mark.parametrize('index, expected', [(0, [0.66666666,  0.83333333,  0.66666666]),
-                                             (1, [0.83333333,  1.0,  0.66666666])])
+@pytest.mark.parametrize('index, expected', [(0, [0.66666666,
+                                                  0.83333333,
+                                                  0.66666666]),
+                                             (1, [0.83333333,
+                                                  1.0,
+                                                  0.66666666])])
 def test_estimate_competence2(index, expected, example_estimate_competence):
 
     _, _, neighbors, distances, dsel_processed, _ = example_estimate_competence
@@ -63,8 +67,9 @@ def test_estimate_competence2(index, expected, example_estimate_competence):
     assert np.isclose(competences, expected).all()
 
 
-# This third test uses an totally wrong bks matrix, so that the technique is obligated to use the whole
-# it also considers batch processing region of competence
+# This third test uses an totally wrong bks matrix, so that the technique
+# is obligated to use the whole it also considers batch processing
+# region of competence
 def test_estimate_competence_batch(example_estimate_competence):
     _, _, neighbors, distances, dsel_processed, _ = example_estimate_competence
 
@@ -89,8 +94,9 @@ def test_estimate_competence_batch(example_estimate_competence):
     assert np.isclose(competences, expected).all()
 
 
-# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
-# In this case the test should not raise an error since this class does not require base classifiers that
+# Test if the class is raising an error when the base classifiers do not
+# implements the predict_proba method. # In this case the test should not
+# raise an error since this class does not require base classifiers that
 # can estimate probabilities
 def test_predict_proba(create_X_y):
     X, y = create_X_y

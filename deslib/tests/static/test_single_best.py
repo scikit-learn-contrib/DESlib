@@ -12,8 +12,9 @@ def test_check_estimator():
     check_estimator(SingleBest)
 
 
-# Testing if the fit function selects the correct classifier (the one with highest classification accuracy).
-# Note: clf[0] and clf[2] have the same accuracy since they always predict the same label.
+# Testing if the fit function selects the correct classifier (the one with
+# highest classification accuracy). # Note: clf[0] and clf[2] have the
+# same accuracy since they always predict the same label.
 def test_fit(create_X_y, create_pool_classifiers):
     X, y = create_X_y
 
@@ -25,7 +26,8 @@ def test_fit(create_X_y, create_pool_classifiers):
             single_best_test.best_clf_index_ == 2)
 
 
-# The classifier with highest accuracy always predicts 0. So the expected prediction should always be equal zero.
+# The classifier with highest accuracy always predicts 0. So the expected
+# prediction should always be equal zero.
 def test_predict(create_X_y, create_pool_classifiers):
     X, y = create_X_y
 
@@ -37,7 +39,8 @@ def test_predict(create_X_y, create_pool_classifiers):
     assert np.equal(predicted_labels, 0).all()
 
 
-# The probabilities predicted must always be equals to the probabilities predicted by the base classifier with index 0.
+# The probabilities predicted must always be equals to the probabilities
+# predicted by the base classifier with index 0.
 def test_predict_proba(create_X_y, create_pool_classifiers):
     X, y = create_X_y
 
@@ -56,7 +59,8 @@ def test_not_fitted():
         single_best_test.predict(np.array([[1, -1]]))
 
 
-# Test calling the predict_proba function with classifiers that do not implement the predict_proba
+# Test calling the predict_proba function with classifiers that do not
+# implement the predict_proba
 def test_not_predict_proba(create_X_y):
     X, y = create_X_y
 

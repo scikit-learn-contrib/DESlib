@@ -31,9 +31,10 @@ def test_check_estimator_MinimumDifference():
     check_estimator(MinimumDifference)
 
 
-# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
-# Should raise an exception when the base classifier cannot estimate posterior probabilities (predict_proba)
-# Using Perceptron classifier as it does not implements the predict_proba method.
+# Test if the class is raising an error when the base classifiers do not
+# implements the predict_proba method. Should raise an exception when the
+# base classifier cannot estimate posterior probabilities (predict_proba)
+# Using Perceptron classifier as it does not implements predict_proba.
 def test_not_predict_proba(create_X_y):
     X, y = create_X_y
 
@@ -127,7 +128,8 @@ def test_estimate_competence_batch():
     assert np.allclose(competence, expected, atol=0.01)
 
 
-# Test the estimate competence function when the competence source is equal to zero. The competence should also be zero.
+# Test the estimate competence function when the competence source is equal
+# to zero. The competence should also be zero.
 def test_estimate_competence_zeros(example_estimate_competence):
     distances = example_estimate_competence[3]
     query = np.atleast_2d([1, 1])
@@ -143,7 +145,8 @@ def test_estimate_competence_zeros(example_estimate_competence):
     assert np.sum(competence) == 0.0
 
 
-# Test the estimate competence function when the competence source is equal to one. The competence should also be ones.
+# Test the estimate competence function when the competence source is equal
+# to one. The competence should also be ones.
 def test_estimate_competence_ones(example_estimate_competence):
     distances = example_estimate_competence[3]
     query = np.atleast_2d([1, 1])
@@ -200,7 +203,7 @@ def test_source_competence_kl():
     entropy_test.n_classifiers_ = 1
     entropy_test.dsel_scores_ = np.array([[[0.33, 0.33, 0.33],
                                            [1.0, 0.0, 0.0],
-                                           [1.0, 0.0, 0.0]]]).reshape(3, 1, 3)  # 3 Samples, 1 classifier, 3 classes
+                                           [1.0, 0.0, 0.0]]]).reshape(3, 1, 3)
     entropy_test.DSEL_processed_ = np.array([[False], [True], [False]])
     entropy_test.n_classes_ = 3
     entropy_test.n_samples_ = 3
@@ -250,7 +253,7 @@ def test_source_competence_logarithmic():
     log_test.n_classifiers_ = 1
     log_test.dsel_scores_ = np.array([[[0.67, 0.33, 0.0],
                                        [1.0, 0.0, 0.0],
-                                       [0.0, 1.0, 0.0]]]).reshape(3, 1, 3)  # 3 sample, 1 classifier, 3 classes
+                                       [0.0, 1.0, 0.0]]]).reshape(3, 1, 3)
 
     log_test.DSEL_target_ = [1, 1, 1]
     log_test.n_classes_ = 3
@@ -276,7 +279,7 @@ def test_source_competence_exponential():
     exp_test.n_classifiers_ = 1
     exp_test.dsel_scores_ = np.array([[[0.5, 0.5],
                                        [1.0, 0.0],
-                                       [0.0, 1.0]]]).reshape(3, 1, 2)  # 3 samples, 1 classifier, 2 classes
+                                       [0.0, 1.0]]]).reshape(3, 1, 2)
 
     exp_test.DSEL_target_ = [1, 1, 1]
     exp_test.n_classes_ = 2

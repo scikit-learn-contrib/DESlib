@@ -1,9 +1,11 @@
+from unittest.mock import MagicMock
+
 import numpy as np
 import pytest
 from sklearn.linear_model import Perceptron
-from unittest.mock import MagicMock
-from deslib.des.des_mi import DESMI
 from sklearn.utils.estimator_checks import check_estimator
+
+from deslib.des.des_mi import DESMI
 
 
 def test_check_estimator():
@@ -91,8 +93,10 @@ def test_classify_with_ds_batch_samples():
     predictions = np.tile(np.array([0, 1, 0]), (n_samples, 1))
 
     desmi_test = DESMI()
-    desmi_test.estimate_competence = MagicMock(return_value=(np.ones((n_samples, 3))))
-    desmi_test.select = MagicMock(return_value=np.tile(np.array([[0, 2]]), (n_samples, 1)))
+    desmi_test.estimate_competence = MagicMock(
+        return_value=(np.ones((n_samples, 3))))
+    desmi_test.select = MagicMock(
+        return_value=np.tile(np.array([[0, 2]]), (n_samples, 1)))
     result = desmi_test.classify_with_ds(query, predictions)
     assert np.allclose(result, np.zeros(10))
 

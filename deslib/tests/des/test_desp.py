@@ -1,8 +1,8 @@
 import numpy as np
 from sklearn.linear_model import Perceptron
+from sklearn.utils.estimator_checks import check_estimator
 
 from deslib.des.des_p import DESP
-from sklearn.utils.estimator_checks import check_estimator
 
 
 def test_check_estimator():
@@ -10,8 +10,8 @@ def test_check_estimator():
 
 
 # Test the estimate competence method receiving n samples as input
-def test_estimate_competence_batch(example_estimate_competence, create_pool_classifiers):
-
+def test_estimate_competence_batch(example_estimate_competence,
+                                   create_pool_classifiers):
     query = np.ones((3, 2))
     X, y, neighbors, distances, dsel_processed, _ = example_estimate_competence
 
@@ -26,7 +26,6 @@ def test_estimate_competence_batch(example_estimate_competence, create_pool_clas
 
 
 def test_select_two_classes():
-
     des_p_test = DESP()
     des_p_test.n_classes_ = 2
     expected = np.array([[True, False, True],
@@ -42,9 +41,9 @@ def test_select_two_classes():
     assert np.array_equal(selected, expected)
 
 
-# In this example, since the number of classes is 3, the competence level expected to be selected is > 0.33
+# In this example, since the number of classes is 3, the competence level
+# expected to be selected is > 0.33
 def test_select_three_classes():
-
     des_p_test = DESP()
     des_p_test.n_classes_ = 3
     expected = np.array([[True, False, True],
@@ -70,8 +69,9 @@ def test_select_none_competent():
     assert np.array_equal(expected, indices)
 
 
-# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
-# In this case the test should not raise an error since this class does not require base classifiers that
+# Test if the class is raising an error when the base classifiers do not
+# implements the predict_proba method. In this case the test should not raise
+# an error since this class does not require base classifiers that
 # can estimate probabilities
 def test_predict_proba(create_X_y):
     X, y = create_X_y

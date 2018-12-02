@@ -18,7 +18,8 @@ def test_check_estimator():
 #     return pool
 
 
-# Testing if the fit function selects the correct classifiers. The 50 last classifiers should be selected.
+# Testing if the fit function selects the correct classifiers.
+# The 50 last classifiers should be selected.
 def test_fit(example_static_selection):
     X, y, pool = example_static_selection
     static_selection_test = StaticSelection(pool, 0.5)
@@ -31,7 +32,8 @@ def test_fit(example_static_selection):
                           list(range(50, 100)))
 
 
-# The classifier with highest accuracy always predicts 0. So the expected prediction should always be equal zero.
+# The classifier with highest accuracy always predicts 0. So the expected
+# prediction should always be equal zero.
 def test_predict(example_static_selection, create_pool_classifiers):
     X, y, _ = example_static_selection
 

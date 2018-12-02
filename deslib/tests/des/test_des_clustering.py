@@ -1,12 +1,14 @@
+from unittest.mock import MagicMock
+
 import numpy as np
 import pytest
-from unittest.mock import MagicMock
 from sklearn.cluster import KMeans
 from sklearn.linear_model import Perceptron
+from sklearn.utils.estimator_checks import check_estimator
 
 from deslib.des.des_clustering import DESClustering
-from deslib.util.diversity import Q_statistic, ratio_errors, negative_double_fault
-from sklearn.utils.estimator_checks import check_estimator
+from deslib.util.diversity import Q_statistic, ratio_errors, \
+    negative_double_fault
 
 
 def test_check_estimator():
@@ -25,9 +27,9 @@ return_cluster_index_ex2 = np.array(
     [0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1])
 
 
-def test_fit_homogeneous_clusters(create_pool_classifiers, example_estimate_competence):
-
-    clustering_test = DESClustering(create_pool_classifiers*2,
+def test_fit_homogeneous_clusters(create_pool_classifiers,
+                                  example_estimate_competence):
+    clustering_test = DESClustering(create_pool_classifiers * 2,
                                     clustering=KMeans(n_clusters=2),
                                     pct_accuracy=0.5, pct_diversity=0.33)
 
@@ -44,15 +46,16 @@ def test_fit_homogeneous_clusters(create_pool_classifiers, example_estimate_comp
         assert idx in (0, 2, 3, 5)
 
 
-def test_fit_heterogeneous_clusters(example_estimate_competence, create_pool_classifiers):
-
+def test_fit_heterogeneous_clusters(example_estimate_competence,
+                                    create_pool_classifiers):
     clustering_test = DESClustering(create_pool_classifiers,
                                     clustering=KMeans(n_clusters=2),
                                     pct_accuracy=0.5,
                                     pct_diversity=0.33)
     X, y = example_estimate_competence[0:2]
 
-    clustering_test.clustering.predict = MagicMock(return_value=return_cluster_index_ex2)
+    clustering_test.clustering.predict = MagicMock(
+        return_value=return_cluster_index_ex2)
     clustering_test.fit(X, y)
 
     # Index selected should be of any classifier that predicts the label 0
@@ -66,17 +69,18 @@ def test_fit_heterogeneous_clusters(example_estimate_competence, create_pool_cla
         1, 0] == 2
 
 
-def test_estimate_competence(create_pool_classifiers, example_estimate_competence):
-
+def test_estimate_competence(create_pool_classifiers,
+                             example_estimate_competence):
     query = np.atleast_2d([1, 1])
-    clustering_test = DESClustering(create_pool_classifiers*2,
+    clustering_test = DESClustering(create_pool_classifiers * 2,
                                     clustering=KMeans(n_clusters=2),
                                     pct_accuracy=0.5, pct_diversity=0.33)
 
     X, y = example_estimate_competence[0:2]
 
     # Keep the original predict method to change after
-    clustering_test.clustering.predict = MagicMock(return_value=return_cluster_index_ex2)
+    clustering_test.clustering.predict = MagicMock(
+        return_value=return_cluster_index_ex2)
     clustering_test.fit(X, y)
 
     clustering_test.clustering_.predict = MagicMock(return_value=0)
@@ -89,9 +93,9 @@ def test_estimate_competence(create_pool_classifiers, example_estimate_competenc
     assert np.array_equal(competences, clustering_test.accuracy_cluster_[1, :])
 
 
-def test_fit_clusters_less_diverse(example_estimate_competence, create_pool_classifiers):
-
-    clustering_test = DESClustering(create_pool_classifiers*2,
+def test_fit_clusters_less_diverse(example_estimate_competence,
+                                   create_pool_classifiers):
+    clustering_test = DESClustering(create_pool_classifiers * 2,
                                     clustering=KMeans(n_clusters=2),
                                     pct_accuracy=0.5, pct_diversity=0.33,
                                     more_diverse=False)
@@ -121,7 +125,8 @@ def test_select():
     assert np.array_equal(clustering_test.select(query), [[1, 4]])
 
 
-# Since the majority of the base classifiers selected predicts class 0, the final decision of the ensemble should be 0.
+# Since the majority of the base classifiers selected predicts class 0,
+# the final decision of the ensemble should be 0.
 def test_classify_instance(create_pool_classifiers):
     query = np.ones((1, 2))
     clustering_test = DESClustering(create_pool_classifiers * 4,
@@ -164,7 +169,8 @@ def test_diversity_metric_Q(create_X_y):
     X, y = create_X_y
 
     test = DESClustering(metric='Q')
-    # Mocking this method to avoid preprocessing the cluster information that is not required in this test.
+    # Mocking this method to avoid preprocessing the cluster information
+    # that is not required in this test.
     test._preprocess_clusters = MagicMock(return_value=1)
     test.fit(X, y)
     assert test.diversity_func_ == Q_statistic
@@ -174,7 +180,8 @@ def test_diversity_metric_DF(create_X_y):
     X, y = create_X_y
 
     test = DESClustering(metric='DF')
-    # Mocking this method to avoid preprocessing the cluster information that is not required in this test.
+    # Mocking this method to avoid preprocessing the cluster
+    # information that is not required in this test.
     test._preprocess_clusters = MagicMock(return_value=1)
     test.fit(X, y)
     assert test.diversity_func_ == negative_double_fault
@@ -184,14 +191,16 @@ def test_diversity_metric_ratio(create_X_y):
     X, y = create_X_y
 
     test = DESClustering(metric='ratio')
-    # Mocking this method to avoid preprocessing the cluster information that is not required in this test.
+    # Mocking this method to avoid preprocessing the cluster
+    # information that is not required in this test.
     test._preprocess_clusters = MagicMock(return_value=1)
     test.fit(X, y)
     assert test.diversity_func_ == ratio_errors
 
 
-# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
-# In this case the test should not raise an error since this class does not require base classifiers that
+# Test if the class is raising an error when the base classifiers do not
+# implements the predict_proba method. In this case the test should not raise
+# an error since this class does not require base classifiers that
 # can estimate probabilities
 def test_predict_proba(example_estimate_competence):
     X, y = example_estimate_competence[0:2]

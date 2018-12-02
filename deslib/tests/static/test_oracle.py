@@ -14,8 +14,9 @@ def test_predict(create_X_y, create_pool_classifiers):
     assert oracle_test.score(X, y) == 1.0
 
 
-# All classifiers predicts the same label. This test only the samples with label == 0
-# are correctly classified by the Oracle. The misclassified samples are set to -1.
+# All classifiers predicts the same label. This test only the samples
+# with label == 0 are correctly classified by the Oracle.
+# The misclassified samples are set to -1.
 def test_predict_all_same(create_X_y, create_pool_all_agree):
     X, y = create_X_y
 
