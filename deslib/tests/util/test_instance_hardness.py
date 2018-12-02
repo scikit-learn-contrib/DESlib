@@ -8,7 +8,9 @@ from deslib.util.instance_hardness import hardness_region_competence
 @pytest.mark.parametrize('index, expected', [(0, 0.42),
                                              (1, 0.28),
                                              (2, 0.28)])
-def test_instance_hardness_region(index, expected, example_estimate_competence):
+def test_instance_hardness_region(index,
+                                  expected,
+                                  example_estimate_competence):
     y, neighbors = example_estimate_competence[1:3]
     k = 7
     neighbors = neighbors[index, :]

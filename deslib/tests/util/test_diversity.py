@@ -152,17 +152,23 @@ def test_ratio_errors_diff_classifiers(example_diversity):
 
 def test_agreement(example_diversity):
     y_pred_classifier1, y_pred_classifier2, y_real, y_ex1 = example_diversity
-    agreement = agreement_measure(y_real, y_pred_classifier1, y_pred_classifier2)
+    agreement = agreement_measure(y_real,
+                                  y_pred_classifier1,
+                                  y_pred_classifier2)
     assert np.isclose(agreement, 0.5)
 
 
 def test_disagreement(example_diversity):
     y_pred_classifier1, y_pred_classifier2, y_real, y_ex1 = example_diversity
-    disagreement = disagreement_measure(y_real, y_pred_classifier1, y_pred_classifier2)
+    disagreement = disagreement_measure(y_real,
+                                        y_pred_classifier1,
+                                        y_pred_classifier2)
     assert np.isclose(disagreement, 0.5)
 
 
 def test_coefficient_correlation(example_diversity):
     y_pred_classifier1, y_pred_classifier2, y_real, y_ex1 = example_diversity
-    coefficient = correlation_coefficient(y_real, y_pred_classifier1, y_pred_classifier2)
+    coefficient = correlation_coefficient(y_real,
+                                          y_pred_classifier1,
+                                          y_pred_classifier2)
     assert np.isclose(coefficient, 0.0)

@@ -104,7 +104,10 @@ def test_estimate_competence_kuncheva_ex(example_kuncheva):
     mla_test = MLA(k=example_kuncheva['k'])
     mla_test.n_classifiers_ = 2
 
-    mla_test.DSEL_processed_ = np.repeat(example_kuncheva['dsel_processed'], 2, axis=1)
+    mla_test.DSEL_processed_ = np.repeat(example_kuncheva['dsel_processed'],
+                                         2,
+                                         axis=1)
+
     mla_test.dsel_scores_ = example_kuncheva['dsel_scores']
     mla_test.DSEL_target_ = example_kuncheva['y_dependent']
     mla_test.n_classes_ = example_kuncheva['n_classes']
@@ -121,8 +124,9 @@ def test_estimate_competence_kuncheva_ex(example_kuncheva):
     assert np.allclose(competences, [0.95, 0.95], atol=0.01)
 
 
-# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
-# In this case the test should not raise an error since this class does not require base classifiers that
+# Test if the class is raising an error when the base classifiers do not
+# implements the predict_proba method. In this case the test should not raise
+# an error since this class does not require base classifiers that
 # can estimate probabilities
 def test_predict_proba(create_X_y):
     X, y = create_X_y

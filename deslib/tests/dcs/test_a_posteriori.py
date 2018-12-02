@@ -1,11 +1,9 @@
-import pytest
 import numpy as np
+import pytest
 from sklearn.linear_model import Perceptron
+from sklearn.utils.estimator_checks import check_estimator
 
 from deslib.dcs.a_posteriori import APosteriori
-
-
-from sklearn.utils.estimator_checks import check_estimator
 
 
 def test_check_estimator():
@@ -31,13 +29,15 @@ def test_estimate_competence_all_ones(index, example_all_ones):
     expected = [1.0, 1.0, 1.0]
     predictions = np.array([0, 1, 0])
 
-    competences = a_posteriori_test.estimate_competence(query, neighbors, distances, predictions=np.array(predictions))
+    competences = a_posteriori_test.estimate_competence(query, neighbors,
+                                                        distances,
+                                                        predictions=np.array(
+                                                            predictions))
     assert np.isclose(competences, expected).all()
 
 
 # Testing example from kuncheva's book (combining pattern classifiers)
 def test_estimate_competence_kuncheva_ex(example_kuncheva):
-
     query = np.atleast_2d([1, 1])
 
     a_posteriori_test = APosteriori(k=example_kuncheva['k'])
@@ -53,7 +53,10 @@ def test_estimate_competence_kuncheva_ex(example_kuncheva):
 
     predictions = np.array([[1]])
 
-    competences = a_posteriori_test.estimate_competence(query, neighbors, distances, predictions=np.array(predictions))
+    competences = a_posteriori_test.estimate_competence(query, neighbors,
+                                                        distances,
+                                                        predictions=np.array(
+                                                            predictions))
     assert np.isclose(competences, 0.95, atol=0.01)
 
 
@@ -63,7 +66,8 @@ def test_estimate_competence_kuncheva_ex_batch(example_kuncheva):
     query = np.ones((10, 2))
 
     a_posteriori_test = APosteriori(k=example_kuncheva['k'])
-    a_posteriori_test.fit(example_kuncheva['dsel_processed'], example_kuncheva['y_dependent'])
+    a_posteriori_test.fit(example_kuncheva['dsel_processed'],
+                          example_kuncheva['y_dependent'])
     a_posteriori_test.DSEL_processed_ = example_kuncheva['dsel_processed']
     a_posteriori_test.dsel_scores_ = example_kuncheva['dsel_scores']
 
@@ -74,11 +78,15 @@ def test_estimate_competence_kuncheva_ex_batch(example_kuncheva):
     distances = np.tile(example_kuncheva['distances'], (10, 1))
 
     predictions = np.ones((1, 10))
-    competences = a_posteriori_test.estimate_competence(query, neighbors, distances, predictions=np.array(predictions))
+    competences = a_posteriori_test.estimate_competence(query, neighbors,
+                                                        distances,
+                                                        predictions=np.array(
+                                                            predictions))
     assert np.allclose(competences, 0.95, atol=0.01)
 
 
-# in this test case, the target of the neighbors is always different than the predicted. So
+# in this test case, the target of the neighbors is always different
+# than the predicted. So
 # the estimation of competence should always be zero
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_estimate_competence_diff_target(index, example_all_ones):
@@ -98,7 +106,10 @@ def test_estimate_competence_diff_target(index, example_all_ones):
     expected = [0.0, 0.0, 0.0]
 
     predictions = np.array([0, 1, 0])
-    competences = a_posteriori_test.estimate_competence(query, neighbors, distances, predictions=np.array(predictions))
+    competences = a_posteriori_test.estimate_competence(query, neighbors,
+                                                        distances,
+                                                        predictions=np.array(
+                                                            predictions))
     assert np.isclose(competences, expected).all()
 
 
@@ -112,9 +123,10 @@ def test_fit(create_X_y, create_pool_classifiers):
     assert np.array_equal(a_posteriori_test.dsel_scores_, expected)
 
 
-# Test if the class is raising an error when the base classifiers do not implements the predict_proba method.
-# Should raise an exception when the base classifier cannot estimate posterior probabilities (predict_proba)
-# Using Perceptron classifier as it does not implements the predict_proba method.
+# Test if the class is raising an error when the base classifiers do not
+# implements the predict_proba method. Should raise an exception when the
+# base classifier cannot estimate posterior probabilities (predict_proba)
+# Using Perceptron classifier as it does not implements predict_proba.
 def test_not_predict_proba(create_X_y):
     X, y = create_X_y
     clf1 = Perceptron()

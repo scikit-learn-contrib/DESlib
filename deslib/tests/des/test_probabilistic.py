@@ -287,4 +287,3 @@ def test_source_competence_exponential():
     C_src = exp_test.source_competence()
     expected = np.array([[0.0], [-1.0], [1.0]])
     assert np.allclose(C_src, expected, atol=0.01)
-
