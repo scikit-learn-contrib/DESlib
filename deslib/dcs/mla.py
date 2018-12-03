@@ -155,6 +155,7 @@ class MLA(BaseDCS):
         predictions = np.atleast_2d(predictions)
 
         # Normalize the distances
+        distances[distances == 0] = 1e-10
         dists_normalized = 1.0 / distances
 
         # Expanding the dimensions of the predictions and target arrays in

@@ -11,9 +11,11 @@ Dynamic selection with linear classifiers: XOR example
 This example shows that DS can deal with non-linear problem (XOR) using
 a combination of a few linear base classifiers.
 
-- 6 dynamic selection methods (3 DES and 3 DCS) are evaluated with
+- 10 dynamic selection methods (5 DES and 5 DCS) are evaluated with
   a pool composed of Decision stumps.
 
+- Since we use Bagging to generate the base classifiers, we also
+  included its performance as a baseline comparison.
 
 """
 
@@ -106,7 +108,7 @@ rng = np.random.RandomState(1234)
 X, y = make_xor(1000, random_state=rng)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5,
                                                     random_state=rng)
-X_DSEL, X_test, y_DSEL, y_test = train_test_split(X_test, y_test,
+X_DSEL, X_test, y_DSEL, y_test = train_test_split(X_train, y_train,
                                                   test_size=0.5,
                                                   random_state=rng)
 
@@ -129,7 +131,7 @@ X_DSEL = np.vstack((X_DSEL, X_train))
 y_DSEL = np.hstack((y_DSEL, y_train))
 list_ds, names = initialize_ds(pool_classifiers, X_DSEL, y_DSEL, k=7)
 
-fig, sub = plt.subplots(4, 3, figsize=(15, 10))
+fig, sub = plt.subplots(4, 3, figsize=(13, 10))
 plt.subplots_adjust(wspace=0.4, hspace=0.4)
 
 ax_data = sub.flatten()[0]
@@ -149,6 +151,7 @@ for ds, name, ax in zip(list_ds, names, sub.flatten()[2:]):
     ax.set_ylim((np.min(X_train[:, 1]) - 0.1, np.max(X_train[:, 1] + 0.1)))
     ax.set_title(name)
 plt.show()
+plt.tight_layout()
 
 ###############################################################################
 # Evaluation on the test set

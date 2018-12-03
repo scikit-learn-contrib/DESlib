@@ -7,6 +7,7 @@
 
 from abc import abstractmethod, ABCMeta
 
+import math
 import numpy as np
 import functools
 from scipy.stats import mode
@@ -230,7 +231,21 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self._set_region_of_competence_algorithm()
         self._fit_region_competence(X, y_ind)
 
+        # validate the IH
+        if(self.with_IH):
+            self._validate_ih()
         return self
+
+    def _compute_highest_possible_IH(self):
+        highest_IH = (self.safe_k - math.ceil(
+            self.safe_k / self.n_classes_)) / self.safe_k
+        return highest_IH
+
+    def _validate_ih(self):
+        highest_IH = self._compute_highest_possible_IH()
+        if(self.IH_rate > highest_IH):
+            warnings.warn("IH_rate is bigger than the highest possible IH.",
+                          category=RuntimeWarning)
 
     def _validate_k(self):
 
