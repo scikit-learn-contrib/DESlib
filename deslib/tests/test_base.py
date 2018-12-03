@@ -314,15 +314,20 @@ def test_predict_proba_all_agree(example_estimate_competence,
 # than the parameter IH_rate (0.5). Thus, the KNN
 # Should be used to predict probabilities
 @pytest.mark.parametrize('index', [0, 1, 2])
-def test_predict_proba_IH_knn(index, example_estimate_competence):
+def test_predict_proba_IH_knn(index,
+                              example_estimate_competence,
+                              create_pool_classifiers):
     X, y, neighbors, distances, _, dsel_scores = example_estimate_competence
     query = np.atleast_2d([1, 1])
-    ds_test = BaseDS(with_IH=True, IH_rate=0.5)
+    ds_test = BaseDS(create_pool_classifiers, with_IH=True, IH_rate=0.5)
     ds_test.fit(X, y)
     ds_test.DSEL_scores = dsel_scores
 
-    ds_test.neighbors = neighbors[index, :]
-    ds_test.distances = distances[index, :]
+    neighbors = neighbors[index, :]
+    distances = distances[index, :]
+
+    ds_test._get_region_competence = MagicMock(return_value=(distances,
+                                                             neighbors))
 
     ds_test.roc_algorithm_.predict_proba = MagicMock(
         return_value=np.atleast_2d([0.45, 0.55]))
@@ -342,8 +347,11 @@ def test_predict_proba_instance_called(index,
     ds_test = BaseDS(create_pool_classifiers, with_IH=True, IH_rate=0.10)
     ds_test.fit(X, y)
 
-    ds_test.neighbors = neighbors[index, :]
-    ds_test.distances = distances[index, :]
+    neighbors = neighbors[index, :]
+    distances = distances[index, :]
+
+    ds_test._get_region_competence = MagicMock(return_value=(distances,
+                                                             neighbors))
 
     ds_test.predict_proba_with_ds = MagicMock(
         return_value=np.atleast_2d([0.25, 0.75]))

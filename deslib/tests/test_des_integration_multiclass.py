@@ -14,11 +14,10 @@ from deslib.des.knop import KNOP
 from deslib.des.meta_des import METADES
 
 
-def setup_classifiers(encode_labels=None):
+def setup_classifiers():
     rng = np.random.RandomState(123456)
 
-    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
-        encode_labels, rng)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(rng)
     # Train a pool of 100 classifiers
     pool_classifiers = AdaBoostClassifier(random_state=rng)
     pool_classifiers.fit(X_train, y_train)
