@@ -3,7 +3,6 @@ import pytest
 from sklearn.linear_model import Perceptron
 
 from deslib.dcs.lca import LCA
-from deslib.tests.conftest import create_pool_classifiers
 from sklearn.utils.estimator_checks import check_estimator
 
 
@@ -19,7 +18,6 @@ def test_estimate_competence_batch(example_estimate_competence):
                          [1.00000000, 0.60000000, 0.50000000]])
     lca_test = LCA()
     lca_test.DSEL_processed_ = dsel_processed
-    lca_test.DFP_mask = np.ones((3, 3))
     lca_test.DSEL_target_ = y
 
     query = np.ones((3, 2))
@@ -36,10 +34,12 @@ def test_estimate_competence_batch(example_estimate_competence):
 # in this test case, the target of the neighbors is always different than
 # the predicted class. So the estimation of competence should always be zero
 @pytest.mark.parametrize('index', [0, 1, 2])
-def test_estimate_competence_diff_target(index, example_estimate_competence):
+def test_estimate_competence_diff_target(index,
+                                         example_estimate_competence,
+                                         create_pool_classifiers):
     _, y, neighbors, distances, dsel_processed, _ = example_estimate_competence
 
-    lca_test = LCA(create_pool_classifiers())
+    lca_test = LCA(create_pool_classifiers)
     lca_test.DSEL_processed_ = dsel_processed
     lca_test.DSEL_target_ = np.ones(15, dtype=int) * 3
 
