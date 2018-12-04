@@ -62,18 +62,6 @@ def example_all_ones(example_estimate_competence):
     return X, y, neighbors, distances, dsel_processed, dsel_scores
 
 
-# ----- Test Example all zeros ------
-@pytest.fixture
-def example_all_zeros(example_estimate_competence):
-    X, y, neighbors = example_estimate_competence[0:3]
-    dsel_processed = np.zeros((15, 3))
-    dsel_scores = np.zeros((15, 3, 2))
-    distances = np.zeros((3, 7))
-    neighbors = np.linspace(0, 6, num=7, dtype=int)
-
-    return X, y, neighbors, distances, dsel_processed, dsel_scores
-
-
 # ----- Test Example from Combining pattern classifiers  ------
 # This example is used to test the results of the A priori,
 # A posteriori and MLA techniques
