@@ -1,1 +1,1 @@
-from .examples_test import *
+from .conftest import *

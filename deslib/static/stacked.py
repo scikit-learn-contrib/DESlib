@@ -114,12 +114,13 @@ class StackedClassifier(BaseStaticEnsemble):
                            Predicted class for each sample in X.
         """
         X = check_array(X)
+        check_is_fitted(self, "meta_classifier_")
 
         # Check if the meta-classifier can output probabilities
-        if not hasattr(self, "predict_proba"):
+        if not hasattr(self.meta_classifier_, "predict_proba"):
             raise ValueError("Meta-classifier does not implement the"
                              " predict_proba method.")
-        check_is_fitted(self, "meta_classifier_")
+
         base_preds = self._predict_proba_base(X)
         return self.meta_classifier_.predict_proba(base_preds)
 

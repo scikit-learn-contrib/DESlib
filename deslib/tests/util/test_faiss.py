@@ -1,7 +1,6 @@
-
 import pytest
+import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
-from deslib.tests.examples_test import *
 from deslib.tests.test_des_integration import load_dataset
 from deslib.util import faiss_knn_wrapper
 

@@ -14,18 +14,17 @@ from deslib.des.knop import KNOP
 from deslib.des.meta_des import METADES
 
 
-def setup_classifiers(encode_labels=None):
+def setup_classifiers():
     rng = np.random.RandomState(123456)
 
-    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
-        encode_labels, rng)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(rng)
     # Train a pool of 100 classifiers
     pool_classifiers = AdaBoostClassifier(random_state=rng)
     pool_classifiers.fit(X_train, y_train)
     return pool_classifiers, X_dsel, y_dsel, X_test, y_test
 
 
-def load_dataset(encode_labels, rng):
+def load_dataset(rng):
     # Generate a classification dataset
     weights = [0.1, 0.2, 0.7]
     X, y = make_classification(n_classes=3, n_samples=2000, n_informative=3,
