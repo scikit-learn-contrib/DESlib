@@ -94,12 +94,6 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def _check_is_fitted(self):
-        """Verify if the estimator algorithm was fitted. Raises an error if it
-        is not fitted.
-        """
-        check_is_fitted(self, "estimator_")
-
     def _setup_label_encoder(self, y):
         """
         Setup the label encoder
