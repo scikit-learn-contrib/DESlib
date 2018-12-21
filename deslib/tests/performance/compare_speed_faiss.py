@@ -70,7 +70,7 @@ if __name__ == "__main__":
                                                         test_size=0.20,
                                                         random_state=rng)
     tree = DecisionTreeClassifier(max_depth=5)
-    pool_classifiers = BaggingClassifier(n_estimators=100,
+    pool_classifiers = BaggingClassifier(n_estimators=10,
                                          random_state=rng,
                                          n_jobs=10)
 
