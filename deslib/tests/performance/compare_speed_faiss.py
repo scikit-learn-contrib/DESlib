@@ -66,8 +66,6 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25,
                                                         random_state=rng)
 
-    # Since the dataset is very large, we use only a few examples for the
-    # training set and keep the majority on DSEL
     X_DSEL, X_train, y_DSEL, y_train = train_test_split(X_train, y_train,
                                                         test_size=0.20,
                                                         random_state=rng)
@@ -79,7 +77,6 @@ if __name__ == "__main__":
     print('Fitting base classifiers...')
     pool_classifiers.fit(X_train, y_train)
 
-    print('Base classifiers fitted!...')
     num_of_test_inputs = [100, 1000, 10000]
 
     for n_t in num_of_test_inputs:
@@ -103,5 +100,5 @@ if __name__ == "__main__":
                                              y_test[:n_t],
                                              knn_type='faiss')
 
-        print("sklearn_knorae score = {}, time = {}".format(score_faiss,
-                                                            time_faiss))
+        print("faiss_knorae score = {}, time = {}".format(score_faiss,
+                                                          time_faiss))
