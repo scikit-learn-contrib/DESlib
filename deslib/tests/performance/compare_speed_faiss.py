@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import BaggingClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier
 
 from deslib.des.knora_e import KNORAE
 
@@ -67,16 +66,16 @@ if __name__ == "__main__":
                                                         random_state=rng)
 
     X_DSEL, X_train, y_DSEL, y_train = train_test_split(X_train, y_train,
-                                                        test_size=0.20,
+                                                        test_size=0.50,
                                                         random_state=rng)
-    tree = DecisionTreeClassifier(max_depth=5)
-    pool_classifiers = BaggingClassifier(n_estimators=10,
+    pool_classifiers = BaggingClassifier(n_estimators=100,
                                          random_state=rng,
-                                         n_jobs=10)
+                                         n_jobs=-1)
 
     print('Fitting base classifiers...')
     pool_classifiers.fit(X_train, y_train)
 
+    n_samples = 1000000
     num_of_test_inputs = [100, 1000, 10000]
 
     for n_t in num_of_test_inputs:
@@ -84,8 +83,8 @@ if __name__ == "__main__":
               "num_of_tests: {}".format(y_DSEL.size, n_t))
 
         score_sklearn, time_sklearn = run_knorae(pool_classifiers,
-                                                 X_DSEL,
-                                                 y_DSEL,
+                                                 X_DSEL[:n_samples],
+                                                 y_DSEL[:n_samples],
                                                  X_test[:n_t],
                                                  y_test[:n_t],
                                                  knn_type='knn')
@@ -94,8 +93,8 @@ if __name__ == "__main__":
                                                             time_sklearn))
 
         score_faiss, time_faiss = run_knorae(pool_classifiers,
-                                             X_DSEL,
-                                             y_DSEL,
+                                             X_DSEL[:n_samples],
+                                             y_DSEL[:n_samples],
                                              X_test[:n_t],
                                              y_test[:n_t],
                                              knn_type='faiss')
