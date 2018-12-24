@@ -1,9 +1,11 @@
+from unittest.mock import MagicMock
+
+import numpy as np
 import pytest
 from sklearn.linear_model import Perceptron
+from sklearn.utils.estimator_checks import check_estimator
 
 from deslib.des.des_mi import DESMI
-from deslib.tests.examples_test import *
-from sklearn.utils.estimator_checks import check_estimator
 
 
 def test_check_estimator():
@@ -14,28 +16,27 @@ def test_check_estimator():
 
 
 @pytest.mark.parametrize('alpha', [-1.0, -0.5, 0.0])
-def test_check_alpha_value(alpha):
-    pool_classifiers = create_pool_classifiers()
-
+def test_check_alpha_value(alpha, create_X_y):
+    X, y = create_X_y
     with pytest.raises(ValueError):
-        desmi = DESMI(pool_classifiers, alpha=alpha)
-        desmi.fit(X_dsel_ex1, y_dsel_ex1)
+        desmi = DESMI(alpha=alpha)
+        desmi.fit(X, y)
 
 
 @pytest.mark.parametrize('alpha', ['a', None, 'string', 1])
-def test_check_alpha_type(alpha):
-    pool_classifiers = create_pool_classifiers()
+def test_check_alpha_type(alpha, create_X_y):
+    X, y = create_X_y
     with pytest.raises(TypeError):
-        desmi = DESMI(pool_classifiers, alpha=alpha)
-        desmi.fit(X_dsel_ex1, y_dsel_ex1)
+        desmi = DESMI(alpha=alpha)
+        desmi.fit(X, y)
 
 
 @pytest.mark.parametrize('pct_accuracy', [-1.0, -0.5, 0.0, 1.01])
-def test_check_pct_accuracy_value(pct_accuracy):
-    pool_classifiers = create_pool_classifiers()
+def test_check_pct_accuracy_value(pct_accuracy, create_X_y):
+    X, y = create_X_y
     with pytest.raises(ValueError):
-        desmi = DESMI(pool_classifiers, pct_accuracy=pct_accuracy)
-        desmi.fit(X_dsel_ex1, y_dsel_ex1)
+        desmi = DESMI(pct_accuracy=pct_accuracy)
+        desmi.fit(X, y)
 
 
 # Test if the class is raising an error when the base classifiers do not
@@ -51,8 +52,7 @@ def test_require_proba():
 
 
 def test_select_single_sample():
-    pool_classifiers = create_pool_classifiers()
-    des_mi = DESMI(pool_classifiers, pct_accuracy=0.7)
+    des_mi = DESMI(pct_accuracy=0.7)
     des_mi.N_ = 2
     competences = np.array([0.7, 0.2, 1.0])
     selected_clf = des_mi.select(competences)
@@ -62,8 +62,7 @@ def test_select_single_sample():
 
 def test_select_batch_samples():
     n_samples = 10
-    pool_classifiers = create_pool_classifiers()
-    des_mi = DESMI(pool_classifiers, pct_accuracy=0.7)
+    des_mi = DESMI(pct_accuracy=0.7)
     des_mi.N_ = 2
     competences = np.tile(np.array([0.7, 0.2, 1.0]), (n_samples, 1))
     selected_clf = des_mi.select(competences)
@@ -74,11 +73,10 @@ def test_select_batch_samples():
 def test_classify_with_ds_single_sample():
     query = np.ones(2)
 
-    pool_classifiers = create_pool_classifiers()
     # simulated predictions of the pool of classifiers
     predictions = np.array([0, 1, 0])
 
-    desmi_test = DESMI(pool_classifiers, DFP=True)
+    desmi_test = DESMI(DFP=True)
     DFP_mask = np.ones((1, 3))
     desmi_test.estimate_competence = MagicMock(return_value=(np.ones((1, 3))))
     desmi_test.select = MagicMock(return_value=np.array([[0, 2]]))
@@ -91,11 +89,10 @@ def test_classify_with_ds_batch_samples():
     # Passing 10 samples for classification automatically
     query = np.ones((n_samples, 2))
 
-    pool_classifiers = create_pool_classifiers()
     # simulated predictions of the pool of classifiers
     predictions = np.tile(np.array([0, 1, 0]), (n_samples, 1))
 
-    desmi_test = DESMI(pool_classifiers)
+    desmi_test = DESMI()
     desmi_test.estimate_competence = MagicMock(
         return_value=(np.ones((n_samples, 3))))
     desmi_test.select = MagicMock(
@@ -108,8 +105,7 @@ def test_classify_with_ds_diff_sizes():
     query = np.ones((10, 2))
     predictions = np.ones((5, 3))
 
-    pool_classifiers = create_pool_classifiers()
-    des_mi = DESMI(pool_classifiers)
+    des_mi = DESMI()
 
     with pytest.raises(ValueError):
         des_mi.classify_with_ds(query, predictions)
@@ -120,16 +116,15 @@ def test_proba_with_ds_diff_sizes():
     predictions = np.ones((5, 3))
     probabilities = np.ones((5, 3, 2))
 
-    pool_classifiers = create_pool_classifiers()
-    des_mi = DESMI(pool_classifiers)
+    des_mi = DESMI()
 
     with pytest.raises(ValueError):
         des_mi.predict_proba_with_ds(query, predictions, probabilities)
 
 
-def test_predict_proba_with_ds():
+def test_predict_proba_with_ds(create_pool_classifiers):
     query = np.array([-1, 1])
-    pool_classifiers = create_pool_classifiers() + create_pool_classifiers()
+    pool_classifiers = create_pool_classifiers + create_pool_classifiers
     desmi_test = DESMI(pool_classifiers, DFP=True)
     DFP_mask = np.ones((1, 6))
     selected_indices = np.array([[0, 1, 5]])

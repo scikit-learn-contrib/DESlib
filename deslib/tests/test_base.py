@@ -1,45 +1,13 @@
-from unittest.mock import Mock
+import unittest.mock
+from unittest.mock import Mock, MagicMock
 
+import numpy as np
 import pytest
 from sklearn.exceptions import NotFittedError
 from sklearn.neighbors import KNeighborsClassifier
 
 from deslib.base import BaseDS
-from deslib.tests.examples_test import *
-import unittest.mock
-import warnings
-
-
-@pytest.mark.parametrize('IH', [0.25, 0.4285])
-def test_check_valid_IH(IH):
-    X = np.random.rand(6, 1)
-    y = np.array([0, 0, 0, 1, 1, 1])
-    pool_classifiers = create_pool_classifiers()
-
-    with warnings.catch_warnings(record=True) as w_list:
-        ds_test = BaseDS(pool_classifiers, with_IH=True, IH_rate=IH)
-        ds_test.fit(X, y)
-
-        for w in w_list:
-            assert 'bigger than the highest possible IH' not in str(w.message)
-
-
-@pytest.mark.parametrize('IH', [0.48, 0.5])
-def test_check_IH_toohigh(IH):
-    X = np.random.rand(6, 1)
-    y = np.array([0, 0, 0, 1, 1, 1])
-    pool_classifiers = create_pool_classifiers()
-
-    with warnings.catch_warnings(record=True) as w_list:
-        ds_test = BaseDS(pool_classifiers, with_IH=True, IH_rate=IH)
-        ds_test.fit(X, y)
-
-        found_warning = False
-        for w in w_list:
-            if 'bigger than the highest possible IH' in str(w.message):
-                found_warning = True
-        if not found_warning:
-            raise Exception('Invalid IH value was not warned to the user')
+from .conftest import create_base_classifier
 
 
 def test_all_classifiers_agree():
@@ -73,41 +41,36 @@ def test_predict_value(query):
 def test_check_k_value(k):
     X = np.random.rand(10, 2)
     y = np.ones(10)
-    pool_classifiers = create_pool_classifiers()
-
     with pytest.raises(ValueError):
-        ds_test = BaseDS(pool_classifiers, k=k)
+        ds_test = BaseDS(k=k)
         ds_test.fit(X, y)
 
 
 @pytest.mark.parametrize('k', ['a', 2.5])
 def test_check_k_type(k):
-    pool_classifiers = create_pool_classifiers()
     X = np.random.rand(10, 2)
     y = np.ones(10)
 
     with pytest.raises(TypeError):
-        ds_test = BaseDS(pool_classifiers, k=k)
+        ds_test = BaseDS(k=k)
         ds_test.fit(X, y)
 
 
 @pytest.mark.parametrize('safe_k', ['a', 2.5])
 def test_check_safe_k_type(safe_k):
-    pool_classifiers = create_pool_classifiers()
     X = np.random.rand(10, 2)
     y = np.ones(10)
     with pytest.raises(TypeError):
-        ds_test = BaseDS(pool_classifiers, safe_k=safe_k)
+        ds_test = BaseDS(safe_k=safe_k)
         ds_test.fit(X, y)
 
 
 @pytest.mark.parametrize('safe_k', [0, 1, -1])
 def test_check_safe_k_value(safe_k):
-    pool_classifiers = create_pool_classifiers()
     X = np.random.rand(10, 2)
     y = np.ones(10)
     with pytest.raises(ValueError):
-        ds_test = BaseDS(pool_classifiers, safe_k=safe_k)
+        ds_test = BaseDS(safe_k=safe_k)
         ds_test.fit(X, y)
 
 
@@ -116,7 +79,7 @@ def test_valid_safe_k(k, safe_k):
     X = np.random.rand(10, 2)
     y = np.ones(10)
     with pytest.raises(ValueError):
-        ds = BaseDS([create_base_classifier(1)], k=k, safe_k=safe_k)
+        ds = BaseDS(k=k, safe_k=safe_k)
         ds.fit(X, y)
 
 
@@ -127,10 +90,11 @@ def create_classifiers_disagree():
 
 
 @pytest.mark.parametrize('knn_method,', ['invalidmethod', 1])
-def test_valid_selection_mode(knn_method):
+def test_valid_selection_mode(knn_method, create_X_y):
+    X, y = create_X_y
     with pytest.raises(ValueError):
-        ds = BaseDS(create_pool_classifiers(), knn_classifier=knn_method)
-        ds.fit(X_dsel_ex1, y_dsel_ex1)
+        ds = BaseDS(knn_classifier=knn_method)
+        ds.fit(X, y)
 
 
 def test_import_faiss_mode():
@@ -141,130 +105,134 @@ def test_import_faiss_mode():
         pass
     with unittest.mock.patch.dict('sys.modules', {'faiss': None}):
         with pytest.raises(ImportError):
-            BaseDS(create_pool_classifiers(), knn_classifier="faiss")
+            BaseDS(knn_classifier="faiss")
 
 
-def test_none_selection_mode():
-    ds = BaseDS(create_pool_classifiers(), knn_classifier=None)
-    ds.fit(X_dsel_ex1, y_dsel_ex1)
-    assert(isinstance(ds.roc_algorithm_, KNeighborsClassifier))
+def test_none_selection_mode(create_X_y):
+    X, y = create_X_y
+    ds = BaseDS(knn_classifier=None)
+    ds.fit(X, y)
+    assert (isinstance(ds.roc_algorithm_, KNeighborsClassifier))
 
 
-def test_string_selection_mode():
-    ds = BaseDS(create_pool_classifiers(), knn_classifier="knn")
-    ds.fit(X_dsel_ex1, y_dsel_ex1)
-    assert(isinstance(ds.roc_algorithm_, KNeighborsClassifier))
+def test_string_selection_mode(create_X_y):
+    X, y = create_X_y
+    ds = BaseDS(knn_classifier="knn")
+    ds.fit(X, y)
+    assert (isinstance(ds.roc_algorithm_, KNeighborsClassifier))
 
 
 # In this test the system was trained for a sample containing 2 features and
-# we are passing a sample with 3 as argument.
-# So it should raise a value error.
-def test_different_input_shape():
+# we are passing a sample with 3 as argument. So it should raise a value error.
+def test_different_input_shape(create_X_y):
+    X, y = create_X_y
     query = np.array([[1.0, 1.0, 2.0]])
-    ds_test = BaseDS(create_pool_classifiers())
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+    ds_test = BaseDS()
+    ds_test.fit(X, y)
     with pytest.raises(ValueError):
         ds_test.predict(query)
 
 
-def test_empty_pool():
+def test_empty_pool(create_X_y):
     pool_classifiers = []
-    X = np.random.rand(10, 2)
-    y = np.ones(10)
+    X, y = create_X_y
+
     with pytest.raises(ValueError):
         ds = BaseDS(pool_classifiers)
         ds.fit(X, y)
 
 
-# Should raise a NotFittedError since the function 'fit' was not called before
-# predict
+# Should raise a NotFittedError since the function 'fit' was
+# not called before predict
 def test_not_fitted_ds():
     query = np.array([[1.0, 1.0]])
 
-    ds_test = BaseDS(create_pool_classifiers())
+    ds_test = BaseDS()
     with pytest.raises(NotFittedError):
         ds_test.predict(query)
 
 
 # X has 15 samples while y have 20 labels. So this test should raise an error
 def test_input_shape_fit():
-    X = X_dsel_ex1
+    X = np.ones((15, 2))
     y = np.ones(20)
-    ds_test = BaseDS(create_pool_classifiers())
+    ds_test = BaseDS()
     with pytest.raises(ValueError):
         ds_test.fit(X, y)
 
 
-# -----------------------Test routines for the DFP (fire DS)-------------------
+# --------------------Test routines for the DFP (fire DS)--------------------
 
-# Since no classifier crosses the region of competence, all of them must be
-# selected
-def test_frienemy_no_classifier_crosses():
-    X = X_dsel_ex1
-    y = y_dsel_ex1
-    ds_test = BaseDS(create_pool_classifiers())
+# Since no classifier crosses the region of competence,
+# all of them must be selected
+def test_frienemy_no_classifier_crosses(example_estimate_competence,
+                                        create_pool_classifiers):
+    X, y, neighbors = example_estimate_competence[0:3]
+
+    ds_test = BaseDS(create_pool_classifiers)
     ds_test.fit(X, y)
-    mask = ds_test._frienemy_pruning(neighbors_ex1[0, :])
+    mask = ds_test._frienemy_pruning(neighbors[0, :])
     assert mask.shape == (1, 3) and np.allclose(mask, 1)
 
 
-# In this example, all base classifier should be considered crossing the region
-# of competence since they always predicts the correct label for the samples
-# in DSEL.
+# In this example, all base classifier should be considered crossing the
+# region of competence since they always # predicts the correct label for
+# the samples in DSEL.
 @pytest.mark.parametrize('index', [0, 1, 2])
-def test_frienemy_all_classifiers_crosses(index):
-    ds_test = BaseDS(create_pool_classifiers())
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-    ds_test.DSEL_processed_ = dsel_processed_all_ones
+def test_frienemy_all_classifiers_crosses(index,
+                                          example_all_ones,
+                                          create_pool_classifiers):
+    X, y, neighbors, _, dsel_processed, _ = example_all_ones
+    ds_test = BaseDS(create_pool_classifiers)
+    ds_test.fit(X, y)
+    ds_test.DSEL_processed_ = dsel_processed
 
-    result = ds_test._frienemy_pruning(neighbors_ex1[index, :])
+    result = ds_test._frienemy_pruning(neighbors[index, :])
     assert result.all() == 1.0
 
 
-def test_frienemy_not_all_classifiers_crosses():
-    ds_test = BaseDS(create_pool_classifiers(), safe_k=3)
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-    ds_test.DSEL_processed_ = dsel_processed_ex1
-
-    result = ds_test._frienemy_pruning(neighbors_ex1[0, :])
-    assert np.array_equal(result, np.array([[1, 1, 0]]))
-
-
-# Check if the batch processing is working by passing multiple samples at the
-# same time.
-def test_frienemy_not_all_classifiers_crosses_batch():
+# Check if the batch processing is working by passing multiple
+# samples at the same time.
+def test_frienemy_not_all_classifiers_crosses(example_estimate_competence,
+                                              create_pool_classifiers):
     expected = np.array([[1, 1, 0], [0, 1, 0], [1, 1, 1]])
-    ds_test = BaseDS(create_pool_classifiers(), safe_k=3)
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+    X, y, neighbors, _, dsel_processed, _ = example_estimate_competence
+    ds_test = BaseDS(create_pool_classifiers, safe_k=3)
+    ds_test.fit(X, y)
 
-    ds_test.DSEL_processed_ = dsel_processed_ex1
+    ds_test.DSEL_processed_ = dsel_processed
 
     # passing three samples to compute the DFP at the same time
-    result = ds_test._frienemy_pruning(neighbors_ex1)
+    result = ds_test._frienemy_pruning(neighbors)
     assert np.array_equal(result, expected)
 
 
-# Test the case where the sample is located in a safe region (i.e., all
-# neighbors comes from the same class)
-def test_frienemy_safe_region():
-    ds_test = BaseDS(create_pool_classifiers(), safe_k=3)
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-    ds_test.DSEL_processed_ = dsel_processed_ex1
+# Test the case where the sample is located in a safe region
+# (i.e., all neighbors comes from the same class)
+def test_frienemy_safe_region(example_estimate_competence,
+                              create_pool_classifiers):
+    X, y, _, _, dsel_processed, _ = example_estimate_competence
+    ds_test = BaseDS(create_pool_classifiers, safe_k=3)
+    ds_test.fit(X, y)
+    ds_test.DSEL_processed_ = dsel_processed
 
     result = ds_test._frienemy_pruning(np.array([0, 1, 2, 6, 7, 8, 14]))
     assert np.array_equal(result, np.array([[1, 1, 1]]))
 
 
-# Check if the batch processing is working by passing multiple samples at the
-# same time. Testing sample in a safe region
-def test_frienemy_safe_region_batch():
+# Check if the batch processing is working by passing multiple samples
+# at the same time. Testing sample in a safe region
+def test_frienemy_safe_region_batch(example_estimate_competence,
+                                    create_pool_classifiers):
+    X, y, neighbors, _, dsel_processed, _ = example_estimate_competence
+
     n_samples = 10
     n_classifiers = 3
     expected = np.ones((n_samples, n_classifiers))
-    ds_test = BaseDS(create_pool_classifiers(), safe_k=3)
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+    ds_test = BaseDS(create_pool_classifiers, safe_k=3)
+    ds_test.fit(X, y)
 
-    ds_test.DSEL_processed_ = dsel_processed_ex1
+    ds_test.DSEL_processed_ = dsel_processed
 
     neighbors = np.tile(np.array([0, 1, 2, 6, 7, 8, 14]), (n_samples, 1))
     result = ds_test._frienemy_pruning(neighbors)
@@ -272,46 +240,46 @@ def test_frienemy_safe_region_batch():
     assert np.array_equal(result, expected)
 
 
-@pytest.mark.parametrize('X', [None, [[0.1, 0.2], [0.5, np.nan]]])
-def test_bad_input_X(X):
-    ds_test = BaseDS(create_pool_classifiers())
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+@pytest.mark.parametrize('X_test', [None, [[0.1, 0.2], [0.5, np.nan]]])
+def test_bad_input_X(X_test, create_X_y):
+    X_train, y_train = create_X_y
+    ds_test = BaseDS()
+    ds_test.fit(X_train, y_train)
     with pytest.raises(ValueError):
-        ds_test.predict(X)
+        ds_test.predict(X_test)
 
 
-def test_preprocess_dsel_scores():
-    ds_test = BaseDS(create_pool_classifiers())
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+def test_preprocess_dsel_scores(create_X_y, create_pool_classifiers):
+    X, y = create_X_y
+    ds_test = BaseDS(create_pool_classifiers)
+    ds_test.fit(X, y)
     dsel_scores = ds_test._preprocess_dsel_scores()
     expected = np.array([[0.5, 0.5], [1.0, 0.0], [0.33, 0.67]])
     expected = np.tile(expected, (15, 1, 1))
     assert np.array_equal(dsel_scores, expected)
 
 
-def test_DFP_is_used():
-    ds_test = BaseDS(create_pool_classifiers(), DFP=True, safe_k=3)
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-    ds_test.DSEL_processed_ = dsel_processed_ex1
-    ds_test.DSEL_target_ = y_dsel_ex1
-    ds_test.DSEL_data_ = X_dsel_ex1
+def test_DFP_is_used(example_estimate_competence, create_pool_classifiers):
+    X, y, neighbors, _, dsel_processed, _ = example_estimate_competence
+    ds_test = BaseDS(create_pool_classifiers, DFP=True, safe_k=3)
+    ds_test.fit(X, y)
+    ds_test.DSEL_processed_ = dsel_processed
 
-    DFP_mask = ds_test._frienemy_pruning(neighbors_ex1[0, :])
+    DFP_mask = ds_test._frienemy_pruning(neighbors[0, :])
     assert np.array_equal(DFP_mask, np.atleast_2d([1, 1, 0]))
 
 
-def test_IH_is_used():
+def test_IH_is_used(example_estimate_competence, create_pool_classifiers):
+    X, y, neighbors, distances, dsel_processed, _ = example_estimate_competence
     expected = [0, 0, 1]
     query = np.ones((3, 2))
-    ds_test = BaseDS(create_pool_classifiers(), with_IH=True, IH_rate=0.5)
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+    ds_test = BaseDS(create_pool_classifiers, with_IH=True, IH_rate=0.5)
+    ds_test.fit(X, y)
 
-    ds_test.DSEL_processed_ = dsel_processed_ex1
-    ds_test.DSEL_target_ = y_dsel_ex1
-    ds_test.DSEL_data_ = X_dsel_ex1
+    ds_test.DSEL_processed_ = dsel_processed
 
-    ds_test._get_region_competence = MagicMock(return_value=(distances_ex1,
-                                                             neighbors_ex1))
+    ds_test._get_region_competence = MagicMock(return_value=(distances,
+                                                             neighbors))
     predicted = ds_test.predict(query)
 
     assert np.array_equal(predicted, expected)
@@ -322,15 +290,18 @@ def test_input_IH_rate(IH_rate):
     X = np.random.rand(10, 2)
     y = np.ones(10)
     with pytest.raises((ValueError, TypeError)):
-        ds = BaseDS(create_pool_classifiers(), with_IH=True, IH_rate=IH_rate)
+        ds = BaseDS(with_IH=True, IH_rate=IH_rate)
         ds.fit(X, y)
 
 
-def test_predict_proba_all_agree():
+def test_predict_proba_all_agree(example_estimate_competence,
+                                 create_pool_classifiers):
+    X, y, _, _, _, dsel_scores = example_estimate_competence
+
     query = np.atleast_2d([1, 1])
-    ds_test = BaseDS(create_pool_classifiers())
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-    ds_test.DSEL_scores = dsel_scores_ex1
+    ds_test = BaseDS(create_pool_classifiers)
+    ds_test.fit(X, y)
+    ds_test.DSEL_scores = dsel_scores
     backup_all_agree = BaseDS._all_classifier_agree
     BaseDS._all_classifier_agree = MagicMock(return_value=np.array([True]))
     proba = ds_test.predict_proba(query)
@@ -339,36 +310,48 @@ def test_predict_proba_all_agree():
     assert np.allclose(proba, np.atleast_2d([0.61, 0.39]))
 
 
-# In this test, the three neighborhoods have an hardness level lower than the
-# parameter IH_rate (0.5). Thus, the KNN
+# In this test, the three neighborhoods have an hardness level lower
+# than the parameter IH_rate (0.5). Thus, the KNN
 # Should be used to predict probabilities
 @pytest.mark.parametrize('index', [0, 1, 2])
-def test_predict_proba_IH_knn(index):
+def test_predict_proba_IH_knn(index,
+                              example_estimate_competence,
+                              create_pool_classifiers):
+    X, y, neighbors, distances, _, dsel_scores = example_estimate_competence
     query = np.atleast_2d([1, 1])
-    ds_test = BaseDS(create_pool_classifiers(), with_IH=True, IH_rate=0.5)
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-    ds_test.DSEL_scores = dsel_scores_ex1
+    ds_test = BaseDS(create_pool_classifiers, with_IH=True, IH_rate=0.5)
+    ds_test.fit(X, y)
+    ds_test.DSEL_scores = dsel_scores
 
-    ds_test.neighbors = neighbors_ex1[index, :]
-    ds_test.distances = distances_ex1[index, :]
+    neighbors = neighbors[index, :]
+    distances = distances[index, :]
+
+    ds_test._get_region_competence = MagicMock(return_value=(distances,
+                                                             neighbors))
 
     ds_test.roc_algorithm_.predict_proba = MagicMock(
         return_value=np.atleast_2d([0.45, 0.55]))
     proba = ds_test.predict_proba(query)
-    assert np.allclose(proba, np.atleast_2d([0.45, 0.55]))
+    assert np.array_equal(proba, np.atleast_2d([0.45, 0.55]))
 
 
-# In this test, the three neighborhoods have an hardness level higher than the
-# parameter IH_rate. Thus, the prediction
+# In this test, the three neighborhoods have an hardness level higher
+# than the parameter IH_rate. Thus, the prediction
 # should be passed down to the predict_proba_with_ds function.
 @pytest.mark.parametrize('index', [0, 1, 2])
-def test_predict_proba_instance_called(index):
+def test_predict_proba_instance_called(index,
+                                       example_estimate_competence,
+                                       create_pool_classifiers):
+    X, y, neighbors, distances, _, _ = example_estimate_competence
     query = np.atleast_2d([1, 1])
-    ds_test = BaseDS(create_pool_classifiers(), with_IH=True, IH_rate=0.10)
-    ds_test.fit(X_dsel_ex1, y_dsel_ex1)
+    ds_test = BaseDS(create_pool_classifiers, with_IH=True, IH_rate=0.10)
+    ds_test.fit(X, y)
 
-    ds_test.neighbors = neighbors_ex1[index, :]
-    ds_test.distances = distances_ex1[index, :]
+    neighbors = neighbors[index, :]
+    distances = distances[index, :]
+
+    ds_test._get_region_competence = MagicMock(return_value=(distances,
+                                                             neighbors))
 
     ds_test.predict_proba_with_ds = MagicMock(
         return_value=np.atleast_2d([0.25, 0.75]))
@@ -376,14 +359,17 @@ def test_predict_proba_instance_called(index):
     assert np.allclose(proba, np.atleast_2d([0.25, 0.75]))
 
 
-# ------------------------------ Testing label encoder-------------------------
+# ------------------------ Testing label encoder------------------------
 def create_pool_classifiers_dog_cat_plane():
     clf_0 = create_base_classifier(return_value='cat',
                                    return_prob=np.atleast_2d([0.5, 0.5]))
+
     clf_1 = create_base_classifier(return_value='dog',
                                    return_prob=np.atleast_2d([1.0, 0.0]))
+
     clf_2 = create_base_classifier(return_value='plane',
                                    return_prob=np.atleast_2d([0.33, 0.67]))
+
     pool_classifiers = [clf_0, clf_1, clf_2]
     return pool_classifiers
 
@@ -402,8 +388,7 @@ def test_label_encoder_only_dsel_allagree():
     query = np.atleast_2d([[1, 0], [-1, -1]])
     ds_test = BaseDS(create_pool_classifiers_dog(), k=2)
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-    ds_test.neighbors = neighbors_ex1[0, :]
-    ds_test.distances = distances_ex1[0, :]
+
     predictions = ds_test.predict(query)
     assert np.array_equal(predictions, ['dog', 'dog'])
 
@@ -415,8 +400,7 @@ def test_label_encoder_only_dsel():
     query = np.atleast_2d([[1, 0], [-1, -1]])
     ds_test = BaseDS(create_pool_classifiers_dog_cat_plane(), k=2)
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
-    ds_test.neighbors = neighbors_ex1[0, :]
-    ds_test.distances = distances_ex1[0, :]
+
     ds_test.classify_with_ds = Mock()
     ds_test.classify_with_ds.return_value = [1, 0]
     predictions = ds_test.predict(query)

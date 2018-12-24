@@ -1,8 +1,11 @@
 import numpy as np
 import pytest
 
-from deslib.util.prob_functions import (ccprmod, log_func, min_difference,
-                                        softmax, exponential_func,
+from deslib.util.prob_functions import (ccprmod,
+                                        log_func,
+                                        min_difference,
+                                        softmax,
+                                        exponential_func,
                                         entropy_func)
 
 

@@ -138,7 +138,7 @@ for method, name in zip(methods, names):
 #
 cmap = get_cmap('Dark2')
 colors = [cmap(i) for i in np.linspace(0, 1, 10)]
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(8, 6.5))
 pct_formatter = FuncFormatter(lambda x, pos: '{:.1f}'.format(x * 100))
 ax.bar(np.arange(len(methods)),
        scores,
@@ -147,12 +147,11 @@ ax.bar(np.arange(len(methods)),
        edgecolor='k')
 
 ax.set_ylim(0.70, 0.86)
-ax.set_xlabel('Static and dynamic ensemble methods', fontsize=13)
 ax.set_ylabel('Accuracy on the test set (%)', fontsize=13)
 ax.yaxis.set_major_formatter(pct_formatter)
 for tick in ax.get_xticklabels():
     tick.set_rotation(60)
-plt.subplots_adjust(bottom=0.15)
+plt.subplots_adjust(bottom=0.18)
 
 plt.show()
 
