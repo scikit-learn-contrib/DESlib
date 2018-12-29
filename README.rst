@@ -2,14 +2,14 @@
     :target: http://deslib.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-.. image:: https://circleci.com/gh/Menelau/DESlib.svg?style=shield
-    :target: https://circleci.com/gh/Menelau/DESlib
+.. image:: https://circleci.com/gh/scikit-learn-contrib/DESlib.svg?style=shield
+    :target: https://circleci.com/gh/scikit-learn-contrib/DESlib
 
-.. image:: https://travis-ci.org/Menelau/DESlib.svg?branch=master
-    :target: https://travis-ci.org/Menelau/DESlib
+.. image:: https://travis-ci.org/scikit-learn-contrib/DESlib.svg?branch=master
+    :target: https://travis-ci.org/scikit-learn-contrib/DESlib
 
-.. image:: https://codecov.io/gh/Menelau/DESlib/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/Menelau/DESlib
+.. image:: https://codecov.io/gh/scikit-learn-contrib/DESlib/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/scikit-learn-contrib/DESlib
     
 .. image:: https://api.codacy.com/project/badge/Grade/59500eecc5524c59b9eb2284b43ae3e6
    :alt: Codacy Badge
@@ -56,7 +56,7 @@ Latest version (under development):
 
 .. code-block:: bash
 
-    pip install git+https://github.com/Menelau/DESlib
+    pip install git+https://github.com/scikit-learn-contrib/DESlib
 
 
 Dependencies:
