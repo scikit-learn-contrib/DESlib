@@ -65,7 +65,7 @@ def test_kne():
 
     kne = KNORAE(pool_classifiers, DFP=True)
     kne.fit(X_dsel, y_dsel)
-    assert np.isclose(kne.score(X_test, y_test), 0.9)
+    assert np.isclose(kne.score(X_test, y_test), 0.896969696969697)
 
 
 def test_desp():
@@ -73,7 +73,7 @@ def test_desp():
 
     desp = DESP(pool_classifiers, DFP=True)
     desp.fit(X_dsel, y_dsel)
-    assert np.isclose(desp.score(X_test, y_test), 0.896969696969697)
+    assert np.isclose(desp.score(X_test, y_test), 0.8939393939393939)
 
 
 def test_ola():
@@ -143,7 +143,7 @@ def test_meta():
 
     meta_des = METADES(pool_classifiers, DFP=True)
     meta_des.fit(X_dsel, y_dsel)
-    assert np.isclose(meta_des.score(X_test, y_test), 0.9121212121212121)
+    assert np.isclose(meta_des.score(X_test, y_test), 0.9151515151515152)
 
 
 def test_knop():
