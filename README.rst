@@ -133,13 +133,14 @@ The library is divided into four modules:
     1. Oracle [20]_
     2. Single Best [2]_
     3. Static Selection [2]_
+    4. Stacked Classifier [25]_
 
 Variations of each DES techniques are also provided by the library (e.g., different versions of the META-DES framework).
 
 The following techniques are also available for all methods:
  * For DES techniques, the combination of the selected classifiers can be done as Dynamic Selection (majority voting), Dynamic Weighting  (weighted majority voting) or a Hybrid (selection + weighting).
  * For all DS techniques, Dynamic Frienemy Pruning (DFP) [13]_ can be used.
- * For all DS techniques, Instance Hardness (IH) can be used to classify easy samples with a KNN and hard samples using the DS technique.
+ * For all DS techniques, Instance Hardness (IH) can be used to classify easy samples with a KNN and hard samples using the DS technique. More details on IH and Dynamic Selection can be found in [14]_.
 
 As an optional requirement, the fast KNN implementation from FAISS_ can be used to speed-up the computation of the region of competence.
 
@@ -209,6 +210,8 @@ References:
 .. [23] : P. C. Smits, Multiple classifier systems for supervised remote sensing image classification based on dynamic classifier selection, IEEE Transactions on Geoscience and Remote Sensing 40 (4) (2002) 801–813.
 
 .. [24] : García, S., Zhang, Z.L., Altalhi, A., Alshomrani, S. and Herrera, F., "Dynamic ensemble selection for multi-class imbalanced datasets." Information Sciences 445 (2018): 22-37.
+
+.. [25] : Wolpert, David H. "Stacked generalization." Neural networks 5, no. 2 (1992): 241-259.
 
 .. _scikit-learn: http://scikit-learn.org/stable/
 
