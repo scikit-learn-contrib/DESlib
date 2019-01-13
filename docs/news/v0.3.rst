@@ -10,14 +10,17 @@ Changes
 * Pool of classifiers can now be fitted together with the ensemble techniques.
 * Added support for Faiss (Facebook AI Similarity Search) for fast region of competence estimation on GPU.
 * Added DES Multi-class Imbalance (DES-MI).
+* Added stacked classifier model to the static ensemble module.
 * Added a new Instance Hardness measure (KND_score).
 * Added Instance Hardness support when using DES-Clustering.
 * Added label encoder for the static ensemble module.
+* Added a script (utils.datasets) with routines to generate synthetic datasets (e.g., the P2 and XOR datasets).
 * Changed name of base classes (Adding Base to their name to follow scikit-learn standards).
 * Removal of **DFP_mask**, **neighbors** and **distances** as class variables.
 * Changed signature of methods **estimate_competence**, **predict_with_ds**, **predict_proba_with_ds**. They now require the neighbors and distances to be passed as input arguments.
 * Added Python 3.7 support.
-* New and updated examples.
+* New and updated `examples <auto_examples/index.html>`_.
+* Added performance tests comparing the speed of Faiss vs sklearn KNN.
 
 Bug Fixes
 ~~~~~~~~~~~~
@@ -26,6 +29,8 @@ Bug Fixes
 * Fixed bug with random state on DCS techniques.
 * Fixed high memory consumption on DES probabilistic methods.
 * Fixed bug on Heterogeneous ensembles example and notebooks examples.
+* Fixed bug on :class:`deslib.des.probabilistic.MinimumDifference` when only samples from a single class are provided.
+* Fixed problem with DS methods when the number of training examples was lower than the k value.
 
 
 .. _Rafael M O Cruz: https://github.com/Menelau
