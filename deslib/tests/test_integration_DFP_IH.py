@@ -57,7 +57,7 @@ def test_desp():
 
     desp = DESP(pool_classifiers, DFP=True, with_IH=True, IH_rate=0.1)
     desp.fit(X_dsel, y_dsel)
-    assert np.isclose(desp.score(X_test, y_test), 0.906060606060606)
+    assert np.isclose(desp.score(X_test, y_test), 0.9090909090909091)
 
 
 def test_ola():
