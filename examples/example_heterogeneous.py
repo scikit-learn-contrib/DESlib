@@ -10,13 +10,14 @@ Gaussian Naive Bayes, Perceptron, k-NN, Decision tree and Gaussian SVM. We
 also compare the result of DS methods with the voting classifier from sklean.
 """
 import numpy as np
-# Importing dynamic selection techniques:
-from sklearn.calibration import CalibratedClassifierCV
-# Importing dataset
+
+# Importing dataset and preprocessing routines
 from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 # Base classifier models:
 from sklearn.linear_model import Perceptron
-from sklearn.model_selection import train_test_split
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
@@ -30,6 +31,7 @@ from deslib.dcs import MCB
 from deslib.des import KNORAE
 from deslib.des import DESP
 from deslib.des import KNORAU
+from deslib.des import METADES
 from deslib.static import StackedClassifier
 
 rng = np.random.RandomState(42)
@@ -41,13 +43,18 @@ y = data.target
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33,
                                                     random_state=rng)
 
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
 # Split the data into training and DSEL for DS techniques
 X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train,
                                                     test_size=0.5,
                                                     random_state=rng)
 
 model_perceptron = CalibratedClassifierCV(Perceptron(max_iter=100,
-                                                     random_state=rng))
+                                                     random_state=rng),
+                                          cv=3)
 
 model_perceptron.fit(X_train, y_train)
 model_svc = SVC(probability=True, gamma='auto').fit(X_train, y_train)
@@ -74,6 +81,7 @@ model_voting = VotingClassifier(estimators=voting_classifiers).fit(
 knorau = KNORAU(pool_classifiers)
 kne = KNORAE(pool_classifiers)
 desp = DESP(pool_classifiers)
+metades = METADES(pool_classifiers)
 # DCS techniques
 ola = OLA(pool_classifiers)
 mcb = MCB(pool_classifiers)
@@ -91,6 +99,7 @@ stacked_dt = StackedClassifier(pool_classifiers,
 knorau.fit(X_dsel, y_dsel)
 kne.fit(X_dsel, y_dsel)
 desp.fit(X_dsel, y_dsel)
+metades.fit(X_dsel, y_dsel)
 ola.fit(X_dsel, y_dsel)
 mcb.fit(X_dsel, y_dsel)
 
@@ -105,6 +114,7 @@ print('Classification accuracy of Majority voting the pool: ',
 print('Classification accuracy of KNORA-U: ', knorau.score(X_test, y_test))
 print('Classification accuracy of KNORA-E: ', kne.score(X_test, y_test))
 print('Classification accuracy of DESP: ', desp.score(X_test, y_test))
+print('Classification accuracy of META-DES: ', metades.score(X_test, y_test))
 print('Classification accuracy of OLA: ', ola.score(X_test, y_test))
 print('Classification accuracy Stacking LR', stacked_lr.score(X_test, y_test))
 print('Classification accuracy Stacking DT', stacked_dt.score(X_test, y_test))
