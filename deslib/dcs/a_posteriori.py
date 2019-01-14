@@ -188,6 +188,7 @@ class APosteriori(BaseDCS):
         # Guarantee that these arrays are view as a 2D array for the case where
         # a single test sample is passed down.
         predictions = np.atleast_2d(predictions)
+        distances[distances == 0] = 1e-10
 
         # Normalize the distances
         dists_normalized = 1.0 / distances
