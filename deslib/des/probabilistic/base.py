@@ -134,6 +134,11 @@ class BaseProbabilistic(BaseDES):
         """
 
         super(BaseProbabilistic, self).fit(X, y)
+
+        if self.n_classes_ == 1:
+            raise ValueError(
+                "Error. This class does not accept one class datasets!")
+
         self._check_predict_proba()
 
         self.dsel_scores_ = self._preprocess_dsel_scores()
