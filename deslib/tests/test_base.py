@@ -422,4 +422,5 @@ def test_label_encoder_base():
     ds_test.fit(X_dsel_ex1, y_dsel_ex1)
     predictions = ds_test.predict(query)
 
-    assert np.equal(predictions, ['cat', 'dog'])
+    assert np.array_equal(predictions, np.array(['dog', 'cat']))
+
