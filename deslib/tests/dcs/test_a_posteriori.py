@@ -7,7 +7,7 @@ from deslib.dcs.a_posteriori import APosteriori
 
 
 def test_check_estimator():
-    check_estimator(APosteriori)
+    check_estimator(APosteriori(selection_method='best'))
 
 
 # Should always be 1.0 since the supports for the correct class is always 1.

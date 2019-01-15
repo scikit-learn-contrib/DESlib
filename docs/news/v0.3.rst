@@ -32,7 +32,8 @@ Bug Fixes
 * Fixed bug on Heterogeneous ensembles example and notebooks examples.
 * Fixed bug on :class:`deslib.des.probabilistic.MinimumDifference` when only samples from a single class are provided.
 * Fixed problem with DS methods when the number of training examples was lower than the k value.
-
+* Fixed division by zero problems with :class:`APosteriori` :class:`APriori` :class:`MLA` when the distance is equal to zero.
+* Fixed bug on :func:`deslib.utils.prob_functions.exponential_func` when the support obtained for the correct class was equal to one.
 
 .. _Rafael M O Cruz: https://github.com/Menelau
 .. _Luiz G Hafemann: https://github.com/luizgh

@@ -176,6 +176,7 @@ class APriori(BaseDCS):
             Competence level estimated for each base classifier and test
             example.
         """
+        distances[distances == 0] = 1e-10
         dists_normalized = 1.0 / distances
 
         # Get the ndarray containing the scores obtained for the correct class
