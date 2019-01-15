@@ -46,11 +46,20 @@ def exponential_func(n_classes, support_correct):
     C_src : array of shape = [n_samples]
         Representing the classifier competences at each data point
     """
-    support_correct[support_correct > 1.0] = 1.0
-    support_correct[support_correct < 0.0] = 0.0
-    temp = (1.0 - ((n_classes - 1.0) * support_correct) / (
-                1.0 - support_correct))
-    C_src = (1.0 - (2 ** temp))
+    support_correct[support_correct <= 0.0] = 0.0
+    C_src = np.zeros(support_correct.size)
+
+    # Special case where the support to the correct class is equal to one.
+    support_one_indices = support_correct >= 1
+    C_src[np.where(support_one_indices)[0]] = 1
+
+    # Apply the competence formula when the support is less than one
+    indices_not_one = np.where(~support_one_indices)[0]
+
+    temp = (1.0 - ((n_classes - 1.0) * support_correct[indices_not_one]) / (
+                1.0 - support_correct[indices_not_one]))
+    C_src[indices_not_one] = (1.0 - (2 ** temp))
+
     return C_src
 
 
