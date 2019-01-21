@@ -84,6 +84,9 @@ class FaissKNNClassifier:
             Number of neighbors to get (default is the value passed to the
             constructor).
 
+        return_distance : boolean, optional. Defaults to True.
+            If False, distances will not be returned
+
         Returns
         -------
         dists : list of shape = [n_samples, k]
@@ -96,7 +99,10 @@ class FaissKNNClassifier:
         """
         X = np.atleast_2d(X).astype(np.float32)
         dist, idx = self.index.search(X, n_neighbors)
-        return dist, idx
+        if return_distance:
+            return dist, idx
+        else:
+            return idx
 
     def predict_proba(self, X):
         """Estimates the posterior probabilities for sample in X.
