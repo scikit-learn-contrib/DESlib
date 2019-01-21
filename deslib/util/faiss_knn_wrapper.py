@@ -33,7 +33,7 @@ class FaissKNNClassifier:
 
     References
     ----------
-    Johnson, Jeff, Matthijs Douze, and Hervé Jégou. "Billion-scale similarity
+    Johnson Jeff, Matthijs Douze, and Hervé Jégou. "Billion-scale similarity
     search with gpus." arXiv preprint arXiv:1702.08734 (2017).
     """
 
@@ -59,29 +59,7 @@ class FaissKNNClassifier:
         preds : array, shape (n_samples,)
                 Class labels for samples in X.
         """
-        _, idx = self.kneighbors(X, self.n_neighbors)
-        class_idx = self.y_[idx]
-        counts = np.apply_along_axis(
-            lambda x: np.bincount(x, minlength=self.n_classes_), axis=1,
-            arr=class_idx.astype(np.int64))
-        preds = np.argmax(counts, axis=1)
-        return preds
-
-    def predict(self, X):
-        """Predict the class label for each sample in X.
-
-        Parameters
-        ----------
-
-        X : array of shape = [n_samples, n_features]
-            The input data.
-
-        Returns
-        -------
-        preds : array, shape (n_samples,)
-                Class labels for samples in X.
-        """
-        _, idx = self.kneighbors(X, self.n_neighbors)
+        idx = self.kneighbors(X, self.n_neighbors, return_distance=False)
         class_idx = self.y_[idx]
         counts = np.apply_along_axis(
             lambda x: np.bincount(x, minlength=self.n_classes_), axis=1,
@@ -135,7 +113,7 @@ class FaissKNNClassifier:
         preds_proba : array of shape = [n_samples, n_classes]
                           Probabilities estimates for each sample in X.
         """
-        _, idx = self.kneighbors(X, self.n_neighbors)
+        idx = self.kneighbors(X, self.n_neighbors, return_distance=False)
         class_idx = self.y_[idx]
         counts = np.apply_along_axis(
             lambda x: np.bincount(x, minlength=self.n_classes_), axis=1,
@@ -161,5 +139,5 @@ class FaissKNNClassifier:
         self.index_ = self.faiss.IndexFlatL2(X.shape[1])
         self.index_.add(X)
         self.y_ = y
-        self.n_classes_ = np.max(self.y_) + 1
+        self.n_classes_ = np.unique(y).size
         return self
