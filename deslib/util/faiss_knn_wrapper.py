@@ -34,17 +34,13 @@ class FaissKNNClassifier:
     References
     ----------
     Johnson, Jeff, Matthijs Douze, and Hervé Jégou. "Billion-scale similarity
-    search with gpus."
-    arXiv preprint arXiv:1702.08734 (2017).
+    search with gpus." arXiv preprint arXiv:1702.08734 (2017).
     """
 
     def __init__(self, n_neighbors=5, n_jobs=None, algorithm=None):
         self.n_neighbors = n_neighbors
         self.n_jobs = n_jobs
         self.algorithm = algorithm
-        self.y = None
-        self.num_of_classes = None
-        self.index = None
 
         import faiss
         self.faiss = faiss
@@ -64,9 +60,31 @@ class FaissKNNClassifier:
                 Class labels for samples in X.
         """
         _, idx = self.kneighbors(X, self.n_neighbors)
-        class_idx = self.y[idx]
+        class_idx = self.y_[idx]
         counts = np.apply_along_axis(
-            lambda x: np.bincount(x, minlength=self.num_of_classes), axis=1,
+            lambda x: np.bincount(x, minlength=self.n_classes_), axis=1,
+            arr=class_idx.astype(np.int64))
+        preds = np.argmax(counts, axis=1)
+        return preds
+
+    def predict(self, X):
+        """Predict the class label for each sample in X.
+
+        Parameters
+        ----------
+
+        X : array of shape = [n_samples, n_features]
+            The input data.
+
+        Returns
+        -------
+        preds : array, shape (n_samples,)
+                Class labels for samples in X.
+        """
+        _, idx = self.kneighbors(X, self.n_neighbors)
+        class_idx = self.y_[idx]
+        counts = np.apply_along_axis(
+            lambda x: np.bincount(x, minlength=self.n_classes_), axis=1,
             arr=class_idx.astype(np.int64))
         preds = np.argmax(counts, axis=1)
         return preds
@@ -98,7 +116,7 @@ class FaissKNNClassifier:
             the given query sample.
         """
         X = np.atleast_2d(X).astype(np.float32)
-        dist, idx = self.index.search(X, n_neighbors)
+        dist, idx = self.index_.search(X, n_neighbors)
         if return_distance:
             return dist, idx
         else:
@@ -118,15 +136,12 @@ class FaissKNNClassifier:
                           Probabilities estimates for each sample in X.
         """
         _, idx = self.kneighbors(X, self.n_neighbors)
-        class_idx = self.y[idx]
+        class_idx = self.y_[idx]
         counts = np.apply_along_axis(
-            lambda x: np.bincount(x, minlength=self.num_of_classes), axis=1,
+            lambda x: np.bincount(x, minlength=self.n_classes_), axis=1,
             arr=class_idx.astype(np.int64))
-        preds = np.argmax(counts, axis=1)
 
-        preds_proba = np.zeros((X.shape[0], self.num_of_classes))
-        for i in range(preds.shape[0]):
-            preds_proba[i] = counts[i] / self.n_neighbors
+        preds_proba = counts / self.n_neighbors
 
         return preds_proba
 
@@ -143,8 +158,8 @@ class FaissKNNClassifier:
         """
         X = np.atleast_2d(X).astype(np.float32)
         X = np.ascontiguousarray(X)
-        self.index = self.faiss.IndexFlatL2(X.shape[1])
-        self.index.add(X)
-        self.y = y
-        self.num_of_classes = np.max(self.y) + 1
+        self.index_ = self.faiss.IndexFlatL2(X.shape[1])
+        self.index_.add(X)
+        self.y_ = y
+        self.n_classes_ = np.max(self.y_) + 1
         return self
