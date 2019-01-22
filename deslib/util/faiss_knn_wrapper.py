@@ -63,7 +63,7 @@ class FaissKNNClassifier:
         class_idx = self.y_[idx]
         counts = np.apply_along_axis(
             lambda x: np.bincount(x, minlength=self.n_classes_), axis=1,
-            arr=class_idx.astype(np.int64))
+            arr=class_idx.astype(np.int16))
         preds = np.argmax(counts, axis=1)
         return preds
 
@@ -117,7 +117,7 @@ class FaissKNNClassifier:
         class_idx = self.y_[idx]
         counts = np.apply_along_axis(
             lambda x: np.bincount(x, minlength=self.n_classes_), axis=1,
-            arr=class_idx.astype(np.int64))
+            arr=class_idx.astype(np.int16))
 
         preds_proba = counts / self.n_neighbors
 
