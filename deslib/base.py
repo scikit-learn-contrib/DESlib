@@ -13,6 +13,7 @@ import functools
 from scipy.stats import mode
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import BaseEnsemble, BaggingClassifier
+from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import (check_X_y, check_is_fitted, check_array,
@@ -203,9 +204,22 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         # Check if the pool of classifiers is None.
         # If yes, use a BaggingClassifier for the pool.
         if self.pool_classifiers is None:
+            if len(X) < 2:
+                raise ValueError('More than one sample is needed '
+                                 'if the pool of classifiers is not informed.')
+
+            # Split the dataset into training (for the base classifier) and
+            # DSEL (for DS)
+            X_train, X_dsel, y_train, y_dsel = train_test_split(
+                X, y, test_size=self.DSEL_perc,
+                random_state=self.random_state_)
+
             self.pool_classifiers_ = BaggingClassifier(
                 random_state=self.random_state_)
-            self.pool_classifiers_.fit(X, y)
+            self.pool_classifiers_.fit(X_train, y_train)
+
+            X = X_dsel
+            y = y_dsel
         else:
             self._check_base_classifier_fitted()
             self.pool_classifiers_ = self.pool_classifiers
