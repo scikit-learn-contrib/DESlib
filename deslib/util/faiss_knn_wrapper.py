@@ -5,6 +5,7 @@
 # License: BSD 3 clause
 
 import numpy as np
+from sklearn.utils.validation import check_is_fitted
 
 
 def is_available():
@@ -67,7 +68,7 @@ class FaissKNNClassifier:
         preds = np.argmax(counts, axis=1)
         return preds
 
-    def kneighbors(self, X, n_neighbors, return_distance=True):
+    def kneighbors(self, X, n_neighbors=None, return_distance=True):
         """Finds the K-neighbors of a point.
 
         Parameters
@@ -93,6 +94,20 @@ class FaissKNNClassifier:
             Indices of the instances belonging to the region of competence of
             the given query sample.
         """
+        if n_neighbors is None:
+            n_neighbors = self.n_neighbors
+
+        elif n_neighbors <= 0:
+            raise ValueError("Expected n_neighbors > 0."
+                             " Got {}" .format(n_neighbors))
+        else:
+            if not np.issubdtype(type(n_neighbors), np.integer):
+                raise TypeError(
+                    "n_neighbors does not take {} value, "
+                    "enter integer value" .format(type(n_neighbors)))
+
+        check_is_fitted(self, 'index_')
+
         X = np.atleast_2d(X).astype(np.float32)
         dist, idx = self.index_.search(X, n_neighbors)
         if return_distance:
