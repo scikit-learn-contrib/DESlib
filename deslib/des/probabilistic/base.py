@@ -215,9 +215,11 @@ class BaseProbabilistic(BaseDES):
 
         # Set the threshold as the performance of the random classifier
         if self.selection_threshold is None:
-            self.selection_threshold = 1.0 / self.n_classes_
+            selection_threshold = 1.0 / self.n_classes_
+        else:
+            selection_threshold = self.selection_threshold
 
-        selected_classifiers = (competences > self.selection_threshold)
+        selected_classifiers = (competences > selection_threshold)
         # For the rows that are all False (i.e., no base classifier was
         # selected, select all classifiers (all True)
         selected_classifiers[~np.any(selected_classifiers, axis=1), :] = True
