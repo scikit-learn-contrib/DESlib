@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from unittest.mock import MagicMock
 from sklearn.linear_model import Perceptron
 from sklearn.utils.estimator_checks import check_estimator
 
@@ -64,20 +65,24 @@ def test_estimate_competence_kuncheva_ex(example_kuncheva):
 def test_estimate_competence_kuncheva_ex_batch(example_kuncheva):
     # considering a batch composed of 10 samples
     query = np.ones((10, 2))
+    classifier = MagicMock()
+    classifier.predict.return_value = [1]
+    classifier.predict_proba.return_value = None
 
-    a_posteriori_test = APosteriori(k=example_kuncheva['k'])
-    a_posteriori_test.fit(example_kuncheva['dsel_processed'],
-                          example_kuncheva['y_dependent'])
+    a_posteriori_test = APosteriori(pool_classifiers=classifier,
+                                    k=example_kuncheva['k'])
+
+    a_posteriori_test.n_classifiers_ = 1
     a_posteriori_test.DSEL_processed_ = example_kuncheva['dsel_processed']
+    a_posteriori_test.DSEL_target_ = example_kuncheva['y_dependent']
     a_posteriori_test.dsel_scores_ = example_kuncheva['dsel_scores']
-
     a_posteriori_test.n_classes_ = example_kuncheva['n_classes']
 
     # repeating the same matrix in a new axis to simulate a batch input.
-    neighbors = np.tile(example_kuncheva['neighbors'], (10, 1))
-    distances = np.tile(example_kuncheva['distances'], (10, 1))
+    neighbors = example_kuncheva['neighbors']
+    distances = example_kuncheva['distances']
 
-    predictions = np.ones((1, 10))
+    predictions = [1]
     competences = a_posteriori_test.estimate_competence(query, neighbors,
                                                         distances,
                                                         predictions=np.array(
