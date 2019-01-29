@@ -218,11 +218,11 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 random_state=self.random_state_)
             self.pool_classifiers_.fit(X_train, y_train)
 
-            X = X_dsel
-            y = y_dsel
         else:
             self._check_base_classifier_fitted()
             self.pool_classifiers_ = self.pool_classifiers
+            X_dsel = X
+            y_dsel = y
 
         self.n_classifiers_ = len(self.pool_classifiers_)
 
@@ -237,16 +237,17 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         else:
             self.base_already_encoded_ = False
 
-        y_ind = self._setup_label_encoder(y)
-        self._set_dsel(X, y_ind)
+        self._setup_label_encoder(y)
+        y_dsel = self.enc_.transform(y_dsel)
+        self._set_dsel(X_dsel, y_dsel)
 
         # validate the value of k
         self._validate_k()
         self._set_region_of_competence_algorithm()
-        self._fit_region_competence(X, y_ind)
+        self._fit_region_competence(X_dsel, y_dsel)
 
         # validate the IH
-        if(self.with_IH):
+        if self.with_IH:
             self._validate_ih()
         return self
 
@@ -257,7 +258,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
     def _validate_ih(self):
         highest_IH = self._compute_highest_possible_IH()
-        if(self.IH_rate > highest_IH):
+        if self.IH_rate > highest_IH:
             warnings.warn("IH_rate is bigger than the highest possible IH.",
                           category=RuntimeWarning)
 
@@ -280,10 +281,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
     def _setup_label_encoder(self, y):
         self.enc_ = LabelEncoder()
-        y_ind = self.enc_.fit_transform(y)
+        self.enc_.fit(y)
         self.classes_ = self.enc_.classes_
-
-        return y_ind
 
     def _encode_base_labels(self, y):
         if self.base_already_encoded_:
