@@ -401,3 +401,25 @@ def test_knop_proba(knn_methods):
     expected = np.load(
         'deslib/tests/expected_values/knop_proba_integration.npy')
     assert np.allclose(probas, expected)
+
+
+@pytest.mark.parametrize('knn_methods', knn_methods)
+def test_meta_no_pool_of_classifiers(knn_methods):
+    rng = np.random.RandomState(123456)
+
+    data = load_breast_cancer()
+    X = data.data
+    y = data.target
+
+    # split the data into training and test data
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33,
+                                                        random_state=rng)
+    # Scale the variables to have 0 mean and unit variance
+    scalar = StandardScaler()
+    X_train = scalar.fit_transform(X_train)
+    X_test = scalar.transform(X_test)
+
+    meta_des = METADES(knn_classifier=knn_methods, random_state=rng,
+                       DSEL_perc=0.5)
+    meta_des.fit(X_train, y_train)
+    assert np.isclose(meta_des.score(X_test, y_test), 0.9095744680851063)
