@@ -3,11 +3,10 @@
 # Author: Rafael Menelau Oliveira e Cruz <rafaelmenelau@gmail.com>
 #
 # License: BSD 3 clause
-
+import warnings
 import numpy as np
 from sklearn.base import ClusterMixin
 from sklearn.cluster import KMeans
-
 from deslib.base import BaseDS
 from deslib.util.aggregation import majority_voting_rule
 from deslib.util.diversity import Q_statistic, ratio_errors, \
@@ -86,6 +85,7 @@ class DESClustering(BaseDS):
                  pct_diversity=0.33,
                  more_diverse=True,
                  metric='DF',
+                 n_clusters=5,
                  random_state=None,
                  DSEL_perc=0.5):
 
@@ -101,6 +101,7 @@ class DESClustering(BaseDS):
         self.pct_accuracy = pct_accuracy
         self.pct_diversity = pct_diversity
         self.more_diverse = more_diverse
+        self.n_clusters = n_clusters
 
     def fit(self, X, y):
         """ Train the DS model by setting the Clustering algorithm and
@@ -133,8 +134,16 @@ class DESClustering(BaseDS):
         self._check_parameters()
 
         if self.clustering is None:
-            self.clustering_ = KMeans(n_clusters=5,
-                                      random_state=self.random_state)
+            if self.n_samples_ >= self.n_clusters:
+                self.clustering_ = KMeans(n_clusters=self.n_clusters,
+                                          random_state=self.random_state)
+            else:
+                warnings.warn("n_clusters is bigger than DSEL size. "
+                              "Using All DSEL examples as cluster centroids."
+                              , category=RuntimeWarning)
+                self.clustering_ = KMeans(n_clusters=self.n_samples_,
+                                          random_state=self.random_state)
+
             self.clustering_.fit(self.DSEL_data_)
         else:
             self.clustering_ = self.clustering.fit(self.DSEL_data_)

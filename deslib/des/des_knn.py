@@ -149,6 +149,8 @@ class DESKNN(BaseDS):
 
         self._check_parameters()
 
+        self._set_diversity_func()
+
         return self
 
     def estimate_competence(self, query, neighbors, distances=None,
@@ -202,8 +204,6 @@ class DESKNN(BaseDS):
 
         predicted_matrix = self.BKS_DSEL_[neighbors, :]
         targets = self.DSEL_target_[neighbors]
-
-        self._set_diversity_func()
 
         # TODO: optimize this part with numpy instead of for loops
         diversity = np.zeros((query.shape[0], self.n_classifiers_))

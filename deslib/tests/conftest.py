@@ -68,6 +68,7 @@ def example_all_ones(example_estimate_competence):
 @pytest.fixture
 def example_kuncheva():
     distances = np.linspace(1, 15, num=15)
+    distances = distances.reshape(1, -1)
 
     # 10 neighbors used in the example
     neighbors = np.linspace(0, 14, num=15, dtype=int)

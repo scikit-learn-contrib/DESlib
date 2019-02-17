@@ -180,7 +180,7 @@ class METADES(BaseDES):
 
         if self.n_classes_ == 1:
             raise ValueError(
-                "Error. KNOP  does not accept one class datasets!")
+                "Error. META-DES  does not accept one class datasets.")
 
         # Validate the input parameters
         self._check_input_parameters()
@@ -202,9 +202,8 @@ class METADES(BaseDES):
 
         # check whether the meta-classifier was already trained since
         # it could have been pre-processed before
-        try:
-            check_is_fitted(self.meta_classifier_, "estimator_")
-        except NotFittedError as _:
+        if not hasattr(self.meta_classifier_, "estimator_"):
+
             # IF it is not fitted, generate the meta-training dataset and
             # train the meta-classifier
             X_meta, y_meta = self._generate_meta_training_set()
@@ -394,7 +393,7 @@ class METADES(BaseDES):
               of the given query sample.
         """
         if kp is None:
-            kp = self.Kp
+            kp = self.Kp_
 
         if self.n_classes_ == 2:
             # Get only the scores for one class since they are complementary
@@ -522,7 +521,7 @@ class METADES(BaseDES):
             raise ValueError(
                 "The meta-classifier should output probability estimates")
 
-        if self.Kp > self.n_samples_:
+        if self.Kp >= self.n_samples_:
             warnings.warn(
                 "kp is bigger than DSEL size. Using All DSEL"
                 " examples for competence estimation.",
