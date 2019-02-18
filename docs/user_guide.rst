@@ -14,4 +14,5 @@ presents a step-by-step tutorial to fit and predict new instances using several 
     user_guide/development
     user_guide/tutorial
     user_guide/known_issues
+    user_guide/packaging
 
