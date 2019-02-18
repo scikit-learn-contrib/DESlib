@@ -4,7 +4,7 @@ Welcome to DESlib documentation!
 DESlib is an ensemble learning library focusing the implementation of the state-of-the-art techniques for dynamic classifier
 and ensemble selection.
 
-DESlib is a work in progress. Contributions are welcomed through its GitHub page: https://github.com/Menelau/DESlib.
+DESlib is a work in progress. Contributions are welcomed through its GitHub page: https://github.com/scikit-learn-contrib/DESlib.
 
 Introduction
 --------------
@@ -105,4 +105,4 @@ References
 
 .. _scikit-learn: http://scikit-learn.org/stable/
 
-.. _GitHub: https://github.com/Menelau/DESlib
+.. _GitHub: https://github.com/scikit-learn-contrib/DESlib
