@@ -17,7 +17,10 @@ Step-by-step process
 --------------------
 
 Make sure you have twine installed:
-pip install twine
+
+.. code-block:: bash
+
+  pip install twine
 
 * Update version on setup.py (e.g. "0.1")
 * Update version on deslib/__init__.py
