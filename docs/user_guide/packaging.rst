@@ -16,9 +16,11 @@ Some important things to have in mind:
 Step-by-step process
 --------------------
 
-Make sure you have twine installed:
 
-.. code-block:: bash
+* Create an account in PyPi production: https://pypi.org/ and test: https://test.pypi.org/
+* Make sure you have twine installed:
+
+ .. code-block:: bash
 
   pip install twine
 
@@ -56,7 +58,11 @@ Make sure you have twine installed:
 
   .. code-block:: bash
 
-     twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+     twine upload dist/*
+
+* Mark the new stable version to be built on readthedocs:
+
+ - Go to https://readthedocs.org/projects/deslib/versions/, find the new tag and click "Edit". Mark the "active" checkbox and save.
 
 * Update version on setup.py and __init.py__ to mention the new version in development (e.g. "0.2.dev")
 
