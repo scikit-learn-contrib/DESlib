@@ -329,4 +329,4 @@ def linkcode_resolve(domain, info):
     except Exception:
         filename = info['module'].replace('.', '/') + '.py'
     tag = 'master' if 'dev' in release else ('v' + release)
-    return "https://github.com/Menelau/DESlib/blob/%s/%s" % (tag, filename)
+    return "https://github.com/scikit-learn-contrib/DESlib/blob/%s/%s" % (tag, filename)

@@ -26,7 +26,7 @@ Reporting Bugs and requesting features
 We use Github issues to track all bugs and feature requests; feel free to
 open an issue if you have found a bug or wish to see a new feature implemented.
 Before opening a new issue, please check if the issue is not being currently addressed:
-[Issues](https://github.com/Menelau/DESlib/issues)
+[Issues](https://github.com/scikit-learn-contrib/DESlib/issues)
 
 For reporting bugs:
 
@@ -72,7 +72,7 @@ Contributing with code
 
 The preferred way to contribute is to fork the main repository to your account:
 
-1. Fork the [project repository](https://github.com/Menelau/DESlib):
+1. Fork the [project repository](https://github.com/scikit-learn-contrib/DESlib):
    click on the 'Fork' button near the top of the page. This creates
    a copy of the code under your account on the GitHub server.
 
@@ -114,6 +114,6 @@ follows PEP8 guidelines.
    the issue and mention the issue number in the pull request description to
    ensure a link is created to the original issue.
 
-.. _GitHub: https://github.com/Menelau/DESlib.
+.. _GitHub: https://github.com/scikit-learn-contrib/DESlib.
 
 .. _scikit-learn: http://scikit-learn.org/stable/
