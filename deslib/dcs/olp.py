@@ -13,7 +13,7 @@ from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import check_classification_targets
 
 from deslib.util.sgh import SGH
-from deslib.base import DS
+from deslib.base import BaseDS
 from deslib.dcs.ola import OLA
 from deslib.dcs.lca import LCA
 from deslib.dcs.mcb import MCB
@@ -23,7 +23,7 @@ from deslib.dcs.mla import MLA
 from deslib.util.instance_hardness import kdn_score
 
 
-class OLP(DS):
+class OLP(BaseDS):
     """
     Online Local Pool (OLP).
 
@@ -176,7 +176,9 @@ class OLP(DS):
         # Classifier count
         n = 0
         # Adding condition (curr_k <= self.n_samples) to handle special cases where curr_k can be higher than n_samples.
-        while n < self.n_classifiers and n_err < max_err and curr_k <= self.n_samples_:
+        while (n < self.n_classifiers and
+               n_err < max_err and
+               curr_k <= self.n_samples_):
 
             subpool = SGH()
 
