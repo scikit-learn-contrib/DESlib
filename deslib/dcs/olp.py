@@ -372,7 +372,8 @@ class OLP(BaseDS):
                 y_neighbors = self.DSEL_target_[roc]
                 predicted_labels[index], _ = mode(y_neighbors)
 
-            # Otherwise, generate the local pool for the query instance and use DS for classification
+            # Otherwise, generate the local pool for the query instance and use
+            # DS for classification
             else:
                 predicted_labels[index] = self.classify_with_ds(instance)
 
