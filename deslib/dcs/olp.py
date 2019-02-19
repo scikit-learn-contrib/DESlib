@@ -407,7 +407,8 @@ class OLP(BaseDS):
 
             instance = instance.reshape(1, -1)
 
-            # proceeds with DS, calculates the region of competence of the query sample
+            # Proceeds with DS, calculates the region of competence of the
+            # query sample
             tmp_k = np.minimum(self.n_samples_, self.n_classes_ * self.n_classifiers * self.k)
             self.distances, self.neighbors = self._get_region_competence(instance, k=tmp_k)
 
