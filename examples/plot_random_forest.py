@@ -24,18 +24,22 @@ from matplotlib.ticker import FuncFormatter
 from matplotlib.cm import get_cmap
 import numpy as np
 
+
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+
+# Pool of base classifiers
+from sklearn.ensemble import RandomForestClassifier
+
 # Example of a dcs techniques
 from deslib.dcs.ola import OLA
 from deslib.dcs.mcb import MCB
-from deslib.des.des_p import DESP
-from deslib.des.knora_u import KNORAU
-from deslib.des.meta_des import METADES
-from sklearn.datasets import load_breast_cancer
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
 
 # Example of a des techniques
+from deslib.des.des_p import DESP
+from deslib.des.meta_des import METADES
 from deslib.des.knora_e import KNORAE
+from deslib.des.knora_u import KNORAU
 
 # Example of stacked model
 from deslib.static.stacked import StackedClassifier
