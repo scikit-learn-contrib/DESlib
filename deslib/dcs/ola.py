@@ -17,7 +17,7 @@ class OLA(BaseDCS):
     test sample x. The competence of each base classifier is calculated as its
     classification accuracy in the neighborhood of x (region of competence).
 
-    The LCA method selects the base classifier presenting the highest
+    The OLA method selects the base classifier presenting the highest
     competence level. In a case where more than one base classifier achieves
     the same competence level, the one that was evaluated first is selected.
     The selection methodology can be modified by changing the hyper-parameter
