@@ -20,6 +20,9 @@ deslib.util.faiss_knn_wrapper - Wrapper for Facebook AI fast similarity search
 on GPU
 
 deslib.util.datasets - Provides methods to generate synthetic data.
+
+deslib.util.knne - Implementation of the K-Nearest Neighbors Equality
+technique
 """
 
 from .aggregation import *
@@ -27,3 +30,5 @@ from .diversity import *
 from .instance_hardness import *
 from .prob_functions import *
 from .datasets import *
+from .knne import KNNE
+from .faiss_knn_wrapper import FaissKNNClassifier
