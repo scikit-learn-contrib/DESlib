@@ -3,9 +3,12 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.utils import check_X_y
 
 
-class KNNE(KNeighborsClassifier):
+class KNNE(object):
     """"
     Implementation of the K-Nearest Neighbors-Equality technique.
+
+    This implementation fits a different KNN method for each class, and search
+    on each class for the nearest examples.
 
     References
     ----------
@@ -24,18 +27,12 @@ class KNNE(KNeighborsClassifier):
     Pattern Recognition 85 (2019): 149-160.
     """
 
-    def __init__(self, n_neighbors=None, n_neighbors_per_class=None, **kwargs):
+    def __init__(self, n_neighbors=7, **kwargs):
 
         self.n_neighbors = n_neighbors
-        self.n_neighbors_per_class = n_neighbors_per_class
         self.kwargs = kwargs
 
     def fit(self, X, y):
-
-        if (self.n_neighbors_per_class is not None) == (
-                self.n_neighbors is not None):
-            raise ValueError(
-                "Use either n_neighbors or n_neighbors_per_class!")
 
         X, y = check_X_y(X, y)
 
@@ -45,11 +42,7 @@ class KNNE(KNeighborsClassifier):
         self.y_ = y
         self.classes_ = set(y)
 
-        if self.n_neighbors_per_class is not None:
-            n_samples = {class_: self.n_neighbors_per_class for class_ in
-                         set(y)}
-
-        elif self.n_neighbors is not None:
+        if self.n_neighbors is not None:
             n_samples = {}
             n_classes = len(set(y))
             idxs = np.bincount(y).argsort()
@@ -60,7 +53,7 @@ class KNNE(KNeighborsClassifier):
                 n_samples[class_] = mdc + (1 if mod > 0 else 0)
                 mod = mod - 1
         else:
-            raise Exception('either n_neighbors or n_neighbors_per_class')
+            raise ValueError('either n_neighbors or n_neighbors_per_class')
 
         for class_ in set(y):
             self.classes_indexes_[class_] = np.argwhere(
@@ -71,18 +64,9 @@ class KNNE(KNeighborsClassifier):
                                        **self.kwargs)
             self.knns_[class_] = knn.fit(X_c, y_c)
 
-        self.total_neighbors = sum(list(n_samples.values()))
-
         return self
 
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
-        if (self.n_neighbors is not None) and (n_neighbors is not None) and (
-                n_neighbors != self.n_neighbors):
-            raise Exception('n_neighbors must be equal to default!')
-        elif (self.n_neighbors_per_class is not None) and (
-                n_neighbors is not None):
-            raise Exception(
-                'n_neighbors_per_class was used, cant set n_neighbors')
 
         if X is None:
             X = self.X_
@@ -107,15 +91,3 @@ class KNNE(KNeighborsClassifier):
         else:
             return inds[a, b]
 
-
-if __name__ == '__main__':
-    X = np.tile(np.arange(15).reshape(-1, 1), 3)
-    y = np.array(10 * [0] + 5 * [1])
-
-    knne = KNNE(n_neighbors=7)
-    knne.fit(X, y)
-    dist, inds = knne.kneighbors()
-    a = knne.kneighbors(np.random.random((2, 3)), return_distance=False)
-    import ipdb
-
-    ipdb.set_trace()
