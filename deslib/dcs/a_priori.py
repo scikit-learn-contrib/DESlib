@@ -68,10 +68,12 @@ class APriori(BaseDCS):
         If None, the random number generator is the RandomState instance used
         by `np.random`.
 
-    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
+    knn_classifier : {'knn', 'faiss', 'knne', None} (Default = 'knn')
          The algorithm used to estimate the region of competence:
 
          - 'knn' will use :class:`KNeighborsClassifier` from sklearn
+         - 'knne' will use the KNN-Equality method through the
+          :class:`KNNE` available on `deslib.utils.knne`
          - 'faiss' will use Facebook's Faiss similarity search through the
            class :class:`FaissKNNClassifier`
          - None, will use sklearn :class:`KNeighborsClassifier`.
