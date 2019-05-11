@@ -19,7 +19,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import (check_X_y, check_is_fitted, check_array,
                                       check_random_state)
 from deslib.util import faiss_knn_wrapper
-
+from deslib.util import KNNE
 from deslib.util.instance_hardness import hardness_region_competence
 import warnings
 
@@ -334,14 +334,20 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 self.knn_class_ = functools.partial(
                     faiss_knn_wrapper.FaissKNNClassifier,
                     n_jobs=-1, algorithm="auto")
+
             elif self.knn_classifier == "knn":
                 self.knn_class_ = functools.partial(KNeighborsClassifier,
+                                                    n_jobs=-1,
+                                                    algorithm="auto")
+
+            elif self.knn_classifier == 'knne':
+                self.knn_class_ = functools.partial(KNNE,
                                                     n_jobs=-1,
                                                     algorithm="auto")
             else:
                 raise ValueError(
                     '"knn_classifier" should be one of the following '
-                    '["knn", "faiss"] or an estimator class')
+                    '["knn", "knne", "faiss"] or an estimator class')
 
         elif callable(self.knn_classifier):
 
@@ -349,7 +355,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         else:
             raise ValueError('"knn_classifier" should be one of the following '
-                             '["knn", "faiss"] or an estimator class')
+                             '["knn", "knne", "faiss"] or an estimator class')
         self.roc_algorithm_ = self.knn_class_(self.k)
 
     def _get_region_competence(self, query, k=None):
