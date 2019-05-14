@@ -12,7 +12,7 @@ also compare the result of DS methods with the voting classifier from sklean.
 import numpy as np
 
 # Importing dataset and preprocessing routines
-from sklearn.datasets import load_breast_cancer
+from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 # Base classifier models:
@@ -22,7 +22,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble.voting_classifier import VotingClassifier
+from sklearn.ensemble import VotingClassifier
 
 # Example of DCS techniques
 from deslib.dcs import OLA
@@ -35,7 +35,7 @@ from deslib.des import METADES
 from deslib.static import StackedClassifier
 
 rng = np.random.RandomState(42)
-data = load_breast_cancer()
+data = fetch_openml(name='australian', cache=False)
 X = data.data
 y = data.target
 
