@@ -1,11 +1,13 @@
-import pandas as pd
-import time
-from sklearn.model_selection import train_test_split
-import threading
-import os
-import urllib.request
 import gzip
+import os
 import shutil
+import threading
+import time
+import urllib.request
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
 from deslib.des.knora_e import KNORAE
 
 
@@ -17,6 +19,7 @@ def sk_KNORAE_knn(XTrain, YTrain, k, XTest, YTest):
     print("sklearn_knn_knorae run_time: {}".format(time.clock() - start))
     print("sklearn_knn_knorae score: {}".format(score))
 
+
 def faiss_KNORAE_knn(XTrain, YTrain, k, XTest, YTest):
     start = time.clock()
     knorae_sk = KNORAE(k=k, knn_classifier='faiss')
@@ -24,6 +27,7 @@ def faiss_KNORAE_knn(XTrain, YTrain, k, XTest, YTest):
     score = knorae_sk.score(XTest, YTest)
     print("faiss_knn_knorae run_time: {}".format(time.clock() - start))
     print("faiss_knn_knorae score: {}".format(score))
+
 
 if __name__ == "__main__":
     url = "https://archive.ics.uci.edu/ml/machine-learning-databases/" \
@@ -60,9 +64,11 @@ if __name__ == "__main__":
                       "num_of_k: {}, num_of_tests: {}".format(nsamples, n_k,
                                                               n_t))
                 faiss_KNORAE_knn(X_train[:nsamples], Y_train[:nsamples], n_k,
-                          X_test[:n_t], Y_test[:n_t])
+                                 X_test[:n_t], Y_test[:n_t])
                 t = threading.Thread(target=sk_KNORAE_knn, args=(
-                    X_train[:nsamples], Y_train[:nsamples], n_k, X_test[:n_t], Y_test[:n_t]))
+                X_train[:nsamples], Y_train[:nsamples], n_k, X_test[:n_t],
+                Y_test[:n_t]))
+
                 t.start()
                 t.join(timeout=600)
                 if t.is_alive():
