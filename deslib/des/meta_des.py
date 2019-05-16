@@ -129,7 +129,7 @@ class METADES(BaseDES):
                  Kp=5,
                  Hc=1.0,
                  selection_threshold=0.5,
-                 mode='hybrid',
+                 mode='selection',
                  DFP=False,
                  with_IH=False,
                  safe_k=None,
