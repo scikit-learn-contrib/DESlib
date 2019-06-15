@@ -7,7 +7,7 @@ Such pool of classifiers is called Heterogeneous.
 
 In this example, we consider a pool of classifiers composed of a
 Gaussian Naive Bayes, Perceptron, k-NN, Decision tree and Gaussian SVM. We
-also compare the result of DS methods with the voting classifier from sklean.
+also compare the result of DS methods with the voting classifier from sklearn.
 """
 import numpy as np
 
