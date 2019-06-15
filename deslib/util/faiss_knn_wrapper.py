@@ -29,8 +29,18 @@ class FaissKNNClassifier:
              The number of jobs to run in parallel for both fit and predict.
               If -1, then the number of jobs is set to the number of cores.
 
-    algorithm : str (Default = None)
-                Algorithm used for nearest
+    algorithm : {'brute', 'voronoi'} (Default = 'brute')
+
+        Algorithm used to compute the nearest neighbors:
+
+            - 'brute' will use the :class: `IndexFlatL2` class from faiss.
+            - 'voronoi' will use :class:`IndexIVFFlat` class from faiss.
+
+        Note that selecting voronoi the system takes more time during training,
+        however it can significantly improve the search time on inference.
+
+    n_cells : int (Default = 100)
+        Number of voronoi cells. Only used when algorithm=='voronoi'
 
     References
     ----------
@@ -38,10 +48,12 @@ class FaissKNNClassifier:
     search with gpus." arXiv preprint arXiv:1702.08734 (2017).
     """
 
-    def __init__(self, n_neighbors=5, n_jobs=None, algorithm=None):
+    def __init__(self, n_neighbors=5, n_jobs=None, algorithm='brute',
+                 n_cells='voronoi'):
         self.n_neighbors = n_neighbors
         self.n_jobs = n_jobs
         self.algorithm = algorithm
+        self.n_cells = n_cells
 
         import faiss
         self.faiss = faiss
@@ -151,7 +163,17 @@ class FaissKNNClassifier:
         """
         X = np.atleast_2d(X).astype(np.float32)
         X = np.ascontiguousarray(X)
-        self.index_ = self.faiss.IndexFlatL2(X.shape[1])
+        d = X.shape[1] # dimensionality of the feature vector
+        if self.algorithm == 'brute':
+            self.index_ = self.faiss.IndexFlatL2(d)
+        elif self.algorithm == 'voronoi':
+            quantizer = self.faiss.IndexFlatL2(d)
+            self.index_ = self.faiss.IndexIVFFlat(quantizer, d, self.n_cells)
+            self.index_.train(X)
+        else:
+            raise ValueError("Invalid algorithm option."
+                             " Expected ['brute', 'voronoi'], got {}"
+                             .format(self.algorithm))
         self.index_.add(X)
         self.y_ = y
         self.n_classes_ = np.unique(y).size
