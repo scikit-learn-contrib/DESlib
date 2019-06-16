@@ -49,7 +49,7 @@ class FaissKNNClassifier:
     """
 
     def __init__(self, n_neighbors=5, n_jobs=None, algorithm='brute',
-                 n_cells='voronoi'):
+                 n_cells=100):
         self.n_neighbors = n_neighbors
         self.n_jobs = n_jobs
         self.algorithm = algorithm
