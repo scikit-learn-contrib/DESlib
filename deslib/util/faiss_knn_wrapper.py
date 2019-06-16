@@ -40,7 +40,12 @@ class FaissKNNClassifier:
         however it can significantly improve the search time on inference.
 
     n_cells : int (Default = 100)
-        Number of voronoi cells. Only used when algorithm=='voronoi'
+        Number of voronoi cells. Only used when algorithm=='voronoi'.
+
+    n_probes : int (Default = 1)
+        Number of cells that are visited to perform the search. Note that the
+        search time roughly increases linearly with the number of probes.
+        Only used when algorithm=='voronoi'.
 
     References
     ----------
@@ -48,12 +53,18 @@ class FaissKNNClassifier:
     search with gpus." arXiv preprint arXiv:1702.08734 (2017).
     """
 
-    def __init__(self, n_neighbors=5, n_jobs=None, algorithm='brute',
-                 n_cells=100):
+    def __init__(self,
+                 n_neighbors=5,
+                 n_jobs=None,
+                 algorithm='brute',
+                 n_cells=100,
+                 n_probes=1):
+
         self.n_neighbors = n_neighbors
         self.n_jobs = n_jobs
         self.algorithm = algorithm
         self.n_cells = n_cells
+        self.n_probes = n_probes
 
         import faiss
         self.faiss = faiss
@@ -170,6 +181,7 @@ class FaissKNNClassifier:
             quantizer = self.faiss.IndexFlatL2(d)
             self.index_ = self.faiss.IndexIVFFlat(quantizer, d, self.n_cells)
             self.index_.train(X)
+            self.index_.nprobe = self.n_probes
         else:
             raise ValueError("Invalid algorithm option."
                              " Expected ['brute', 'voronoi'], got {}"
