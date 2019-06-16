@@ -25,7 +25,7 @@ from matplotlib.cm import get_cmap
 import numpy as np
 
 
-from sklearn.datasets import load_breast_cancer
+from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
 
 # Pool of base classifiers
@@ -48,8 +48,8 @@ from sklearn.linear_model import LogisticRegression
 
 rng = np.random.RandomState(42)
 
-# Generate a classification dataset
-data = load_breast_cancer()
+# Fetch a classification dataset from OpenML
+data = fetch_openml(name='credit-g', cache=False)
 X = data.data
 y = data.target
 # split the data into training and test data
@@ -65,7 +65,7 @@ X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train,
 # Training a random forest to be used as the pool of classifiers.
 # We set the maximum depth of the tree so that it
 # can estimate probabilities
-pool_classifiers = RandomForestClassifier(n_estimators=10, max_depth=5,
+pool_classifiers = RandomForestClassifier(n_estimators=100, max_depth=5,
                                           random_state=rng)
 pool_classifiers.fit(X_train, y_train)
 
@@ -124,7 +124,7 @@ ax.bar(np.arange(8),
         ola_score, mcb_score, meta_score],
        color=colors,
        tick_label=labels)
-ax.set_ylim(0.93, 0.98)
+ax.set_ylim(0.65, 0.80)
 ax.set_xlabel('Method', fontsize=13)
 ax.set_ylabel('Accuracy on the test set (%)', fontsize=13)
 ax.yaxis.set_major_formatter(pct_formatter)

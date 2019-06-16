@@ -7,12 +7,12 @@ Such pool of classifiers is called Heterogeneous.
 
 In this example, we consider a pool of classifiers composed of a
 Gaussian Naive Bayes, Perceptron, k-NN, Decision tree and Gaussian SVM. We
-also compare the result of DS methods with the voting classifier from sklean.
+also compare the result of DS methods with the voting classifier from sklearn.
 """
 import numpy as np
 
 # Importing dataset and preprocessing routines
-from sklearn.datasets import load_breast_cancer
+from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 # Base classifier models:
@@ -22,7 +22,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble.voting_classifier import VotingClassifier
+from sklearn.ensemble import VotingClassifier
 
 # Example of DCS techniques
 from deslib.dcs import OLA
@@ -35,7 +35,7 @@ from deslib.des import METADES
 from deslib.static import StackedClassifier
 
 rng = np.random.RandomState(42)
-data = load_breast_cancer()
+data = fetch_openml(name='australian', cache=False)
 X = data.data
 y = data.target
 
@@ -57,7 +57,8 @@ model_perceptron = CalibratedClassifierCV(Perceptron(max_iter=100,
                                           cv=3)
 
 model_perceptron.fit(X_train, y_train)
-model_svc = SVC(probability=True, gamma='auto').fit(X_train, y_train)
+model_svc = SVC(probability=True, gamma='auto',
+                random_state=rng).fit(X_train, y_train)
 model_bayes = GaussianNB().fit(X_train, y_train)
 model_tree = DecisionTreeClassifier(random_state=rng).fit(X_train, y_train)
 model_knn = KNeighborsClassifier(n_neighbors=1).fit(X_train, y_train)
@@ -81,7 +82,7 @@ model_voting = VotingClassifier(estimators=voting_classifiers).fit(
 knorau = KNORAU(pool_classifiers)
 kne = KNORAE(pool_classifiers)
 desp = DESP(pool_classifiers)
-metades = METADES(pool_classifiers)
+metades = METADES(pool_classifiers, mode='hybrid')
 # DCS techniques
 ola = OLA(pool_classifiers)
 mcb = MCB(pool_classifiers)
