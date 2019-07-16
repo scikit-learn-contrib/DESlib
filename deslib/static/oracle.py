@@ -85,6 +85,7 @@ class Oracle(BaseStaticEnsemble):
         """
 
         X = check_array(X)
+        y = self.enc_.transform(y)
         predicted_labels = -np.ones(y.size, dtype=int)
 
         for sample_index, x in enumerate(X):
