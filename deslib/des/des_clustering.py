@@ -7,6 +7,7 @@ import warnings
 import numpy as np
 from sklearn.base import ClusterMixin
 from sklearn.cluster import KMeans
+from sklearn.metrics import precision_score
 from deslib.base import BaseDS
 from deslib.util.aggregation import majority_voting_rule
 from deslib.util.diversity import Q_statistic, ratio_errors, \
@@ -45,9 +46,13 @@ class DESClustering(BaseDS):
                    Whether we select the most or the least diverse classifiers
                    to add to the pre-selected ensemble
 
-    metric : String (Default = 'df')
+    metric_diversity : String (Default = 'df')
         Metric used to estimate the diversity of the base classifiers. Can be
         either the double fault (df), Q-statistics (Q), or error correlation.
+
+    metric_classifier : String (Default = 'accuracy')
+        Metric used to estimate the performance of a base classifier on a cluster.
+        Can be either the accuracy, or the precision (for binary classification). 
 
     random_state : int, RandomState instance or None, optional (default=None)
         If int, random_state is the seed used by the random number generator;
@@ -84,7 +89,8 @@ class DESClustering(BaseDS):
                  pct_accuracy=0.5,
                  pct_diversity=0.33,
                  more_diverse=True,
-                 metric='DF',
+                 metric_diversity='DF',
+                 metric_classifier = 'accuracy',
                  n_clusters=5,
                  random_state=None,
                  DSEL_perc=0.5):
@@ -96,7 +102,8 @@ class DESClustering(BaseDS):
                                             random_state=random_state,
                                             DSEL_perc=DSEL_perc)
 
-        self.metric = metric
+        self.metric_diversity = metric_diversity
+        self.metric_classifier = metric_classifier
         self.clustering = clustering
         self.pct_accuracy = pct_accuracy
         self.pct_diversity = pct_diversity
@@ -165,6 +172,8 @@ class DESClustering(BaseDS):
         self._preprocess_clusters()
         return self
 
+
+
     def _preprocess_clusters(self):
         """Preprocess the competence as well as the average diversity of each
         base classifier for each specific cluster.
@@ -181,15 +190,32 @@ class DESClustering(BaseDS):
 
         for cluster_index in range(self.clustering_.n_clusters):
 
+            
+
             # Get the indices_ of the samples in the corresponding cluster.
             sample_indices = np.where(labels == cluster_index)[0]
 
+
+            def precision_function(label_predicted):
+                targets = self.DSEL_target_[sample_indices]
+                return precision_score(targets, label_predicted)
+
+            self.sample_indices = sample_indices
             # Compute accuracy of each classifier in this cluster
-            accuracy = np.mean(self.DSEL_processed_[sample_indices, :], axis=0)
-            self.accuracy_cluster_[cluster_index, :] = accuracy
+            if self.metric_classifier == 'accuracy':
+                score_metric = np.mean(self.DSEL_processed_[sample_indices, :], axis=0)
+
+            elif self.metric_classifier == 'precision':
+
+                label_predicted = self.BKS_DSEL_[sample_indices, :]
+                score_classifier = np.apply_along_axis(precision_function, 0, label_predicted)
+
+
+
+            self.accuracy_cluster_[cluster_index, :] = score_classifier
 
             # Get the N_ most accurate classifiers in the cluster
-            accuracy_indices = np.argsort(accuracy)[::-1][0:self.N_]
+            accuracy_indices = np.argsort(score_classifier)[::-1][0:self.N_]
 
             # Get the target labels for the samples in the corresponding
             #  cluster for the diversity calculation.
@@ -366,10 +392,16 @@ class DESClustering(BaseDS):
         ValueError
             If the hyper-parameters are incorrect.
         """
-        if self.metric not in ['DF', 'Q', 'ratio']:
+        if self.metric_diversity not in ['DF', 'Q', 'ratio']:
             raise ValueError(
                 'Diversity metric must be one of the following values:'
                 ' "DF", "Q" or "Ratio"')
+        
+        if self.metric_classifier not in ['accuracy', 'precision']:
+            raise ValueError(
+                'Performance metric must be one of the following values:'
+                '"accuracy" or "precision"'
+            )
 
         if self.N_ <= 0 or self.J_ <= 0:
             raise ValueError("The values of N_ and J_ should be higher than 0"
@@ -387,15 +419,15 @@ class DESClustering(BaseDS):
 
     def _set_diversity_func(self):
         """Set the diversity function to be used according to the
-        hyper-parameter metric
+        hyper-parameter metric_diversity
 
         The diversity_func_ can be either the Double Fault, Q-Statistics
         or Ratio of errors.
 
         """
-        if self.metric == 'DF':
+        if self.metric_diversity == 'DF':
             self.diversity_func_ = negative_double_fault
-        elif self.metric == 'Q':
+        elif self.metric_diversity == 'Q':
             self.diversity_func_ = Q_statistic
         else:
             self.diversity_func_ = ratio_errors
