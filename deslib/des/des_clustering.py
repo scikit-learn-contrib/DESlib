@@ -7,7 +7,7 @@ import warnings
 import numpy as np
 from sklearn.base import ClusterMixin
 from sklearn.cluster import KMeans
-from sklearn.metrics import precision_score
+from sklearn.metrics import precision_score, balanced_accuracy_score
 from deslib.base import BaseDS
 from deslib.util.aggregation import majority_voting_rule
 from deslib.util.diversity import Q_statistic, ratio_errors, \
@@ -40,7 +40,7 @@ class DESClustering(BaseDS):
                    Percentage of base classifiers selected based on accuracy
 
     pct_diversity : float (Default = 0.33)
-                    Percentage of base classifiers selected based n diversity
+                    Percentage of base classifiers selected based on diversity
 
     more_diverse : Boolean (Default = True)
                    Whether we select the most or the least diverse classifiers
@@ -52,7 +52,7 @@ class DESClustering(BaseDS):
 
     metric_classifier : String (Default = 'accuracy')
         Metric used to estimate the performance of a base classifier on a cluster.
-        Can be either the accuracy, or the precision (for binary classification). 
+        Can be either the "accuracy", or "precision" (for binary classification). 
 
     random_state : int, RandomState instance or None, optional (default=None)
         If int, random_state is the seed used by the random number generator;
@@ -162,7 +162,7 @@ class DESClustering(BaseDS):
         # diversity of each cluster as well as the # selected classifiers
         # (indices) for each one. These pre-computed information will be kept
         # on those three variables:
-        self.accuracy_cluster_ = np.zeros(
+        self.performance_cluster_ = np.zeros(
             (self.clustering_.n_clusters, self.n_classifiers_))
         self.diversity_cluster_ = np.zeros(
             (self.clustering_.n_clusters, self.n_classifiers_))
@@ -195,27 +195,13 @@ class DESClustering(BaseDS):
             # Get the indices_ of the samples in the corresponding cluster.
             sample_indices = np.where(labels == cluster_index)[0]
 
+            # Compute performance metric of each classifier in this cluster
+            score_classifier = self.get_scores_(sample_indices)
 
-            def precision_function(label_predicted):
-                targets = self.DSEL_target_[sample_indices]
-                return precision_score(targets, label_predicted)
-
-            self.sample_indices = sample_indices
-            # Compute accuracy of each classifier in this cluster
-            if self.metric_classifier == 'accuracy':
-                score_metric = np.mean(self.DSEL_processed_[sample_indices, :], axis=0)
-
-            elif self.metric_classifier == 'precision':
-
-                label_predicted = self.BKS_DSEL_[sample_indices, :]
-                score_classifier = np.apply_along_axis(precision_function, 0, label_predicted)
-
-
-
-            self.accuracy_cluster_[cluster_index, :] = score_classifier
+            self.performance_cluster_[cluster_index, :] = score_classifier
 
             # Get the N_ most accurate classifiers in the cluster
-            accuracy_indices = np.argsort(score_classifier)[::-1][0:self.N_]
+            performance_indices = np.argsort(score_classifier)[::-1][0:self.N_]
 
             # Get the target labels for the samples in the corresponding
             #  cluster for the diversity calculation.
@@ -227,7 +213,7 @@ class DESClustering(BaseDS):
                                            self.diversity_func_)
 
             diversity_of_selected = self.diversity_cluster_[
-                cluster_index, accuracy_indices]
+                cluster_index, performance_indices]
 
             if self.more_diverse:
                 diversity_indices = np.argsort(diversity_of_selected)[::-1][
@@ -236,8 +222,9 @@ class DESClustering(BaseDS):
                 diversity_indices = np.argsort(diversity_of_selected)[
                                     0:self.J_]
 
-            self.indices_[cluster_index, :] = accuracy_indices[
+            self.indices_[cluster_index, :] = performance_indices[
                 diversity_indices]
+
 
     def estimate_competence(self, query, predictions=None):
         """Get the competence estimates of each base classifier :math:`c_{i}`
@@ -262,7 +249,7 @@ class DESClustering(BaseDS):
                       The competence level estimated for each base classifier.
         """
         cluster_index = self.clustering_.predict(query)
-        competences = self.accuracy_cluster_[cluster_index][:]
+        competences = self.performance_cluster_[cluster_index][:]
         return competences
 
     def select(self, query):
@@ -416,6 +403,25 @@ class DESClustering(BaseDS):
                 raise ValueError(
                     "Parameter clustering must be a sklearn"
                     " cluster estimator.")
+
+
+    def get_scores_(self, sample_indices):
+
+        def precision_function(label_predicted):
+            targets = self.DSEL_target_[sample_indices]
+            return precision_score(targets, label_predicted, average="micro", labels = [0,1]) 
+        
+        if self.metric_classifier == 'accuracy':
+            score_classifier = np.mean(self.DSEL_processed_[sample_indices, :], axis=0)
+
+        elif self.metric_classifier == 'precision':
+
+            label_predicted = self.BKS_DSEL_[sample_indices, :]
+            score_classifier = np.apply_along_axis(precision_function, 0, label_predicted)
+
+
+        return score_classifier
+
 
     def _set_diversity_func(self):
         """Set the diversity function to be used according to the
