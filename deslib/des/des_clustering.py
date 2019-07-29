@@ -7,7 +7,7 @@ import warnings
 import numpy as np
 from sklearn.base import ClusterMixin
 from sklearn.cluster import KMeans
-from sklearn.metrics import precision_score, balanced_accuracy_score
+from sklearn.metrics import precision_score
 from deslib.base import BaseDS
 from deslib.util.aggregation import majority_voting_rule
 from deslib.util.diversity import Q_statistic, ratio_errors, \
