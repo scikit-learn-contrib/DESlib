@@ -409,7 +409,7 @@ class DESClustering(BaseDS):
 
         def precision_function(label_predicted):
             targets = self.DSEL_target_[sample_indices]
-            return precision_score(targets, label_predicted, average="micro", labels = [0,1]) 
+            return precision_score(targets, label_predicted, average="binary", labels = [0,1]) 
         
         if self.metric_classifier == 'accuracy':
             score_classifier = np.mean(self.DSEL_processed_[sample_indices, :], axis=0)
