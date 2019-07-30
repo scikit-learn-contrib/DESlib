@@ -50,7 +50,7 @@ class DESClustering(BaseDS):
         Metric used to estimate the diversity of the base classifiers. Can be
         either the double fault (df), Q-statistics (Q), or error correlation.
 
-    metric_classifier : String (Default = 'accuracy_score')
+    metric_performance : String (Default = 'accuracy_score')
         Metric used to estimate the performance of a base classifier on a cluster.
         Can be either any metric from sklearn.metrics. 
 
@@ -90,7 +90,7 @@ class DESClustering(BaseDS):
                  pct_diversity=0.33,
                  more_diverse=True,
                  metric_diversity='DF',
-                 metric_classifier = 'accuracy_score',
+                 metric_performance = 'accuracy_score',
                  n_clusters=5,
                  random_state=None,
                  DSEL_perc=0.5):
@@ -103,7 +103,7 @@ class DESClustering(BaseDS):
                                             DSEL_perc=DSEL_perc)
 
         self.metric_diversity = metric_diversity
-        self.metric_name = metric_classifier
+        self.metric_performance = metric_performance
 
         self.clustering = clustering
         self.pct_accuracy = pct_accuracy
@@ -140,6 +140,9 @@ class DESClustering(BaseDS):
         self.J_ = int(np.ceil(self.n_classifiers_ * self.pct_diversity))
 
         self._check_parameters()
+
+        self.metric_classifier_ = getattr(metrics, self.metric_performance)
+
 
         if self.clustering is None:
             if self.n_samples_ >= self.n_clusters:
@@ -384,10 +387,10 @@ class DESClustering(BaseDS):
                 ' "DF", "Q" or "Ratio"')
 
         try : 
-            self.metric_classifier = getattr(metrics,self.metric_name)
+            getattr(metrics,self.metric_performance)
         except AttributeError:
             raise ValueError(
-                "Parameter metric_classifier must be a sklearn metrics")
+                "Parameter metric_performance must be a sklearn metrics")
 
         if self.N_ <= 0 or self.J_ <= 0:
             raise ValueError("The values of N_ and J_ should be higher than 0"
@@ -408,7 +411,7 @@ class DESClustering(BaseDS):
 
         def precision_function(label_predicted):
             targets = self.DSEL_target_[sample_indices]
-            return self.metric_classifier(targets, label_predicted) 
+            return self.metric_classifier_(targets, label_predicted) 
         
         label_predicted = self.BKS_DSEL_[sample_indices, :]
         score_classifier = np.apply_along_axis(precision_function, 0, label_predicted)
