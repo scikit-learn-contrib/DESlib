@@ -7,7 +7,7 @@ import warnings
 import numpy as np
 from sklearn.base import ClusterMixin
 from sklearn.cluster import KMeans
-from sklearn.metrics import precision_score
+from sklearn import metrics 
 from deslib.base import BaseDS
 from deslib.util.aggregation import majority_voting_rule
 from deslib.util.diversity import Q_statistic, ratio_errors, \
@@ -50,9 +50,9 @@ class DESClustering(BaseDS):
         Metric used to estimate the diversity of the base classifiers. Can be
         either the double fault (df), Q-statistics (Q), or error correlation.
 
-    metric_classifier : String (Default = 'accuracy')
+    metric_classifier : String (Default = 'accuracy_score')
         Metric used to estimate the performance of a base classifier on a cluster.
-        Can be either the "accuracy", or "precision" (for binary classification). 
+        Can be either any metric from sklearn.metrics. 
 
     random_state : int, RandomState instance or None, optional (default=None)
         If int, random_state is the seed used by the random number generator;
@@ -90,7 +90,7 @@ class DESClustering(BaseDS):
                  pct_diversity=0.33,
                  more_diverse=True,
                  metric_diversity='DF',
-                 metric_classifier = 'accuracy',
+                 metric_classifier = 'accuracy_score',
                  n_clusters=5,
                  random_state=None,
                  DSEL_perc=0.5):
@@ -103,7 +103,8 @@ class DESClustering(BaseDS):
                                             DSEL_perc=DSEL_perc)
 
         self.metric_diversity = metric_diversity
-        self.metric_classifier = metric_classifier
+        self.metric_name = metric_classifier
+
         self.clustering = clustering
         self.pct_accuracy = pct_accuracy
         self.pct_diversity = pct_diversity
@@ -189,8 +190,6 @@ class DESClustering(BaseDS):
         labels = self.clustering_.predict(self.DSEL_data_)
 
         for cluster_index in range(self.clustering_.n_clusters):
-
-            
 
             # Get the indices_ of the samples in the corresponding cluster.
             sample_indices = np.where(labels == cluster_index)[0]
@@ -383,12 +382,12 @@ class DESClustering(BaseDS):
             raise ValueError(
                 'Diversity metric must be one of the following values:'
                 ' "DF", "Q" or "Ratio"')
-        
-        if self.metric_classifier not in ['accuracy', 'precision']:
+
+        try : 
+            self.metric_classifier = getattr(metrics,self.metric_name)
+        except AttributeError:
             raise ValueError(
-                'Performance metric must be one of the following values:'
-                '"accuracy" or "precision"'
-            )
+                "Parameter metric_classifier must be a sklearn metrics")
 
         if self.N_ <= 0 or self.J_ <= 0:
             raise ValueError("The values of N_ and J_ should be higher than 0"
@@ -409,16 +408,10 @@ class DESClustering(BaseDS):
 
         def precision_function(label_predicted):
             targets = self.DSEL_target_[sample_indices]
-            return precision_score(targets, label_predicted, average="binary", labels = [0,1]) 
+            return self.metric_classifier(targets, label_predicted) 
         
-        if self.metric_classifier == 'accuracy':
-            score_classifier = np.mean(self.DSEL_processed_[sample_indices, :], axis=0)
-
-        elif self.metric_classifier == 'precision':
-
-            label_predicted = self.BKS_DSEL_[sample_indices, :]
-            score_classifier = np.apply_along_axis(precision_function, 0, label_predicted)
-
+        label_predicted = self.BKS_DSEL_[sample_indices, :]
+        score_classifier = np.apply_along_axis(precision_function, 0, label_predicted)
 
         return score_classifier
 
