@@ -7,7 +7,7 @@ import warnings
 import numpy as np
 from sklearn.base import ClusterMixin
 from sklearn.cluster import KMeans
-from sklearn import metrics 
+from sklearn import metrics
 from deslib.base import BaseDS
 from deslib.util.aggregation import majority_voting_rule
 from deslib.util.diversity import Q_statistic, ratio_errors, \
@@ -90,7 +90,7 @@ class DESClustering(BaseDS):
                  pct_diversity=0.33,
                  more_diverse=True,
                  metric_diversity='DF',
-                 metric_performance = 'accuracy_score',
+                 metric_performance='accuracy_score',
                  n_clusters=5,
                  random_state=None,
                  DSEL_perc=0.5):
@@ -143,15 +143,13 @@ class DESClustering(BaseDS):
 
         self.metric_classifier_ = getattr(metrics, self.metric_performance)
 
-
         if self.clustering is None:
             if self.n_samples_ >= self.n_clusters:
                 self.clustering_ = KMeans(n_clusters=self.n_clusters,
                                           random_state=self.random_state)
             else:
                 warnings.warn("n_clusters is bigger than DSEL size. "
-                              "Using All DSEL examples as cluster centroids."
-                              , category=RuntimeWarning)
+                              "Using All DSEL examples as cluster centroids.", category=RuntimeWarning)
                 self.clustering_ = KMeans(n_clusters=self.n_samples_,
                                           random_state=self.random_state)
 
@@ -175,8 +173,6 @@ class DESClustering(BaseDS):
 
         self._preprocess_clusters()
         return self
-
-
 
     def _preprocess_clusters(self):
         """Preprocess the competence as well as the average diversity of each
@@ -219,14 +215,13 @@ class DESClustering(BaseDS):
 
             if self.more_diverse:
                 diversity_indices = np.argsort(diversity_of_selected)[::-1][
-                                    0:self.J_]
+                    0:self.J_]
             else:
                 diversity_indices = np.argsort(diversity_of_selected)[
-                                    0:self.J_]
+                    0:self.J_]
 
             self.indices_[cluster_index, :] = performance_indices[
                 diversity_indices]
-
 
     def estimate_competence(self, query, predictions=None):
         """Get the competence estimates of each base classifier :math:`c_{i}`
@@ -367,8 +362,8 @@ class DESClustering(BaseDS):
 
         selected_classifiers = self.select(query)
         ensemble_proba = probabilities[
-                         np.arange(probabilities.shape[0])[:, None],
-                         selected_classifiers, :]
+            np.arange(probabilities.shape[0])[:, None],
+            selected_classifiers, :]
         predicted_proba = np.mean(ensemble_proba, axis=1)
 
         return predicted_proba
@@ -386,8 +381,8 @@ class DESClustering(BaseDS):
                 'Diversity metric must be one of the following values:'
                 ' "DF", "Q" or "Ratio"')
 
-        try : 
-            getattr(metrics,self.metric_performance)
+        try:
+            getattr(metrics, self.metric_performance)
         except AttributeError:
             raise ValueError(
                 "Parameter metric_performance must be a sklearn metrics")
@@ -406,18 +401,17 @@ class DESClustering(BaseDS):
                     "Parameter clustering must be a sklearn"
                     " cluster estimator.")
 
-
     def get_scores_(self, sample_indices):
 
         def precision_function(label_predicted):
             targets = self.DSEL_target_[sample_indices]
-            return self.metric_classifier_(targets, label_predicted) 
-        
+            return self.metric_classifier_(targets, label_predicted)
+
         label_predicted = self.BKS_DSEL_[sample_indices, :]
-        score_classifier = np.apply_along_axis(precision_function, 0, label_predicted)
+        score_classifier = np.apply_along_axis(
+            precision_function, 0, label_predicted)
 
         return score_classifier
-
 
     def _set_diversity_func(self):
         """Set the diversity function to be used according to the
