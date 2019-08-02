@@ -38,10 +38,10 @@ def test_fit_homogeneous_clusters(create_pool_classifiers,
 
     clustering_test.fit(X, y)
 
-    assert (clustering_test.accuracy_cluster_[0, 1] == 0.0 and
-            clustering_test.accuracy_cluster_[0, [0, 2]].all() == 1.0)
-    assert (clustering_test.accuracy_cluster_[1, 1] == 1.0 and
-            clustering_test.accuracy_cluster_[1, [0, 2]].all() == 0.0)
+    assert (clustering_test.performance_cluster_[0, 1] == 0.0 and
+            clustering_test.performance_cluster_[0, [0, 2]].all() == 1.0)
+    assert (clustering_test.performance_cluster_[1, 1] == 1.0 and
+            clustering_test.performance_cluster_[1, [0, 2]].all() == 0.0)
     for idx in clustering_test.indices_[0, :]:
         assert idx in (0, 2, 3, 5)
 
@@ -59,9 +59,9 @@ def test_fit_heterogeneous_clusters(example_estimate_competence,
     clustering_test.fit(X, y)
 
     # Index selected should be of any classifier that predicts the label 0
-    assert np.isclose(clustering_test.accuracy_cluster_[:, 1], [0.428, 0.375],
+    assert np.isclose(clustering_test.performance_cluster_[:, 1], [0.428, 0.375],
                       atol=0.01).all()
-    assert np.isclose(clustering_test.accuracy_cluster_[:, 0], [0.572, 0.625],
+    assert np.isclose(clustering_test.performance_cluster_[:, 0], [0.572, 0.625],
                       atol=0.01).all()
     assert clustering_test.indices_[0, 0] == 0 or clustering_test.indices_[
         0, 0] == 2
@@ -86,11 +86,11 @@ def test_estimate_competence(create_pool_classifiers,
     clustering_test.clustering_.predict = MagicMock(return_value=0)
     competences = clustering_test.estimate_competence(query)
 
-    assert np.array_equal(competences, clustering_test.accuracy_cluster_[0, :])
+    assert np.array_equal(competences, clustering_test.performance_cluster_[0, :])
 
     clustering_test.clustering_.predict = MagicMock(return_value=1)
     competences = clustering_test.estimate_competence(query)
-    assert np.array_equal(competences, clustering_test.accuracy_cluster_[1, :])
+    assert np.array_equal(competences, clustering_test.performance_cluster_[1, :])
 
 
 def test_fit_clusters_less_diverse(example_estimate_competence,
@@ -104,10 +104,10 @@ def test_fit_clusters_less_diverse(example_estimate_competence,
     clustering_test.clustering.predict = MagicMock(return_value=y)
     clustering_test.fit(X, y)
 
-    assert (clustering_test.accuracy_cluster_[0, 1] == 0.0 and
-            clustering_test.accuracy_cluster_[0, [0, 2]].all() == 1.0)
-    assert (clustering_test.accuracy_cluster_[1, 1] == 1.0 and
-            clustering_test.accuracy_cluster_[1, [0, 2]].all() == 0.0)
+    assert (clustering_test.performance_cluster_[0, 1] == 0.0 and
+            clustering_test.performance_cluster_[0, [0, 2]].all() == 1.0)
+    assert (clustering_test.performance_cluster_[1, 1] == 1.0 and
+            clustering_test.performance_cluster_[1, [0, 2]].all() == 0.0)
     for idx in clustering_test.indices_[0, :]:
         assert idx in (1, 3, 4, 5)
 
@@ -145,7 +145,7 @@ def test_input_diversity_parameter(create_X_y):
     X, y = create_X_y
 
     with pytest.raises(ValueError):
-        des_clustering = DESClustering(metric='abc')
+        des_clustering = DESClustering(metric_diversity='abc')
         des_clustering.fit(X, y)
 
 
@@ -168,7 +168,7 @@ def test_J_higher_than_N(create_X_y):
 def test_diversity_metric_Q(create_X_y):
     X, y = create_X_y
 
-    test = DESClustering(metric='Q')
+    test = DESClustering(metric_diversity='Q')
     # Mocking this method to avoid preprocessing the cluster information
     # that is not required in this test.
     test._preprocess_clusters = MagicMock(return_value=1)
@@ -179,7 +179,7 @@ def test_diversity_metric_Q(create_X_y):
 def test_diversity_metric_DF(create_X_y):
     X, y = create_X_y
 
-    test = DESClustering(metric='DF')
+    test = DESClustering(metric_diversity='DF')
     # Mocking this method to avoid preprocessing the cluster
     # information that is not required in this test.
     test._preprocess_clusters = MagicMock(return_value=1)
@@ -190,7 +190,7 @@ def test_diversity_metric_DF(create_X_y):
 def test_diversity_metric_ratio(create_X_y):
     X, y = create_X_y
 
-    test = DESClustering(metric='ratio')
+    test = DESClustering(metric_diversity='ratio')
     # Mocking this method to avoid preprocessing the cluster
     # information that is not required in this test.
     test._preprocess_clusters = MagicMock(return_value=1)
