@@ -3,6 +3,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.utils import check_X_y
 from sklearn.utils import check_array
 from deslib.util.prob_functions import softmax
+from deslib.util import faiss_knn_wrapper
 
 
 class KNNE(object):
@@ -11,6 +12,15 @@ class KNNE(object):
 
     This implementation fits a different KNN method for each class, and search
     on each class for the nearest examples.
+
+    Parameters
+    ----------
+
+    n_neighbors : int, (default = 7)
+        Number of neighbors to use by default for :meth:`kneighbors` queries.
+
+    algorithm : str = ['sklearn', 'faiss]', (default = 'sklearn')
+        Whether to use scikit-learn or faiss for nearest neighbors estimation.
 
     References
     ----------
@@ -37,6 +47,17 @@ class KNNE(object):
         self.n_neighbors = n_neighbors
         self.knn_classifier = knn_classifier
         self.kwargs = kwargs
+        # Check optional dependency
+        if knn_classifier == 'faiss' and not faiss_knn_wrapper.is_available():
+            raise ImportError(
+                'Using knn_classifier="faiss" requires that the FAISS library '
+                'be installed.Please check the Installation Guide.')
+
+    def _set_knn_type(self):
+        if self.knn_classifier == 'faiss':
+            self.knn_type_ = faiss_knn_wrapper.FaissKNNClassifier
+        else:
+            self.knn_type_ = KNeighborsClassifier
 
     def fit(self, X, y):
         """Fit the model according to the given training data.
@@ -56,29 +77,25 @@ class KNNE(object):
         self.X_ = X
         self.y_ = y
         self.classes_ = np.unique(y)
-        self.n_classes = self.classes_.size
+        self.n_classes_ = self.classes_.size
 
-        if self.n_neighbors is not None:
-            # n_samples = {}
-            n_classes = len(set(y))
-            # idxs = np.bincount(y).argsort()
-            self.mdc = int(self.n_neighbors / n_classes)
-            self.mod = self.n_neighbors % n_classes
+        # Checking inputs
+        self._check_n_neighbors(self.n_neighbors)
+        self._set_knn_type()
 
-            # for class_ in np.arange(n_classes)[idxs]:
-            #     n_samples[class_] = mdc + (1 if mod > 0 else 0)
-            #     mod = mod - 1
+        self._mdc = int(self.n_neighbors / self.n_classes_)
+        self._mod = self.n_neighbors % self.n_classes_
+        if self._mod > 0:
+            k = self._mdc + 1
         else:
-            raise ValueError('Either n_neighbors or n_neighbors_per_class'
-                             ' needs to be informed!')
+            k = self._mdc
 
         for class_ in self.classes_:
             self.classes_indexes_[class_] = np.argwhere(
                 np.array(y) == class_).ravel()
             y_c = y[self.classes_indexes_[class_]]
             X_c = X[self.classes_indexes_[class_], :]
-            knn = KNeighborsClassifier(n_neighbors=self.mdc+1,
-                                       **self.kwargs)
+            knn = self.knn_type_(n_neighbors=k, **self.kwargs)
             self.knns_[class_] = knn.fit(X_c, y_c)
 
         return self
@@ -96,8 +113,8 @@ class KNNE(object):
             In this case, the query point is not considered its own neighbor.
 
         n_neighbors : int
-            Number of neighbors to get (default is the value
-            passed to the constructor).
+            Number of neighbors to get for each class. (default is the value
+            passed to the constructor divided by the number of classes).
 
         return_distance : boolean, optional. Defaults to True.
             If False, distances will not be returned
@@ -114,25 +131,33 @@ class KNNE(object):
         if X is None:
             X = self.X_
 
+        if n_neighbors is None:
+            n_neighbors = self.n_neighbors
+
         dists = []
         inds = []
-
+        mod_dists = []
+        mod_inds = []
         for class_, knn in self.knns_.items():
             dist_c, ind_c = knn.kneighbors(X)
             real_ind_c = self.classes_indexes_[class_].take(ind_c)
-            dists.append(dist_c)
-            inds.append(real_ind_c)
+            dists.append(dist_c[:, 0:self._mdc])
+            inds.append(real_ind_c[:, 0:self._mdc])
+            if self._mod > 0:
+                mod_dists.append(dist_c[:, -1].reshape(-1, 1))
+                mod_inds.append(real_ind_c[:, -1].reshape(-1, 1))
 
-        inds = np.concatenate(inds, axis=1)
-        dists = np.concatenate(dists, axis=1)
+        dists, inds = self._organize_neighbors(dists, inds)
 
-        b = dists.argsort(axis=1)
-        a = np.tile(np.arange(b.shape[0]).reshape(-1, 1), (1, b.shape[1]))
+        if self._mod > 0:
+            mod_dists, mod_inds = self._organize_neighbors(mod_dists, mod_inds)
+            dists = np.hstack((dists, mod_dists[:, 0:self._mod]))
+            inds = np.hstack((inds, mod_inds[:, 0:self._mod]))
 
         if return_distance:
-            return  dists[a, b], inds[a, b]
+            return dists, inds
         else:
-            return inds[a, b]
+            return inds
 
     def predict(self, X):
         """Predict the class label for each sample in X.
@@ -169,13 +194,34 @@ class KNNE(object):
         """
         X = check_array(X, accept_sparse='csr')
 
-        dists, inds = self.kneighbors(X, self.n_neighbors,
-                                      return_distance=True)
+        dists, inds = self.kneighbors(X, return_distance=True)
         classes = self.y_[inds]
-        dists_array = np.empty((X.shape[0], self.n_classes))
+        dists_array = np.empty((X.shape[0], self.n_classes_))
         # TODO: check if a more efficient implementation can be done
         for c in self.classes_:
             dists_array[:, c] = np.ma.MaskedArray(dists, classes != c).mean(
                 axis=1)
         probas = softmax(1./dists_array)
         return probas
+
+    def _organize_neighbors(self, dists, inds):
+        inds = np.concatenate(inds, axis=1)
+        dists = np.concatenate(dists, axis=1)
+        b = dists.argsort(axis=1)
+        a = np.tile(np.arange(b.shape[0]).reshape(-1, 1), (1, b.shape[1]))
+        dists, inds = dists[a, b], inds[a, b]
+        return dists, inds
+
+    def _check_n_neighbors(self, n_neighbors):
+        if n_neighbors is None:
+            raise ValueError('"n_neighbors" is required for the KNN-E model.')
+
+        if n_neighbors < self.n_classes_:
+            raise ValueError('"n_neighbors" must be equals or higher than'
+                             'the number of classes. Got {}'
+                             .format(n_neighbors))
+
+        if not np.issubdtype(type(n_neighbors), np.integer):
+            raise TypeError(
+                "n_neighbors does not take {} value, "
+                "enter integer value" .format(type(n_neighbors)))
