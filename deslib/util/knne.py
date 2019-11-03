@@ -62,12 +62,12 @@ class KNNE(object):
             n_samples = {}
             n_classes = len(set(y))
             idxs = np.bincount(y).argsort()
-            mdc = int(self.n_neighbors / n_classes)
-            mod = self.n_neighbors % n_classes
+            self.mdc = int(self.n_neighbors / n_classes)
+            self.mod = self.n_neighbors % n_classes
 
-            for class_ in np.arange(n_classes)[idxs]:
-                n_samples[class_] = mdc + (1 if mod > 0 else 0)
-                mod = mod - 1
+            # for class_ in np.arange(n_classes)[idxs]:
+            #     n_samples[class_] = mdc + (1 if mod > 0 else 0)
+            #     mod = mod - 1
         else:
             raise ValueError('Either n_neighbors or n_neighbors_per_class'
                              ' needs to be informed!')
@@ -77,14 +77,40 @@ class KNNE(object):
                 np.array(y) == class_).ravel()
             y_c = y[self.classes_indexes_[class_]]
             X_c = X[self.classes_indexes_[class_], :]
-            knn = KNeighborsClassifier(n_neighbors=n_samples[class_],
+            knn = KNeighborsClassifier(n_neighbors=self.mdc+1,
                                        **self.kwargs)
             self.knns_[class_] = knn.fit(X_c, y_c)
 
         return self
 
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
+        """Finds the K-neighbors of a point.
+        Returns indices of and distances to the neighbors of each point.
 
+        Parameters
+        ----------
+        X : array-like, shape (n_query, n_features), \
+                or (n_query, n_indexed) if metric == 'precomputed'
+            The query point or points.
+            If not provided, neighbors of each indexed point are returned.
+            In this case, the query point is not considered its own neighbor.
+
+        n_neighbors : int
+            Number of neighbors to get (default is the value
+            passed to the constructor).
+
+        return_distance : boolean, optional. Defaults to True.
+            If False, distances will not be returned
+
+        Returns
+        -------
+        dist : array
+            Array representing the lengths to points, only present if
+            return_distance=True
+
+        ind : array
+            Indices of the nearest points in the population matrix.
+        """
         if X is None:
             X = self.X_
 
@@ -104,7 +130,7 @@ class KNNE(object):
         a = np.tile(np.arange(b.shape[0]).reshape(-1, 1), (1, b.shape[1]))
 
         if return_distance:
-            return inds[a, b], dists[a, b],
+            return  dists[a, b], inds[a, b]
         else:
             return inds[a, b]
 
@@ -126,20 +152,20 @@ class KNNE(object):
         return self.classes_.take(np.argmax(proba, axis=1), axis=0)
 
     def predict_proba(self, X):
-        """Predict probabilities.
-
-        As the
+        """Return probability estimates for the test data X.
 
         Parameters
         ----------
-
-        X : array of shape = [n_samples, n_features]
-            The input data.
+        X : array-like, shape (n_query, n_features), \
+                or (n_query, n_indexed) if metric == 'precomputed'
+            Test samples.
 
         Returns
         -------
-        preds : array, shape (n_samples,)
-                Class labels for samples in X.
+        proba : array of shape = [n_samples, n_classes], or a list of n_outputs
+            of such arrays if n_outputs > 1.
+            The class probabilities of the input samples. Classes are ordered
+            by lexicographic order.
         """
         X = check_array(X, accept_sparse='csr')
 
@@ -153,15 +179,3 @@ class KNNE(object):
                 axis=1)
         probas = softmax(1./dists_array)
         return probas
-
-
-if __name__ == '__main__':
-    X = np.tile(np.arange(15).reshape(-1, 1), 3)
-    y = np.array(5 * [0] + 5 * [1] + 5 * [2])
-
-    knne = KNNE(n_neighbors=8)
-    knne.fit(X, y)
-    dist, inds = knne.kneighbors()
-    classes = y[inds]
-    b = np.apply_along_axis(np.bincount, 1, classes)
-    assert np.equal(b, 2).all()
