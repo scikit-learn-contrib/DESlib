@@ -4,6 +4,7 @@ from sklearn.utils import check_X_y
 from sklearn.utils import check_array
 from deslib.util.prob_functions import softmax
 from deslib.util import faiss_knn_wrapper
+import warnings
 
 
 class KNNE(object):
@@ -39,10 +40,7 @@ class KNNE(object):
     Pattern Recognition 85 (2019): 149-160.
     """
 
-    def __init__(self,
-                 n_neighbors=7,
-                 knn_classifier='sklearn',
-                 **kwargs):
+    def __init__(self, n_neighbors=7, knn_classifier='sklearn', **kwargs):
 
         self.n_neighbors = n_neighbors
         self.knn_classifier = knn_classifier
@@ -85,7 +83,12 @@ class KNNE(object):
 
         self._mdc = int(self.n_neighbors / self.n_classes_)
         self._mod = self.n_neighbors % self.n_classes_
+
         if self._mod > 0:
+            warnings.warn('"n_neighbors" is not a multiple of "n_classes". Got'
+                          '{} and {}.One or more classes will have one less'
+                          ' instance.' .format(self.n_neighbors,
+                                               self.n_classes_))
             k = self._mdc + 1
         else:
             k = self._mdc
