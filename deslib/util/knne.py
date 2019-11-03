@@ -220,8 +220,8 @@ class KNNE(object):
             raise ValueError('"n_neighbors" is required for the KNN-E model.')
 
         if n_neighbors < self.n_classes_:
-            raise ValueError('"n_neighbors" must be equals or higher than'
-                             'the number of classes. Got {}'
+            raise ValueError('"n_neighbors" must be equals or higher than '
+                             'the number of classes. Got {}.'
                              .format(n_neighbors))
 
         if not np.issubdtype(type(n_neighbors), np.integer):
