@@ -59,9 +59,9 @@ class KNNE(object):
         self.n_classes = self.classes_.size
 
         if self.n_neighbors is not None:
-            n_samples = {}
+            # n_samples = {}
             n_classes = len(set(y))
-            idxs = np.bincount(y).argsort()
+            # idxs = np.bincount(y).argsort()
             self.mdc = int(self.n_neighbors / n_classes)
             self.mod = self.n_neighbors % n_classes
 
@@ -169,7 +169,7 @@ class KNNE(object):
         """
         X = check_array(X, accept_sparse='csr')
 
-        inds, dists = self.kneighbors(X, self.n_neighbors,
+        dists, inds = self.kneighbors(X, self.n_neighbors,
                                       return_distance=True)
         classes = self.y_[inds]
         dists_array = np.empty((X.shape[0], self.n_classes))
