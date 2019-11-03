@@ -63,3 +63,13 @@ def test_return_indices_only():
     X, y, knne = setup_test(n_neighbors=6)
     inds = knne.kneighbors(X, return_distance=False)
     assert inds.shape == (15, 6)
+
+
+def test_n_neighbors_less_n_classes():
+    with pytest.raises(ValueError):
+        setup_test(n_neighbors=2)
+
+
+def test_n_neighbors_not_integer():
+    with pytest.raises(TypeError):
+        setup_test(n_neighbors=5.5)
