@@ -2,12 +2,13 @@ import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.utils import check_X_y
 from sklearn.utils import check_array
+from sklearn.base import BaseEstimator
 from deslib.util.prob_functions import softmax
 from deslib.util import faiss_knn_wrapper
 import warnings
 
 
-class KNNE(object):
+class KNNE(BaseEstimator):
     """"
     Implementation of the K-Nearest Neighbors-Equality technique.
 
@@ -89,21 +90,21 @@ class KNNE(object):
                           '{} and {}.One or more classes will have one less'
                           ' instance.' .format(self.n_neighbors,
                                                self.n_classes_))
-            k = self._mdc + 1
+            self.n_per_class_ = self._mdc + 1
         else:
-            k = self._mdc
+            self.n_per_class_ = self._mdc
 
         for class_ in self.classes_:
             self.classes_indexes_[class_] = np.argwhere(
                 np.array(y) == class_).ravel()
             y_c = y[self.classes_indexes_[class_]]
             X_c = X[self.classes_indexes_[class_], :]
-            knn = self.knn_type_(n_neighbors=k, **self.kwargs)
+            knn = self.knn_type_(n_neighbors=self.n_per_class_, **self.kwargs)
             self.knns_[class_] = knn.fit(X_c, y_c)
 
         return self
 
-    def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
+    def kneighbors(self, X=None, return_distance=True):
         """Finds the K-neighbors of a point.
         Returns indices of and distances to the neighbors of each point.
 
@@ -114,10 +115,6 @@ class KNNE(object):
             The query point or points.
             If not provided, neighbors of each indexed point are returned.
             In this case, the query point is not considered its own neighbor.
-
-        n_neighbors : int
-            Number of neighbors to get for each class. (default is the value
-            passed to the constructor divided by the number of classes).
 
         return_distance : boolean, optional. Defaults to True.
             If False, distances will not be returned
@@ -133,9 +130,6 @@ class KNNE(object):
         """
         if X is None:
             X = self.X_
-
-        if n_neighbors is None:
-            n_neighbors = self.n_neighbors
 
         dists = []
         inds = []
@@ -167,7 +161,6 @@ class KNNE(object):
 
         Parameters
         ----------
-
         X : array of shape = [n_samples, n_features]
             The input data.
 
