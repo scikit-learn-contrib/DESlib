@@ -1,12 +1,13 @@
 import pytest
 import numpy as np
+from deslib.util import faiss_knn_wrapper
 from deslib.util import KNNE
 
 
-def setup_test(n_neighbors):
+def setup_test(n_neighbors, knn_classifier='sklearn'):
     X = np.tile(np.arange(15).reshape(-1, 1), 3)
     y = np.array(5 * [0] + 5 * [1] + 5 * [2])
-    knne = KNNE(n_neighbors=n_neighbors)
+    knne = KNNE(n_neighbors=n_neighbors, knn_classifier=knn_classifier)
     knne.fit(X, y)
     return X, y, knne
 
@@ -46,9 +47,9 @@ def test_labels_not_encoded():
     knne.fit(X, y)
     dist, inds = knne.kneighbors()
     classes = y[inds]
-    a = np.sum(classes=='dog')
-    b = np.sum(classes=='cat')
-    assert np.equal(b, a).all() and a==30
+    a = np.sum(classes == 'dog')
+    b = np.sum(classes == 'cat')
+    assert np.equal(b, a).all() and a == 30
 
 
 def test_n_neighbors_none():
@@ -73,3 +74,25 @@ def test_n_neighbors_less_n_classes():
 def test_n_neighbors_not_integer():
     with pytest.raises(TypeError):
         setup_test(n_neighbors=5.5)
+
+
+def test_n_neighbors_not_multiple_raise_warning():
+    with pytest.warns(Warning):
+        setup_test(n_neighbors=7)
+
+
+# ------Tests using KNNE using faiss for similarity search------------------
+@pytest.mark.skipif(not faiss_knn_wrapper.is_available(),
+                    reason="requires the faiss library")
+def test_faiss_knne():
+    X, y, knne = setup_test(n_neighbors=6, knn_classifier='faiss')
+    y_pred = knne.predict(X)
+    assert np.allclose(y, y_pred)
+
+
+@pytest.mark.skipif(not faiss_knn_wrapper.is_available(),
+                    reason="requires the faiss library")
+def test_faiss_knne_inds():
+    X, y, knne = setup_test(n_neighbors=6, knn_classifier='faiss')
+    inds = knne.kneighbors(X, return_distance=False)
+    assert inds.shape == (15, 6)
