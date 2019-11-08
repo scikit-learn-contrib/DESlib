@@ -46,14 +46,14 @@ class KNNE(BaseEstimator):
         self.n_neighbors = n_neighbors
         self.knn_classifier = knn_classifier
         self.kwargs = kwargs
-        # Check optional dependency
-        if knn_classifier == 'faiss' and not faiss_knn_wrapper.is_available():
-            raise ImportError(
-                'Using knn_classifier="faiss" requires that the FAISS library '
-                'be installed.Please check the Installation Guide.')
 
     def _set_knn_type(self):
         if self.knn_classifier == 'faiss':
+            if not faiss_knn_wrapper.is_available():
+                raise ImportError(
+                    'Using knn_classifier="faiss" requires that the FAISS '
+                    'library be installed.Please check the Installation '
+                    'Guide.')
             self.knn_type_ = faiss_knn_wrapper.FaissKNNClassifier
         else:
             self.knn_type_ = KNeighborsClassifier
