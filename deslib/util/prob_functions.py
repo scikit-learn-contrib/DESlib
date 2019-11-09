@@ -210,8 +210,8 @@ def ccprmod(supports, idx_correct_label, B=20):
 
     # For extreme cases, with a or b equal to 0, add a small constant:
     eps = 1e-20
-    a[a == 0] = eps
-    b[b == 0] = eps
+    a[a <= eps] = eps
+    b[b <= eps] = eps
     betaincj = betainc(a, b, x)
 
     C_src = np.zeros(N)
