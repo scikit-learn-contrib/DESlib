@@ -16,7 +16,7 @@ jobs:
       - EMAIL: "rafaelmenelau@gmail.com"
       - MINICONDA_PATH: ~/miniconda
       - CONDA_ENV_NAME: testenv
-      - PYTHON_VERSION: 3.7
+      - PYTHON_VERSION: 3
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -33,7 +33,7 @@ jobs:
             chmod +x miniconda.sh && ./miniconda.sh -b -p ~/miniconda
             export PATH="~/miniconda/bin:$PATH"
             conda update --yes --quiet conda
-            conda create -n testenv --yes --quiet python=3
+            conda create -n testenv --yes --quiet python=3.6
             source activate testenv
             conda install --yes pip numpy
             pip install -r requirements-dev.txt
