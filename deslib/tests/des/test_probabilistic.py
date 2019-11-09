@@ -287,3 +287,11 @@ def test_source_competence_exponential():
     C_src = exp_test.source_competence()
     expected = np.array([[0.0], [-1.0], [1.0]])
     assert np.allclose(C_src, expected, atol=0.01)
+
+
+def test_knne_not_allowed(create_X_y):
+    X, y = create_X_y
+
+    with pytest.raises(ValueError):
+        BaseProbabilistic(knn_classifier='knne').fit(X, y)
+
