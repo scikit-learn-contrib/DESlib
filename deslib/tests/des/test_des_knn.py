@@ -261,7 +261,7 @@ def test_input_diversity_parameter():
     X = np.random.rand(10, 2)
     y = np.ones(10)
     with pytest.raises(ValueError):
-        desknn = DESKNN([create_base_classifier(1)] * 100, metric='abc')
+        desknn = DESKNN(metric='abc')
         desknn.fit(X, y)
 
 
@@ -269,8 +269,7 @@ def test_J_N_values():
     X = np.random.rand(10, 2)
     y = np.ones(10)
     with pytest.raises(ValueError):
-        desknn = DESKNN([create_base_classifier(1)] * 100, pct_accuracy=0.5,
-                        pct_diversity=0)
+        desknn = DESKNN(pct_accuracy=0.5, pct_diversity=0)
         desknn.fit(X, y)
 
 
@@ -278,8 +277,15 @@ def test_J_higher_than_N():
     X = np.random.rand(10, 2)
     y = np.ones(10)
     with pytest.raises(ValueError):
-        desknn = DESKNN([create_base_classifier(1)] * 100, pct_accuracy=0.3,
-                        pct_diversity=0.5)
+        desknn = DESKNN(pct_accuracy=0.3, pct_diversity=0.5)
+        desknn.fit(X, y)
+
+
+def test_pect_zero():
+    X = np.random.rand(10, 2)
+    y = np.ones(10)
+    with pytest.raises(ValueError):
+        desknn = DESKNN(pct_accuracy=0.0, pct_diversity=0.0)
         desknn.fit(X, y)
 
 
