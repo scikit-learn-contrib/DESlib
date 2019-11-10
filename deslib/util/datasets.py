@@ -74,7 +74,7 @@ def make_P2(size_classes, random_state=None):
     size_class2 = 0
     data = rng.rand(n_samples, 2)
     for x in data:
-        if (size_class1 + size_class2) >= sum(size_classes) * 2:
+        if (size_class1 + size_class2) >= sum(size_classes):
             break
 
         # This if is very complex. Need to simplify that somehow
