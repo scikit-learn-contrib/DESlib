@@ -45,8 +45,16 @@ def test_xor_size():
     assert y.size == n_samples
 
 
+def test_xor():
+    n_samples = np.random.randint(100, 2000)
+    X, y = make_xor(n_samples)
+    X_0, X_1 = X[y == 0], X[y == 1]
+    for x in X_0:
+        assert np.all(x[0] < 0.5 and x[1] < 0.5) or (x[0] > 0.5 and x[1] > 0.5)
+
+
 def test_banana_n_higher_than_one():
     s0, s1 = setup_class_sizes()
     na = np.random.rand() + 1
     with pytest.raises(ValueError):
-        make_banana([s0,s1], na)
+        make_banana([s0, s1], na)
