@@ -8,7 +8,7 @@ from abc import abstractmethod, ABCMeta
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import BaseEnsemble, BaggingClassifier
 from sklearn.preprocessing import LabelEncoder
-from sklearn.utils.validation import check_is_fitted, check_random_state
+from sklearn.utils.validation import check_random_state
 
 
 class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
@@ -103,12 +103,3 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
         self.classes_ = self.enc_.classes_
 
         return y_ind
-
-    def _encode_base_labels(self, y):
-        """
-        Use label encoder to transform the labels in y into numeric values
-        """
-        if self.base_already_encoded_:
-            return y
-        else:
-            return self.enc_.transform(y)
