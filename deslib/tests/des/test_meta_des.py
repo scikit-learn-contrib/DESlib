@@ -5,6 +5,7 @@ import pytest
 from sklearn.linear_model import Perceptron
 from sklearn.naive_bayes import GaussianNB
 from sklearn.utils.estimator_checks import check_estimator
+from sklearn.utils.validation import check_is_fitted
 
 from deslib.des.meta_des import METADES
 
@@ -22,12 +23,41 @@ def test_meta_classifier_not_predict_proba(create_pool_classifiers):
         meta.fit(X, y)
 
 
+def test_meta_classifier_not_none():
+    X = np.random.rand(100, 2)
+    y = np.random.randint(0, 2, 100)
+    meta = METADES(meta_classifier=GaussianNB())
+    meta.fit(X, y)
+    check_is_fitted(meta.meta_classifier_, "classes_")
+    assert isinstance(meta.meta_classifier_, GaussianNB)
+
+
+def test_fitted_meta_classifier():
+    X = np.random.rand(100, 2)
+    y = np.random.randint(0, 2, 100)
+    meta = METADES(meta_classifier=GaussianNB())
+    meta.fit(X, y)
+
+    meta2 = METADES(meta_classifier=meta.meta_classifier_)
+    meta2.fit(X, y)
+    assert meta.meta_classifier_ == meta2.meta_classifier_
+
+
 @pytest.mark.parametrize('Hc', ['a', None, 0.2, -1])
 def test_parameter_Hc(Hc, create_pool_classifiers):
     X = np.random.rand(10, 2)
     y = np.ones(10)
     with pytest.raises((ValueError, TypeError)):
         meta = METADES(create_pool_classifiers, Hc=Hc)
+        meta.fit(X, y)
+
+
+@pytest.mark.parametrize('Kp', ['a', None, 0.2, -1, 0, 1])
+def test_parameter_Kp(Kp, create_pool_classifiers):
+    X = np.random.rand(10, 2)
+    y = np.ones(10)
+    with pytest.raises((ValueError, TypeError)):
+        meta = METADES(create_pool_classifiers, Kp=Kp)
         meta.fit(X, y)
 
 

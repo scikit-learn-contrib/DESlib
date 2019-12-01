@@ -74,7 +74,7 @@ def make_P2(size_classes, random_state=None):
     size_class2 = 0
     data = rng.rand(n_samples, 2)
     for x in data:
-        if (size_class1 + size_class2) >= sum(size_classes) * 2:
+        if (size_class1 + size_class2) >= sum(size_classes):
             break
 
         # This if is very complex. Need to simplify that somehow
@@ -134,7 +134,7 @@ def make_circle_square(size_classes, random_state=None):
 
     """
     rng = check_random_state(random_state)
-    n_samples = sum(size_classes) * 2
+    n_samples = sum(size_classes)
     class_1 = np.zeros((size_classes[0], 2))
     class_2 = np.zeros((size_classes[1], 2))
     size_class1 = 0
@@ -152,7 +152,7 @@ def make_circle_square(size_classes, random_state=None):
             class_2[size_class2] = x
             size_class2 += 1
 
-        if size_class2 + size_class1 > n_samples:
+        if size_class2 + size_class1 >= n_samples:
             break
 
     y = np.hstack((np.zeros(size_class1), np.ones(size_class2)))

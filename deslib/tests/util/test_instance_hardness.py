@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from deslib.util.instance_hardness import hardness_region_competence
+from deslib.util.instance_hardness import kdn_score
 
 
 # ------Test routines for the Instance Hardness calculation------------------
@@ -33,3 +34,10 @@ def test_instance_hardness_region_all_same(example_estimate_competence):
     neighbors = np.array([0, 1, 2, 6, 7, 8, 13])
     IH = hardness_region_competence(neighbors, y, k)
     assert IH == 0.0
+
+
+def test_kdn_score(example_estimate_competence):
+    X, y, neigh, dist, _, _ = example_estimate_competence
+    X, y = X[0:6, :], y [0:6]
+    score, _ = kdn_score(X, y, 3)
+    assert np.allclose(score, 0.3333333)
