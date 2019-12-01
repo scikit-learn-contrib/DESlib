@@ -23,7 +23,7 @@ class KNNE(BaseEstimator):
     n_neighbors : int, (default = 7)
         Number of neighbors to use by default for :meth:`kneighbors` queries.
 
-    algorithm : str = ['sklearn', 'faiss]', (default = 'sklearn')
+    algorithm : str = ['knn', 'faiss]', (default = 'knn')
         Whether to use scikit-learn or faiss for nearest neighbors estimation.
 
     References
