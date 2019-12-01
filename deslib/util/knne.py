@@ -104,7 +104,7 @@ class KNNE(BaseEstimator):
 
         return self
 
-    def kneighbors(self, X=None, return_distance=True):
+    def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         """Finds the K-neighbors of a point.
         Returns indices of and distances to the neighbors of each point.
 
@@ -128,6 +128,9 @@ class KNNE(BaseEstimator):
         ind : array
             Indices of the nearest points in the population matrix.
         """
+        if n_neighbors is None:
+            n_neighbors = self.n_neighbors
+
         if X is None:
             X = self.X_
 
