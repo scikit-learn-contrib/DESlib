@@ -792,12 +792,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                  classifier in the generated_pool
                  for each sample in X.
         """
-        scores = np.empty(
-            (self.n_samples_, self.n_classifiers_, self.n_classes_))
-        for index, clf in enumerate(self.pool_classifiers_):
-            scores[:, index, :] = clf.predict_proba(self.DSEL_data_)
-
-        return scores
+        return self._predict_proba_base(self.DSEL_data_)
 
     @staticmethod
     def _all_classifier_agree(predictions):
