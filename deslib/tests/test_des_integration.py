@@ -53,10 +53,11 @@ def test_grid_search():
     grid.best_estimator_.score(X_test, y_test)
 
 
-knn_methods = [None]
+knn_methods = ['knn']
 
 if faiss_knn_wrapper.is_available():
-    knn_methods.append(faiss_knn_wrapper.FaissKNNClassifier)
+    # knn_methods.append(faiss_knn_wrapper.FaissKNNClassifier)
+    knn_methods.append('faiss')
 else:
     warnings.warn("Not testing FAISS for KNN")
 
