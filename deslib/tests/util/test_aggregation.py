@@ -62,16 +62,6 @@ def test_wrong_weights_votes(create_pool_classifiers):
         weighted_majority_voting(ensemble_classifiers, weights, query)
 
 
-# This experiment should raise an error since we have 3 base classifiers
-# and 4 weights.
-def test_wrong_weights_proba(create_pool_classifiers):
-    query = np.array([[1, -1]])
-    ensemble_classifiers = create_pool_classifiers
-    weights = np.array([1.0, 1.0, 1.0, 1.0])
-    with pytest.raises(ValueError):
-        predict_proba_ensemble_weighted(ensemble_classifiers, weights, query)
-
-
 # -------Test routines for the ensemble combination methods-------
 # These routines calculates the matrix with the supports given for
 # each class for each base classifier and them Aggregates the supports

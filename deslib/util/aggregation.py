@@ -222,42 +222,6 @@ def aggregate_proba_ensemble_weighted(ensemble_proba, weights):
     return softmax(predicted_proba)
 
 
-def predict_proba_ensemble_weighted(classifier_ensemble, weights, X):
-    """Estimates the posterior probabilities for each sample in X.
-
-    Parameters
-    ----------
-    classifier_ensemble : list of shape = [n_classifiers]
-        Containing the ensemble of classifiers used to estimate the
-        probabilities.
-
-    weights : array of shape = [n_samples, n_classifiers]
-        Weights associated to each base classifier for each sample
-
-    X : array of shape = [n_samples, n_features]
-        The input data.
-
-    Returns
-    -------
-    predicted_proba : array of shape = [n_samples, n_classes]
-        posterior probabilities estimates for each samples in X.
-    """
-    if weights.ndim == 1:
-        weights = np.atleast_2d(weights)
-
-    ensemble_proba = _get_ensemble_probabilities(classifier_ensemble, X)
-    n_classifiers = ensemble_proba.shape[1]
-    if n_classifiers != weights.shape[1]:
-        raise ValueError(
-            'The number of weights should be equal to the number of '
-            'base classifiers in the ensemble.'
-            'The number of classifiers is {},'
-            ' and the number of weights is {}'.format(n_classifiers,
-                                                      weights.shape[1]))
-
-    return aggregate_proba_ensemble_weighted(ensemble_proba, weights)
-
-
 def average_combiner(classifier_ensemble, X):
     """Ensemble combination using the Average rule.
 
