@@ -5,6 +5,7 @@ import pytest
 from sklearn.linear_model import Perceptron
 from sklearn.naive_bayes import GaussianNB
 from sklearn.utils.estimator_checks import check_estimator
+from sklearn.utils.validation import check_is_fitted
 
 from deslib.des.meta_des import METADES
 
@@ -27,6 +28,8 @@ def test_meta_classifier_not_none():
     y = np.random.randint(0, 2, 100)
     meta = METADES(meta_classifier=GaussianNB())
     meta.fit(X, y)
+    check_is_fitted(meta.meta_classifier_, "classes_")
+    assert isinstance(meta.meta_classifier_, GaussianNB)
 
 
 def test_fitted_meta_classifier():
