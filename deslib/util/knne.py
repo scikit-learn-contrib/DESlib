@@ -97,19 +97,6 @@ class KNNE(BaseEstimator):
 
         return self
 
-    def _handle_n_neighbors(self, n_neighbors):
-        mdc = int(n_neighbors / self.n_classes_)
-        mod = n_neighbors % self.n_classes_
-        if mod > 0:
-            warnings.warn('"n_neighbors" is not a multiple of "n_classes". Got'
-                          '{} and {}.One or more classes will have one less'
-                          ' instance.'.format(n_neighbors,
-                                              self.n_classes_))
-            n_per_class = mdc + 1
-        else:
-            n_per_class = mdc
-        return mdc, mod, n_per_class
-
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         """Finds the K-neighbors of a point.
         Returns indices of and distances to the neighbors of each point.
@@ -239,3 +226,16 @@ class KNNE(BaseEstimator):
             raise TypeError(
                 "n_neighbors does not take {} value, "
                 "enter integer value".format(type(n_neighbors)))
+
+    def _handle_n_neighbors(self, n_neighbors):
+        mdc = int(n_neighbors / self.n_classes_)
+        mod = n_neighbors % self.n_classes_
+        if mod > 0:
+            warnings.warn('"n_neighbors" is not a multiple of "n_classes". Got'
+                          '{} and {}.One or more classes will have one less'
+                          ' instance.'.format(n_neighbors,
+                                              self.n_classes_))
+            n_per_class = mdc + 1
+        else:
+            n_per_class = mdc
+        return mdc, mod, n_per_class
