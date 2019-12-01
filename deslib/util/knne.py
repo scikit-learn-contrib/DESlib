@@ -75,8 +75,8 @@ class KNNE(BaseEstimator):
 
         self.knns_ = {}
         self.classes_indexes_ = {}
-        self.X_ = X
-        self.y_ = y
+        self.fit_X_ = X
+        self.fit_y_ = y
         self.classes_ = np.unique(y)
         self.n_classes_ = self.classes_.size
 
@@ -134,7 +134,7 @@ class KNNE(BaseEstimator):
                 n_neighbors)
 
         if X is None:
-            X = self.X_
+            X = self.fit_X_
 
         dists = []
         inds = []
@@ -196,7 +196,7 @@ class KNNE(BaseEstimator):
         X = check_array(X, accept_sparse='csr')
 
         dists, inds = self.kneighbors(X, return_distance=True)
-        classes = self.y_[inds]
+        classes = self.fit_y_[inds]
         dists_array = np.empty((X.shape[0], self.n_classes_))
         # TODO: check if a more efficient implementation can be done
         for c in self.classes_:
