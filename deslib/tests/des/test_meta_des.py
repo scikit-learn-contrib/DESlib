@@ -31,6 +31,15 @@ def test_parameter_Hc(Hc, create_pool_classifiers):
         meta.fit(X, y)
 
 
+@pytest.mark.parametrize('Kp', ['a', None, 0.2, -1, 0, 1])
+def test_parameter_Kp(Kp, create_pool_classifiers):
+    X = np.random.rand(10, 2)
+    y = np.ones(10)
+    with pytest.raises((ValueError, TypeError)):
+        meta = METADES(create_pool_classifiers, Kp=Kp)
+        meta.fit(X, y)
+
+
 @pytest.mark.parametrize('selection_threshold', ['a', None, 0, -1, 0.45])
 def test_parameter_gamma(selection_threshold, create_pool_classifiers):
     X = np.random.rand(10, 2)
