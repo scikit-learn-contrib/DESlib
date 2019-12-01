@@ -184,8 +184,7 @@ class METADES(BaseDES):
             raise ValueError(
                 "Error. META-DES  does not accept one class datasets.")
 
-        # Validate the input parameters
-        self._check_input_parameters()
+        self._check_Kp_samples()
 
         # Check if the base classifier is able to estimate probabilities
         self._check_predict_proba()
@@ -489,7 +488,7 @@ class METADES(BaseDES):
 
         return competences
 
-    def _check_input_parameters(self):
+    def _validate_parameters(self):
         """Check if the parameters passed as argument are correct.
 
         Raises
@@ -523,6 +522,18 @@ class METADES(BaseDES):
             raise ValueError(
                 "The meta-classifier should output probability estimates")
 
+        if self.Kp is not None:
+            if not isinstance(self.Kp, int):
+                raise TypeError("parameter Kp should be an integer.")
+            if self.Kp <= 1:
+                raise ValueError("parameter Kp must be higher than 1."
+                                 "input Kp is {} .".format(self.Kp))
+        else:
+            raise ValueError("Parameter Kp is 'None'.")
+
+        super()._validate_parameters()
+
+    def _check_Kp_samples(self):
         if self.Kp >= self.n_samples_:
             warnings.warn(
                 "kp is bigger than DSEL size. Using All DSEL"
