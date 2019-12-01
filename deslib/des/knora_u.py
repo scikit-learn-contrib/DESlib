@@ -53,15 +53,18 @@ class KNORAU(BaseDES):
         If None, the random number generator is the RandomState instance used
         by `np.random`.
 
-    knn_classifier : {'knn', 'faiss', 'knne', None} (Default = 'knn')
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
          The algorithm used to estimate the region of competence:
 
          - 'knn' will use :class:`KNeighborsClassifier` from sklearn
-         - 'knne' will use the KNN-Equality method through the
           :class:`KNNE` available on `deslib.utils.knne`
          - 'faiss' will use Facebook's Faiss similarity search through the
            class :class:`FaissKNNClassifier`
          - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    knne : bool (Default=False)
+        Whether to use K-Nearest Neighbor Equality (KNNE) for the region
+        of competence estimation.
 
     DSEL_perc : float (Default = 0.5)
         Percentage of the input data used to fit DSEL.
@@ -86,7 +89,7 @@ class KNORAU(BaseDES):
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None,
                  IH_rate=0.30, random_state=None, knn_classifier='knn',
-                 DSEL_perc=0.5):
+                 knne=False, DSEL_perc=0.5):
         super(KNORAU, self).__init__(pool_classifiers, k,
                                      DFP=DFP,
                                      with_IH=with_IH,
@@ -95,6 +98,7 @@ class KNORAU(BaseDES):
                                      mode='weighting',
                                      random_state=random_state,
                                      knn_classifier=knn_classifier,
+                                     knne=knne,
                                      DSEL_perc=DSEL_perc)
 
     def estimate_competence(self, query, neighbors, distances=None,

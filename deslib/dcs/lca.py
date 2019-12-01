@@ -106,7 +106,8 @@ class LCA(BaseDCS):
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, selection_method='best',
                  diff_thresh=0.1, random_state=None, knn_classifier='knn',
-                 DSEL_perc=0.5):
+                 DSEL_perc=0.5,
+                 knne=False):
         super(LCA, self).__init__(pool_classifiers=pool_classifiers, k=k,
                                   DFP=DFP, with_IH=with_IH, safe_k=safe_k,
                                   IH_rate=IH_rate,
@@ -114,7 +115,8 @@ class LCA(BaseDCS):
                                   diff_thresh=diff_thresh,
                                   random_state=random_state,
                                   knn_classifier=knn_classifier,
-                                  DSEL_perc=DSEL_perc)
+                                  DSEL_perc=DSEL_perc,
+                                  knne=knne)
 
     def estimate_competence(self, query, neighbors, distances=None,
                             predictions=None):
