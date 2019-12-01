@@ -108,13 +108,6 @@ def test_import_faiss_mode():
             BaseDS(knn_classifier="faiss")
 
 
-def test_none_selection_mode(create_X_y):
-    X, y = create_X_y
-    ds = BaseDS(knn_classifier=None)
-    ds.fit(X, y)
-    assert (isinstance(ds.roc_algorithm_, KNeighborsClassifier))
-
-
 def test_string_selection_mode(create_X_y):
     X, y = create_X_y
     ds = BaseDS(knn_classifier="knn")

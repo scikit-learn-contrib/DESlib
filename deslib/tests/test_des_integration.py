@@ -56,7 +56,8 @@ def test_grid_search():
 knn_methods = [None]
 
 if faiss_knn_wrapper.is_available():
-    knn_methods.append(faiss_knn_wrapper.FaissKNNClassifier)
+    # knn_methods.append(faiss_knn_wrapper.FaissKNNClassifier)
+    knn_methods.append('faiss')
 else:
     warnings.warn("Not testing FAISS for KNN")
 

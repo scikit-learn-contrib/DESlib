@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
@@ -20,10 +21,6 @@ from deslib.des.knora_e import KNORAE
 from deslib.des.knora_u import KNORAU
 from deslib.des.meta_des import METADES
 from deslib.des import DESKL
-# Static techniques
-from deslib.static.oracle import Oracle
-from deslib.static.single_best import SingleBest
-from deslib.static.static_selection import StaticSelection
 
 
 def setup_classifiers():
@@ -68,12 +65,14 @@ def test_kne():
     assert np.isclose(kne.score(X_test, y_test), 0.896969696969697)
 
 
-def test_desp():
+@pytest.mark.parametrize('knne, expected', [(False, 0.8939393939393939),
+                                            (True, 0.896969696969697)])
+def test_desp(knne, expected):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    desp = DESP(pool_classifiers, DFP=True)
+    desp = DESP(pool_classifiers, DFP=True, knne=knne)
     desp.fit(X_dsel, y_dsel)
-    assert np.isclose(desp.score(X_test, y_test), 0.8939393939393939)
+    assert np.isclose(desp.score(X_test, y_test), expected)
 
 
 def test_ola():
@@ -84,12 +83,14 @@ def test_ola():
     assert np.isclose(ola.score(X_test, y_test), 0.88181818181818183)
 
 
-def test_lca():
+@pytest.mark.parametrize('knne, expected', [(False, 0.88787878787878793),
+                                            (True, 0.89393939393939392)])
+def test_lca(knne, expected):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    lca = LCA(pool_classifiers, DFP=True)
+    lca = LCA(pool_classifiers, DFP=True, knne=knne)
     lca.fit(X_dsel, y_dsel)
-    assert np.isclose(lca.score(X_test, y_test), 0.88787878787878793)
+    assert np.isclose(lca.score(X_test, y_test), expected)
 
 
 def test_MLA():
@@ -135,24 +136,25 @@ def test_aposteriori():
     assert np.isclose(a_posteriori.score(X_test, y_test), 0.90000000000000002)
 
 
-# for some reason, the result of the META-DES is different if all tests are
-# executed together than if this test script is executed alone. So, here we are
-# accepting both values.
-def test_meta():
+@pytest.mark.parametrize('knne, expected', [(False, 0.9151515151515152),
+                                            (True, 0.8757575757575757)])
+def test_meta(knne, expected):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    meta_des = METADES(pool_classifiers, DFP=True)
+    meta_des = METADES(pool_classifiers, DFP=True, knne=knne)
     meta_des.fit(X_dsel, y_dsel)
-    assert np.isclose(meta_des.score(X_test, y_test), 0.9151515151515152)
+    assert np.isclose(meta_des.score(X_test, y_test), expected)
 
 
-def test_knop():
+@pytest.mark.parametrize('knne, expected', [(False, 0.9030303030303031),
+                                            (True, 0.906060606060606)])
+def test_knop(knne, expected):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    kne = KNOP(pool_classifiers, DFP=True)
+    kne = KNOP(pool_classifiers, DFP=True, knne=knne)
     kne.fit(X_dsel, y_dsel)
 
-    assert np.isclose(kne.score(X_test, y_test), 0.9030303030303031)
+    assert np.isclose(kne.score(X_test, y_test), expected)
 
 
 def test_desknn():
@@ -169,31 +171,6 @@ def test_deskl():
     deskl = DESKL(pool_classifiers, DFP=True)
     deskl.fit(X_dsel, y_dsel)
     assert np.isclose(deskl.score(X_test, y_test), 0.90303030303030307)
-
-
-def test_oracle():
-    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-
-    oracle = Oracle(pool_classifiers)
-    oracle.fit(X_dsel, y_dsel)
-    assert np.isclose(oracle.score(X_test, y_test), 0.98787878787878791)
-
-
-def test_single_best():
-    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-
-    single_best = SingleBest(pool_classifiers)
-    single_best.fit(X_dsel, y_dsel)
-    assert np.isclose(single_best.score(X_test, y_test), 0.86969696969696975)
-
-
-def test_static_selection():
-    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-
-    static_selection = StaticSelection(pool_classifiers)
-    static_selection.fit(X_dsel, y_dsel)
-    assert np.isclose(static_selection.score(X_test, y_test),
-                      0.90606060606060601)
 
 
 # --------------------- Testing predict_proba ---------------------------------

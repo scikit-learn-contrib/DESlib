@@ -75,15 +75,18 @@ class APosteriori(BaseDCS):
         If None, the random number generator is the RandomState instance used
         by `np.random`.
 
-    knn_classifier : {'knn', 'faiss', 'knne', None} (Default = 'knn')
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
          The algorithm used to estimate the region of competence:
 
          - 'knn' will use :class:`KNeighborsClassifier` from sklearn
-         - 'knne' will use the KNN-Equality method through the
           :class:`KNNE` available on `deslib.utils.knne`
          - 'faiss' will use Facebook's Faiss similarity search through the
            class :class:`FaissKNNClassifier`
          - None, will use sklearn :class:`KNeighborsClassifier`.
+
+    knne : bool (Default=False)
+        Whether to use K-Nearest Neighbor Equality (KNNE) for the region
+        of competence estimation.
 
     DSEL_perc : float (Default = 0.5)
         Percentage of the input data used to fit DSEL.
@@ -112,7 +115,7 @@ class APosteriori(BaseDCS):
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, selection_method='diff',
                  diff_thresh=0.1, random_state=None, knn_classifier='knn',
-                 DSEL_perc=0.5):
+                 knne=False, DSEL_perc=0.5):
         super(APosteriori, self).__init__(pool_classifiers=pool_classifiers,
                                           k=k, DFP=DFP, with_IH=with_IH,
                                           safe_k=safe_k, IH_rate=IH_rate,
@@ -120,6 +123,7 @@ class APosteriori(BaseDCS):
                                           diff_thresh=diff_thresh,
                                           knn_classifier=knn_classifier,
                                           random_state=random_state,
+                                          knne=knne,
                                           DSEL_perc=DSEL_perc)
 
     def fit(self, X, y):

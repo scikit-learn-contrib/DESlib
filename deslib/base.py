@@ -5,11 +5,12 @@
 # License: BSD 3 clause
 
 
+import functools
+import math
+import warnings
 from abc import abstractmethod, ABCMeta
 
-import math
 import numpy as np
-import functools
 from scipy.stats import mode
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import BaseEnsemble, BaggingClassifier
@@ -18,10 +19,10 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import (check_X_y, check_is_fitted, check_array,
                                       check_random_state)
-from deslib.util import faiss_knn_wrapper
+
 from deslib.util import KNNE
+from deslib.util import faiss_knn_wrapper
 from deslib.util.instance_hardness import hardness_region_competence
-import warnings
 
 
 class BaseDS(BaseEstimator, ClassifierMixin):
@@ -38,7 +39,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
     @abstractmethod
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, needs_proba=False,
-                 random_state=None, knn_classifier='knn', DSEL_perc=0.5):
+                 random_state=None, knn_classifier='knn', DSEL_perc=0.5,
+                 knne=False):
 
         self.pool_classifiers = pool_classifiers
         self.k = k
@@ -50,6 +52,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self.random_state = random_state
         self.knn_classifier = knn_classifier
         self.DSEL_perc = DSEL_perc
+        self.knne = knne
 
         # Check optional dependency
         if knn_classifier == 'faiss' and not faiss_knn_wrapper.is_available():
@@ -325,38 +328,32 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self.DSEL_processed_, self.BKS_DSEL_ = self._preprocess_dsel()
 
     def _set_region_of_competence_algorithm(self):
-        if self.knn_classifier is None:
-            self.knn_class_ = functools.partial(KNeighborsClassifier,
-                                                n_jobs=-1,
-                                                algorithm="auto")
-        elif isinstance(self.knn_classifier, str):
-            if self.knn_classifier == "faiss":
-                self.knn_class_ = functools.partial(
-                    faiss_knn_wrapper.FaissKNNClassifier,
-                    n_jobs=-1, algorithm="auto")
 
-            elif self.knn_classifier == "knn":
-                self.knn_class_ = functools.partial(KNeighborsClassifier,
-                                                    n_jobs=-1,
-                                                    algorithm="auto")
-
-            elif self.knn_classifier == 'knne':
-                self.knn_class_ = functools.partial(KNNE,
-                                                    n_jobs=-1,
-                                                    algorithm="auto")
-            else:
-                raise ValueError(
-                    '"knn_classifier" should be one of the following '
-                    '["knn", "knne", "faiss"] or an estimator class')
-
+        if self.knn_classifier is None or self.knn_classifier in ['knn',
+                                                                  'sklearn']:
+            knn_class = functools.partial(KNeighborsClassifier,
+                                          n_jobs=-1,
+                                          algorithm="auto")
+        elif self.knn_classifier == 'faiss':
+            knn_class = functools.partial(
+                faiss_knn_wrapper.FaissKNNClassifier,
+                n_jobs=-1, algorithm="auto")
         elif callable(self.knn_classifier):
-
-            self.knn_class_ = self.knn_classifier
-
+            knn_class = self.knn_classifier
         else:
             raise ValueError('"knn_classifier" should be one of the following '
-                             '["knn", "knne", "faiss"] or an estimator class')
-        self.roc_algorithm_ = self.knn_class_(self.k)
+                             '["knn", "faiss", None] or an estimator class.')
+
+        if self.knne:
+            self.knn_class_ = functools.partial(
+                KNNE,
+                knn_classifier=knn_class,
+                n_jobs=-1,
+                algorithm="auto")
+        else:
+            self.knn_class_ = knn_class
+
+        self.roc_algorithm_ = self.knn_class_(n_neighbors=self.k)
 
     def _get_region_competence(self, query, k=None):
         """Compute the region of competence of the query sample
@@ -383,7 +380,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         if k is None:
             k = self.k_
 
-        dists, idx = self.roc_algorithm_.kneighbors(query, n_neighbors=k,
+        dists, idx = self.roc_algorithm_.kneighbors(query,
+                                                    n_neighbors=k,
                                                     return_distance=True)
 
         return np.atleast_2d(dists), np.atleast_2d(idx)
@@ -846,6 +844,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         if self.IH_rate < 0 or self.IH_rate > 0.5:
             raise ValueError("Parameter IH_rate should be between [0.0, 0.5]."
                              "IH_rate = {}".format(self.IH_rate))
+
         self._validate_pool()
 
     def _validate_pool(self):
@@ -881,8 +880,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             raise ValueError("Number of features of the model must "
                              "match the input. Model n_features_ is {} and "
                              "input n_features_ is {} ".format(
-                                self.n_features_,
-                                n_features))
+                self.n_features_,
+                n_features))
 
     def _check_predict_proba(self):
         """ Checks if each base classifier in the pool implements the
