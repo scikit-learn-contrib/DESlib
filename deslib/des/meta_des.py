@@ -7,9 +7,7 @@
 import warnings
 
 import numpy as np
-from sklearn.exceptions import NotFittedError
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.utils.validation import check_is_fitted
 
 from deslib.des.base import BaseDES
 
@@ -200,10 +198,12 @@ class METADES(BaseDES):
 
         if self.meta_classifier is None:
             self.meta_classifier_ = MultinomialNB()
+        else:
+            self.meta_classifier_ = self.meta_classifier
 
         # check whether the meta-classifier was already trained since
         # it could have been pre-processed before
-        if not hasattr(self.meta_classifier_, "estimator_"):
+        if not hasattr(self.meta_classifier_, "classes_"):
 
             # IF it is not fitted, generate the meta-training dataset and
             # train the meta-classifier
