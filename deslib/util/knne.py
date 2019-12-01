@@ -49,17 +49,6 @@ class KNNE(BaseEstimator):
         self.knn_classifier = knn_classifier
         self.kwargs = kwargs
 
-    def _set_knn_type(self):
-        if self.knn_classifier == 'faiss':
-            if not faiss_knn_wrapper.is_available():
-                raise ImportError(
-                    'Using knn_classifier="faiss" requires that the FAISS '
-                    'library be installed.Please check the Installation '
-                    'Guide.')
-            self.knn_type_ = faiss_knn_wrapper.FaissKNNClassifier
-        else:
-            self.knn_type_ = KNeighborsClassifier
-
     def fit(self, X, y):
         """Fit the model according to the given training data.
 
@@ -204,6 +193,26 @@ class KNNE(BaseEstimator):
                 axis=1)
         probas = softmax(1. / dists_array)
         return probas
+
+    def _set_knn_type(self):
+
+        if self.knn_classifier is None or self.knn_classifier in ['knn',
+                                                                  'sklearn']:
+            self.knn_type_ = KNeighborsClassifier
+
+        elif self.knn_classifier == 'faiss':
+            if not faiss_knn_wrapper.is_available():
+                raise ImportError(
+                    'Using knn_classifier="faiss" requires that the FAISS '
+                    'library be installed.Please check the Installation '
+                    'Guide.')
+            self.knn_type_ = faiss_knn_wrapper.FaissKNNClassifier
+
+        elif callable(self.knn_classifier):
+            self.knn_type_ = self.knn_classifier
+        else:
+            raise ValueError('"knn_classifier" should be one of the following '
+                             '["knn", "faiss", None] or an estimator class.')
 
     def _organize_neighbors(self, dists, inds):
         inds = np.concatenate(inds, axis=1)

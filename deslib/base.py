@@ -329,7 +329,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
     def _set_region_of_competence_algorithm(self):
 
-        if self.knn_classifier is None or self.knn_classifier == 'knn':
+        if self.knn_classifier is None or self.knn_classifier == ['knn',
+                                                                  'sklearn']:
             knn_class = functools.partial(KNeighborsClassifier,
                                           n_jobs=-1,
                                           algorithm="auto")
