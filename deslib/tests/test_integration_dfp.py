@@ -137,7 +137,7 @@ def test_aposteriori():
 
 
 @pytest.mark.parametrize('knne, expected', [(False, 0.9151515151515152),
-                                            (True, 0.9151515151515152)])
+                                            (True, 0.8757575757575757)])
 def test_meta(knne, expected):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 

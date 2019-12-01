@@ -1,11 +1,13 @@
+import warnings
+
 import numpy as np
+from sklearn.base import BaseEstimator
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.utils import check_X_y
 from sklearn.utils import check_array
-from sklearn.base import BaseEstimator
-from deslib.util.prob_functions import softmax
+
 from deslib.util import faiss_knn_wrapper
-import warnings
+from deslib.util.prob_functions import softmax
 
 
 class KNNE(BaseEstimator):
@@ -82,27 +84,31 @@ class KNNE(BaseEstimator):
         self._check_n_neighbors(self.n_neighbors)
         self._set_knn_type()
 
-        self._mdc = int(self.n_neighbors / self.n_classes_)
-        self._mod = self.n_neighbors % self.n_classes_
-
-        if self._mod > 0:
-            warnings.warn('"n_neighbors" is not a multiple of "n_classes". Got'
-                          '{} and {}.One or more classes will have one less'
-                          ' instance.' .format(self.n_neighbors,
-                                               self.n_classes_))
-            self.n_per_class_ = self._mdc + 1
-        else:
-            self.n_per_class_ = self._mdc
-
+        tmp = self._handle_n_neighbors(self.n_neighbors)
+        self._mdc, self._mod, self._neighbors_per_class = tmp
         for class_ in self.classes_:
             self.classes_indexes_[class_] = np.argwhere(
                 np.array(y) == class_).ravel()
             y_c = y[self.classes_indexes_[class_]]
             X_c = X[self.classes_indexes_[class_], :]
-            knn = self.knn_type_(n_neighbors=self.n_per_class_, **self.kwargs)
+            knn = self.knn_type_(n_neighbors=self._neighbors_per_class,
+                                 **self.kwargs)
             self.knns_[class_] = knn.fit(X_c, y_c)
 
         return self
+
+    def _handle_n_neighbors(self, n_neighbors):
+        mdc = int(n_neighbors / self.n_classes_)
+        mod = n_neighbors % self.n_classes_
+        if mod > 0:
+            warnings.warn('"n_neighbors" is not a multiple of "n_classes". Got'
+                          '{} and {}.One or more classes will have one less'
+                          ' instance.'.format(n_neighbors,
+                                              self.n_classes_))
+            n_per_class = mdc + 1
+        else:
+            n_per_class = mdc
+        return mdc, mod, n_per_class
 
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         """Finds the K-neighbors of a point.
@@ -115,6 +121,10 @@ class KNNE(BaseEstimator):
             The query point or points.
             If not provided, neighbors of each indexed point are returned.
             In this case, the query point is not considered its own neighbor.
+
+        n_neighbors : int
+            Number of neighbors to get (default is the value
+            passed to the constructor).
 
         return_distance : boolean, optional. Defaults to True.
             If False, distances will not be returned
@@ -129,7 +139,12 @@ class KNNE(BaseEstimator):
             Indices of the nearest points in the population matrix.
         """
         if n_neighbors is None:
-            n_neighbors = self.n_neighbors
+            neighbors_per_class = self._neighbors_per_class
+            mdc = self._mdc
+            mod = self._mod
+        else:
+            mdc, mod, neighbors_per_class = self._handle_n_neighbors(
+                n_neighbors)
 
         if X is None:
             X = self.X_
@@ -139,20 +154,20 @@ class KNNE(BaseEstimator):
         mod_dists = []
         mod_inds = []
         for class_, knn in self.knns_.items():
-            dist_c, ind_c = knn.kneighbors(X)
+            dist_c, ind_c = knn.kneighbors(X, neighbors_per_class)
             real_ind_c = self.classes_indexes_[class_].take(ind_c)
-            dists.append(dist_c[:, 0:self._mdc])
-            inds.append(real_ind_c[:, 0:self._mdc])
-            if self._mod > 0:
+            dists.append(dist_c[:, 0:mdc])
+            inds.append(real_ind_c[:, 0:mdc])
+            if mod > 0:
                 mod_dists.append(dist_c[:, -1].reshape(-1, 1))
                 mod_inds.append(real_ind_c[:, -1].reshape(-1, 1))
 
         dists, inds = self._organize_neighbors(dists, inds)
 
-        if self._mod > 0:
+        if mod > 0:
             mod_dists, mod_inds = self._organize_neighbors(mod_dists, mod_inds)
-            dists = np.hstack((dists, mod_dists[:, 0:self._mod]))
-            inds = np.hstack((inds, mod_inds[:, 0:self._mod]))
+            dists = np.hstack((dists, mod_dists[:, 0:mod]))
+            inds = np.hstack((inds, mod_inds[:, 0:mod]))
 
         if return_distance:
             return dists, inds
@@ -200,7 +215,7 @@ class KNNE(BaseEstimator):
         for c in self.classes_:
             dists_array[:, c] = np.ma.MaskedArray(dists, classes != c).mean(
                 axis=1)
-        probas = softmax(1./dists_array)
+        probas = softmax(1. / dists_array)
         return probas
 
     def _organize_neighbors(self, dists, inds):
@@ -223,4 +238,4 @@ class KNNE(BaseEstimator):
         if not np.issubdtype(type(n_neighbors), np.integer):
             raise TypeError(
                 "n_neighbors does not take {} value, "
-                "enter integer value" .format(type(n_neighbors)))
+                "enter integer value".format(type(n_neighbors)))
