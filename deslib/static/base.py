@@ -3,7 +3,7 @@
 # Author: Rafael Menelau Oliveira e Cruz <rafaelmenelau@gmail.com>
 #
 # License: BSD 3 clause
-
+import numpy as np
 from abc import abstractmethod, ABCMeta
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import BaseEnsemble, BaggingClassifier
@@ -80,19 +80,26 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
 
         self.n_classifiers_ = len(self.pool_classifiers_)
 
-        # Check if base classifiers are not using LabelEncoder (the case for
-        # scikit-learn's ensembles):
-        if isinstance(self.pool_classifiers_, BaseEnsemble):
-            self.base_already_encoded_ = True
-        else:
-            self.base_already_encoded_ = False
-
+        # dealing with label encoder
+        self.check_label_encoder()
         self.y_enc_ = self._setup_label_encoder(y)
 
         self.n_classes_ = self.classes_.size
         self.n_features_ = X.shape[1]
 
         return self
+
+    def check_label_encoder(self):
+        # Check if base classifiers are not using LabelEncoder (the case for
+        # scikit-learn's ensembles):
+        if isinstance(self.pool_classifiers_, BaseEnsemble):
+            if np.array_equal(self.pool_classifiers_.classes_,
+                              self.pool_classifiers_[0].classes_):
+                self.base_already_encoded_ = False
+            else:
+                self.base_already_encoded_ = True
+        else:
+            self.base_already_encoded_ = False
 
     def _setup_label_encoder(self, y):
         """

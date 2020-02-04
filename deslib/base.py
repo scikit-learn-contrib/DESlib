@@ -233,12 +233,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         # generated_pool is not fitted or k < 1
         self._validate_parameters()
 
-        # Check if base classifiers are not using LabelEncoder (the case for
-        # scikit-learn's ensembles):
-        if isinstance(self.pool_classifiers_, BaseEnsemble):
-            self.base_already_encoded_ = True
-        else:
-            self.base_already_encoded_ = False
+        # Check label encoder on the pool of classifiers
+        self.check_label_encoder()
 
         self._setup_label_encoder(y)
         y_dsel = self.enc_.transform(y_dsel)
@@ -253,6 +249,18 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         if self.with_IH:
             self._validate_ih()
         return self
+
+    def check_label_encoder(self):
+        # Check if base classifiers are not using LabelEncoder (the case for
+        # scikit-learn's ensembles):
+        if isinstance(self.pool_classifiers_, BaseEnsemble):
+            if np.array_equal(self.pool_classifiers_.classes_,
+                              self.pool_classifiers_[0].classes_):
+                self.base_already_encoded_ = False
+            else:
+                self.base_already_encoded_ = True
+        else:
+            self.base_already_encoded_ = False
 
     def _compute_highest_possible_IH(self):
         highest_IH = (self.safe_k - math.ceil(
