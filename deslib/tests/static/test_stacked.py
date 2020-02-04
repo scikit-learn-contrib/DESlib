@@ -1,7 +1,9 @@
 import pytest
+import numpy as np
 from deslib.static.stacked import StackedClassifier
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.linear_model import Perceptron
+from sklearn.tree import DecisionTreeClassifier
 
 
 def test_check_estimator():
@@ -34,3 +36,12 @@ def test_not_predict_proba_meta(create_X_y, create_pool_classifiers):
                                      meta_classifier=Perceptron())
         meta_clf.fit(X, y)
         meta_clf.predict_proba(X)
+
+
+def test_label_encoder():
+    y = ['one', 'one', 'one', 'zero', 'zero', 'two']
+    X = np.random.rand(6, 3)
+    pool = [DecisionTreeClassifier().fit(X, y) for _ in range(5)]
+    static = StackedClassifier(pool).fit(X, y)
+    pred = static.predict(X)
+    assert np.array_equal(pred, y)
