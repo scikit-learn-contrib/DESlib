@@ -67,7 +67,7 @@ class SingleBest(BaseStaticEnsemble):
         performances = np.zeros(self.n_classifiers_)
         for idx, clf in enumerate(self.pool_classifiers_):
             performances[idx] = clf.score(X, self._encode_base_labels(y))
-        self.best_clf_index_ = np.argmax(idx)
+        self.best_clf_index_ = np.argmax(performances)
         self.best_clf_ = self.pool_classifiers_[self.best_clf_index_]
 
         return self
