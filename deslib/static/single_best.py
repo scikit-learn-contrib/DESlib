@@ -64,13 +64,22 @@ class SingleBest(BaseStaticEnsemble):
 
         super(SingleBest, self).fit(X, y)
 
-        performances = np.zeros(self.n_classifiers_)
-        for idx, clf in enumerate(self.pool_classifiers_):
-            performances[idx] = clf.score(X, self.y_enc_)
-        self.best_clf_index_ = np.argmax(idx)
+        if not self.base_already_encoded_:
+            y_encoded = y
+        else:
+            y_encoded = self.enc_.transform(y)
+
+        performances = self._estimate_performances(X, y_encoded)
+        self.best_clf_index_ = np.argmax(performances)
         self.best_clf_ = self.pool_classifiers_[self.best_clf_index_]
 
         return self
+
+    def _estimate_performances(self, X, y):
+        performances = np.zeros(self.n_classifiers_)
+        for idx, clf in enumerate(self.pool_classifiers_):
+            performances[idx] = clf.score(X, self._encode_base_labels(y))
+        return performances
 
     def predict(self, X):
         """Predict the label of each sample in X and returns the predicted

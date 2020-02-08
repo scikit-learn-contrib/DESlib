@@ -1,21 +1,14 @@
-from unittest.mock import MagicMock
-
 import numpy as np
 import pytest
 from sklearn.exceptions import NotFittedError
 
 from deslib.static.static_selection import StaticSelection
 from sklearn.utils.estimator_checks import check_estimator
+from sklearn.tree import DecisionTreeClassifier
 
 
 def test_check_estimator():
     check_estimator(StaticSelection)
-
-#
-# def create_example_static(create_X_y):
-#     for clf in pool:
-#         clf.score = MagicMock(return_value=score)
-#     return pool
 
 
 # Testing if the fit function selects the correct classifiers.
@@ -71,3 +64,12 @@ def test_invalid_pct2():
     with pytest.raises(ValueError):
         test = StaticSelection(pct_classifiers=1.2)
         test.fit(np.random.rand(10, 2), np.ones(10))
+
+
+def test_label_encoder():
+    y = ['one', 'one', 'one', 'zero', 'zero', 'two']
+    X = np.random.rand(6, 3)
+    pool = [DecisionTreeClassifier().fit(X, y) for _ in range(5)]
+    static = StaticSelection(pool).fit(X, y)
+    pred = static.predict(X)
+    assert np.array_equal(pred, y)

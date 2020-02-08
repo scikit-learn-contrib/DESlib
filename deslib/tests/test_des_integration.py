@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.datasets import load_breast_cancer
 from sklearn.ensemble import BaggingClassifier
+from sklearn.ensemble import AdaBoostClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import Perceptron
 from sklearn.model_selection import train_test_split
@@ -84,6 +85,21 @@ def test_label_encoder_integration_sklearn_ensembles():
     knorau = KNORAU(pool_classifiers)
     knorau.fit(X_dsel, y_dsel)
     assert np.isclose(knorau.score(X_test, y_test), 0.97340425531914898)
+
+
+def test_label_encoder_integration_sklearn_ensembles_not_encoding():
+
+    rng = np.random.RandomState(123456)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
+        ['yes', 'no'], rng)
+
+    # Train a pool of using adaboost which has label encoding problems.
+    pool_classifiers = AdaBoostClassifier(n_estimators=10, random_state=rng)
+    pool_classifiers.fit(X_train, y_train)
+
+    knorau = KNORAU(pool_classifiers)
+    knorau.fit(X_dsel, y_dsel)
+    assert np.isclose(knorau.score(X_test, y_test), 0.9521276595744681)
 
 
 def setup_classifiers(encode_labels=None):
@@ -305,7 +321,7 @@ def test_single_best():
 
     single_best = SingleBest(pool_classifiers)
     single_best.fit(X_dsel, y_dsel)
-    assert np.isclose(single_best.score(X_test, y_test), 0.97872340425531912)
+    assert np.isclose(single_best.score(X_test, y_test), 0.9680851063829787)
 
 
 def test_static_selection():

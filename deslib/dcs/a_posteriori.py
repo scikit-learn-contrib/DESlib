@@ -202,7 +202,7 @@ class APosteriori(BaseDCS):
         # Expanding the dimensions of the predictions and target arrays in
         # order to compare both.
         predictions_3d = np.expand_dims(predictions, axis=1)
-        target_3d = np.expand_dims(self.DSEL_target_[neighbors], axis=2)
+        target_3d = self.DSEL_target_[neighbors, np.newaxis]
 
         # Create a mask to remove the neighbors belonging to a different class
         # than the predicted by the base classifier
