@@ -112,7 +112,7 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
         return y_ind
 
     def _encode_base_labels(self, y):
-        if not self.base_already_encoded_:
+        if self.base_already_encoded_:
             return y
         else:
             return self.enc_.transform(y)
