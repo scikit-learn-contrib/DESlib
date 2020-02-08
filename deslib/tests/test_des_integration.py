@@ -321,7 +321,7 @@ def test_single_best():
 
     single_best = SingleBest(pool_classifiers)
     single_best.fit(X_dsel, y_dsel)
-    assert np.isclose(single_best.score(X_test, y_test), 0.97872340425531912)
+    assert np.isclose(single_best.score(X_test, y_test), 0.9680851063829787)
 
 
 def test_static_selection():
