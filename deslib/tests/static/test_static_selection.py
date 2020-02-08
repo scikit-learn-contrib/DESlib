@@ -5,7 +5,6 @@ from sklearn.exceptions import NotFittedError
 from deslib.static.static_selection import StaticSelection
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import AdaBoostClassifier
 
 
 def test_check_estimator():
