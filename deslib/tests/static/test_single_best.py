@@ -3,9 +3,9 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 from sklearn.exceptions import NotFittedError
+from sklearn.utils.estimator_checks import check_estimator
 
 from deslib.static.single_best import SingleBest
-from sklearn.utils.estimator_checks import check_estimator
 
 
 def test_check_estimator():
@@ -20,10 +20,12 @@ def test_fit(create_X_y, create_pool_classifiers):
 
     pool_classifiers = create_pool_classifiers
     single_best_test = SingleBest(pool_classifiers)
+    single_best_test._estimate_performances = MagicMock(
+        return_value=[1.0, 0.5, 0.99])
+
     single_best_test.fit(X, y)
 
-    assert (single_best_test.best_clf_index_ == 0 or
-            single_best_test.best_clf_index_ == 2)
+    assert single_best_test.best_clf_index_ == 0
 
 
 # The classifier with highest accuracy always predicts 0. So the expected
