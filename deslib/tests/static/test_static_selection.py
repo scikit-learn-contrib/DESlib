@@ -66,10 +66,8 @@ def test_invalid_pct2():
         test.fit(np.random.rand(10, 2), np.ones(10))
 
 
-def test_label_encoder():
-    y = ['one', 'one', 'one', 'zero', 'zero', 'two']
-    X = np.random.rand(6, 3)
-    pool = [DecisionTreeClassifier().fit(X, y) for _ in range(5)]
+def test_label_encoder(create_label_encoder_test):
+    X, y, pool = create_label_encoder_test
     static = StaticSelection(pool).fit(X, y)
     pred = static.predict(X)
     assert np.array_equal(pred, y)
