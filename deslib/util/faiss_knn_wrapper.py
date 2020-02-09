@@ -17,11 +17,10 @@ def is_available():
 
 
 class FaissKNNClassifier:
-    """Faiss KNN wrapper.
+    """ Scikit-learn wrapper interface for Faiss KNN.
 
     Parameters
     ----------
-
     n_neighbors : int (Default = 5)
                 Number of neighbors used in the nearest neighbor search.
 
@@ -42,6 +41,8 @@ class FaissKNNClassifier:
         on inference. 'hierarchical' produce very fast and accurate indexes,
         however it has a higher memory requirement. It's recommended when
         you have a lots of RAM or the dataset is small.
+
+        For more information see: https://github.com/facebookresearch/faiss/wiki/Guidelines-to-choose-an-index
 
     n_cells : int (Default = 100)
         Number of voronoi cells. Only used when algorithm=='voronoi'.
