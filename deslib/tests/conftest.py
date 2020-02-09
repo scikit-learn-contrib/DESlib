@@ -1,6 +1,7 @@
-from unittest.mock import MagicMock
-import numpy as np
 import pytest
+import numpy as np
+from unittest.mock import MagicMock
+from sklearn.tree import DecisionTreeClassifier
 
 
 @pytest.fixture
@@ -159,4 +160,12 @@ def example_static_selection(create_X_y):
         clf.score = MagicMock(return_value=1.0)
 
     pool = pool1 + pool2
+    return X, y, pool
+
+
+@pytest.fixture
+def create_label_encoder_test():
+    y = ['one', 'one', 'one', 'zero', 'zero', 'two']
+    X = np.random.rand(6, 3)
+    pool = [DecisionTreeClassifier().fit(X, y) for _ in range(5)]
     return X, y, pool

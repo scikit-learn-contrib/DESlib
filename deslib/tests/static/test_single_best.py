@@ -72,3 +72,10 @@ def test_not_predict_proba(create_X_y):
     single_best_test.fit(X, y)
     with pytest.raises(ValueError):
         single_best_test.predict_proba(X)
+
+
+def test_label_encoder(create_label_encoder_test):
+    X, y, pool = create_label_encoder_test
+    sb = SingleBest(pool).fit(X, y)
+    pred = sb.predict(X)
+    assert np.array_equal(pred, y)
