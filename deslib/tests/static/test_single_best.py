@@ -4,7 +4,8 @@ import numpy as np
 import pytest
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.estimator_checks import check_estimator
-
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.metrics import log_loss
 from deslib.static.single_best import SingleBest
 
 
@@ -79,3 +80,19 @@ def test_label_encoder(create_label_encoder_test):
     sb = SingleBest(pool).fit(X, y)
     pred = sb.predict(X)
     assert np.array_equal(pred, y)
+
+
+# Test if single best can select the best classifier according to a metric that
+# needs to be minimized.
+def test_negative_scorer():
+    rng = np.random.RandomState(42)
+    X = rng.rand(100, 2)
+    y = rng.randint(low=0, high=2, size=100)
+    pool = AdaBoostClassifier(random_state=rng).fit(X, y)
+    performances = []
+    for clf in pool:
+        preds = clf.predict_proba(X)
+        performances.append(log_loss(y, preds))
+    id_best = np.argmin(performances)
+    sb = SingleBest(pool_classifiers=pool, scoring='neg_log_loss').fit(X, y)
+    assert id_best == sb.best_clf_index_
