@@ -162,6 +162,7 @@ def example_static_selection(create_X_y):
     pool = pool1 + pool2
     return X, y, pool
 
+
 @pytest.fixture
 def create_label_encoder_test():
     y = ['one', 'one', 'one', 'zero', 'zero', 'two']
