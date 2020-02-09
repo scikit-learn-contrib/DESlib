@@ -7,15 +7,20 @@ from sklearn.neighbors import KNeighborsClassifier
 
 from deslib.util.faiss_knn_wrapper import FaissKNNClassifier
 
-# n_samples = [10000, 100000, 1000000, 10000000]
 n_samples = [1000, 10000, 100000, 1000000, 10000000]
 rng = 42
 
 faiss_brute = FaissKNNClassifier(n_neighbors=7, algorithm='brute')
 faiss_voronoi = FaissKNNClassifier(n_neighbors=7, algorithm='voronoi')
-sk_brute = KNeighborsClassifier(n_neighbors=7, algorithm='brute')
-sk_ball = KNeighborsClassifier(n_neighbors=7, algorithm='ball_tree')
-sk_kd_tree = KNeighborsClassifier(n_neighbors=7, algorithm='kd_tree')
+sk_brute = KNeighborsClassifier(n_neighbors=7,
+                                algorithm='brute',
+                                n_jobs=-1)
+sk_ball = KNeighborsClassifier(n_neighbors=7,
+                               algorithm='ball_tree',
+                               n_jobs=-1)
+sk_kd_tree = KNeighborsClassifier(n_neighbors=7,
+                                  algorithm='kd_tree',
+                                  n_jobs=-1)
 
 all_knns = [faiss_brute, faiss_voronoi, sk_brute, sk_ball, sk_kd_tree]
 names = ['faiss_brute', 'faiss_voronoi', 'sklearn_brute', 'sklearn_balltree',
@@ -54,4 +59,4 @@ plt.plot(n_samples, list_search_time)
 plt.legend(names)
 plt.xlabel("Number of samples")
 plt.ylabel("K neighbors search time")
-plt.savefig('figure.png')
+plt.savefig('knn_backbone_benchmark.png')
