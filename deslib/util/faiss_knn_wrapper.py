@@ -35,9 +35,13 @@ class FaissKNNClassifier:
 
             - 'brute' will use the :class: `IndexFlatL2` class from faiss.
             - 'voronoi' will use :class:`IndexIVFFlat` class from faiss.
+            - 'hierarchical' will use :class:`IndexHNSWFlat` class from faiss.
 
-        Note that selecting voronoi the system takes more time during training,
-        however it can significantly improve the search time on inference.
+        Note that selecting 'voronoi' the system takes more time during
+        training, however it can significantly improve the search time
+        on inference. 'hierarchical' produce very fast and accurate indexes,
+        however it has a higher memory requirement. It's recommended when
+        you have a lots of RAM or the dataset is small.
 
     n_cells : int (Default = 100)
         Number of voronoi cells. Only used when algorithm=='voronoi'.
@@ -174,7 +178,14 @@ class FaissKNNClassifier:
         """
         X = np.atleast_2d(X).astype(np.float32)
         X = np.ascontiguousarray(X)
-        d = X.shape[1] # dimensionality of the feature vector
+        d = X.shape[1]  # dimensionality of the feature vector
+        self._prepare_knn_algorithm(X, d)
+        self.index_.add(X)
+        self.y_ = y
+        self.n_classes_ = np.unique(y).size
+        return self
+
+    def _prepare_knn_algorithm(self, X, d):
         if self.algorithm == 'brute':
             self.index_ = self.faiss.IndexFlatL2(d)
         elif self.algorithm == 'voronoi':
@@ -182,11 +193,10 @@ class FaissKNNClassifier:
             self.index_ = self.faiss.IndexIVFFlat(quantizer, d, self.n_cells)
             self.index_.train(X)
             self.index_.nprobe = self.n_probes
+        elif self.algorithm == 'hierachical':
+            self.index_ = self.faiss.IndexHNSWFlat(d, 32)
+            self.index_.hnsw.efConstruction = 40
         else:
             raise ValueError("Invalid algorithm option."
                              " Expected ['brute', 'voronoi'], got {}"
                              .format(self.algorithm))
-        self.index_.add(X)
-        self.y_ = y
-        self.n_classes_ = np.unique(y).size
-        return self
