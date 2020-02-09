@@ -25,7 +25,7 @@ class StaticSelection(BaseStaticEnsemble):
         classifier.
 
     scoring : string, callable (default = None)
-     A single string (see :ref:`scoring_parameter`) or a callable
+        A single string (see :ref:`scoring_parameter`) or a callable
         (see :ref:`scoring`) to evaluate the predictions on the validation set.
 
         NOTE that when using custom scorers, each scorer should return a single
