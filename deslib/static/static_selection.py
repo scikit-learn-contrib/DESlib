@@ -8,6 +8,7 @@ import numpy as np
 from .base import BaseStaticEnsemble
 from deslib.util.aggregation import majority_voting_rule
 from sklearn.utils.validation import check_is_fitted, check_X_y, check_array
+from sklearn.metrics import check_scoring
 
 
 class StaticSelection(BaseStaticEnsemble):
@@ -21,6 +22,13 @@ class StaticSelection(BaseStaticEnsemble):
         classification problem. Each base classifiers should support the method
         "predict". If None, then the pool of classifiers is a bagging
         classifier.
+
+    scoring : string, callable (default = None)
+     A single string (see :ref:`scoring_parameter`) or a callable
+        (see :ref:`scoring`) to evaluate the predictions on the validation set.
+
+        NOTE that when using custom scorers, each scorer should return a single
+        value.
 
     random_state : int, RandomState instance or None, optional (default=None)
         If int, random_state is the seed used by the random number generator;
@@ -50,10 +58,12 @@ class StaticSelection(BaseStaticEnsemble):
 
     def __init__(self, pool_classifiers=None,
                  pct_classifiers=0.5,
+                 scoring=None,
                  random_state=None):
         super(StaticSelection, self).__init__(
             pool_classifiers=pool_classifiers, random_state=random_state)
         self.pct_classifiers = pct_classifiers
+        self.scoring = scoring
 
     def fit(self, X, y):
         """Fit the static selection model by select an ensemble of classifier
@@ -90,7 +100,8 @@ class StaticSelection(BaseStaticEnsemble):
             y_encoded = self.enc_.transform(y)
 
         for clf_idx, clf in enumerate(self.pool_classifiers_):
-            performances[clf_idx] = clf.score(X, y_encoded)
+            scorer = check_scoring(clf, self.scoring)
+            performances[clf_idx] = scorer(clf, X, y_encoded)
 
         self.clf_indices_ = np.argsort(performances)[::-1][
                             0:self.n_classifiers_ensemble_]
