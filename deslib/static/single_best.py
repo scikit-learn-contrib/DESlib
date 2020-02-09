@@ -78,7 +78,7 @@ class SingleBest(BaseStaticEnsemble):
     def _estimate_performances(self, X, y):
         performances = np.zeros(self.n_classifiers_)
         for idx, clf in enumerate(self.pool_classifiers_):
-            performances[idx] = clf.score(X, self._encode_base_labels(y))
+            performances[idx] = clf.score(X, y)
         return performances
 
     def predict(self, X):
@@ -97,7 +97,7 @@ class SingleBest(BaseStaticEnsemble):
         """
         X = check_array(X)
         self._check_is_fitted()
-        predicted_labels = np.array(self.best_clf_.predict(X), dtype=int)
+        predicted_labels = self._encode_base_labels(self.best_clf_.predict(X))
         return self.classes_.take(predicted_labels)
 
     def predict_proba(self, X):
