@@ -138,11 +138,8 @@ def entropy_func(n_classes, supports, is_correct):
     supports[supports > 1.0] = 1.0
     supports[supports < 0.0] = 0.0
 
-    C_src = np.zeros(n_samples)
-    for index in range(n_samples):
-        C_src[index] = (1.0 / np.log(n_classes)) * (
-            entropy(supports[index, :]))
-        C_src[index] += ((2 * is_correct[index]) - 1)
+    C_src = (1.0 / np.log(n_classes)) * (entropy(supports, axis=1))
+    C_src += ((2 * is_correct) - 1)
     return C_src
 
 
