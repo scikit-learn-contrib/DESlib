@@ -199,5 +199,5 @@ class FaissKNNClassifier:
             self.index_.hnsw.efConstruction = 40
         else:
             raise ValueError("Invalid algorithm option."
-                             " Expected ['brute', 'voronoi'], got {}"
-                             .format(self.algorithm))
+                             " Expected ['brute', 'voronoi', 'hierarchical'], "
+                             "got {}" .format(self.algorithm))
