@@ -194,7 +194,7 @@ class FaissKNNClassifier:
             self.index_ = self.faiss.IndexIVFFlat(quantizer, d, self.n_cells)
             self.index_.train(X)
             self.index_.nprobe = self.n_probes
-        elif self.algorithm == 'hierachical':
+        elif self.algorithm == 'hierarchical':
             self.index_ = self.faiss.IndexHNSWFlat(d, 32)
             self.index_.hnsw.efConstruction = 40
         else:
