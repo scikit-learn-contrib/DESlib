@@ -10,25 +10,15 @@ from deslib.util.faiss_knn_wrapper import FaissKNNClassifier
 n_samples = [1000, 10000, 100000, 1000000, 10000000]
 rng = 42
 
-faiss_brute = FaissKNNClassifier(n_neighbors=7, algorithm='brute')
-faiss_voronoi = FaissKNNClassifier(n_neighbors=7, algorithm='voronoi')
-faiss_hierarchical = FaissKNNClassifier(n_neighbors=7, algorithm='voronoi')
-
-# sk_brute = KNeighborsClassifier(n_neighbors=7,
-#                                 algorithm='brute',
-#                                 n_jobs=-1)
-# sk_ball = KNeighborsClassifier(n_neighbors=7,
-#                                algorithm='ball_tree',
-#                                n_jobs=-1)
-# sk_kd_tree = KNeighborsClassifier(n_neighbors=7,
-#                                   algorithm='kd_tree',
-#                                   n_jobs=-1)
+faiss_brute = FaissKNNClassifier(n_neighbors=7,
+                                 algorithm='brute')
+faiss_voronoi = FaissKNNClassifier(n_neighbors=7,
+                                   algorithm='voronoi')
+faiss_hierarchical = FaissKNNClassifier(n_neighbors=7,
+                                        algorithm='hierarchical')
 
 all_knns = [faiss_brute, faiss_voronoi, faiss_hierarchical]
 names = ['faiss_brute', 'faiss_voronoi', 'faiss_hierarchical']
-# all_knns = [faiss_brute, faiss_voronoi, sk_brute, sk_ball, sk_kd_tree]
-# names = ['faiss_brute', 'faiss_voronoi', 'sklearn_brute', 'sklearn_balltree',
-#          'sklearn_kdtree']
 
 list_fitting_time = []
 list_search_time = []
