@@ -65,7 +65,7 @@ Dependencies:
 DESlib is tested to work with Python 3.5, 3.6 and 3.7. The dependency requirements are:
 
 * scipy(>=1.4.0)
-* numpy(>=1.10.4)
+* numpy(>=1.17.0)
 * scikit-learn(>=0.20.0)
 
 These dependencies are automatically installed using the pip commands above.
