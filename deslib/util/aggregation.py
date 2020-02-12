@@ -146,23 +146,22 @@ def weighted_majority_voting_rule(votes, weights, labels_set=None):
     if weights.ndim == 1:
         weights = np.atleast_2d(weights)
 
-    if weights.size != votes.size:
+    if weights.shape != votes.shape:
         raise ValueError(
             'The size of the arrays votes and weights should be the '
             'same. weights = {} '
             'while votes = {}'.format(weights.size, votes.size))
     if labels_set is None:
-        labels_set = np.unique(votes)
+        labels_set = np.unique(votes.astype(np.int))
 
     n_samples = votes.shape[0]
-    w_votes = np.zeros((n_samples, len(labels_set)))
-    for idx in range(n_samples):
+    w_votes = np.zeros((len(labels_set), n_samples))
 
-        for label in labels_set:
-            w_votes[idx, np.where(labels_set == label)] = sum(
-                weights[idx, votes[idx] == label])
+    for label in labels_set:
+        ind = np.argwhere(labels_set == label)[0]
+        w_votes[ind, :] = np.sum(weights, where=votes == label, axis=1)
 
-    predicted_label = labels_set[np.argmax(w_votes, axis=1)]
+    predicted_label = labels_set[np.argmax(w_votes, axis=0)]
     return predicted_label
 
 
