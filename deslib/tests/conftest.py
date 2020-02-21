@@ -127,18 +127,18 @@ def example_kuncheva():
 # ----- Routines to generate a pool of classifiers using MagicMock  ------
 def create_base_classifier(return_value, return_prob=None):
     classifier = MagicMock()
-    classifier.predict.return_value = [return_value]
+    classifier.predict.return_value = return_value
     classifier.predict_proba.return_value = return_prob
     return classifier
 
 
 @pytest.fixture
 def create_pool_classifiers():
-    clf_0 = create_base_classifier(return_value=0,
+    clf_0 = create_base_classifier(return_value=np.zeros(1),
                                    return_prob=np.atleast_2d([0.5, 0.5]))
-    clf_1 = create_base_classifier(return_value=1,
+    clf_1 = create_base_classifier(return_value=np.ones(1),
                                    return_prob=np.atleast_2d([1.0, 0.0]))
-    clf_2 = create_base_classifier(return_value=0,
+    clf_2 = create_base_classifier(return_value=np.zeros(1),
                                    return_prob=np.atleast_2d([0.33, 0.67]))
     pool_classifiers = [clf_0, clf_1, clf_2]
     return pool_classifiers
@@ -146,14 +146,20 @@ def create_pool_classifiers():
 
 @pytest.fixture
 def create_pool_all_agree():
-    return [create_base_classifier(return_value=0)] * 100
+    return [create_base_classifier(return_value=np.zeros(1))] * 100
 
 
 @pytest.fixture
 def example_static_selection(create_X_y):
     X, y = create_X_y
-    pool1 = [create_base_classifier(return_value=0)] * 50
-    pool2 = [create_base_classifier(return_value=1)] * 50
+    n_samples = y.size
+    pool1 = [create_base_classifier(
+        return_value=np.zeros(n_samples),
+        return_prob=np.tile([0.49, 0.51], (n_samples, 1)))] * 50
+
+    pool2 = [create_base_classifier(
+        return_value=np.ones(X.shape[0]),
+        return_prob=np.tile([0.52, 0.48], (n_samples, 1)))] * 50
     for clf in pool1:
         clf.score = MagicMock(return_value=0.5)
     for clf in pool2:

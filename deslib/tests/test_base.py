@@ -84,8 +84,8 @@ def test_valid_safe_k(k, safe_k):
 
 
 def create_classifiers_disagree():
-    clf1 = create_base_classifier(return_value=1)
-    clf_2 = create_base_classifier(return_value=0)
+    clf1 = create_base_classifier(return_value=np.ones(1))
+    clf_2 = create_base_classifier(return_value=np.zeros(1))
     return [clf1, clf_2]
 
 
@@ -354,13 +354,13 @@ def test_predict_proba_instance_called(index,
 
 # ------------------------ Testing label encoder------------------------
 def create_pool_classifiers_dog_cat_plane():
-    clf_0 = create_base_classifier(return_value='cat',
+    clf_0 = create_base_classifier(return_value=np.array(['cat']),
                                    return_prob=np.atleast_2d([0.5, 0.5]))
 
-    clf_1 = create_base_classifier(return_value='dog',
+    clf_1 = create_base_classifier(return_value=np.array(['dog']),
                                    return_prob=np.atleast_2d([1.0, 0.0]))
 
-    clf_2 = create_base_classifier(return_value='plane',
+    clf_2 = create_base_classifier(return_value=np.array(['plane']),
                                    return_prob=np.atleast_2d([0.33, 0.67]))
 
     pool_classifiers = [clf_0, clf_1, clf_2]
@@ -368,7 +368,7 @@ def create_pool_classifiers_dog_cat_plane():
 
 
 def create_pool_classifiers_dog():
-    clf_0 = create_base_classifier(return_value='dog',
+    clf_0 = create_base_classifier(return_value=np.array(['dog']),
                                    return_prob=np.atleast_2d([0.5, 0.5]))
     pool_classifiers = [clf_0, clf_0, clf_0]
     return pool_classifiers
