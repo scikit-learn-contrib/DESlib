@@ -61,6 +61,9 @@ class StackedClassifier(BaseStaticEnsemble):
         X, y = check_X_y(X, y)
 
         super(StackedClassifier, self).fit(X, y)
+        if self.n_classes_ < 2:
+            raise ValueError("Number of classes should be at least 2. "
+                             "Got {}" .format(self.n_classes_))
 
         base_preds = self._predict_proba_base(X)
 
