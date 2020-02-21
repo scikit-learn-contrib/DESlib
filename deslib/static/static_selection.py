@@ -7,6 +7,7 @@
 import numpy as np
 from .base import BaseStaticEnsemble
 from deslib.util.aggregation import majority_voting_rule
+from deslib.util.aggregation import predict_proba_ensemble
 from sklearn.utils.validation import check_is_fitted, check_X_y, check_array
 
 
@@ -124,11 +125,23 @@ class StaticSelection(BaseStaticEnsemble):
 
         return self.classes_.take(predicted_labels)
 
-    def _check_is_fitted(self):
-        """Verify if the estimator algorithm was fitted. Raises an error if it
-        is not fitted.
-        """
-        check_is_fitted(self, "ensemble_")
+    def predict_proba(self, X):
+        """Estimates the posterior probabilities for sample in X.
+
+         Parameters
+         ----------
+         X : array of shape = [n_samples, n_features]
+             The input data.
+
+         Returns
+         -------
+         predicted_proba : array of shape = [n_samples, n_classes]
+                           Probabilities estimates for each sample in X.
+         """
+        self._check_is_fitted()
+        self._check_predict_proba()
+        proba = predict_proba_ensemble(self.ensemble_, X)
+        return proba
 
     def _validate_parameters(self):
 
@@ -138,3 +151,23 @@ class StaticSelection(BaseStaticEnsemble):
             raise ValueError(
                 'The parameter pct_classifiers should be a number '
                 'between 0 and 1.')
+
+    def _check_is_fitted(self):
+        """Verify if the estimator algorithm was fitted. Raises an error if it
+        is not fitted.
+        """
+        check_is_fitted(self, "ensemble_")
+
+    def _check_predict_proba(self):
+        """ Checks if each base classifier in the ensemble (selected models)
+        implements the predict_proba method.
+
+        Raises
+        -------
+        ValueError
+            If the base classifiers do not implements the predict_proba method.
+        """
+        for clf in self.ensemble_:
+            if "predict_proba" not in dir(clf):
+                raise ValueError(
+                    "All base classifiers should output probability estimates")
