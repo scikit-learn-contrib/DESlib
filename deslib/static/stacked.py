@@ -61,10 +61,6 @@ class StackedClassifier(BaseStaticEnsemble):
         X, y = check_X_y(X, y)
 
         super(StackedClassifier, self).fit(X, y)
-        if self.n_classes_ < 2:
-            raise ValueError("Number of classes should be at least 2. "
-                             "Got {}" .format(self.n_classes_))
-
         base_preds = self._predict_proba_base(X)
 
         # Prepare the meta-classifier
@@ -145,20 +141,20 @@ class StackedClassifier(BaseStaticEnsemble):
         # Check if base classifiers implement the predict proba method.
         self._check_predict_proba()
 
-        probabilities = np.zeros(
+        probas = np.zeros(
             (X.shape[0], self.n_classifiers_, self.n_classes_))
 
         for index, clf in enumerate(self.pool_classifiers_):
-            probabilities[:, index] = clf.predict_proba(X)
+            probas[:, index] = clf.predict_proba(X)
+
+        probas = probas.reshape(X.shape[0],
+                                self.n_classifiers_ * self.n_classes_)
 
         # remove first column as both features are collinear.
         if self.n_classes_ == 2:
-            probabilities = probabilities[:, ::2]
-            vector_size = self.n_classifiers_
-        else:
-            vector_size = self.n_classifiers_ * self.n_classes_
+            probas = probas[:, ::2]
 
-        return probabilities.reshape(X.shape[0], vector_size)
+        return probas
 
     def _check_predict_proba(self):
         """ Checks if each base classifier in the pool implements the
