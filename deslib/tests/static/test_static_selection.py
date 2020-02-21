@@ -71,3 +71,12 @@ def test_label_encoder(create_label_encoder_test):
     static = StaticSelection(pool).fit(X, y)
     pred = static.predict(X)
     assert np.array_equal(pred, y)
+
+
+def test_predict_proba(example_static_selection):
+    X, y, pool = example_static_selection
+    expected = np.tile([0.52, 0.48], (y.size, 1))
+    static_selection_test = StaticSelection(pool, 0.5)
+    static_selection_test.fit(X, y)
+    proba = static_selection_test.predict_proba(X)
+    assert np.allclose(proba, expected)

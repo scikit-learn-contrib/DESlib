@@ -152,10 +152,14 @@ def create_pool_all_agree():
 @pytest.fixture
 def example_static_selection(create_X_y):
     X, y = create_X_y
+    n_samples = y.size
+    pool1 = [create_base_classifier(
+        return_value=np.zeros(n_samples),
+        return_prob=np.tile([0.49, 0.51], (n_samples, 1)))] * 50
 
-    pool1 = [create_base_classifier(return_value=np.zeros(X.shape[0]),
-                                    return_prob=0)] * 50
-    pool2 = [create_base_classifier(return_value=np.ones(X.shape[0]))] * 50
+    pool2 = [create_base_classifier(
+        return_value=np.ones(X.shape[0]),
+        return_prob=np.tile([0.52, 0.48], (n_samples, 1)))] * 50
     for clf in pool1:
         clf.score = MagicMock(return_value=0.5)
     for clf in pool2:
