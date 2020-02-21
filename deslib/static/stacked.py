@@ -26,6 +26,10 @@ class StackedClassifier(BaseStaticEnsemble):
         If None, the random number generator is the RandomState instance used
         by `np.random`.
 
+    skip_connection : boolean (default=False)
+        If True, creates a connection between the input features and the
+        input to the meta-classifier.
+
     References
     ----------
     Wolpert, David H. "Stacked generalization." Neural networks 5,
@@ -38,12 +42,14 @@ class StackedClassifier(BaseStaticEnsemble):
     def __init__(self,
                  pool_classifiers=None,
                  meta_classifier=None,
+                 skip_connection=False,
                  random_state=None):
 
         super(StackedClassifier, self).__init__(
             pool_classifiers=pool_classifiers,
             random_state=random_state)
         self.meta_classifier = meta_classifier
+        self.skip_connection = False
 
     def fit(self, X, y):
         """Fit the model by training a meta-classifier on the outputs of the
@@ -121,7 +127,12 @@ class StackedClassifier(BaseStaticEnsemble):
                              " predict_proba method.")
 
         base_preds = self._predict_proba_base(X)
-        return self.meta_classifier_.predict_proba(base_preds)
+        if self.skip_connection:
+            X_meta = np.hstack((base_preds, X))
+        else:
+            X_meta = base_preds
+
+        return self.meta_classifier_.predict_proba(X_meta)
 
     def _predict_proba_base(self, X):
         """ Get the predictions (probabilities) of each base classifier in the
