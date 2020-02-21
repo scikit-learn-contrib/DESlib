@@ -42,6 +42,16 @@ def test_label_encoder():
     y = ['one', 'one', 'one', 'zero', 'zero', 'two']
     X = np.random.rand(6, 3)
     pool = [DecisionTreeClassifier().fit(X, y) for _ in range(5)]
-    static = StackedClassifier(pool).fit(X, y)
-    pred = static.predict(X)
+    stacked = StackedClassifier(pool).fit(X, y)
+    pred = stacked.predict(X)
     assert np.array_equal(pred, y)
+
+
+def test_one_class_meta_dataset(create_X_y):
+    X, y = create_X_y
+    pool = [DecisionTreeClassifier().fit(X, y) for _ in range(5)]
+    stacked = StackedClassifier(pool)
+    X_meta = np.random.rand(10, 2)
+    y_meta = np.zeros(10, dtype=int)
+    with pytest.raises(ValueError):
+        stacked.fit(X_meta, y_meta)
