@@ -146,7 +146,7 @@ def create_pool_classifiers():
 
 @pytest.fixture
 def create_pool_all_agree():
-    return [create_base_classifier(return_value=0)] * 100
+    return [create_base_classifier(return_value=np.zeros(1))] * 100
 
 
 @pytest.fixture
