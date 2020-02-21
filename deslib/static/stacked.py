@@ -147,8 +147,15 @@ class StackedClassifier(BaseStaticEnsemble):
 
         for index, clf in enumerate(self.pool_classifiers_):
             probabilities[:, index] = clf.predict_proba(X)
-        return probabilities.reshape(X.shape[0],
-                                     self.n_classifiers_ * self.n_classes_)
+
+        # remove first column as both features are collinear.
+        if self.n_classes_ == 2:
+            probabilities = probabilities[:, ::2]
+            vector_size = self.n_classifiers_
+        else:
+            vector_size = self.n_classifiers_ * self.n_classes_
+
+        return probabilities.reshape(X.shape[0], vector_size)
 
     def _check_predict_proba(self):
         """ Checks if each base classifier in the pool implements the
