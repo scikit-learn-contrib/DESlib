@@ -68,6 +68,7 @@ class StackedClassifier(BaseStaticEnsemble):
 
         super(StackedClassifier, self).fit(X, y)
         base_preds = self._predict_proba_base(X)
+        X_meta = self._connect_input(X, base_preds)
 
         # Prepare the meta-classifier
         if self.meta_classifier is None:
@@ -80,7 +81,7 @@ class StackedClassifier(BaseStaticEnsemble):
         else:
             self.meta_classifier_ = self.meta_classifier
 
-        self.meta_classifier_.fit(base_preds, self.y_enc_)
+        self.meta_classifier_.fit(X_meta, self.y_enc_)
 
         return self
 
@@ -101,7 +102,8 @@ class StackedClassifier(BaseStaticEnsemble):
         X = check_array(X)
         check_is_fitted(self, "meta_classifier_")
         base_preds = self._predict_proba_base(X)
-        preds = self.meta_classifier_.predict(base_preds)
+        X_meta = self._connect_input(X, base_preds)
+        preds = self.meta_classifier_.predict(X_meta)
         return self.classes_.take(preds)
 
     def predict_proba(self, X):
@@ -127,12 +129,16 @@ class StackedClassifier(BaseStaticEnsemble):
                              " predict_proba method.")
 
         base_preds = self._predict_proba_base(X)
+        X_meta = self._connect_input(X, base_preds)
+
+        return self.meta_classifier_.predict_proba(X_meta)
+
+    def _connect_input(self, X, base_preds):
         if self.skip_connection:
             X_meta = np.hstack((base_preds, X))
         else:
             X_meta = base_preds
-
-        return self.meta_classifier_.predict_proba(X_meta)
+        return X_meta
 
     def _predict_proba_base(self, X):
         """ Get the predictions (probabilities) of each base classifier in the
@@ -172,7 +178,7 @@ class StackedClassifier(BaseStaticEnsemble):
         predict_proba method.
 
         Raises
-        -------
+        ------
         ValueError
             If the base classifiers do not implements the predict_proba method.
         """
