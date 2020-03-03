@@ -522,8 +522,9 @@ class METADES(BaseDES):
                 'Currently selection_threshold = {}'.format(
                     self.selection_threshold))
 
-        if self.meta_classifier is not None and "predict_proba" not in dir(
-                self.meta_classifier):
+        if (self.meta_classifier is not None and
+                not hasattr(self.meta_classifier, "predict_proba")):
+
             raise ValueError(
                 "The meta-classifier should output probability estimates")
 
