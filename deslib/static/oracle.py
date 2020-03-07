@@ -155,17 +155,3 @@ class Oracle(BaseStaticEnsemble):
         accuracy = accuracy_score(y, self.predict(X, y),
                                   sample_weight=sample_weights)
         return accuracy
-
-
-if __name__ == '__main__':
-    from sklearn.datasets import make_classification
-    X, y = make_classification(n_samples=1000)
-    Xt, yt = make_classification(n_samples=200)
-    from sklearn.ensemble import RandomForestClassifier
-
-    pool = RandomForestClassifier(max_depth=3).fit(X, y)
-    oracle = Oracle(pool_classifiers=pool).fit(X, y)
-
-    proba = oracle.predict_proba(Xt, yt)
-    print(proba)
-    print(f"proba shape: {proba.shape}")
