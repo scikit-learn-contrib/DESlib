@@ -52,4 +52,3 @@ def test_predict_proba_right_class():
     proba = oracle.predict_proba(X_test, y_test)
     probas_max = np.argmax(proba, axis=1)
     assert np.allclose(probas_max, preds)
-
