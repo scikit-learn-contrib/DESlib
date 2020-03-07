@@ -26,9 +26,11 @@ class StackedClassifier(BaseStaticEnsemble):
         If None, the random number generator is the RandomState instance used
         by `np.random`.
 
-    skip_connection : boolean (default=False)
-        If True, creates a connection between the input features and the
-        input to the meta-classifier.
+    passthrough : bool (default=False)
+        When False, only the predictions of estimators will be used as
+        training data for the meta-classifier. When True, the
+        meta-classifier is trained on the predictions as well as the
+        original training data.
 
     References
     ----------
@@ -42,14 +44,14 @@ class StackedClassifier(BaseStaticEnsemble):
     def __init__(self,
                  pool_classifiers=None,
                  meta_classifier=None,
-                 skip_connection=False,
+                 passthrough=False,
                  random_state=None):
 
         super(StackedClassifier, self).__init__(
             pool_classifiers=pool_classifiers,
             random_state=random_state)
         self.meta_classifier = meta_classifier
-        self.skip_connection = False
+        self.passthrough = passthrough
 
     def fit(self, X, y):
         """Fit the model by training a meta-classifier on the outputs of the
@@ -134,7 +136,7 @@ class StackedClassifier(BaseStaticEnsemble):
         return self.meta_classifier_.predict_proba(X_meta)
 
     def _connect_input(self, X, base_preds):
-        if self.skip_connection:
+        if self.passthrough:
             X_meta = np.hstack((base_preds, X))
         else:
             X_meta = base_preds
