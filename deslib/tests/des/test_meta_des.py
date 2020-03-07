@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from sklearn.linear_model import Perceptron
 from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.utils.validation import check_is_fitted
 
@@ -15,11 +16,13 @@ def test_check_estimator():
 
 
 # ---------------------- Testing Hyper-parameters -----------------------
-def test_meta_classifier_not_predict_proba(create_pool_classifiers):
+@pytest.mark.parametrize('model,', [SVC(), Perceptron()])
+def test_meta_classifier_not_predict_proba(create_pool_classifiers, model):
     X = np.random.rand(10, 2)
     y = np.ones(10)
+    y[:5] = 0
     with pytest.raises(ValueError):
-        meta = METADES(create_pool_classifiers, Perceptron())
+        meta = METADES(create_pool_classifiers, model)
         meta.fit(X, y)
 
 
