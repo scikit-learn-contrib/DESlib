@@ -5,7 +5,7 @@
 # License: BSD 3 clause
 
 import numpy as np
-from .base import BaseStaticEnsemble
+from deslib.static.base import BaseStaticEnsemble
 from sklearn.utils.validation import check_X_y, check_array
 
 
@@ -17,7 +17,7 @@ class Oracle(BaseStaticEnsemble):
     dynamic selection algorithms
 
 
-        Parameters
+    Parameters
     ----------
     pool_classifiers : list of classifiers (Default = None)
         The generated_pool of classifiers trained for the corresponding
@@ -102,16 +102,49 @@ class Oracle(BaseStaticEnsemble):
 
         return self.classes_.take(predicted_labels)
 
-    def score(self, X, y):
+    def predict_proba(self, X, y):
+        """Estimates the posterior probabilities for each class for each sample
+        in X.
+
+        Note that as the Oracle is the ideal classifier selection, the
+        classifier that estimate the highest probability for the correct class
+        is the selected one.
+
+        Parameters
+        ----------
+        X : array of shape = [n_samples, n_features]
+            The data to be classified.
+
+        y : array of shape = [n_samples]
+            Class labels of each sample in X.
+
+        Returns
+        -------
+        predicted_proba : array of shape = [n_samples, n_classes]
+            Posterior probabilities estimates for each class.
+
+        """
+        X = check_array(X)
+        y = self.enc_.transform(y)
+
+        probas = [clf.predict_proba(X) for clf in self.pool_classifiers_]
+        probas = np.array(probas).transpose((1, 0, 2))
+        best_probas_ids = np.argmax(probas[np.arange(y.size), :,  y], axis=1)
+        return probas[np.arange(y.size), best_probas_ids, :]
+
+    def score(self, X, y, sample_weights=None):
         """Prepare the labels using the Oracle model.
 
         Parameters
         ----------
         X : array of shape = [n_samples, n_features]
-            The data to be classified
+            The data to be classified.
 
         y : array of shape = [n_samples]
             Class labels of each sample in X.
+
+        sample_weight : array-like, shape = [n_samples], optional
+            Sample weights.
 
         Returns
         -------
@@ -119,5 +152,6 @@ class Oracle(BaseStaticEnsemble):
                    Classification accuracy of the Oracle model.
         """
         from sklearn.metrics import accuracy_score
-        accuracy = accuracy_score(y, self.predict(X, y))
+        accuracy = accuracy_score(y, self.predict(X, y),
+                                  sample_weight=sample_weights)
         return accuracy
