@@ -55,3 +55,19 @@ def test_one_class_meta_dataset(create_X_y):
     y_meta = np.zeros(10, dtype=int)
     with pytest.raises(ValueError):
         stacked.fit(X_meta, y_meta)
+
+
+def test_passthrough_true(create_X_y):
+    X, y = create_X_y
+    pool = [DecisionTreeClassifier().fit(X, y) for _ in range(5)]
+    stacked = StackedClassifier(pool, passthrough=True)
+    stacked.fit(X, y)
+    assert stacked.meta_classifier_.coef_.shape == (1, 7)
+
+
+def test_passthrough_false(create_X_y):
+    X, y = create_X_y
+    pool = [DecisionTreeClassifier().fit(X, y) for _ in range(5)]
+    stacked = StackedClassifier(pool, passthrough=False)
+    stacked.fit(X, y)
+    assert stacked.meta_classifier_.coef_.shape == (1, 5)
