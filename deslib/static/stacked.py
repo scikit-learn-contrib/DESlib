@@ -26,6 +26,12 @@ class StackedClassifier(BaseStaticEnsemble):
         If None, the random number generator is the RandomState instance used
         by `np.random`.
 
+    passthrough : bool (default=False)
+        When False, only the predictions of estimators will be used as
+        training data for the meta-classifier. When True, the
+        meta-classifier is trained on the predictions as well as the
+        original training data.
+
     References
     ----------
     Wolpert, David H. "Stacked generalization." Neural networks 5,
@@ -38,12 +44,14 @@ class StackedClassifier(BaseStaticEnsemble):
     def __init__(self,
                  pool_classifiers=None,
                  meta_classifier=None,
+                 passthrough=False,
                  random_state=None):
 
         super(StackedClassifier, self).__init__(
             pool_classifiers=pool_classifiers,
             random_state=random_state)
         self.meta_classifier = meta_classifier
+        self.passthrough = passthrough
 
     def fit(self, X, y):
         """Fit the model by training a meta-classifier on the outputs of the
@@ -61,8 +69,8 @@ class StackedClassifier(BaseStaticEnsemble):
         X, y = check_X_y(X, y)
 
         super(StackedClassifier, self).fit(X, y)
-
         base_preds = self._predict_proba_base(X)
+        X_meta = self._connect_input(X, base_preds)
 
         # Prepare the meta-classifier
         if self.meta_classifier is None:
@@ -75,7 +83,7 @@ class StackedClassifier(BaseStaticEnsemble):
         else:
             self.meta_classifier_ = self.meta_classifier
 
-        self.meta_classifier_.fit(base_preds, self.y_enc_)
+        self.meta_classifier_.fit(X_meta, self.y_enc_)
 
         return self
 
@@ -96,7 +104,8 @@ class StackedClassifier(BaseStaticEnsemble):
         X = check_array(X)
         check_is_fitted(self, "meta_classifier_")
         base_preds = self._predict_proba_base(X)
-        preds = self.meta_classifier_.predict(base_preds)
+        X_meta = self._connect_input(X, base_preds)
+        preds = self.meta_classifier_.predict(X_meta)
         return self.classes_.take(preds)
 
     def predict_proba(self, X):
@@ -122,7 +131,16 @@ class StackedClassifier(BaseStaticEnsemble):
                              " predict_proba method.")
 
         base_preds = self._predict_proba_base(X)
-        return self.meta_classifier_.predict_proba(base_preds)
+        X_meta = self._connect_input(X, base_preds)
+
+        return self.meta_classifier_.predict_proba(X_meta)
+
+    def _connect_input(self, X, base_preds):
+        if self.passthrough:
+            X_meta = np.hstack((base_preds, X))
+        else:
+            X_meta = base_preds
+        return X_meta
 
     def _predict_proba_base(self, X):
         """ Get the predictions (probabilities) of each base classifier in the
@@ -142,20 +160,27 @@ class StackedClassifier(BaseStaticEnsemble):
         # Check if base classifiers implement the predict proba method.
         self._check_predict_proba()
 
-        probabilities = np.zeros(
+        probas = np.zeros(
             (X.shape[0], self.n_classifiers_, self.n_classes_))
 
         for index, clf in enumerate(self.pool_classifiers_):
-            probabilities[:, index] = clf.predict_proba(X)
-        return probabilities.reshape(X.shape[0],
-                                     self.n_classifiers_ * self.n_classes_)
+            probas[:, index] = clf.predict_proba(X)
+
+        probas = probas.reshape(X.shape[0],
+                                self.n_classifiers_ * self.n_classes_)
+
+        # remove first column as both features are collinear.
+        if self.n_classes_ == 2:
+            probas = probas[:, ::2]
+
+        return probas
 
     def _check_predict_proba(self):
         """ Checks if each base classifier in the pool implements the
         predict_proba method.
 
         Raises
-        -------
+        ------
         ValueError
             If the base classifiers do not implements the predict_proba method.
         """
