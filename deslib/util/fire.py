@@ -61,7 +61,7 @@ def frienemy_pruning(neighbors, n_classifiers, y, predictions):
                                       count, index in
                                       enumerate(neighbors[sample_idx])
                                       if clf_predictions[count] == 1]
-                # If that is true, it means that it correctly classified
+                # True means that it correctly classified
                 # at least one neighbor for each class in
                 # the region of competence
                 if np.unique(correct_class_pred).size > 1:
