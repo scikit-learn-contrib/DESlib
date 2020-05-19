@@ -243,7 +243,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         # validate the value of k
         self._validate_k()
         self._set_region_of_competence_algorithm()
-        self._fit_region_competence(X_dsel, y_dsel)
+        self.roc_algorithm_.fit(X_dsel, y_dsel)
 
         # validate the IH
         if self.with_IH:
@@ -301,24 +301,10 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         else:
             return self.enc_.transform(y)
 
-    def _fit_region_competence(self, X, y):
-        """Fit the k-NN classifier inside the dynamic selection method.
-
-        Parameters
-        ----------
-        X : array of shape = [n_samples, n_features]
-            The Input data.
-
-        y : array of shape = [n_samples]
-            class labels of each sample in X.
-
-        """
-        self.roc_algorithm_.fit(X, y)
-
     def _set_dsel(self, X, y):
         """Pre-Process the input X and y data into the dynamic selection
         dataset(DSEL) and get information about the structure of the data
-        (e.g., n_classes, N_samples, classes)
+        (e.g., n_classes, n_samples, classes)
 
         Parameters
         ----------
@@ -333,7 +319,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self.n_classes_ = self.classes_.size
         self.n_features_ = X.shape[1]
         self.n_samples_ = self.DSEL_target_.size
-        self.DSEL_processed_, self.BKS_DSEL_ = self._preprocess_dsel()
+        self.BKS_DSEL_ = self._predict_base(self.DSEL_data_)
+        self.DSEL_processed_ = self.BKS_DSEL_ == y[:, np.newaxis]
 
     def _set_region_of_competence_algorithm(self):
 
@@ -701,27 +688,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         return mask
 
-    def _preprocess_dsel(self):
-        """Compute the prediction of each base classifier for
-        all samples in DSEL. Used to speed-up the test phase, by
-        not requiring to re-classify training samples during test.
-
-        Returns
-        -------
-        DSEL_processed_ : array of shape = [n_samples, n_classifiers].
-                         Each element indicates whether the base classifier
-                         predicted the correct label for the corresponding
-                         sample (True), otherwise (False).
-
-        BKS_DSEL_ : array of shape = [n_samples, n_classifiers]
-                   Predicted labels of each base classifier for all samples
-                   in DSEL.
-        """
-        BKS_dsel = self._predict_base(self.DSEL_data_)
-        processed_dsel = BKS_dsel == self.DSEL_target_[:, np.newaxis]
-
-        return processed_dsel, BKS_dsel
-
     def _predict_base(self, X):
         """ Get the predictions of each base classifier in the pool for all
             samples in X.
@@ -810,11 +776,9 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                     "parameter safe_k must be equal or less than parameter k."
                     "input safe_k is {} and k is {}".format(self.k,
                                                             self.safe_k))
-
         if not isinstance(self.IH_rate, float):
             raise TypeError(
                 "parameter IH_rate should be a float between [0.0, 0.5]")
-
         if self.IH_rate < 0 or self.IH_rate > 0.5:
             raise ValueError("Parameter IH_rate should be between [0.0, 0.5]."
                              "IH_rate = {}".format(self.IH_rate))
