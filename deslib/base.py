@@ -767,21 +767,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             probabilities[:, index] = clf.predict_proba(X)
         return probabilities
 
-    def _preprocess_dsel_scores(self):
-        """Compute the output profiles of the dynamic selection dataset (DSEL)
-         Each position of the output profiles vector is the score obtained by a
-         base classifier :math:`c_{i}`
-         for the classes of the input sample.
-
-        Returns
-        -------
-        scores : array of shape = [n_samples, n_classifiers, n_classes]
-                 Scores (probabilities) for each class obtained by each base
-                 classifier in the generated_pool
-                 for each sample in X.
-        """
-        return self._predict_proba_base(self.DSEL_data_)
-
     @staticmethod
     def _all_classifier_agree(predictions):
         """Check whether there is a difference in opinion among the classifiers

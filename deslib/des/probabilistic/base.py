@@ -72,7 +72,7 @@ class BaseProbabilistic(BaseDES):
 
         self._check_predict_proba()
 
-        self.dsel_scores_ = self._preprocess_dsel_scores()
+        self.dsel_scores_ = self._predict_proba_base(self.DSEL_data_)
 
         # Pre process the source of competence for the entire DSEL,
         # making the method faster during generalization.

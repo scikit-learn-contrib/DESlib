@@ -246,7 +246,7 @@ def test_preprocess_dsel_scores(create_X_y, create_pool_classifiers):
     X, y = create_X_y
     ds_test = BaseDS(create_pool_classifiers)
     ds_test.fit(X, y)
-    dsel_scores = ds_test._preprocess_dsel_scores()
+    dsel_scores = ds_test._predict_proba_base(X)
     expected = np.array([[0.5, 0.5], [1.0, 0.0], [0.33, 0.67]])
     expected = np.tile(expected, (15, 1, 1))
     assert np.array_equal(dsel_scores, expected)
