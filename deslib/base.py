@@ -410,15 +410,10 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         # Check if the DS model was trained
         check_is_fitted(self,
                         ["DSEL_processed_", "DSEL_data_", "DSEL_target_"])
-
-        # Check if X is a valid input
         X = check_array(X)
-
-        n_samples = X.shape[0]
-        predicted_labels = np.empty(n_samples, dtype=np.intp)
+        predicted_labels = np.empty(X.shape[0], dtype=np.intp)
 
         base_predictions, base_probabilities = self._preprocess_predictions(X)
-
         ind_disagreement = self._prediction_by_agreement(base_predictions,
                                                          predicted_labels)
         if ind_disagreement.size:
@@ -471,9 +466,10 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         base_probabilities = self._predict_proba_base(X)
         base_predictions = base_probabilities.argmax(axis=2)
 
-        n_samples = X.shape[0]
-        predicted_proba = np.zeros((n_samples, self.n_classes_))
-
+        predicted_proba = np.zeros((X.shape[0], self.n_classes_))
+        ind_disagreement = self._prediction_by_agreement(base_predictions,
+                                                         predicted_proba,
+                                                         base_probabilities)
         all_agree_vector = BaseDS._all_classifier_agree(base_predictions)
         ind_all_agree = np.where(all_agree_vector)[0]
 
@@ -524,14 +520,19 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             base_predictions = self._predict_base(X)
         return base_predictions, base_probabilities
 
-    def _prediction_by_agreement(self, base_predictions, predicted_labels):
+    def _prediction_by_agreement(self, base_predictions, predictions,
+                                 base_probabilities=None):
         all_agree_vector = BaseDS._all_classifier_agree(base_predictions)
         ind_all_agree = np.where(all_agree_vector)[0]
         # Since the predictions are always the same, get the predictions of the
         # first base classifier.
         if ind_all_agree.size:
-            predicted_labels[ind_all_agree] = base_predictions[
-                ind_all_agree, 0]
+            if base_probabilities is not None:
+                predictions[ind_all_agree] = base_probabilities[
+                ind_all_agree].mean(axis=1)
+            else:
+                predictions[ind_all_agree] = base_predictions[
+                    ind_all_agree, 0]
         # return samples with disagreement
         ind_disagreement = np.where(~all_agree_vector)[0]
         return ind_disagreement
