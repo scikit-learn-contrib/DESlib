@@ -135,18 +135,19 @@ def create_base_classifier(return_value, return_prob=None):
 @pytest.fixture
 def create_pool_classifiers():
     clf_0 = create_base_classifier(return_value=np.zeros(1),
-                                   return_prob=np.atleast_2d([0.5, 0.5]))
+                                   return_prob=np.array([[0.5, 0.5]]))
     clf_1 = create_base_classifier(return_value=np.ones(1),
-                                   return_prob=np.atleast_2d([1.0, 0.0]))
+                                   return_prob=np.array([[1.0, 0.0]]))
     clf_2 = create_base_classifier(return_value=np.zeros(1),
-                                   return_prob=np.atleast_2d([0.33, 0.67]))
+                                   return_prob=np.array([[0.33, 0.67]]))
     pool_classifiers = [clf_0, clf_1, clf_2]
     return pool_classifiers
 
 
 @pytest.fixture
 def create_pool_all_agree():
-    return [create_base_classifier(return_value=np.zeros(1))] * 100
+    return [create_base_classifier(return_value=np.zeros(1),
+                                   return_prob=np.array([[0.61, 0.39]]))] * 100
 
 
 @pytest.fixture
