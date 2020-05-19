@@ -44,6 +44,12 @@ def frienemy_pruning(neighbors, n_classifiers, y, predictions):
     n_samples, _ = neighbors.shape
     mask = np.zeros((n_samples, n_classifiers))
 
+    # check which examples are located on indecision region
+    classes = y[neighbors]
+    safe_samples = np.all(classes == classes[:, 0, np.newaxis], axis=1)
+    mask[safe_samples, :] = np.ones(n_classifiers)
+
+    neighbors_y = y[neighbors[~safe_samples]]
     # TODO: vectorize this part of the code
     for sample_idx in range(n_samples):
         # Check if query is in a indecision region
