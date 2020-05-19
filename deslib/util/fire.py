@@ -10,7 +10,7 @@
 import numpy as np
 
 
-def frienemy_pruning(neighbors, safe_k, n_classifiers, y, predictions):
+def frienemy_pruning(neighbors, n_classifiers, y, predictions):
     """Implements the Online Pruning method (frienemy) to remove base
     classifiers that do not cross the region of competence. We consider
     that a classifier crosses the region of competence if it correctly
@@ -19,8 +19,6 @@ def frienemy_pruning(neighbors, safe_k, n_classifiers, y, predictions):
     Parameters
     ----------
     neighbors :
-
-    safe_k :
 
     n_classifiers :
 
@@ -49,7 +47,7 @@ def frienemy_pruning(neighbors, safe_k, n_classifiers, y, predictions):
     # TODO: vectorize this part of the code
     for sample_idx in range(n_samples):
         # Check if query is in a indecision region
-        neighbors_y = y[neighbors[sample_idx, :safe_k]]
+        neighbors_y = y[neighbors[sample_idx]]
 
         if len(set(neighbors_y)) > 1:
             # There are more than on class in the region of competence
@@ -58,11 +56,10 @@ def frienemy_pruning(neighbors, safe_k, n_classifiers, y, predictions):
             # a sample belonging to each class.
             for clf_index in range(n_classifiers):
                 clf_predictions = predictions[
-                    neighbors[sample_idx, :safe_k], clf_index]
+                    neighbors[sample_idx], clf_index]
                 correct_class_pred = [y[index] for
                                       count, index in
-                                      enumerate(neighbors[sample_idx,
-                                                :safe_k])
+                                      enumerate(neighbors[sample_idx])
                                       if clf_predictions[count] == 1]
                 # If that is true, it means that it correctly classified
                 # at least one neighbor for each class in
