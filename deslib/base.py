@@ -345,7 +345,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         elif self.knn_classifier == 'faiss':
             knn_class = functools.partial(
                 faiss_knn_wrapper.FaissKNNClassifier,
-                n_jobs=-1, algorithm="auto")
+                n_jobs=-1, algorithm="brute")
         elif callable(self.knn_classifier):
             knn_class = self.knn_classifier
         else:
@@ -659,11 +659,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         DFP_mask : array of shape = [n_samples, n_classifiers]
                    Mask containing 1 for the selected base classifier and 0
                    otherwise.
-
-        neighbors : array of shale = [n_samples, n_neighbors]
-                    indices of the k nearest neighbors according to each
-                    instance
-
         References
         ----------
         Oliveira, D.V.R., Cavalcanti, G.D.C. and Sabourin, R., Online Pruning
