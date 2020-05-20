@@ -152,8 +152,10 @@ def weighted_majority_voting_rule(votes, weights, labels_set=None):
 
     n_samples = votes.shape[0]
     w_votes = np.zeros((len(labels_set), n_samples))
+    ma_weights = weights.view(np.ma.MaskedArray)
     for ind, label in enumerate(labels_set):
-        w_votes[ind, :] = np.sum(weights, where=votes == label, axis=1)
+        ma_weights.mask = votes != label
+        w_votes[ind, :] = ma_weights.sum(axis=1)
 
     predicted_label = labels_set[np.argmax(w_votes, axis=0)]
     return predicted_label
