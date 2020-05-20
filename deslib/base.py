@@ -468,16 +468,15 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         if ind_disagreement.size:
             X_DS = X[ind_disagreement, :]
-
             distances, neighbors = self._get_region_competence(X_DS)
-
-            distances, ind_ds_classifier, neighbors = self._IH_prediction(X_DS,
-                                                                          distances,
-                                                                          ind_disagreement,
-                                                                          neighbors,
-                                                                          predicted_proba,
-                                                                          True)
-
+            distances, ind_ds_classifier, neighbors = self._IH_prediction(
+                X_DS,
+                distances,
+                ind_disagreement,
+                neighbors,
+                predicted_proba,
+                True
+            )
             if ind_ds_classifier.size:
                 # Check if the dynamic frienemy pruning should be used
                 DFP_mask = self._apply_dfp(ind_ds_classifier, neighbors)
