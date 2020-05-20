@@ -17,11 +17,10 @@ def is_available():
 
 
 class FaissKNNClassifier:
-    """Faiss KNN wrapper.
+    """ Scikit-learn wrapper interface for Faiss KNN.
 
     Parameters
     ----------
-
     n_neighbors : int (Default = 5)
                 Number of neighbors used in the nearest neighbor search.
 
@@ -29,8 +28,29 @@ class FaissKNNClassifier:
              The number of jobs to run in parallel for both fit and predict.
               If -1, then the number of jobs is set to the number of cores.
 
-    algorithm : str (Default = None)
-                Algorithm used for nearest
+    algorithm : {'brute', 'voronoi'} (Default = 'brute')
+
+        Algorithm used to compute the nearest neighbors:
+
+            - 'brute' will use the :class: `IndexFlatL2` class from faiss.
+            - 'voronoi' will use :class:`IndexIVFFlat` class from faiss.
+            - 'hierarchical' will use :class:`IndexHNSWFlat` class from faiss.
+
+        Note that selecting 'voronoi' the system takes more time during
+        training, however it can significantly improve the search time
+        on inference. 'hierarchical' produce very fast and accurate indexes,
+        however it has a higher memory requirement. It's recommended when
+        you have a lots of RAM or the dataset is small.
+
+        For more information see: https://github.com/facebookresearch/faiss/wiki/Guidelines-to-choose-an-index
+
+    n_cells : int (Default = 100)
+        Number of voronoi cells. Only used when algorithm=='voronoi'.
+
+    n_probes : int (Default = 1)
+        Number of cells that are visited to perform the search. Note that the
+        search time roughly increases linearly with the number of probes.
+        Only used when algorithm=='voronoi'.
 
     References
     ----------
@@ -38,10 +58,18 @@ class FaissKNNClassifier:
     search with gpus." arXiv preprint arXiv:1702.08734 (2017).
     """
 
-    def __init__(self, n_neighbors=5, n_jobs=None, algorithm=None):
+    def __init__(self,
+                 n_neighbors=5,
+                 n_jobs=None,
+                 algorithm='brute',
+                 n_cells=100,
+                 n_probes=1):
+
         self.n_neighbors = n_neighbors
         self.n_jobs = n_jobs
         self.algorithm = algorithm
+        self.n_cells = n_cells
+        self.n_probes = n_probes
 
         import faiss
         self.faiss = faiss
@@ -151,8 +179,25 @@ class FaissKNNClassifier:
         """
         X = np.atleast_2d(X).astype(np.float32)
         X = np.ascontiguousarray(X)
-        self.index_ = self.faiss.IndexFlatL2(X.shape[1])
+        d = X.shape[1]  # dimensionality of the feature vector
+        self._prepare_knn_algorithm(X, d)
         self.index_.add(X)
         self.y_ = y
         self.n_classes_ = np.unique(y).size
         return self
+
+    def _prepare_knn_algorithm(self, X, d):
+        if self.algorithm == 'brute':
+            self.index_ = self.faiss.IndexFlatL2(d)
+        elif self.algorithm == 'voronoi':
+            quantizer = self.faiss.IndexFlatL2(d)
+            self.index_ = self.faiss.IndexIVFFlat(quantizer, d, self.n_cells)
+            self.index_.train(X)
+            self.index_.nprobe = self.n_probes
+        elif self.algorithm == 'hierarchical':
+            self.index_ = self.faiss.IndexHNSWFlat(d, 32)
+            self.index_.hnsw.efConstruction = 40
+        else:
+            raise ValueError("Invalid algorithm option."
+                             " Expected ['brute', 'voronoi', 'hierarchical'], "
+                             "got {}" .format(self.algorithm))

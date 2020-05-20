@@ -32,9 +32,9 @@ setup(name='DESlib',
           'Topic :: Scientific/Engineering :: Artificial Intelligence',
       ],
       install_requires=[
-          'scikit-learn>=0.19.0',
-          'numpy>=1.10.4',
-          'scipy>=1.2.0',
+          'scikit-learn>=0.20.0',
+          'numpy>=1.17.0',
+          'scipy>=1.4.0',
       ],
       python_requires='>=3',      
 

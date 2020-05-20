@@ -135,34 +135,29 @@ def weighted_majority_voting_rule(votes, weights, labels_set=None):
     weights : array of shape = [n_samples, n_classifiers]
         Weights associated to each base classifier for each sample
 
-    labels_set : (Default=None) set with the possible classes in the problem
+    labels_set : (Default=None) set with the possible classes in the problem.
 
     Returns
     -------
     predicted_label : array of shape = [n_samples]
         The label of each query sample predicted using the majority voting rule
     """
-    # TODO: optimize this calculation using numpy
-    if weights.ndim == 1:
-        weights = np.atleast_2d(weights)
-
-    if weights.size != votes.size:
+    if weights.shape != votes.shape:
         raise ValueError(
-            'The size of the arrays votes and weights should be the '
+            'The shape of the arrays votes and weights should be the '
             'same. weights = {} '
-            'while votes = {}'.format(weights.size, votes.size))
+            'while votes = {}'.format(weights.shape, votes.shape))
     if labels_set is None:
-        labels_set = np.unique(votes)
+        labels_set = np.unique(votes.astype(np.int))
 
     n_samples = votes.shape[0]
-    w_votes = np.zeros((n_samples, len(labels_set)))
-    for idx in range(n_samples):
+    w_votes = np.zeros((len(labels_set), n_samples))
+    ma_weights = weights.view(np.ma.MaskedArray)
+    for ind, label in enumerate(labels_set):
+        ma_weights.mask = votes != label
+        w_votes[ind, :] = ma_weights.sum(axis=1)
 
-        for label in labels_set:
-            w_votes[idx, np.where(labels_set == label)] = sum(
-                weights[idx, votes[idx] == label])
-
-    predicted_label = labels_set[np.argmax(w_votes, axis=1)]
+    predicted_label = labels_set[np.argmax(w_votes, axis=0)]
     return predicted_label
 
 

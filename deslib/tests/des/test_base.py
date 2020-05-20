@@ -75,14 +75,14 @@ def test_classify_instance_selection_batch(create_pool_classifiers):
 # and only classifiers 2 giving label 1, the prediction should
 # be 1 due to the classifiers weights
 def test_classify_instance_weighting(create_pool_classifiers):
-    query = np.array([-1, 1])
+    query = np.array([[-1, 1]])
 
     pool_classifiers = create_pool_classifiers + create_pool_classifiers
     des_test = BaseDES(pool_classifiers, mode='weighting')
     des_test.classes_ = np.array([0, 1])
     des_test.n_classes_ = 2
 
-    competences = np.array([0.55, 1.0, 0.2, 0.60, 0.75, 0.3])
+    competences = np.array([[0.55, 1.0, 0.2, 0.60, 0.75, 0.3]])
     des_test.estimate_competence = MagicMock(return_value=competences)
 
     predictions = []
