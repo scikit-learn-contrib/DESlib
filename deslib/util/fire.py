@@ -24,10 +24,9 @@ from sklearn.neighbors import KNeighborsClassifier
 
 
 def frienemy_pruning(X_query, X_dsel, y_dsel, ensemble, k):
-    """
-    Implements the Online Pruning method (frienemy) to remove base
-    classifiers that do not cross the region of competence. We consider
-    that a classifier crosses the region of competence if it correctly
+    """Implements the Online Pruning method (frienemy) which prunes base
+    classifiers that do not cross the region of competence of a given instance.
+    A classifier crosses the region of competence if it correctly
     classify at least one sample for each different class in the region.
 
     Parameters
@@ -61,9 +60,9 @@ def frienemy_pruning(X_query, X_dsel, y_dsel, ensemble, k):
 
 
 def frienemy_pruning_preprocessed(neighbors, y_val, hit_miss):
-    """Implements the Online Pruning method (frienemy) to remove base
-    classifiers that do not cross the region of competence. We consider
-    that a classifier crosses the region of competence if it correctly
+    """Implements the Online Pruning method (frienemy) which prunes base
+    classifiers that do not cross the region of competence of a given instance.
+    A classifier crosses the region of competence if it correctly
     classify at least one sample for each different class in the region.
 
     Notes
