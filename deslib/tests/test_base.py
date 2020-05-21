@@ -7,7 +7,7 @@ from sklearn.exceptions import NotFittedError
 from sklearn.neighbors import KNeighborsClassifier
 
 from deslib.base import BaseDS
-from deslib.util.fire import frienemy_pruning
+from deslib.util.fire import frienemy_pruning_preprocessed
 from .conftest import create_base_classifier
 
 
@@ -181,7 +181,7 @@ def test_DFP_is_used(example_estimate_competence, create_pool_classifiers):
     ds_test.fit(X, y)
     ds_test.DSEL_processed_ = dsel_processed
 
-    DFP_mask = frienemy_pruning(neighbors[0, :safe_k], y, dsel_processed)
+    DFP_mask = frienemy_pruning_preprocessed(neighbors[0, :safe_k], y, dsel_processed)
     assert np.array_equal(DFP_mask, np.atleast_2d([1, 1, 0]))
 
 

@@ -22,7 +22,7 @@ from sklearn.utils.validation import (check_X_y, check_is_fitted, check_array,
 
 from deslib.util import KNNE
 from deslib.util import faiss_knn_wrapper
-from deslib.util.fire import frienemy_pruning
+from deslib.util.fire import frienemy_pruning_preprocessed
 from deslib.util.instance_hardness import hardness_region_competence
 
 
@@ -508,8 +508,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 # IF the DFP pruning is considered, calculate the DFP mask
                 # for all samples in X
                 if self.DFP:
-                    DFP_mask = frienemy_pruning(neighbors, self.DSEL_target_,
-                                                self.DSEL_processed_)
+                    DFP_mask = frienemy_pruning_preprocessed(neighbors, self.DSEL_target_,
+                                                             self.DSEL_processed_)
                 else:
                     DFP_mask = np.ones(
                         (ind_ds_classifier.size, self.n_classifiers_))
@@ -629,8 +629,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             if ind_ds_classifier.size:
                 # Check if the dynamic frienemy pruning should be used
                 if self.DFP:
-                    DFP_mask = frienemy_pruning(neighbors, self.DSEL_target_,
-                                                self.DSEL_processed_)
+                    DFP_mask = frienemy_pruning_preprocessed(neighbors, self.DSEL_target_,
+                                                             self.DSEL_processed_)
                 else:
                     DFP_mask = np.ones(
                         (ind_ds_classifier.size, self.n_classifiers_))
