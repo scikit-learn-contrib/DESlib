@@ -111,6 +111,6 @@ def frienemy_pruning_preprocessed(neighbors, y_val, hit_miss):
             # can predict the label
             dfp_mask[sample_idx, :] = 1.0
 
-    # Check if all classifiers were pruned
+    # rows that all classifiers were pruned are set to 1.0
     dfp_mask[np.all(dfp_mask == 0, axis=1)] = 1.0
     return dfp_mask
