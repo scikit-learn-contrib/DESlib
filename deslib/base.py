@@ -22,6 +22,7 @@ from sklearn.utils.validation import (check_X_y, check_is_fitted, check_array,
 
 from deslib.util import KNNE
 from deslib.util import faiss_knn_wrapper
+from deslib.util.fire import frienemy_pruning
 from deslib.util.instance_hardness import hardness_region_competence
 
 
@@ -507,7 +508,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 # IF the DFP pruning is considered, calculate the DFP mask
                 # for all samples in X
                 if self.DFP:
-                    DFP_mask = self._frienemy_pruning(neighbors)
+                    DFP_mask = frienemy_pruning(neighbors, self.DSEL_target_,
+                                                self.DSEL_processed_)
                 else:
                     DFP_mask = np.ones(
                         (ind_ds_classifier.size, self.n_classifiers_))
@@ -627,7 +629,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             if ind_ds_classifier.size:
                 # Check if the dynamic frienemy pruning should be used
                 if self.DFP:
-                    DFP_mask = self._frienemy_pruning(neighbors)
+                    DFP_mask = frienemy_pruning(neighbors, self.DSEL_target_,
+                                                self.DSEL_processed_)
                 else:
                     DFP_mask = np.ones(
                         (ind_ds_classifier.size, self.n_classifiers_))
@@ -647,68 +650,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 predicted_proba[ind_ds_original_matrix] = proba_ds
 
         return predicted_proba
-
-    def _frienemy_pruning(self, neighbors):
-        """Implements the Online Pruning method (frienemy) to remove base
-        classifiers that do not cross the region of competence. We consider
-        that a classifier crosses the region of competence if it correctly
-        classify at least one sample for each different class in the region.
-
-        Returns
-        -------
-        DFP_mask : array of shape = [n_samples, n_classifiers]
-                   Mask containing 1 for the selected base classifier and 0
-                   otherwise.
-        References
-        ----------
-        Oliveira, D.V.R., Cavalcanti, G.D.C. and Sabourin, R., Online Pruning
-        of Base Classifiers for Dynamic Ensemble Selection,
-        Pattern Recognition, vol. 72, December 2017, pp 44-58.
-        """
-        # using a for loop for processing a batch of samples temporarily.
-        # Change later to numpy processing
-        if neighbors.ndim < 2:
-            neighbors = np.atleast_2d(neighbors)
-
-        n_samples, _ = neighbors.shape
-        mask = np.zeros((n_samples, self.n_classifiers_))
-
-        for sample_idx in range(n_samples):
-            # Check if query is in a indecision region
-            neighbors_y = self.DSEL_target_[
-                neighbors[sample_idx, :self.safe_k]]
-
-            if len(set(neighbors_y)) > 1:
-                # There are more than on class in the region of competence
-                # (So it is an indecision region).
-
-                # Check if the base classifier predict the correct label for
-                # a sample belonging to each class.
-                for clf_index in range(self.n_classifiers_):
-                    predictions = self.DSEL_processed_[
-                        neighbors[sample_idx, :self.safe_k], clf_index]
-                    correct_class_pred = [self.DSEL_target_[index] for
-                                          count, index in
-                                          enumerate(neighbors[sample_idx,
-                                                    :self.safe_k])
-                                          if predictions[count] == 1]
-
-                    # If that is true, it means that it correctly classified
-                    # at least one neighbor for each class in
-                    # the region of competence
-                    if np.unique(correct_class_pred).size > 1:
-                        mask[sample_idx, clf_index] = 1.0
-                # Check if all classifiers were pruned
-                if not np.count_nonzero(mask[sample_idx, :]):
-                    # Do not apply the pruning mechanism.
-                    mask[sample_idx, :] = 1.0
-
-            else:
-                # The sample is located in a safe region. All base classifiers
-                # can predict the label
-                mask[sample_idx, :] = 1.0
-
-        return mask
 
     def _preprocess_dsel(self):
         """Compute the prediction of each base classifier for
