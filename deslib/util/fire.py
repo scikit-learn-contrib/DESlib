@@ -87,6 +87,9 @@ def frienemy_pruning_preprocessed(neighbors, y_val, hit_miss):
                Mask containing 1 for the selected base classifier and 0
                otherwise.
     """
+    if neighbors.ndim < 2:
+        neighbors = neighbors.reshape(1, -1)
+
     n_samples = neighbors.shape[0]
     n_classifiers = hit_miss.shape[1]
     dfp_mask = np.zeros((n_samples, n_classifiers))
