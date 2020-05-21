@@ -30,7 +30,6 @@ class SingleBest(BaseStaticEnsemble):
         NOTE that when using custom scorers, each scorer should return a single
         value.
 
-
     random_state : int, RandomState instance or None, optional (default=None)
         If int, random_state is the seed used by the random number generator;
         If RandomState instance, random_state is the random number generator;
