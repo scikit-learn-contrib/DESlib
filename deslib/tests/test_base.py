@@ -181,7 +181,8 @@ def test_DFP_is_used(example_estimate_competence, create_pool_classifiers):
     ds_test.fit(X, y)
     ds_test.DSEL_processed_ = dsel_processed
 
-    DFP_mask = frienemy_pruning_preprocessed(neighbors[0, :safe_k], y, dsel_processed)
+    DFP_mask = frienemy_pruning_preprocessed(neighbors[0, :safe_k],
+                                             y, dsel_processed)
     assert np.array_equal(DFP_mask, np.atleast_2d([1, 1, 0]))
 
 

@@ -1,6 +1,8 @@
 import numpy as np
 
+from deslib.util.fire import frienemy_pruning
 from deslib.util.fire import frienemy_pruning_preprocessed
+from ..conftest import create_base_classifier
 
 
 # Since no classifier crosses the region of competence,
@@ -43,3 +45,14 @@ def test_frienemy_safe_region(example_estimate_competence):
     assert result.all()
 
 
+def test_frienemy_not_processed():
+    X = np.random.rand(5, 2)
+    y = np.array([0, 0, 0, 1, 1])
+    X_query = np.random.rand(1, 2)
+    clf1 = create_base_classifier(return_value=[0, 1, 0, 0, 1])
+    clf2 = create_base_classifier(return_value=[1, 1, 1, 1, 1])
+    clf3 = create_base_classifier(return_value=[0, 0, 0, 0, 0])
+    clf4 = create_base_classifier(return_value=[0, 0, 0, 1, 1])
+    pool = [clf1, clf2, clf3, clf4]
+    dfp_mask = frienemy_pruning(X_query, X, y, pool, 5)
+    assert np.array_equal(dfp_mask, np.array([[1, 0, 0, 1]]))
