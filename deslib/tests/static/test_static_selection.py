@@ -1,10 +1,12 @@
 import numpy as np
 import pytest
+from sklearn.datasets import make_classification
+from sklearn.ensemble import AdaBoostClassifier
 from sklearn.exceptions import NotFittedError
+from sklearn.metrics import log_loss
+from sklearn.utils.estimator_checks import check_estimator
 
 from deslib.static.static_selection import StaticSelection
-from sklearn.utils.estimator_checks import check_estimator
-from sklearn.tree import DecisionTreeClassifier
 
 
 def test_check_estimator():
@@ -80,3 +82,19 @@ def test_predict_proba(example_static_selection):
     static_selection_test.fit(X, y)
     proba = static_selection_test.predict_proba(X)
     assert np.allclose(proba, expected)
+
+
+# Test if static_selection can select the best classifier according to a
+# metric that needs to be minimized.
+def test_different_scorer():
+    X, y = make_classification(n_samples=100, random_state=42)
+    X_val, y_val = make_classification(n_samples=25, random_state=123)
+    pool = AdaBoostClassifier(n_estimators=10).fit(X, y)
+    performances = []
+    for clf in pool:
+        preds = clf.predict_proba(X_val)
+        performances.append(log_loss(y_val.ravel(), preds[:, -1]))
+    id_best = np.argsort(performances)
+    ss = StaticSelection(pool_classifiers=pool, scoring='neg_log_loss')
+    ss.fit(X_val, y_val)
+    assert (id_best[:ss.n_classifiers_ensemble_] == ss.clf_indices_).all()
