@@ -1,7 +1,6 @@
 """Implementation of the Dynamic Frienemy Pruning (DFP) algorithm for online
 pruning of base classifiers.
 
-
 References
 ----------
 Oliveira, D.V.R., Cavalcanti, G.D.C. and Sabourin, R., Online Pruning
@@ -11,7 +10,6 @@ Pattern Recognition, vol. 72, December 2017, pp 44-58.
 Cruz, Rafael MO, Dayvid VR Oliveira, George DC Cavalcanti, and Robert Sabourin.
 "FIRE-DES++: Enhanced online pruning of base classifiers for dynamic ensemble
 selection." Pattern Recognition 85 (2019): 149-160.
-
 """
 
 # coding=utf-8
