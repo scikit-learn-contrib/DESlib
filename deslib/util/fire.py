@@ -10,7 +10,7 @@
 import numpy as np
 
 
-def frienemy_pruning(neighbors, n_classifiers, y, predictions):
+def frienemy_pruning(neighbors, y, predictions):
     """Implements the Online Pruning method (frienemy) to remove base
     classifiers that do not cross the region of competence. We consider
     that a classifier crosses the region of competence if it correctly
@@ -18,17 +18,19 @@ def frienemy_pruning(neighbors, n_classifiers, y, predictions):
 
     Parameters
     ----------
-    neighbors :
+    neighbors : array-like of shape (n_samples, n_neighbors)
+        Indices of the k nearest neighbors.
 
-    n_classifiers :
+    y : array-like of shape (n_samples,)
+        The target values (class labels).
 
-    y :
-
-    predictions :
+    predictions : array-like of shape (n_samples, n_classifiers)
+        Matrix containing 1 when the base classifier made the correct
+        prediction, 0 otherwise.
 
     Returns
     -------
-    DFP_mask : array of shape = [n_samples, n_classifiers]
+    DFP_mask : array-like of shape = [n_samples, n_classifiers]
                Mask containing 1 for the selected base classifier and 0
                otherwise.
     References
@@ -41,31 +43,25 @@ def frienemy_pruning(neighbors, n_classifiers, y, predictions):
     # Change later to numpy processing
     if neighbors.ndim < 2:
         neighbors = np.atleast_2d(neighbors)
-    n_samples, _ = neighbors.shape
+
+    n_samples = neighbors.shape[0]
+    n_classifiers = predictions.shape[1]
     mask = np.zeros((n_samples, n_classifiers))
 
-    # check which examples are located on indecision region
-    classes = y[neighbors]
-    safe_samples = np.all(classes == classes[:, 0, np.newaxis], axis=1)
-    mask[safe_samples, :] = np.ones(n_classifiers)
-
-    neighbors_y = y[neighbors[~safe_samples]]
     # TODO: vectorize this part of the code
     for sample_idx in range(n_samples):
         # Check if query is in a indecision region
-        neighbors_y = y[neighbors[sample_idx]]
+        curr_neighbors = neighbors[sample_idx]
+        neighbors_y = y[curr_neighbors]
 
         if len(set(neighbors_y)) > 1:
-            # There are more than on class in the region of competence
-            # (So it is an indecision region).
-            # Check if the base classifier predict the correct label for
-            # a sample belonging to each class.
+            # Indecision region. Check if the base classifier predict the
+            # correct label for a sample belonging to each class.
             for clf_index in range(n_classifiers):
-                clf_predictions = predictions[
-                    neighbors[sample_idx], clf_index]
+                clf_predictions = predictions[curr_neighbors, clf_index]
                 correct_class_pred = [y[index] for
                                       count, index in
-                                      enumerate(neighbors[sample_idx])
+                                      enumerate(curr_neighbors)
                                       if clf_predictions[count] == 1]
                 # True means that it correctly classified
                 # at least one neighbor for each class in
@@ -76,7 +72,6 @@ def frienemy_pruning(neighbors, n_classifiers, y, predictions):
             if not np.count_nonzero(mask[sample_idx, :]):
                 # Do not apply the pruning mechanism.
                 mask[sample_idx, :] = 1.0
-
         else:
             # The sample is located in a safe region. All base classifiers
             # can predict the label
