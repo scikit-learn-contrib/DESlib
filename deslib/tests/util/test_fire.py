@@ -1,4 +1,5 @@
 import numpy as np
+
 from deslib.util.fire import frienemy_pruning
 
 
@@ -8,7 +9,7 @@ def test_frienemy_no_classifier_crosses(example_estimate_competence):
     _, y, neighbors = example_estimate_competence[0:3]
     n_classifiers = 3
     predictions = np.zeros((y.size, n_classifiers))
-    mask = frienemy_pruning(neighbors, n_classifiers, y, predictions)
+    mask = frienemy_pruning(neighbors, y, predictions)
     assert mask.all()
 
 
@@ -17,8 +18,7 @@ def test_frienemy_no_classifier_crosses(example_estimate_competence):
 # the samples in DSEL.
 def test_frienemy_all_classifiers_crosses(example_all_ones):
     X, y, neighbors, _, dsel_processed, _ = example_all_ones
-    n_classifiers = dsel_processed.shape[1]
-    result = frienemy_pruning(neighbors, n_classifiers, y, dsel_processed)
+    result = frienemy_pruning(neighbors, y, dsel_processed)
     assert result.all()
 
 
@@ -27,10 +27,9 @@ def test_frienemy_all_classifiers_crosses(example_all_ones):
 def test_frienemy_not_all_classifiers_crosses(example_estimate_competence):
     expected = np.array([[1, 1, 0], [0, 1, 0], [1, 1, 1]])
     _, y, neighbors, _, dsel_processed, _ = example_estimate_competence
-    n_classifiers = dsel_processed.shape[1]
 
     # passing three samples to compute the DFP at the same time
-    result = frienemy_pruning(neighbors[:, :3], n_classifiers, y, dsel_processed)
+    result = frienemy_pruning(neighbors[:, :3], y, dsel_processed)
     assert np.array_equal(result, expected)
 
 
@@ -39,9 +38,8 @@ def test_frienemy_not_all_classifiers_crosses(example_estimate_competence):
 def test_frienemy_safe_region(example_estimate_competence):
     X, y, _, _, dsel_processed, _ = example_estimate_competence
     neighbors = np.tile(np.array([0, 1, 2, 6, 7, 8, 14]), (10, 1))
-    n_classifiers = dsel_processed.shape[1]
 
-    result = frienemy_pruning(neighbors, n_classifiers, y, dsel_processed)
+    result = frienemy_pruning(neighbors, y, dsel_processed)
     assert result.all()
 
 
