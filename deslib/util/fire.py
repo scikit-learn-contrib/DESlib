@@ -94,9 +94,8 @@ def frienemy_pruning_preprocessed(neighbors, y_val, hit_miss):
     n_classifiers = hit_miss.shape[1]
     dfp_mask = np.zeros((n_samples, n_classifiers))
 
-    # TODO: vectorize this part of the code
+    # TODO: vectorize this code?
     for sample_idx in range(n_samples):
-        # Check if query is in a indecision region
         curr_neighbors = neighbors[sample_idx]
         neighbors_y = y_val[curr_neighbors]
         if len(set(neighbors_y)) > 1:
@@ -107,10 +106,8 @@ def frienemy_pruning_preprocessed(neighbors, y_val, hit_miss):
                 if len(set(neighbors_y[mask])) > 1:
                     dfp_mask[sample_idx, clf_index] = 1.0
         else:
-            # The sample is located in a safe region. All base classifiers
-            # can predict the label
+            # Safe region.
             dfp_mask[sample_idx, :] = 1.0
-
     # rows that all classifiers were pruned are set to 1.0
     dfp_mask[np.all(dfp_mask == 0, axis=1)] = 1.0
     return dfp_mask
