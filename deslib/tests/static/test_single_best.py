@@ -2,10 +2,12 @@ from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
-from sklearn.exceptions import NotFittedError
-from sklearn.utils.estimator_checks import check_estimator
+from sklearn.datasets import make_classification
 from sklearn.ensemble import AdaBoostClassifier
-from sklearn.metrics import log_loss
+from sklearn.exceptions import NotFittedError
+from sklearn.metrics import roc_auc_score
+from sklearn.utils.estimator_checks import check_estimator
+
 from deslib.static.single_best import SingleBest
 
 
@@ -82,17 +84,15 @@ def test_label_encoder(create_label_encoder_test):
     assert np.array_equal(pred, y)
 
 
-# Test if single best can select the best classifier according to a metric that
-# needs to be minimized.
-def test_negative_scorer():
-    rng = np.random.RandomState(42)
-    X = rng.rand(100, 2)
-    y = rng.randint(low=0, high=2, size=100)
-    pool = AdaBoostClassifier(random_state=rng).fit(X, y)
+def test_different_scorer():
+    X, y = make_classification(n_samples=100, random_state=42)
+    X_val, y_val = make_classification(n_samples=25, random_state=123)
+    pool = AdaBoostClassifier(n_estimators=10).fit(X, y)
     performances = []
     for clf in pool:
-        preds = clf.predict_proba(X)
-        performances.append(log_loss(y, preds))
-    id_best = np.argmin(performances)
-    sb = SingleBest(pool_classifiers=pool, scoring='neg_log_loss').fit(X, y)
+        preds = clf.predict_proba(X_val)
+        performances.append(roc_auc_score(y_val.ravel(), preds[:, -1]))
+    id_best = np.argmax(performances)
+    sb = SingleBest(pool_classifiers=pool, scoring='roc_auc')
+    sb.fit(X_val, y_val)
     assert id_best == sb.best_clf_index_
