@@ -26,11 +26,8 @@ class StaticSelection(BaseStaticEnsemble):
         classifier.
 
     scoring : string, callable (default = None)
-        A single string (see :ref:`scoring_parameter`) or a callable
-        (see :ref:`scoring`) to evaluate the predictions on the validation set.
-
-        NOTE that when using custom scorers, each scorer should return a single
-        value.
+        A single string or a callable to evaluate the predictions on the
+        validation set.
 
     random_state : int, RandomState instance or None, optional (default=None)
         If int, random_state is the seed used by the random number generator;
@@ -38,11 +35,9 @@ class StaticSelection(BaseStaticEnsemble):
         If None, the random number generator is the RandomState instance used
         by `np.random`.
 
-
     pct_classifiers : float (Default = 0.5)
         Percentage of base classifier that should be selected by the selection
         scheme.
-
 
     References
     ----------

@@ -50,7 +50,6 @@ class KNORAE(BaseDES):
         lower than the IH_rate the KNN classifier is used. Otherwise, the DS
         algorithm is used for classification.
 
-
     random_state : int, RandomState instance or None, optional (default=None)
         If int, random_state is the seed used by the random number generator;
         If RandomState instance, random_state is the random number generator;
@@ -62,8 +61,10 @@ class KNORAE(BaseDES):
 
          - 'knn' will use :class:`KNeighborsClassifier` from sklearn
           :class:`KNNE` available on `deslib.utils.knne`
+
          - 'faiss' will use Facebook's Faiss similarity search through the
            class :class:`FaissKNNClassifier`
+
          - None, will use sklearn :class:`KNeighborsClassifier`.
 
     knne : bool (Default=False)

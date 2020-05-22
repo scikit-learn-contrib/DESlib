@@ -72,15 +72,16 @@ class LCA(BaseDCS):
         If None, the random number generator is the RandomState instance used
         by `np.random`.
 
-    knn_classifier : {'knn', 'faiss', 'knne', None} (Default = 'knn')
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
          The algorithm used to estimate the region of competence:
 
-         - 'knn' will use :class:`KNeighborsClassifier` from sklearn
-         - 'knne' will use the KNN-Equality method through the
-          :class:`KNNE` available on `deslib.utils.knne`
-         - 'faiss' will use Facebook's Faiss similarity search through the
+         - 'knn' : will use :class:`KNeighborsClassifier` from sklearn
+          :class:`KNNE`.
+
+         - 'faiss' : will use Facebook's Faiss similarity search through the
            class :class:`FaissKNNClassifier`
-         - None, will use sklearn :class:`KNeighborsClassifier`.
+
+         - `None` : will use sklearn :class:`KNeighborsClassifier`.
 
     DSEL_perc : float (Default = 0.5)
         Percentage of the input data used to fit DSEL.

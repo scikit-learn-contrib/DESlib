@@ -25,11 +25,8 @@ class SingleBest(BaseStaticEnsemble):
         classifier.
 
     scoring : string, callable (default = None)
-        A single string (see :ref:`scoring_parameter`) or a callable
-        (see :ref:`scoring`) to evaluate the predictions on the validation set.
-
-        NOTE that when using custom scorers, each scorer should return a single
-        value.
+        A single string or a callable to evaluate the predictions on the
+        validation set.
 
     random_state : int, RandomState instance or None, optional (default=None)
         If int, random_state is the seed used by the random number generator;

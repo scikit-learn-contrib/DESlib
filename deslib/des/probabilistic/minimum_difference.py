@@ -59,8 +59,10 @@ class MinimumDifference(BaseProbabilistic):
          The algorithm used to estimate the region of competence:
 
          - 'knn' will use :class:`KNeighborsClassifier` from sklearn
+
          - 'faiss' will use Facebook's Faiss similarity search through the
            class :class:`FaissKNNClassifier`
+
          - None, will use sklearn :class:`KNeighborsClassifier`.
 
     DSEL_perc : float (Default = 0.5)

@@ -73,10 +73,11 @@ class OLA(BaseDCS):
 
          - 'knn' will use :class:`KNeighborsClassifier` from sklearn
           :class:`KNNE` available on `deslib.utils.knne`
+
          - 'faiss' will use Facebook's Faiss similarity search through the
            class :class:`FaissKNNClassifier`
-         - None, will use sklearn :class:`KNeighborsClassifier`.
 
+         - None, will use sklearn :class:`KNeighborsClassifier`.
     knne : bool (Default=False)
         Whether to use K-Nearest Neighbor Equality (KNNE) for the region
         of competence estimation.

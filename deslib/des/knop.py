@@ -50,7 +50,6 @@ class KNOP(BaseDES):
         lower than the IH_rate the KNN classifier is used. Otherwise, the DS
         algorithm is used for classification.
 
-
     random_state : int, RandomState instance or None, optional (default=None)
         If int, random_state is the seed used by the random number generator;
         If RandomState instance, random_state is the random number generator;
@@ -62,8 +61,10 @@ class KNOP(BaseDES):
 
          - 'knn' will use :class:`KNeighborsClassifier` from sklearn
           :class:`KNNE` available on `deslib.utils.knne`
+
          - 'faiss' will use Facebook's Faiss similarity search through the
            class :class:`FaissKNNClassifier`
+
          - None, will use sklearn :class:`KNeighborsClassifier`.
 
     knne : bool (Default=False)
@@ -97,9 +98,7 @@ class KNOP(BaseDES):
     R. M. O. Cruz, R. Sabourin, and G. D. Cavalcanti, “Dynamic classifier
     selection: Recent advances and perspectives,”
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
-
     """
-
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None,
                  IH_rate=0.30, random_state=None, knn_classifier='knn',
