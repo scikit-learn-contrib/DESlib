@@ -22,7 +22,7 @@ from sklearn.utils.validation import (check_X_y, check_is_fitted, check_array,
 
 from deslib.util import KNNE
 from deslib.util import faiss_knn_wrapper
-from deslib.util.fire import frienemy_pruning_preprocessed
+from deslib.util.dfp import frienemy_pruning_preprocessed
 from deslib.util.instance_hardness import hardness_region_competence
 
 

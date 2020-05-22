@@ -7,7 +7,7 @@ from sklearn.exceptions import NotFittedError
 from sklearn.neighbors import KNeighborsClassifier
 
 from deslib.base import BaseDS
-from deslib.util.fire import frienemy_pruning_preprocessed
+from deslib.util.dfp import frienemy_pruning_preprocessed
 from .conftest import create_base_classifier
 
 

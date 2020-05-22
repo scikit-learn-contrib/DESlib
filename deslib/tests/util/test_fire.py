@@ -1,7 +1,7 @@
 import numpy as np
 
-from deslib.util.fire import frienemy_pruning
-from deslib.util.fire import frienemy_pruning_preprocessed
+from deslib.util.dfp import frienemy_pruning
+from deslib.util.dfp import frienemy_pruning_preprocessed
 from ..conftest import create_base_classifier
 
 
