@@ -72,15 +72,16 @@ class LCA(BaseDCS):
         If None, the random number generator is the RandomState instance used
         by `np.random`.
 
-    knn_classifier : {'knn', 'faiss', 'knne', None} (Default = 'knn')
+    knn_classifier : {'knn', 'faiss', None} (Default = 'knn')
          The algorithm used to estimate the region of competence:
 
-         - 'knn' will use :class:`KNeighborsClassifier` from sklearn
-         - 'knne' will use the KNN-Equality method through the
-          :class:`KNNE` available on `deslib.utils.knne`
-         - 'faiss' will use Facebook's Faiss similarity search through the
+         - 'knn' : will use :class:`KNeighborsClassifier` from sklearn
+          :class:`KNNE`.
+
+         - 'faiss' : will use Facebook's Faiss similarity search through the
            class :class:`FaissKNNClassifier`
-         - None, will use sklearn :class:`KNeighborsClassifier`.
+
+         - `None` : will use sklearn :class:`KNeighborsClassifier`.
 
     DSEL_perc : float (Default = 0.5)
         Percentage of the input data used to fit DSEL.
@@ -142,21 +143,21 @@ class LCA(BaseDCS):
 
         Parameters
         ----------
-        query : array of shape  = [n_samples, n_features]
+        query : array of shape (n_samples, n_features)
             The test examples.
 
-        neighbors : array of shale = [n_samples, n_neighbors]
+        neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 
-        distances : array of shale = [n_samples, n_neighbors]
+        distances : array of shape (n_samples, n_neighbors)
             Distances of the k nearest neighbors according for each test sample
 
-        predictions : array of shape = [n_samples, n_classifiers]
+        predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for the test examples.
 
         Returns
         -------
-        competences : array of shape = [n_samples, n_classifiers]
+        competences : array of shape (n_samples, n_classifiers)
             Competence level estimated for each base classifier and test
             example.
         """

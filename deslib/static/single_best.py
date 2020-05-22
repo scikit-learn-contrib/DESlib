@@ -5,9 +5,10 @@
 # License: BSD 3 clause
 
 import numpy as np
-from .base import BaseStaticEnsemble
-from sklearn.utils.validation import check_X_y, check_is_fitted, check_array
 from sklearn.metrics import check_scoring
+from sklearn.utils.validation import check_X_y, check_is_fitted, check_array
+
+from .base import BaseStaticEnsemble
 
 
 class SingleBest(BaseStaticEnsemble):
@@ -24,11 +25,8 @@ class SingleBest(BaseStaticEnsemble):
         classifier.
 
     scoring : string, callable (default = None)
-        A single string (see :ref:`scoring_parameter`) or a callable
-        (see :ref:`scoring`) to evaluate the predictions on the validation set.
-
-        NOTE that when using custom scorers, each scorer should return a single
-        value.
+        A single string or a callable to evaluate the predictions on the
+        validation set.
 
     random_state : int, RandomState instance or None, optional (default=None)
         If int, random_state is the seed used by the random number generator;
@@ -65,10 +63,10 @@ class SingleBest(BaseStaticEnsemble):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             Data used to fit the model.
 
-        y : array of shape = [n_samples]
+        y : array of shape (n_samples)
             class labels of each example in X.
 
         """
@@ -100,12 +98,12 @@ class SingleBest(BaseStaticEnsemble):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The data to be classified
 
         Returns
         -------
-        predicted_labels : array of shape = [n_samples]
+        predicted_labels : array of shape (n_samples)
                            Predicted class for each sample in X.
         """
         X = check_array(X)
@@ -120,12 +118,12 @@ class SingleBest(BaseStaticEnsemble):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The data to be classified
 
         Returns
         -------
-        predicted_proba : array of shape = [n_samples, n_classes]
+        predicted_proba : array of shape (n_samples, n_classes)
             Posterior probabilities estimates for each class.
 
         """

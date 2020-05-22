@@ -50,7 +50,6 @@ class KNORAE(BaseDES):
         lower than the IH_rate the KNN classifier is used. Otherwise, the DS
         algorithm is used for classification.
 
-
     random_state : int, RandomState instance or None, optional (default=None)
         If int, random_state is the seed used by the random number generator;
         If RandomState instance, random_state is the random number generator;
@@ -62,8 +61,10 @@ class KNORAE(BaseDES):
 
          - 'knn' will use :class:`KNeighborsClassifier` from sklearn
           :class:`KNNE` available on `deslib.utils.knne`
+
          - 'faiss' will use Facebook's Faiss similarity search through the
            class :class:`FaissKNNClassifier`
+
          - None, will use sklearn :class:`KNeighborsClassifier`.
 
     knne : bool (Default=False)
@@ -126,22 +127,22 @@ class KNORAE(BaseDES):
 
         Parameters
         ----------
-        query : array of shape = [n_samples, n_features]
+        query : array of shape (n_samples, n_features)
                 The test examples.
 
-        neighbors : array of shale = [n_samples, n_neighbors]
+        neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 
-        distances : array of shale = [n_samples, n_neighbors]
+        distances : array of shape (n_samples, n_neighbors)
             Distances of the k nearest neighbors according for each test
             sample.
 
-        predictions : array of shape = [n_samples, n_classifiers]
+        predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples.
 
         Returns
         -------
-        competences : array of shape = [n_samples, n_classifiers]
+        competences : array of shape (n_samples, n_classifiers)
             Competence level estimated for each base classifier and test
             example.
         """
@@ -188,13 +189,13 @@ class KNORAE(BaseDES):
 
         Parameters
         ----------
-        competences : array of shape = [n_samples, n_classifiers]
+        competences : array of shape (n_samples, n_classifiers)
             Competence level estimated for each base classifier and test
             example.
 
         Returns
         -------
-        selected_classifiers : array of shape = [n_samples, n_classifiers]
+        selected_classifiers : array of shape (n_samples, n_classifiers)
             Boolean matrix containing True if the base classifier is selected,
             False otherwise.
 
