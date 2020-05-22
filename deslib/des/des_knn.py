@@ -138,10 +138,10 @@ class DESKNN(BaseDS):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             Data used to fit the model.
 
-        y : array of shape = [n_samples]
+        y : array of shape (n_samples)
             class labels of each example in X.
 
         Returns
@@ -175,18 +175,18 @@ class DESKNN(BaseDS):
 
         Parameters
         ----------
-        query : array cf shape  = [n_samples, n_features]
+        query : array of shape (n_samples, n_features)
                 The query sample.
 
-        neighbors : array of shale = [n_samples, n_neighbors]
+        neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 
-        distances : array of shale = [n_samples, n_neighbors]
+        distances : array of shape (n_samples, n_neighbors)
             Distances of the k nearest neighbors according for each test
             sample.
 
 
-        predictions : array of shape = [n_samples, n_classifiers]
+        predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples.
 
         Notes
@@ -230,10 +230,10 @@ class DESKNN(BaseDS):
 
         Parameters
         ----------
-        accuracy : array of shape = [n_samples, n_classifiers]
+        accuracy : array of shape (n_samples, n_classifiers)
             Local Accuracy estimates (competence) of each base classifiers.
 
-        diversity : array of shape = [n_samples, n_classifiers]
+        diversity : array of shape (n_samples, n_classifiers)
                     Average pairwise diversity of each base classifiers.
 
         Returns
@@ -276,24 +276,24 @@ class DESKNN(BaseDS):
 
         Parameters
         ----------
-        query : array of shape = [n_samples, n_features]
+        query : array of shape (n_samples, n_features)
                 The test examples
 
-        predictions : array of shape = [n_samples, n_classifiers]
+        predictions : array of shape (n_samples, n_classifiers)
                       Predictions of the base classifiers for all test examples
 
-        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+        probabilities : array of shape (n_samples, n_classifiers, n_classes)
             Probabilities estimates of each base classifier for all test
             examples.
 
-        neighbors : array of shale = [n_samples, n_neighbors]
+        neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 
-        distances : array of shale = [n_samples, n_neighbors]
+        distances : array of shape (n_samples, n_neighbors)
             Distances of the k nearest neighbors according for each test
             sample.
 
-        DFP_mask : array of shape = [n_samples, n_classifiers]
+        DFP_mask : array of shape (n_samples, n_classifiers)
             Mask containing 1 for the selected base classifier and 0 otherwise.
 
         Notes
@@ -307,7 +307,7 @@ class DESKNN(BaseDS):
 
         Returns
         -------
-        predicted_label : array of shape = [n_samples]
+        predicted_label : array of shape (n_samples)
                           Predicted class label for each test example.
         """
         if query.ndim < 2:
@@ -344,23 +344,23 @@ class DESKNN(BaseDS):
 
         Parameters
         ----------
-        query : array of shape = [n_samples, n_features]
+        query : array of shape (n_samples, n_features)
                 The test examples.
 
-        predictions : array of shape = [n_samples, n_classifiers]
+        predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples.
 
-        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+        probabilities : array of shape (n_samples, n_classifiers, n_classes)
             Probabilities estimates of each base classifier for all test
             examples.
 
-        neighbors : array of shale = [n_samples, n_neighbors]
+        neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 
-        distances : array of shale = [n_samples, n_neighbors]
+        distances : array of shape (n_samples, n_neighbors)
             Distances of the k nearest neighbors according for each test sample
 
-        DFP_mask : array of shape = [n_samples, n_classifiers]
+        DFP_mask : array of shape (n_samples, n_classifiers)
             Mask containing 1 for the selected base classifier and 0 otherwise.
 
         Notes

@@ -37,13 +37,13 @@ def exponential_func(n_classes, support_correct):
     n_classes : int
         The number of classes in the problem
 
-    support_correct: array of shape = [n_samples]
+    support_correct: array of shape (n_samples)
         containing the supports obtained by the base classifier for the correct
         class
 
     Returns
     -------
-    C_src : array of shape = [n_samples]
+    C_src : array of shape (n_samples)
         Representing the classifier competences at each data point
     """
     support_correct[support_correct <= 0.0] = 0.0
@@ -72,13 +72,13 @@ def log_func(n_classes, support_correct):
     n_classes : int
         The number of classes in the problem
 
-    support_correct: array of shape = [n_samples]
+    support_correct: array of shape (n_samples)
         Containing the supports obtained by the base classifier for the correct
         class
 
     Returns
     -------
-    C_src : array of shape = [n_samples]
+    C_src : array of shape (n_samples)
             representing the classifier competences at each data point
 
     References
@@ -111,16 +111,16 @@ def entropy_func(n_classes, supports, is_correct):
     n_classes : int
         The number of classes in the problem
 
-    supports: array of shape = [n_samples, n_classes]
+    supports: array of shape (n_samples, n_classes)
         Containing the supports obtained by the base classifier for each class.
 
-    is_correct: array of shape = [n_samples]
+    is_correct: array of shape (n_samples)
         Array with 1 whether the base classifier predicted the correct label
         and -1 otherwise
 
     Returns
     -------
-    C_src : array of shape = [n_samples]
+    C_src : array of shape (n_samples)
         Representing the classifier competences at each data point
 
     References
@@ -151,10 +151,10 @@ def ccprmod(supports, idx_correct_label, B=20):
 
     Parameters
     ----------
-    supports: array of shape = [n_samples, n_classes]
+    supports: array of shape (n_samples, n_classes)
         Containing the supports obtained by the base classifier for each class.
 
-    idx_correct_label: array of shape = [n_samples]
+    idx_correct_label: array of shape (n_samples)
                        containing the index of the correct class.
 
     B : int (Default = 20)
@@ -163,7 +163,7 @@ def ccprmod(supports, idx_correct_label, B=20):
 
     Returns
     -------
-    C_src : array of shape = [n_samples]
+    C_src : array of shape (n_samples)
             representing the classifier competences at each data point
 
     Examples
@@ -231,15 +231,15 @@ def min_difference(supports, idx_correct_label):
 
     Parameters
     ----------
-    supports: array of shape = [n_samples, n_classes]
+    supports: array of shape (n_samples, n_classes)
         Containing the supports obtained by the base classifier for each class
 
-    idx_correct_label: array of shape = [n_samples]
+    idx_correct_label: array of shape (n_samples)
         Containing the index of the correct class
 
     Returns
     -------
-    C_src : array of shape = [n_samples]
+    C_src : array of shape (n_samples)
         Representing the classifier competences at each data point
 
     References

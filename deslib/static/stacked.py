@@ -59,10 +59,10 @@ class StackedClassifier(BaseStaticEnsemble):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             Data used to fit the model.
 
-        y : array of shape = [n_samples]
+        y : array of shape (n_samples)
             class labels of each example in X.
 
         """
@@ -93,12 +93,12 @@ class StackedClassifier(BaseStaticEnsemble):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The data to be classified
 
         Returns
         -------
-        predicted_labels : array of shape = [n_samples]
+        predicted_labels : array of shape (n_samples)
                            Predicted class for each sample in X.
         """
         X = check_array(X)
@@ -114,12 +114,12 @@ class StackedClassifier(BaseStaticEnsemble):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The data to be classified
 
         Returns
         -------
-        predicted_labels : array of shape = [n_samples]
+        predicted_labels : array of shape (n_samples)
                            Predicted class for each sample in X.
         """
         X = check_array(X)
@@ -148,7 +148,7 @@ class StackedClassifier(BaseStaticEnsemble):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The test examples.
 
         Returns

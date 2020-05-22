@@ -80,7 +80,7 @@ class FaissKNNClassifier:
         Parameters
         ----------
 
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The input data.
 
         Returns
@@ -102,7 +102,7 @@ class FaissKNNClassifier:
         Parameters
         ----------
 
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The input data.
 
         n_neighbors : int
@@ -148,12 +148,12 @@ class FaissKNNClassifier:
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The input data.
 
         Returns
         -------
-        preds_proba : array of shape = [n_samples, n_classes]
+        preds_proba : array of shape (n_samples, n_classes)
                           Probabilities estimates for each sample in X.
         """
         idx = self.kneighbors(X, self.n_neighbors, return_distance=False)
@@ -171,10 +171,10 @@ class FaissKNNClassifier:
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             Data used to fit the model.
 
-        y : array of shape = [n_samples]
+        y : array of shape (n_samples)
             class labels of each example in X.
         """
         X = np.atleast_2d(X).astype(np.float32)

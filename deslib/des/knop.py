@@ -127,10 +127,10 @@ class KNOP(BaseDES):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             Data used to fit the model.
 
-        y : array of shape = [n_samples]
+        y : array of shape (n_samples)
             class labels of each example in X.
 
         Returns
@@ -157,11 +157,11 @@ class KNOP(BaseDES):
 
         Parameters
         ----------
-        X_op : array of shape = [n_samples, n_features]
+        X_op : array of shape (n_samples, n_features)
             Output profiles of the training data. n_features is equals
             to (n_classifiers x n_classes).
 
-        y_op : array of shape = [n_samples]
+        y_op : array of shape (n_samples)
                Class labels of each sample in X_op.
 
         k : int
@@ -183,7 +183,7 @@ class KNOP(BaseDES):
 
         Parameters
         ----------
-        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+        probabilities : array of shape (n_samples, n_classifiers, n_classes)
                         predictions of each base classifier for all samples.
 
         Returns
@@ -222,23 +222,23 @@ class KNOP(BaseDES):
 
         Parameters
         ----------
-        query : array of shape = [n_samples, n_features]
+        query : array of shape (n_samples, n_features)
                 The test examples.
 
-        neighbors : array of shale = [n_samples, n_neighbors]
+        neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 
-        distances : array of shale = [n_samples, n_neighbors]
+        distances : array of shape (n_samples, n_neighbors)
             Distances of the k nearest neighbors according for each test
             sample.
 
-        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+        probabilities : array of shape (n_samples, n_classifiers, n_classes)
             Probabilities estimates obtained by each each base classifier
             for each query sample.
 
         Returns
         -------
-        competences : array of shape = [n_samples, n_classifiers]
+        competences : array of shape (n_samples, n_classifiers)
             Competence level estimated for each base classifier and test
             example.
         """
@@ -258,13 +258,13 @@ class KNOP(BaseDES):
 
         Parameters
         ----------
-        competences : array of shape = [n_samples, n_classifiers]
+        competences : array of shape (n_samples, n_classifiers)
             Competence level estimated for each base classifier and test
             example.
 
         Returns
         -------
-        selected_classifiers : array of shape = [n_samples, n_classifiers]
+        selected_classifiers : array of shape (n_samples, n_classifiers)
             Boolean matrix containing True if the base classifier is selected,
             False otherwise.
         """

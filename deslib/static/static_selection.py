@@ -5,11 +5,12 @@
 # License: BSD 3 clause
 
 import numpy as np
-from .base import BaseStaticEnsemble
+from sklearn.metrics import check_scoring
+from sklearn.utils.validation import check_is_fitted, check_X_y, check_array
+
 from deslib.util.aggregation import majority_voting_rule
 from deslib.util.aggregation import predict_proba_ensemble
-from sklearn.utils.validation import check_is_fitted, check_X_y, check_array
-from sklearn.metrics import check_scoring
+from .base import BaseStaticEnsemble
 
 
 class StaticSelection(BaseStaticEnsemble):
@@ -73,10 +74,10 @@ class StaticSelection(BaseStaticEnsemble):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             Data used to fit the model.
 
-        y : array of shape = [n_samples]
+        y : array of shape (n_samples)
             class labels of each example in X.
 
         Returns
@@ -117,12 +118,12 @@ class StaticSelection(BaseStaticEnsemble):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The data to be classified
 
         Returns
         -------
-        predicted_labels : array of shape = [n_samples]
+        predicted_labels : array of shape (n_samples)
                            Predicted class for each sample in X.
         """
         X = check_array(X)
@@ -141,12 +142,12 @@ class StaticSelection(BaseStaticEnsemble):
 
          Parameters
          ----------
-         X : array of shape = [n_samples, n_features]
+         X : array of shape (n_samples, n_features)
              The input data.
 
          Returns
          -------
-         predicted_proba : array of shape = [n_samples, n_classes]
+         predicted_proba : array of shape (n_samples, n_classes)
                            Probabilities estimates for each sample in X.
          """
         self._check_is_fitted()

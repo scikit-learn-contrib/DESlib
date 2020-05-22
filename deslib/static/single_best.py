@@ -5,9 +5,10 @@
 # License: BSD 3 clause
 
 import numpy as np
-from .base import BaseStaticEnsemble
-from sklearn.utils.validation import check_X_y, check_is_fitted, check_array
 from sklearn.metrics import check_scoring
+from sklearn.utils.validation import check_X_y, check_is_fitted, check_array
+
+from .base import BaseStaticEnsemble
 
 
 class SingleBest(BaseStaticEnsemble):
@@ -65,10 +66,10 @@ class SingleBest(BaseStaticEnsemble):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             Data used to fit the model.
 
-        y : array of shape = [n_samples]
+        y : array of shape (n_samples)
             class labels of each example in X.
 
         """
@@ -100,12 +101,12 @@ class SingleBest(BaseStaticEnsemble):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The data to be classified
 
         Returns
         -------
-        predicted_labels : array of shape = [n_samples]
+        predicted_labels : array of shape (n_samples)
                            Predicted class for each sample in X.
         """
         X = check_array(X)
@@ -120,12 +121,12 @@ class SingleBest(BaseStaticEnsemble):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The data to be classified
 
         Returns
         -------
-        predicted_proba : array of shape = [n_samples, n_classes]
+        predicted_proba : array of shape (n_samples, n_classes)
             Posterior probabilities estimates for each class.
 
         """

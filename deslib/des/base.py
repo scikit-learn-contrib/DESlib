@@ -47,21 +47,21 @@ class BaseDES(BaseDS):
 
         Parameters
         ----------
-        query : array of shape  = [n_samples, n_features]
+        query : array of shape (n_samples, n_features)
                 The test examples
 
-        neighbors : array of shale = [n_samples, n_neighbors]
+        neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 
-        distances : array of shale = [n_samples, n_neighbors]
+        distances : array of shape (n_samples, n_neighbors)
             Distances of the k nearest neighbors according for each test sample
 
-        predictions : array of shape = [n_samples, n_classifiers]
+        predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for the test examples.
 
         Returns
         -------
-        competences : array of shape = [n_samples, n_classifiers]
+        competences : array of shape (n_samples, n_classifiers)
             Competence level estimated for each base classifier and test
             example.
         """
@@ -79,17 +79,17 @@ class BaseDES(BaseDS):
 
         Parameters
         ----------
-        query : array cf shape  = [n_samples, n_features]
+        query : array of shape (n_samples, n_features)
                 The query sample.
 
-        neighbors : array of shale = [n_samples, n_neighbors]
+        neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 
-        distances : array of shale = [n_samples, n_neighbors]
+        distances : array of shape (n_samples, n_neighbors)
             Distances of the k nearest neighbors according for each test
             sample.
 
-        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+        probabilities : array of shape (n_samples, n_classifiers, n_classes)
             Probabilities estimates of each base classifier for all samples.
 
         Returns
@@ -106,13 +106,13 @@ class BaseDES(BaseDS):
 
         Parameters
         ----------
-        competences : array of shape = [n_samples, n_classifiers]
+        competences : array of shape (n_samples, n_classifiers)
             Estimated competence level of each base classifier for each test
             example.
 
         Returns
         -------
-        selected_classifiers : array of shape = [n_samples, n_classifiers]
+        selected_classifiers : array of shape (n_samples, n_classifiers)
             Boolean matrix containing True if the base classifier is selected.
             False otherwise.
         """
@@ -138,30 +138,30 @@ class BaseDES(BaseDS):
 
         Parameters
         ----------
-        query : array of shape = [n_samples, n_features]
+        query : array of shape (n_samples, n_features)
                 The test examples.
 
-        predictions : array of shape = [n_samples, n_classifiers]
+        predictions : array of shape (n_samples, n_classifiers)
                       Predictions of the base classifier for all test examples.
 
-        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+        probabilities : array of shape (n_samples, n_classifiers, n_classes)
             Probabilities estimates of each base classifier for all test
             examples. (For methods that always require probabilities from
             the base classifiers).
 
-        neighbors : array of shale = [n_samples, n_neighbors]
+        neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 
-        distances : array of shale = [n_samples, n_neighbors]
+        distances : array of shape (n_samples, n_neighbors)
             Distances of the k nearest neighbors according for each test
             sample.
 
-        DFP_mask : array of shape = [n_samples, n_classifiers]
+        DFP_mask : array of shape (n_samples, n_classifiers)
             Mask containing 1 for the selected base classifier and 0 otherwise.
 
         Returns
         -------
-        predicted_label : array of shape = [n_samples]
+        predicted_label : array of shape (n_samples)
                           Predicted class label for each test example.
         """
         if query.ndim < 2:
@@ -235,22 +235,22 @@ class BaseDES(BaseDS):
 
         Parameters
         ----------
-        query : array of shape = [n_samples, n_features]
+        query : array of shape (n_samples, n_features)
                 The test examples.
 
-        predictions : array of shape = [n_samples, n_classifiers]
+        predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifier for all test examples.
 
-        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+        probabilities : array of shape (n_samples, n_classifiers, n_classes)
             Probabilities estimates of each base classifier for all samples.
 
-        neighbors : array of shale = [n_samples, n_neighbors]
+        neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 
-        distances : array of shale = [n_samples, n_neighbors]
+        distances : array of shape (n_samples, n_neighbors)
             Distances of the k nearest neighbors according for each test sample
 
-        DFP_mask : array of shape = [n_samples, n_classifiers]
+        DFP_mask : array of shape (n_samples, n_classifiers)
             Mask containing 1 for the selected base classifier and 0 otherwise.
 
         Returns

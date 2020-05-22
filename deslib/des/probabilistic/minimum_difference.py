@@ -112,7 +112,7 @@ class MinimumDifference(BaseProbabilistic):
 
         Returns
         ----------
-        C_src : array of shape = [n_samples, n_classifiers]
+        C_src : array of shape (n_samples, n_classifiers)
             The competence source for each base classifier at each data point.
         """
         C_src = np.zeros((self.n_samples_, self.n_classifiers_))
