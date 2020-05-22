@@ -2,7 +2,10 @@ from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
+from sklearn.datasets import make_classification
+from sklearn.ensemble import AdaBoostClassifier
 from sklearn.exceptions import NotFittedError
+from sklearn.metrics import roc_auc_score
 from sklearn.utils.estimator_checks import check_estimator
 
 from deslib.static.single_best import SingleBest
@@ -79,3 +82,17 @@ def test_label_encoder(create_label_encoder_test):
     sb = SingleBest(pool).fit(X, y)
     pred = sb.predict(X)
     assert np.array_equal(pred, y)
+
+
+def test_different_scorer():
+    X, y = make_classification(n_samples=100, random_state=42)
+    X_val, y_val = make_classification(n_samples=25, random_state=123)
+    pool = AdaBoostClassifier(n_estimators=10).fit(X, y)
+    performances = []
+    for clf in pool:
+        preds = clf.predict_proba(X_val)
+        performances.append(roc_auc_score(y_val.ravel(), preds[:, -1]))
+    id_best = np.argmax(performances)
+    sb = SingleBest(pool_classifiers=pool, scoring='roc_auc')
+    sb.fit(X_val, y_val)
+    assert id_best == sb.best_clf_index_
