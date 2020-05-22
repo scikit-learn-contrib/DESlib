@@ -17,7 +17,6 @@ classifier that attained the highest competence level is selected for the classi
 .. toctree::
     :maxdepth: 3
 
-    modules/dcs/base
     modules/dcs/a_posteriori
     modules/dcs/a_priori
     modules/dcs/lca
@@ -37,7 +36,6 @@ All base classifiers that attain a minimum competence level are selected to comp
 .. toctree::
     :maxdepth: 3
 
-    modules/des/base
     modules/des/meta_des
     modules/des/des_clustering
     modules/des/des_p
