@@ -54,10 +54,10 @@ class KNNE(BaseEstimator):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             Data used to fit the model.
 
-        y : array of shape = [n_samples]
+        y : array of shape (n_samples)
             class labels of each example in X.
         """
         X, y = check_X_y(X, y)
@@ -155,7 +155,7 @@ class KNNE(BaseEstimator):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The input data.
 
         Returns
@@ -177,7 +177,7 @@ class KNNE(BaseEstimator):
 
         Returns
         -------
-        proba : array of shape = [n_samples, n_classes], or a list of n_outputs
+        proba : array of shape (n_samples, n_classes), or a list of n_outputs
             of such arrays if n_outputs > 1.
             The class probabilities of the input samples. Classes are ordered
             by lexicographic order.

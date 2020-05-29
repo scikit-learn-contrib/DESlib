@@ -5,8 +5,10 @@
 # License: BSD 3 clause
 
 import numpy as np
-from .base import BaseStaticEnsemble
+from sklearn.metrics import check_scoring
 from sklearn.utils.validation import check_X_y, check_is_fitted, check_array
+
+from .base import BaseStaticEnsemble
 
 
 class SingleBest(BaseStaticEnsemble):
@@ -21,6 +23,10 @@ class SingleBest(BaseStaticEnsemble):
         classification problem. Each base classifiers should support the method
         "predict". If None, then the pool of classifiers is a bagging
         classifier.
+
+    scoring : string, callable (default = None)
+        A single string or a callable to evaluate the predictions on the
+        validation set.
 
     random_state : int, RandomState instance or None, optional (default=None)
         If int, random_state is the seed used by the random number generator;
@@ -42,9 +48,13 @@ class SingleBest(BaseStaticEnsemble):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers=None, random_state=None):
+    def __init__(self,
+                 pool_classifiers=None,
+                 scoring=None,
+                 random_state=None):
         super(SingleBest, self).__init__(pool_classifiers=pool_classifiers,
                                          random_state=random_state)
+        self.scoring = scoring
 
     def fit(self, X, y):
         """Fit the model by selecting the base classifier with the highest
@@ -53,10 +63,10 @@ class SingleBest(BaseStaticEnsemble):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             Data used to fit the model.
 
-        y : array of shape = [n_samples]
+        y : array of shape (n_samples)
             class labels of each example in X.
 
         """
@@ -78,7 +88,8 @@ class SingleBest(BaseStaticEnsemble):
     def _estimate_performances(self, X, y):
         performances = np.zeros(self.n_classifiers_)
         for idx, clf in enumerate(self.pool_classifiers_):
-            performances[idx] = clf.score(X, y)
+            scorer = check_scoring(clf, self.scoring)
+            performances[idx] = scorer(clf, X, y)
         return performances
 
     def predict(self, X):
@@ -87,12 +98,12 @@ class SingleBest(BaseStaticEnsemble):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The data to be classified
 
         Returns
         -------
-        predicted_labels : array of shape = [n_samples]
+        predicted_labels : array of shape (n_samples)
                            Predicted class for each sample in X.
         """
         X = check_array(X)
@@ -107,12 +118,12 @@ class SingleBest(BaseStaticEnsemble):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The data to be classified
 
         Returns
         -------
-        predicted_proba : array of shape = [n_samples, n_classes]
+        predicted_proba : array of shape (n_samples, n_classes)
             Posterior probabilities estimates for each class.
 
         """

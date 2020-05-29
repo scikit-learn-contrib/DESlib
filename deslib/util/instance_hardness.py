@@ -70,10 +70,10 @@ def kdn_score(X, y, k):
 
     Parameters
     ----------
-    X : array of shape = [n_samples, n_features]
+    X : array of shape (n_samples, n_features)
         The input data.
 
-    y : array of shape = [n_samples]
+    y : array of shape (n_samples)
         class labels of each example in X.
 
     k : int

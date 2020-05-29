@@ -6,6 +6,7 @@
 import numpy as np
 from scipy.stats.mstats import mode
 from sklearn.utils.validation import check_array
+
 from deslib.util.prob_functions import softmax
 
 """
@@ -32,12 +33,12 @@ def majority_voting(classifier_ensemble, X):
         Containing the ensemble of classifiers used in the
         aggregation scheme.
 
-    X : array of shape = [n_samples, n_features]
+    X : array of shape (n_samples, n_features)
         The input data.
 
     Returns
     -------
-    predicted_label : array of shape = [n_samples]
+    predicted_label : array of shape (n_samples)
         The label of each query sample predicted using the majority voting rule
     """
     votes = _get_ensemble_votes(classifier_ensemble, X)
@@ -56,16 +57,16 @@ def weighted_majority_voting(classifier_ensemble, weights, X):
     classifier_ensemble : list of shape = [n_classifiers]
         Containing the ensemble of classifiers used in the aggregation scheme.
 
-    weights : array of shape = [n_samples, n_classifiers]
+    weights : array of shape (n_samples, n_classifiers)
               Weights associated to each base classifier for each sample
 
 
-    X : array of shape = [n_samples, n_features]
+    X : array of shape (n_samples, n_features)
         The input data.
 
     Returns
     -------
-    predicted_label : array of shape = [n_samples]
+    predicted_label : array of shape (n_samples)
         The label of each query sample predicted using the majority voting rule
     """
     votes = _get_ensemble_votes(classifier_ensemble, X)
@@ -82,12 +83,12 @@ def _get_ensemble_votes(classifier_ensemble, X):
     classifier_ensemble : list of shape = [n_classifiers]
         Containing the ensemble of classifiers used in the aggregation scheme.
 
-    X : array of shape = [n_samples, n_features]
+    X : array of shape (n_samples, n_features)
         The input data.
 
     Returns
     -------
-    votes : array of shape = [n_samples, n_classifiers]
+    votes : array of shape (n_samples, n_classifiers)
             The votes obtained by each base classifier
     """
     # Check if a single sample was passed down to the function. In this case
@@ -109,12 +110,12 @@ def majority_voting_rule(votes):
 
     Parameters
     ----------
-    votes : array of shape = [n_samples, n_classifiers],
+    votes : array of shape (n_samples, n_classifiers),
         The votes obtained by each classifier for each sample.
 
     Returns
     -------
-    predicted_label : array of shape = [n_samples]
+    predicted_label : array of shape (n_samples)
         The label of each query sample predicted using the majority voting rule
     """
     # Omitting nan value in the predictions as they comes from removed
@@ -129,17 +130,17 @@ def weighted_majority_voting_rule(votes, weights, labels_set=None):
 
     Parameters
     ----------
-    votes : array of shape = [n_samples, n_classifiers],
+    votes : array of shape (n_samples, n_classifiers),
         The votes obtained by each classifier for each sample.
 
-    weights : array of shape = [n_samples, n_classifiers]
+    weights : array of shape (n_samples, n_classifiers)
         Weights associated to each base classifier for each sample
 
     labels_set : (Default=None) set with the possible classes in the problem.
 
     Returns
     -------
-    predicted_label : array of shape = [n_samples]
+    predicted_label : array of shape (n_samples)
         The label of each query sample predicted using the majority voting rule
     """
     if weights.shape != votes.shape:
@@ -169,12 +170,12 @@ def _get_ensemble_probabilities(classifier_ensemble, X):
     classifier_ensemble : list of shape = [n_classifiers]
         Containing the ensemble of classifiers used in the aggregation scheme.
 
-    X : array of shape = [n_samples, n_features]
+    X : array of shape (n_samples, n_features)
         The input data.
 
     Returns
     -------
-    list_proba : array of shape = [n_samples, n_classifiers, n_classes]
+    list_proba : array of shape (n_samples, n_classifiers, n_classes)
         Probabilities predicted by each base classifier in the ensemble for all
         samples in X.
     """
@@ -196,12 +197,12 @@ def predict_proba_ensemble(classifier_ensemble, X):
     classifier_ensemble : list of shape = [n_classifiers]
         Containing the ensemble of classifiers used in the aggregation scheme.
 
-    X : array of shape = [n_samples, n_features]
+    X : array of shape (n_samples, n_features)
         The input data.
 
     Returns
     -------
-    predicted_proba : array of shape = [n_samples, n_classes]
+    predicted_proba : array of shape (n_samples, n_classes)
         Posterior probabilities estimates for each samples in X.
     """
     ensemble_proba = _get_ensemble_probabilities(classifier_ensemble, X)
@@ -225,12 +226,12 @@ def average_combiner(classifier_ensemble, X):
     classifier_ensemble : list of shape = [n_classifiers]
         Containing the ensemble of classifiers used in the aggregation scheme.
 
-    X : array of shape = [n_samples, n_features]
+    X : array of shape (n_samples, n_features)
         The input data.
 
     Returns
     -------
-    predicted_label : array of shape = [n_samples]
+    predicted_label : array of shape (n_samples)
         The label of each query sample predicted using the majority voting rule
     """
     ensemble_proba = _get_ensemble_probabilities(classifier_ensemble, X)
@@ -245,7 +246,7 @@ def product_combiner(classifier_ensemble, X):
     classifier_ensemble : list of shape = [n_classifiers]
         Containing the ensemble of classifiers used in the aggregation scheme.
 
-    X : array of shape = [n_samples, n_features]
+    X : array of shape (n_samples, n_features)
         The input data.
 
     Returns
@@ -266,12 +267,12 @@ def maximum_combiner(classifier_ensemble, X):
     classifier_ensemble : list of shape = [n_classifiers]
         Containing the ensemble of classifiers used in the aggregation scheme.
 
-    X : array of shape = [n_samples, n_features]
+    X : array of shape (n_samples, n_features)
         The input data.
 
     Returns
     -------
-    predicted_label : array of shape = [n_samples]
+    predicted_label : array of shape (n_samples)
         The label of each query sample predicted using the majority voting rule
     """
     ensemble_proba = _get_ensemble_probabilities(classifier_ensemble, X)
@@ -286,12 +287,12 @@ def minimum_combiner(classifier_ensemble, X):
     classifier_ensemble : list of shape = [n_classifiers]
         Containing the ensemble of classifiers used in the aggregation scheme.
 
-    X : array of shape = [n_samples, n_features]
+    X : array of shape (n_samples, n_features)
         The input data.
 
     Returns
     -------
-    predicted_label : array of shape = [n_samples]
+    predicted_label : array of shape (n_samples)
         The label of each query sample predicted using the majority voting rule
     """
     ensemble_proba = _get_ensemble_probabilities(classifier_ensemble, X)
@@ -306,12 +307,12 @@ def median_combiner(classifier_ensemble, X):
     classifier_ensemble : list of shape = [n_classifiers]
         Containing the ensemble of classifiers used in the aggregation scheme.
 
-    X : array of shape = [n_samples, n_features]
+    X : array of shape (n_samples, n_features)
         The input data.
 
     Returns
     -------
-    predicted_label : array of shape = [n_samples]
+    predicted_label : array of shape (n_samples)
         The label of each query sample predicted using the majority voting rule
     """
     ensemble_proba = _get_ensemble_probabilities(classifier_ensemble, X)
@@ -324,12 +325,12 @@ def average_rule(predictions):
 
     Parameters
     ----------
-    predictions : np array of shape = [n_samples, n_classifiers, n_classes]
+    predictions : np array of shape (n_samples, n_classifiers, n_classes)
         Vector of class supports predicted by each base classifier for sample
 
     Returns
     -------
-    predicted_label : array of shape = [n_samples]
+    predicted_label : array of shape (n_samples)
         The label of each query sample predicted using the majority voting rule
     """
     _check_predictions(predictions)
@@ -343,12 +344,12 @@ def product_rule(predictions):
 
     Parameters
     ----------
-    predictions : array of shape = [n_samples, n_classifiers, n_classes]
+    predictions : array of shape (n_samples, n_classifiers, n_classes)
         Vector of class supports predicted by each base classifier for sample
 
     Returns
     -------
-    predicted_label : array of shape = [n_samples]
+    predicted_label : array of shape (n_samples)
         The label of each query sample predicted using the majority voting rule
     """
     _check_predictions(predictions)
@@ -362,12 +363,12 @@ def median_rule(predictions):
 
     Parameters
     ----------
-    predictions : np array of shape = [n_samples, n_classifiers, n_classes]
+    predictions : np array of shape (n_samples, n_classifiers, n_classes)
         Vector of class supports predicted by each base classifier for sample
 
     Returns
     -------
-    predicted_label : array of shape = [n_samples]
+    predicted_label : array of shape (n_samples)
         The label of each query sample predicted using the majority voting rule
     """
     _check_predictions(predictions)
@@ -381,12 +382,12 @@ def maximum_rule(predictions):
 
     Parameters
     ----------
-    predictions : np array of shape = [n_samples, n_classifiers, n_classes]
+    predictions : np array of shape (n_samples, n_classifiers, n_classes)
         Vector of class supports predicted by each base classifier for sample
 
     Returns
     -------
-    predicted_label : array of shape = [n_samples]
+    predicted_label : array of shape (n_samples)
         The label of each query sample predicted using the majority voting rule
     """
     _check_predictions(predictions)
@@ -400,7 +401,7 @@ def minimum_rule(predictions):
 
     Parameters
     ----------
-    predictions : np array of shape = [n_samples, n_classifiers, n_classes]
+    predictions : np array of shape (n_samples, n_classifiers, n_classes)
         Vector of class supports predicted by each base classifier for sample
 
     Returns

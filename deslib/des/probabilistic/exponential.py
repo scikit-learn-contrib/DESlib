@@ -59,8 +59,10 @@ class Exponential(BaseProbabilistic):
          The algorithm used to estimate the region of competence:
 
          - 'knn' will use :class:`KNeighborsClassifier` from sklearn
+
          - 'faiss' will use Facebook's Faiss similarity search through the
            class :class:`FaissKNNClassifier`
+
          - None, will use sklearn :class:`KNeighborsClassifier`.
 
     DSEL_perc : float (Default = 0.5)
@@ -107,7 +109,7 @@ class Exponential(BaseProbabilistic):
 
         Returns
         ----------
-        C_src : array of shape = [n_samples, n_classifiers]
+        C_src : array of shape (n_samples, n_classifiers)
             The competence source for each base classifier at each data point.
         """
         C_src = np.zeros((self.n_samples_, self.n_classifiers_))

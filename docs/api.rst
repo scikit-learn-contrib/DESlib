@@ -17,7 +17,6 @@ classifier that attained the highest competence level is selected for the classi
 .. toctree::
     :maxdepth: 3
 
-    modules/dcs/base
     modules/dcs/a_posteriori
     modules/dcs/a_priori
     modules/dcs/lca
@@ -37,7 +36,6 @@ All base classifiers that attain a minimum competence level are selected to comp
 .. toctree::
     :maxdepth: 3
 
-    modules/des/base
     modules/des/meta_des
     modules/des/des_clustering
     modules/des/des_p
@@ -78,6 +76,7 @@ Utility functions for ensemble methods such as diversity and aggregation methods
     modules/util/aggregation
     modules/util/prob_functions
     modules/util/instance_hardness
+    modules/util/dfp
     modules/util/knne
     modules/util/faiss_knn_wrapper
     modules/util/datasets

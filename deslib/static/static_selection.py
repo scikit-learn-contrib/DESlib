@@ -5,10 +5,12 @@
 # License: BSD 3 clause
 
 import numpy as np
-from .base import BaseStaticEnsemble
+from sklearn.metrics import check_scoring
+from sklearn.utils.validation import check_is_fitted, check_X_y, check_array
+
 from deslib.util.aggregation import majority_voting_rule
 from deslib.util.aggregation import predict_proba_ensemble
-from sklearn.utils.validation import check_is_fitted, check_X_y, check_array
+from .base import BaseStaticEnsemble
 
 
 class StaticSelection(BaseStaticEnsemble):
@@ -23,17 +25,19 @@ class StaticSelection(BaseStaticEnsemble):
         "predict". If None, then the pool of classifiers is a bagging
         classifier.
 
+    scoring : string, callable (default = None)
+        A single string or a callable to evaluate the predictions on the
+        validation set.
+
     random_state : int, RandomState instance or None, optional (default=None)
         If int, random_state is the seed used by the random number generator;
         If RandomState instance, random_state is the random number generator;
         If None, the random number generator is the RandomState instance used
         by `np.random`.
 
-
     pct_classifiers : float (Default = 0.5)
         Percentage of base classifier that should be selected by the selection
         scheme.
-
 
     References
     ----------
@@ -51,10 +55,12 @@ class StaticSelection(BaseStaticEnsemble):
 
     def __init__(self, pool_classifiers=None,
                  pct_classifiers=0.5,
+                 scoring=None,
                  random_state=None):
         super(StaticSelection, self).__init__(
             pool_classifiers=pool_classifiers, random_state=random_state)
         self.pct_classifiers = pct_classifiers
+        self.scoring = scoring
 
     def fit(self, X, y):
         """Fit the static selection model by select an ensemble of classifier
@@ -63,10 +69,10 @@ class StaticSelection(BaseStaticEnsemble):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             Data used to fit the model.
 
-        y : array of shape = [n_samples]
+        y : array of shape (n_samples)
             class labels of each example in X.
 
         Returns
@@ -91,7 +97,8 @@ class StaticSelection(BaseStaticEnsemble):
             y_encoded = self.enc_.transform(y)
 
         for clf_idx, clf in enumerate(self.pool_classifiers_):
-            performances[clf_idx] = clf.score(X, y_encoded)
+            scorer = check_scoring(clf, self.scoring)
+            performances[clf_idx] = scorer(clf, X, y_encoded)
 
         self.clf_indices_ = np.argsort(performances)[::-1][
                             0:self.n_classifiers_ensemble_]
@@ -106,12 +113,12 @@ class StaticSelection(BaseStaticEnsemble):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The data to be classified
 
         Returns
         -------
-        predicted_labels : array of shape = [n_samples]
+        predicted_labels : array of shape (n_samples)
                            Predicted class for each sample in X.
         """
         X = check_array(X)
@@ -130,12 +137,12 @@ class StaticSelection(BaseStaticEnsemble):
 
          Parameters
          ----------
-         X : array of shape = [n_samples, n_features]
+         X : array of shape (n_samples, n_features)
              The input data.
 
          Returns
          -------
-         predicted_proba : array of shape = [n_samples, n_classes]
+         predicted_proba : array of shape (n_samples, n_classes)
                            Probabilities estimates for each sample in X.
          """
         self._check_is_fitted()

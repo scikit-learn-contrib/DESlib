@@ -1,10 +1,11 @@
 # coding=utf-8
 
+from abc import abstractmethod, ABCMeta
+
 # Author: Rafael Menelau Oliveira e Cruz <rafaelmenelau@gmail.com>
 #
 # License: BSD 3 clause
 import numpy as np
-from abc import abstractmethod, ABCMeta
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import BaseEnsemble, BaggingClassifier
 from sklearn.preprocessing import LabelEncoder
@@ -55,10 +56,10 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             Data used to fit the model.
 
-        y : array of shape = [n_samples]
+        y : array of shape (n_samples)
             class labels of each example in X.
 
         Returns

@@ -42,7 +42,6 @@ class DESKL(BaseProbabilistic):
         lower than the IH_rate the KNN classifier is used. Otherwise, the DS
         algorithm is used for classification.
 
-
     mode : String (Default = "selection")
            Whether the technique will perform dynamic selection,
            dynamic weighting or an hybrid approach for classification.
@@ -57,8 +56,10 @@ class DESKL(BaseProbabilistic):
          The algorithm used to estimate the region of competence:
 
          - 'knn' will use :class:`KNeighborsClassifier` from sklearn
+
          - 'faiss' will use Facebook's Faiss similarity search through the
            class :class:`FaissKNNClassifier`
+
          - None, will use sklearn :class:`KNeighborsClassifier`.
 
     DSEL_perc : float (Default = 0.5)
@@ -110,7 +111,7 @@ class DESKL(BaseProbabilistic):
 
         Returns
         ----------
-        C_src : array of shape = [n_samples, n_classifiers]
+        C_src : array of shape (n_samples, n_classifiers)
             The competence source for each base classifier at each data point.
         """
 

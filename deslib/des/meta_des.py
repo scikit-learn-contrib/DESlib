@@ -95,8 +95,10 @@ class METADES(BaseDES):
 
          - 'knn' will use :class:`KNeighborsClassifier` from sklearn
           :class:`KNNE` available on `deslib.utils.knne`
+
          - 'faiss' will use Facebook's Faiss similarity search through the
            class :class:`FaissKNNClassifier`
+
          - None, will use sklearn :class:`KNeighborsClassifier`.
 
     knne : bool (Default=False)
@@ -171,10 +173,10 @@ class METADES(BaseDES):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             Data used to fit the model.
 
-        y : array of shape = [n_samples]
+        y : array of shape (n_samples)
             class labels of each example in X.
 
         Returns
@@ -225,11 +227,11 @@ class METADES(BaseDES):
 
         Parameters
         ----------
-        X_op : array of shape = [n_samples, n_features]
+        X_op : array of shape (n_samples, n_features)
                The output profiles of the Input data. n_features is equals to
                (n_classifiers x n_classes)
 
-        y_op : array of shape = [n_samples]
+        y_op : array of shape (n_samples)
                class labels of each sample in X_op.
 
         """
@@ -263,7 +265,7 @@ class METADES(BaseDES):
 
         Parameters
         ----------
-        scores : array of shape = [n_samples, n_classifiers, n_classes]
+        scores : array of shape (n_samples, n_classifiers, n_classes)
             scores (posterior probabilities) obtained by the base classifiers
             for each sample to extract the meta features.
 
@@ -381,7 +383,7 @@ class METADES(BaseDES):
 
         Parameters
         ----------
-        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+        probabilities : array of shape (n_samples, n_classifiers, n_classes)
             Probabilities estimates by each each base classifier for each
             sample.
 
@@ -419,13 +421,13 @@ class METADES(BaseDES):
 
         Parameters
         ----------
-        competences : array of shape = [n_samples, n_classifiers]
+        competences : array of shape (n_samples, n_classifiers)
             The competence level estimated for each base classifier and test
             example.
 
         Returns
         -------
-        selected_classifiers : array of shape = [n_samples, n_classifiers]
+        selected_classifiers : array of shape (n_samples, n_classifiers)
             Boolean matrix containing True if the base classifier is selected,
             False otherwise.
 
@@ -453,23 +455,23 @@ class METADES(BaseDES):
 
         Parameters
         ----------
-        query : array of shape = [n_samples, n_features]
+        query : array of shape (n_samples, n_features)
                 The test examples.
 
-        neighbors : array of shale = [n_samples, n_neighbors]
+        neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 
-        distances : array of shale = [n_samples, n_neighbors]
+        distances : array of shape (n_samples, n_neighbors)
             Distances of the k nearest neighbors according for each test
             sample.
 
-        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+        probabilities : array of shape (n_samples, n_classifiers, n_classes)
             Probabilities estimates obtained by each each base classifier for
             each query sample.
 
         Returns
         -------
-        competences : array of shape = [n_samples, n_classifiers]
+        competences : array of shape (n_samples, n_classifiers)
             The competence level estimated for each base classifier and test
             example.
         """

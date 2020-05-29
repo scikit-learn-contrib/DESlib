@@ -22,6 +22,7 @@ from sklearn.utils.validation import (check_X_y, check_is_fitted, check_array,
 
 from deslib.util import KNNE
 from deslib.util import faiss_knn_wrapper
+from deslib.util.dfp import frienemy_pruning_preprocessed
 from deslib.util.instance_hardness import hardness_region_competence
 
 
@@ -69,7 +70,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        competences : array of shape = [n_samples, n_classifiers]
+        competences : array of shape (n_samples, n_classifiers)
                       The estimated competence level of each base classifier
                       for test example
 
@@ -92,22 +93,22 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        query : array of shape  = [n_samples, n_features]
+        query : array of shape (n_samples, n_features)
                 The query sample
 
-        neighbors : array of shale = [n_samples, n_neighbors]
+        neighbors : array of shape (n_samples, n_neighbors)
                     Indices of the k nearest neighbors according for each
                     test sample.
 
-        distances : array of shale = [n_samples, n_neighbors]
+        distances : array of shape (n_samples, n_neighbors)
                     Distances of the k nearest neighbors according for each
                     test sample.
 
-        predictions : array of shape = [n_samples, n_classifiers]
+        predictions : array of shape (n_samples, n_classifiers)
                       Predictions of the base classifiers for all test examples
         Returns
         -------
-        competences : array = [n_classifiers] containing the competence level
+        competences : array (n_classifiers) containing the competence level
                       estimated for each base classifier
         """
         pass
@@ -120,29 +121,29 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        query : array of shape  = [n_samples, n_features]
+        query : array of shape (n_samples, n_features)
             The test examples.
 
-        predictions : array of shape = [n_samples, n_classifiers]
+        predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples
 
-        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+        probabilities : array of shape (n_samples, n_classifiers, n_classes)
             Probabilities estimates of each base classifier for all test
             examples (For methods that always require probabilities from the
             base classifiers)
 
-        neighbors : array of shale = [n_samples, n_neighbors]
+        neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 
-        distances : array of shale = [n_samples, n_neighbors]
+        distances : array of shape (n_samples, n_neighbors)
             Distances of the k nearest neighbors according for each test sample
 
-        DFP_mask : array of shape = [n_samples, n_classifiers]
+        DFP_mask : array of shape (n_samples, n_classifiers)
             Mask containing 1 for the selected base classifier and 0 otherwise.
 
         Returns
         -------
-        predicted_label : array of shape = [n_samples]
+        predicted_label : array of shape (n_samples)
             The predicted label for each query
         """
         pass
@@ -155,29 +156,29 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        query : array of shape  = [n_samples, n_features]
+        query : array of shape (n_samples, n_features)
             The test examples.
 
-        predictions : array of shape = [n_samples, n_classifiers]
+        predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples
 
-        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+        probabilities : array of shape (n_samples, n_classifiers, n_classes)
             The predictions of each base classifier for all samples (For
             methods that always require probabilities from the base
             classifiers).
 
-        neighbors : array of shape = [n_samples, n_neighbors]
+        neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 
-        distances : array of shale = [n_samples, n_neighbors]
+        distances : array of shape (n_samples, n_neighbors)
             Distances of the k nearest neighbors according for each test sample
 
-        DFP_mask : array of shape = [n_samples, n_classifiers]
+        DFP_mask : array of shape (n_samples, n_classifiers)
            Mask containing 1 for the selected base classifier and 0 otherwise.
 
         Returns
         -------
-        predicted_proba: array of shape = [n_samples, n_classes]
+        predicted_proba: array of shape (n_samples, n_classes)
             Posterior probabilities estimates for each test example.
         """
         pass
@@ -189,10 +190,10 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The input data.
 
-        y : array of shape = [n_samples]
+        y : array of shape (n_samples)
             class labels of each example in X.
 
         Returns
@@ -308,10 +309,10 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The Input data.
 
-        y : array of shape = [n_samples]
+        y : array of shape (n_samples)
             class labels of each sample in X.
         """
         self.DSEL_data_ = X
@@ -356,7 +357,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        query : array of shape = [n_samples, n_features]
+        query : array of shape (n_samples, n_features)
                 The test examples.
 
         k : int (Default = self.k)
@@ -364,11 +365,11 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        dists : list of shape = [n_samples, k]
+        dists : array of shape (n_samples, k)
                 The distances between the query and each sample in the region
                 of competence. The vector is ordered in an ascending fashion.
 
-        idx : list of shape = [n_samples, k]
+        idx : array of shape (n_samples, k)
               Indices of the instances belonging to the region of competence of
               the given query sample.
         """
@@ -386,12 +387,12 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The input data.
 
         Returns
         -------
-        predicted_labels : array of shape = [n_samples]
+        predicted_labels : array of shape (n_samples)
                            Predicted class label for each sample in X.
         """
         # Check if the DS model was trained
@@ -436,12 +437,12 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The input data.
 
         Returns
         -------
-        predicted_proba : array of shape = [n_samples, n_classes]
+        predicted_proba : array of shape (n_samples, n_classes)
                           Probabilities estimates for each sample in X.
         """
         check_is_fitted(self,
@@ -625,67 +626,26 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 (ind_ds_classifier.size, self.n_classifiers_))
         return DFP_mask
 
-    def _frienemy_pruning(self, neighbors):
-        """Implements the Online Pruning method (frienemy) to remove base
-        classifiers that do not cross the region of competence. We consider
-        that a classifier crosses the region of competence if it correctly
-        classify at least one sample for each different class in the region.
+    def _preprocess_dsel(self):
+        """Compute the prediction of each base classifier for
+        all samples in DSEL. Used to speed-up the test phase, by
+        not requiring to re-classify training samples during test.
 
         Returns
         -------
-        DFP_mask : array of shape = [n_samples, n_classifiers]
-                   Mask containing 1 for the selected base classifier and 0
-                   otherwise.
-        References
-        ----------
-        Oliveira, D.V.R., Cavalcanti, G.D.C. and Sabourin, R., Online Pruning
-        of Base Classifiers for Dynamic Ensemble Selection,
-        Pattern Recognition, vol. 72, December 2017, pp 44-58.
+        DSEL_processed_ : array of shape (n_samples, n_classifiers).
+                         Each element indicates whether the base classifier
+                         predicted the correct label for the corresponding
+                         sample (True), otherwise (False).
+
+        BKS_DSEL_ : array of shape (n_samples, n_classifiers)
+                   Predicted labels of each base classifier for all samples
+                   in DSEL.
         """
-        # using a for loop for processing a batch of samples temporarily.
-        # Change later to numpy processing
-        if neighbors.ndim < 2:
-            neighbors = np.atleast_2d(neighbors)
+        BKS_dsel = self._predict_base(self.DSEL_data_)
+        processed_dsel = BKS_dsel == self.DSEL_target_[:, np.newaxis]
 
-        n_samples, _ = neighbors.shape
-        mask = np.zeros((n_samples, self.n_classifiers_))
-
-        for sample_idx in range(n_samples):
-            # Check if query is in a indecision region
-            neighbors_y = self.DSEL_target_[
-                neighbors[sample_idx, :self.safe_k]]
-
-            if len(set(neighbors_y)) > 1:
-                # There are more than on class in the region of competence
-                # (So it is an indecision region).
-
-                # Check if the base classifier predict the correct label for
-                # a sample belonging to each class.
-                for clf_index in range(self.n_classifiers_):
-                    predictions = self.DSEL_processed_[
-                        neighbors[sample_idx, :self.safe_k], clf_index]
-                    correct_class_pred = [self.DSEL_target_[index] for
-                                          count, index in
-                                          enumerate(neighbors[sample_idx,
-                                                    :self.safe_k])
-                                          if predictions[count] == 1]
-
-                    # If that is true, it means that it correctly classified
-                    # at least one neighbor for each class in
-                    # the region of competence
-                    if np.unique(correct_class_pred).size > 1:
-                        mask[sample_idx, clf_index] = 1.0
-                # Check if all classifiers were pruned
-                if not np.count_nonzero(mask[sample_idx, :]):
-                    # Do not apply the pruning mechanism.
-                    mask[sample_idx, :] = 1.0
-
-            else:
-                # The sample is located in a safe region. All base classifiers
-                # can predict the label
-                mask[sample_idx, :] = 1.0
-
-        return mask
+        return processed_dsel, BKS_dsel
 
     def _predict_base(self, X):
         """ Get the predictions of each base classifier in the pool for all
@@ -693,12 +653,12 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The test examples.
 
         Returns
         -------
-        predictions : array of shape = [n_samples, n_classifiers]
+        predictions : array of shape (n_samples, n_classifiers)
                       The predictions of each base classifier for all samples
                       in X.
         """
@@ -716,12 +676,12 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : array of shape = [n_samples, n_features]
+        X : array of shape (n_samples, n_features)
             The test examples.
 
         Returns
         -------
-        probabilities : array of shape = [n_samples, n_classifiers, n_classes]
+        probabilities : array of shape (n_samples, n_classifiers, n_classes)
                         Probabilities estimates of each base classifier for all
                         test samples.
         """
@@ -739,7 +699,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        predictions : array of shape = [n_samples, n_classifiers]
+        predictions : array of shape (n_samples, n_classifiers)
                       Predictions of the base classifiers for the test examples
 
         Returns

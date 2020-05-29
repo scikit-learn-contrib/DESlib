@@ -56,13 +56,13 @@ def _process_predictions(y, y_pred1, y_pred2):
 
     Parameters
     ----------
-    y : array of shape = [n_samples]:
+    y : array of shape (n_samples):
         class labels of each sample.
 
-    y_pred1 : array of shape = [n_samples]:
+    y_pred1 : array of shape (n_samples):
               predicted class labels by the classifier 1 for each sample.
 
-    y_pred2 : array of shape = [n_samples]:
+    y_pred2 : array of shape (n_samples):
               predicted class labels by the classifier 2 for each sample.
 
     Returns
@@ -102,13 +102,13 @@ def double_fault(y, y_pred1, y_pred2):
 
     Parameters
     ----------
-    y : array of shape = [n_samples]:
+    y : array of shape (n_samples):
         class labels of each sample.
 
-    y_pred1 : array of shape = [n_samples]:
+    y_pred1 : array of shape (n_samples):
               predicted class labels by the classifier 1 for each sample.
 
-    y_pred2 : array of shape = [n_samples]:
+    y_pred2 : array of shape (n_samples):
               predicted class labels by the classifier 2 for each sample.
 
     Returns
@@ -132,13 +132,13 @@ def negative_double_fault(y, y_pred1, y_pred2):
 
     Parameters
     ----------
-    y : array of shape = [n_samples]:
+    y : array of shape (n_samples):
         class labels of each sample.
 
-    y_pred1 : array of shape = [n_samples]:
+    y_pred1 : array of shape (n_samples):
               predicted class labels by the classifier 1 for each sample.
 
-    y_pred2 : array of shape = [n_samples]:
+    y_pred2 : array of shape (n_samples):
               predicted class labels by the classifier 2 for each sample.
 
     Returns
@@ -162,13 +162,13 @@ def Q_statistic(y, y_pred1, y_pred2):
 
     Parameters
     ----------
-    y : array of shape = [n_samples]:
+    y : array of shape (n_samples):
         class labels of each sample.
 
-    y_pred1 : array of shape = [n_samples]:
+    y_pred1 : array of shape (n_samples):
               predicted class labels by the classifier 1 for each sample.
 
-    y_pred2 : array of shape = [n_samples]:
+    y_pred2 : array of shape (n_samples):
               predicted class labels by the classifier 2 for each sample.
 
     Returns
@@ -187,13 +187,13 @@ def ratio_errors(y, y_pred1, y_pred2):
 
     Parameters
     ----------
-    y : array of shape = [n_samples]:
+    y : array of shape (n_samples):
         class labels of each sample.
 
-    y_pred1 : array of shape = [n_samples]:
+    y_pred1 : array of shape (n_samples):
               predicted class labels by the classifier 1 for each sample.
 
-    y_pred2 : array of shape = [n_samples]:
+    y_pred2 : array of shape (n_samples):
               predicted class labels by the classifier 2 for each sample.
 
     Returns
@@ -221,13 +221,13 @@ def disagreement_measure(y, y_pred1, y_pred2):
 
     Parameters
     ----------
-    y : array of shape = [n_samples]:
+    y : array of shape (n_samples):
         class labels of each sample.
 
-    y_pred1 : array of shape = [n_samples]:
+    y_pred1 : array of shape (n_samples):
               predicted class labels by the classifier 1 for each sample.
 
-    y_pred2 : array of shape = [n_samples]:
+    y_pred2 : array of shape (n_samples):
               predicted class labels by the classifier 2 for each sample.
 
     Returns
@@ -246,13 +246,13 @@ def agreement_measure(y, y_pred1, y_pred2):
 
     Parameters
     ----------
-    y : array of shape = [n_samples]:
+    y : array of shape (n_samples):
         class labels of each sample.
 
-    y_pred1 : array of shape = [n_samples]:
+    y_pred1 : array of shape (n_samples):
               predicted class labels by the classifier 1 for each sample.
 
-    y_pred2 : array of shape = [n_samples]:
+    y_pred2 : array of shape (n_samples):
               predicted class labels by the classifier 2 for each sample.
 
     Returns
@@ -270,13 +270,13 @@ def correlation_coefficient(y, y_pred1, y_pred2):
 
     Parameters
     ----------
-    y : array of shape = [n_samples]:
+    y : array of shape (n_samples):
         class labels of each sample.
 
-    y_pred1 : array of shape = [n_samples]:
+    y_pred1 : array of shape (n_samples):
               predicted class labels by the classifier 1 for each sample.
 
-    y_pred2 : array of shape = [n_samples]:
+    y_pred2 : array of shape (n_samples):
               predicted class labels by the classifier 2 for each sample.
 
     Returns
@@ -294,10 +294,10 @@ def compute_pairwise_diversity(targets, prediction_matrix, diversity_func):
 
      Parameters
      ----------
-     targets : array of shape = [n_samples]:
+     targets : array of shape (n_samples):
         Class labels of each sample in X.
 
-     prediction_matrix : array of shape = [n_samples, n_classifiers]:
+     prediction_matrix : array of shape (n_samples, n_classifiers):
         Predicted class labels for each classifier in the pool
 
      diversity_func : Function
