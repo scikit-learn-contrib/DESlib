@@ -620,7 +620,9 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
     def _apply_dfp(self, ind_ds_classifier, neighbors):
         if self.DFP:
-            DFP_mask = self._frienemy_pruning(neighbors)
+            DFP_mask = frienemy_pruning_preprocessed(neighbors,
+                                                     self.DSEL_target_,
+                                                     self.DSEL_processed_)
         else:
             DFP_mask = np.ones(
                 (ind_ds_classifier.size, self.n_classifiers_))
