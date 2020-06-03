@@ -176,6 +176,11 @@ class DESClustering(BaseDS):
         self._preprocess_clusters()
         return self
 
+    def _get_region_competence(self, query, k=None):
+        distances = self.clustering_.transform(query)
+        region = self.clustering_.predict(query)
+        return distances, region
+
     def _preprocess_clusters(self):
         """Preprocess the competence as well as the average diversity of each
         base classifier for each specific cluster.
