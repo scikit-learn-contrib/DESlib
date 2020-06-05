@@ -6,8 +6,6 @@
 
 import copy
 from typing import List
-from typing import Optional
-from typing import Union
 
 import numpy as np
 
@@ -66,12 +64,7 @@ class Particle:
         Fitness evolution of the given particle.
     """
 
-    def __init__(self,
-                 position: Union[List[float], np.ndarray],
-                 inertia: float,
-                 c1: float,
-                 c2: float,
-                 ):
+    def __init__(self, position, inertia, c1, c2):
         self.position = np.asarray(position)
         self.c1 = c1
         self.c2 = c2
@@ -132,16 +125,16 @@ class BPSO:
     problems." Mathematical Problems in Engineering 2013 (2013).
     """
     def __init__(self,
-                 max_iter: int,
-                 n_particles: int,
-                 n_dim: int,
-                 init_inertia: float,
-                 final_inertia: float,
-                 c1: float,
-                 c2: float,
-                 transfer_function: str = 'v-shaped',
+                 max_iter,
+                 n_particles,
+                 n_dim,
+                 init_inertia,
+                 final_inertia,
+                 c1,
+                 c2,
+                 transfer_function='v-shaped',
                  max_iter_no_change=None,
-                 random_state: Optional[int] = None,
+                 random_state=None,
                  ):
         self.max_iter = max_iter
         self.n_particles = n_particles
@@ -156,10 +149,8 @@ class BPSO:
         self.random_state = random_state
 
     def _create_swarm(self):
-
         self.particles_ = []
         self.gbest_ = None
-
         positions = np.random.uniform(0, 1, (self.n_particles, self.n_dim))
         positions = (positions > 0.5).astype(int)
         for idx in range(self.n_particles):
@@ -254,82 +245,48 @@ class BPSO:
         for particle in self.particles_:
             if self.gbest_ is None or particle.fitness < self.gbest_.fitness:
                 self.gbest_ = copy.deepcopy(particle)
-                self._n_iter_no_change = 0
+                self.n_iter_no_change_ = 0
 
-    def optimize(self):
+    def optimize(self, fitness_function):
         """
         Run the PSO algorithm.
+
+        Parameters
+        ----------
+        fitness_function : function
+            Function used to estimate the fitness of a binary particle.
 
         Return
         ------
         gbest_ : Particle
-            Particle with the best fitness value.
-
+            Global best solution from the whole swarm.
         """
         self._create_swarm()
-        self._n_iter_no_change = 0
+        self.n_iter_no_change_ = 0
         self.iter_ = 0
 
         while not self._stop():
-            self.iter_ = self.iter_ + 1
-            self._n_iter_no_change += 1
-            self._compute_fitness()
+            # compute fitness of each particle
+            for particle in self.particles_:
+                particle.fitness = fitness_function(particle.position)
+
             self._update_gbest()
             self._update_pbest()
             self._update_velocity()
             self._self_update()
             self._update_binary_particles()
-
+            self.iter_ = self.iter_ + 1
+            self.n_iter_no_change_ += 1
         return self.gbest_
 
     def _stop(self):
         """
         Function to check if the optimization should stop.
         """
-        # check early stopping
+        # Early stopping
         if (self.max_iter_no_change is not None
-                and self._n_iter_no_change >= self.max_iter_no_change):
+                and self.n_iter_no_change_ >= self.max_iter_no_change):
             return True
-        # check reached maximum number of iteration
+        # Reached maximum number of iteration
         if self.iter_ >= self.max_iter:
             return True
-
-    @staticmethod
-    def fitness_function(position):
-        """
-        Compute fitness
-
-        Parameters
-        ----------
-        position : Numpy array
-            A particle in the swarm
-
-        Returns
-        -------
-        fitness : float
-            Fitness of the particle.
-
-        """
-        return np.sum(position == 1)
-
-    def _compute_fitness(self):
-        """
-        Compute the fitness of each particle
-        """
-        for particle in self.particles_:
-            particle.fitness = self.fitness_function(
-                particle.position)
-
-    @staticmethod
-    def fitness(particle, X, y, metric='euclidean', gamma=0.5):
-        """X must be normalized a priori"""
-        X_p = X[:, particle]
-        score = BPSO.compute_knn_score(X_p, y, metric)
-        distance = BPSO.computer_inner_outer_distances(X_p, y, metric)
-        fitness = ((gamma * score) + ((1 - gamma) * distance))
-        return fitness
-
-
-def main():
-    swarm = BPSO(1000, 10, 200, 1, 0.3, c1=2, c2=2, max_iter_no_change=50,)
-    swarm.optimize()
