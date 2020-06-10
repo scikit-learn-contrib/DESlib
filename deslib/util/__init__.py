@@ -23,12 +23,22 @@ deslib.util.datasets - Provides methods to generate synthetic data.
 
 deslib.util.knne - Implementation of the K-Nearest Neighbors Equality
 technique
+
+deslib.util.aggregation.dfp - General Dynamic Frienemy Pruning (DFP)
+implementation. This implementation allows using the DFP method to any ensemble
+model, not only dynamic ones.
+
+deslib.util.bpso - V and S shaped Binary Particle Swarm Optimization for
+ used feature selection.
 """
 
 from .aggregation import *
-from .diversity import *
-from .instance_hardness import *
-from .prob_functions import *
+from .bpso import BPSO
 from .datasets import *
-from .knne import KNNE
+from .dfp import frienemy_pruning
+from .dfp import frienemy_pruning_preprocessed
+from .diversity import *
 from .faiss_knn_wrapper import FaissKNNClassifier
+from .instance_hardness import *
+from .knne import KNNE
+from .prob_functions import *
