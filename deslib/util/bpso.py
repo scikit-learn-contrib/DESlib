@@ -82,7 +82,7 @@ class Particle:
 
 class BPSO:
     """
-    Bibary Particle Swarm Optimization (BPSO) with self updating mechanism.
+    Binary Particle Swarm Optimization (BPSO) with self updating mechanism.
     Conversion from continuous to binary representation is conducted using
     either the V-shaped and S-shaped transfer functions
 
@@ -144,7 +144,6 @@ class BPSO:
         self.initial_c1 = c1
         self.initial_c2 = c2
         self.transfer_function = transfer_function
-        self.verbose = verbose
         self.max_iter_no_change = max_iter_no_change
         self.random_state = random_state
 
@@ -162,37 +161,44 @@ class BPSO:
             self.particles_.append(particle)
 
     def _update_velocity(self):
-        """
-        Update the velocity of each particle.
-        """
-        for particle in self.particles_:
-            for dim in range(len(particle.position)):
-                tmp_c1 = particle.pbest[dim] - particle.position[dim]
-                tmp_c2 = self.gbest_.position[dim] - particle.position[dim]
+        for p in self.particles_:
+            tmp_c1 = p.pbest - p.position
+            tmp_c2 = self.gbest_.position - p.position
+            inertia = p.inertia * p.velocity
+            cognitive = p.c1 * np.random.rand(p.n_dimensions) * tmp_c1
+            social = p.c2 * np.random.rand(p.n_dimensions) * tmp_c2
+            p.velocity = inertia + cognitive + social
+            p.velocity = p.velocity.clip(X_MIN, X_MAX)
 
-                inertia = particle.inertia * particle.velocity[dim]
-                cognitive = (
-                        (particle.c1 * np.random.rand()) * tmp_c1)
-                social = (particle.c2 * np.random.rand()) * tmp_c2
-
-                particle.velocity[dim] = inertia + cognitive + social
-
-                # Limit velocity
-                if particle.velocity[dim] >= X_MAX:
-                    particle.velocity[dim] = X_MAX
-                elif particle.velocity[dim] <= X_MIN:
-                    particle.velocity[dim] = X_MIN
+            # for dim in range(len(particle.position)):
+            #     tmp_c1 = particle.pbest[dim] - particle.position[dim]
+            #     tmp_c2 = self.gbest_.position[dim] - particle.position[dim]
+            #
+            #     inertia = particle.inertia * particle.velocity[dim]
+            #     cognitive = (
+            #             (particle.c1 * np.random.rand()) * tmp_c1)
+            #     social = (particle.c2 * np.random.rand()) * tmp_c2
+            #
+            #     particle.velocity[dim] = inertia + cognitive + social
+            #
+            #     # Limit velocity
+            #     if particle.velocity[dim] >= X_MAX:
+            #         particle.velocity[dim] = X_MAX
+            #     elif particle.velocity[dim] <= X_MIN:
+            #         particle.velocity[dim] = X_MIN
 
     def _update_particles(self):
-
         for particle in self.particles_:
-            for dim in range(len(particle.position)):
-                particle.position[dim] = particle.position[dim] + \
-                                         particle.velocity[dim]
-                if particle.position[dim] >= POS_MAX:
-                    particle.position[dim] = POS_MAX
-                elif particle.position[dim] <= POS_MIN:
-                    particle.position[dim] = POS_MIN
+            particle.position += particle.velocity
+            particle.position = particle.position.clip(POS_MAX, POS_MIN)
+
+            # for dim in range(len(particle.position)):
+            #     particle.position[dim] = particle.position[dim] + \
+            #                              particle.velocity[dim]
+            #     if particle.position[dim] >= POS_MAX:
+            #         particle.position[dim] = POS_MAX
+            #     elif particle.position[dim] <= POS_MIN:
+            #         particle.position[dim] = POS_MIN
 
     def _update_binary_particles(self):
         for particle in self.particles_:
@@ -290,3 +296,16 @@ class BPSO:
         # Reached maximum number of iteration
         if self.iter_ >= self.max_iter:
             return True
+
+
+def main():
+    from sklearn.datasets import make_classification
+    from sklearn.neighbors import KNeighborsClassifier
+
+    def fitness(X_train, X_val, y_train, y_val, p):
+        knn = KNN_classifier
+
+    X, y = make_classification(n_samples=2000, n_features=100, n_redundant=50,
+                               n_informative=20)
+    swarm = BPSO(1000, 10, 200, 1, 0.3, c1=2, c2=2, max_iter_no_change=50,)
+    swarm.optimize()
