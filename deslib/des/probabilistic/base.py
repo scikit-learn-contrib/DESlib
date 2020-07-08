@@ -126,6 +126,7 @@ class BaseProbabilistic(BaseDES):
             example.
         """
         potential_dists = self.potential_func(distances)
+        potential_dists[potential_dists == 0] = 1e-20
         sum_potential = np.sum(potential_dists, axis=1)
 
         competences = np.einsum('ijk,ij->ik', self.C_src_[neighbors, :],
