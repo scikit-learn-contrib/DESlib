@@ -78,6 +78,11 @@ class DESP(BaseDES):
         Note: This parameter is only used if the pool of classifier is None or
         unfitted.
 
+    n_jobs : int, default=-1
+        The number of parallel jobs to run. None means 1 unless in
+        a joblib.parallel_backend context. -1 means using all processors.
+        Doesn’t affect fit method..
+
     References
     ----------
     Woloszynski, Tomasz, et al. "A measure of competence based on random
@@ -94,13 +99,9 @@ class DESP(BaseDES):
     """
 
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
-                 safe_k=None,
-                 IH_rate=0.30,
-                 mode='selection',
-                 random_state=None,
-                 knn_classifier='knn',
-                 knne=False,
-                 DSEL_perc=0.5):
+                 safe_k=None, IH_rate=0.30, mode='selection',
+                 random_state=None, knn_classifier='knn', knne=False,
+                 DSEL_perc=0.5, n_jobs=-1):
 
         super(DESP, self).__init__(pool_classifiers=pool_classifiers,
                                    k=k,
@@ -112,7 +113,8 @@ class DESP(BaseDES):
                                    random_state=random_state,
                                    knn_classifier=knn_classifier,
                                    knne=knne,
-                                   DSEL_perc=DSEL_perc)
+                                   DSEL_perc=DSEL_perc,
+                                   n_jobs=n_jobs)
 
     def estimate_competence(self, query, neighbors, distances=None,
                             predictions=None):

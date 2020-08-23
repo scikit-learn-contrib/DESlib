@@ -5,10 +5,9 @@
 # License: BSD 3 clause
 
 import numpy as np
-from sklearn.preprocessing import normalize
-
 from deslib.base import BaseDS
 from deslib.util.aggregation import majority_voting_rule
+from sklearn.preprocessing import normalize
 
 
 class DESMI(BaseDS):
@@ -72,6 +71,11 @@ class DESMI(BaseDS):
         Note: This parameter is only used if the pool of classifier is None or
         unfitted.
 
+    n_jobs : int, default=-1
+        The number of parallel jobs to run. None means 1 unless in
+        a joblib.parallel_backend context. -1 means using all processors.
+        Doesn’t affect fit method.
+
     References
     ----------
     García, S.; Zhang, Z.-L.; Altalhi, A.; Alshomrani, S. & Herrera, F.
@@ -90,7 +94,7 @@ class DESMI(BaseDS):
     def __init__(self, pool_classifiers=None, k=7, pct_accuracy=0.4, alpha=0.9,
                  DFP=False, with_IH=False, safe_k=None,
                  IH_rate=0.30, random_state=None, knn_classifier='knn',
-                 knne=False, DSEL_perc=0.5):
+                 knne=False, DSEL_perc=0.5, n_jobs=-1):
 
         super(DESMI, self).__init__(pool_classifiers=pool_classifiers,
                                     k=k,
@@ -101,7 +105,8 @@ class DESMI(BaseDS):
                                     random_state=random_state,
                                     knn_classifier=knn_classifier,
                                     knne=knne,
-                                    DSEL_perc=DSEL_perc)
+                                    DSEL_perc=DSEL_perc,
+                                    n_jobs=n_jobs)
 
         self.alpha = alpha
         self.pct_accuracy = pct_accuracy

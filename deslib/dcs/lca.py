@@ -88,6 +88,11 @@ class LCA(BaseDCS):
         Note: This parameter is only used if the pool of classifier is None or
         unfitted.
 
+    n_jobs : int, default=-1
+        The number of parallel jobs to run. None means 1 unless in
+        a joblib.parallel_backend context. -1 means using all processors.
+        Doesn’t affect fit method.
+
     References
     ----------
     Woods, Kevin, W. Philip Kegelmeyer, and Kevin Bowyer. "Combination of
@@ -108,7 +113,7 @@ class LCA(BaseDCS):
                  safe_k=None, IH_rate=0.30, selection_method='best',
                  diff_thresh=0.1, random_state=None, knn_classifier='knn',
                  DSEL_perc=0.5,
-                 knne=False):
+                 knne=False, n_jobs=-1):
         super(LCA, self).__init__(pool_classifiers=pool_classifiers, k=k,
                                   DFP=DFP, with_IH=with_IH, safe_k=safe_k,
                                   IH_rate=IH_rate,
@@ -117,7 +122,8 @@ class LCA(BaseDCS):
                                   random_state=random_state,
                                   knn_classifier=knn_classifier,
                                   DSEL_perc=DSEL_perc,
-                                  knne=knne)
+                                  knne=knne,
+                                  n_jobs=n_jobs)
 
     def estimate_competence(self, query, neighbors, distances=None,
                             predictions=None):
