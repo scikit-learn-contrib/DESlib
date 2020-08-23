@@ -64,7 +64,7 @@ class StaticSelection(BaseStaticEnsemble):
         super(StaticSelection, self).__init__(
             pool_classifiers=pool_classifiers,
             random_state=random_state,
-            n_jobs=-n_jobs)
+            n_jobs=n_jobs)
         self.pct_classifiers = pct_classifiers
         self.scoring = scoring
 
