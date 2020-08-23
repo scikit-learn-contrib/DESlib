@@ -61,6 +61,12 @@ class RRC(BaseProbabilistic):
         Note: This parameter is only used if the pool of classifier is None or
         unfitted.
 
+    n_jobs : int, default=-1
+        The number of parallel jobs to run for neighbors search.
+        None means 1 unless in a joblib.parallel_backend context.
+         -1 means using all processors. Doesn’t affect fit method.
+
+
     References
     ----------
     Woloszynski, Tomasz, and Marek Kurzynski. "A probabilistic model of

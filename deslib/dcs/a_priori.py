@@ -88,6 +88,11 @@ class APriori(BaseDCS):
         Note: This parameter is only used if the pool of classifier is None or
         unfitted.
 
+    n_jobs : int, default=-1
+        The number of parallel jobs to run for neighbors search.
+        None means 1 unless in a joblib.parallel_backend context.
+         -1 means using all processors. Doesn’t affect fit method.
+
     References
     ----------
     G. Giacinto and F. Roli, Methods for Dynamic Classifier Selection
@@ -119,7 +124,8 @@ class APriori(BaseDCS):
                                       random_state=random_state,
                                       knn_classifier=knn_classifier,
                                       knne=knne,
-                                      DSEL_perc=DSEL_perc, n_jobs=n_jobs)
+                                      DSEL_perc=DSEL_perc,
+                                      n_jobs=n_jobs)
 
     def fit(self, X, y):
         """Prepare the DS model by setting the KNN algorithm and

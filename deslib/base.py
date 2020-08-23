@@ -341,12 +341,12 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         if self.knn_classifier is None or self.knn_classifier in ['knn',
                                                                   'sklearn']:
             knn_class = functools.partial(KNeighborsClassifier,
-                                          n_jobs=n_jobs,
+                                          n_jobs=self.n_jobs,
                                           algorithm="auto")
         elif self.knn_classifier == 'faiss':
             knn_class = functools.partial(
                 faiss_knn_wrapper.FaissKNNClassifier,
-                n_jobs=n_jobs, algorithm="brute")
+                n_jobs=self.n_jobs, algorithm="brute")
         elif callable(self.knn_classifier):
             knn_class = self.knn_classifier
         else:
@@ -357,7 +357,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             self.knn_class_ = functools.partial(
                 KNNE,
                 knn_classifier=knn_class,
-                n_jobs=n_jobs,
+                n_jobs=self.n_jobs,
                 algorithm="auto")
         else:
             self.knn_class_ = knn_class
