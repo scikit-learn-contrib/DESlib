@@ -45,7 +45,7 @@ class StackedClassifier(BaseStaticEnsemble):
     John Wiley & Sons, 2004.
     """
 
-    def __init__(self,pool_classifiers=None, meta_classifier=None,
+    def __init__(self, pool_classifiers=None, meta_classifier=None,
                  passthrough=False, random_state=None, n_jobs=-1):
 
         super(StackedClassifier, self).__init__(
