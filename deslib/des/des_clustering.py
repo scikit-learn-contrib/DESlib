@@ -52,8 +52,8 @@ class DESClustering(BaseDS):
         either the double fault (df), Q-statistics (Q), or error correlation.
 
     metric_performance : String (Default = 'accuracy_score')
-        Metric used to estimate the performance of a base classifier on a cluster.
-        Can be either any metric from sklearn.metrics. 
+        Metric used to estimate the performance of a base classifier on a
+        cluster. Can be either any metric from sklearn.metrics.
 
     random_state : int, RandomState instance or None, optional (default=None)
         If int, random_state is the seed used by the random number generator;
