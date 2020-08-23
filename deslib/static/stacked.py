@@ -1,8 +1,7 @@
 import numpy as np
+from deslib.static.base import BaseStaticEnsemble
 from sklearn.linear_model import LogisticRegression
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
-
-from deslib.static.base import BaseStaticEnsemble
 
 
 class StackedClassifier(BaseStaticEnsemble):
@@ -32,6 +31,11 @@ class StackedClassifier(BaseStaticEnsemble):
         meta-classifier is trained on the predictions as well as the
         original training data.
 
+    n_jobs : int, default=-1
+        The number of parallel jobs to run. None means 1 unless in
+        a joblib.parallel_backend context. -1 means using all processors.
+        Doesn’t affect fit method.
+
     References
     ----------
     Wolpert, David H. "Stacked generalization." Neural networks 5,
@@ -41,15 +45,14 @@ class StackedClassifier(BaseStaticEnsemble):
     John Wiley & Sons, 2004.
     """
 
-    def __init__(self,
-                 pool_classifiers=None,
-                 meta_classifier=None,
-                 passthrough=False,
-                 random_state=None):
+    def __init__(self,pool_classifiers=None, meta_classifier=None,
+                 passthrough=False, random_state=None, n_jobs=-1):
 
         super(StackedClassifier, self).__init__(
             pool_classifiers=pool_classifiers,
-            random_state=random_state)
+            random_state=random_state,
+            n_jobs=n_jobs
+        )
         self.meta_classifier = meta_classifier
         self.passthrough = passthrough
 

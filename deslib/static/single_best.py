@@ -34,6 +34,11 @@ class SingleBest(BaseStaticEnsemble):
         If None, the random number generator is the RandomState instance used
         by `np.random`.
 
+    n_jobs : int, default=-1
+        The number of parallel jobs to run. None means 1 unless in
+        a joblib.parallel_backend context. -1 means using all processors.
+        Doesn’t affect fit method.
+
     References
     ----------
     Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection
@@ -48,12 +53,11 @@ class SingleBest(BaseStaticEnsemble):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self,
-                 pool_classifiers=None,
-                 scoring=None,
-                 random_state=None):
+    def __init__(self, pool_classifiers=None, scoring=None,
+                 random_state=None, n_jobs=-1):
         super(SingleBest, self).__init__(pool_classifiers=pool_classifiers,
-                                         random_state=random_state)
+                                         random_state=random_state,
+                                         n_jobs=n_jobs)
         self.scoring = scoring
 
     def fit(self, X, y):

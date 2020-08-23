@@ -5,9 +5,8 @@
 # License: BSD 3 clause
 
 import numpy as np
-from sklearn.utils.validation import check_X_y, check_array
-
 from deslib.static.base import BaseStaticEnsemble
+from sklearn.utils.validation import check_X_y, check_array
 
 
 class Oracle(BaseStaticEnsemble):
@@ -32,6 +31,11 @@ class Oracle(BaseStaticEnsemble):
         If None, the random number generator is the RandomState instance used
         by `np.random`.
 
+    n_jobs : int, default=-1
+        The number of parallel jobs to run. None means 1 unless in
+        a joblib.parallel_backend context. -1 means using all processors.
+        Doesn’t affect fit method.
+
     References
     ----------
     Kuncheva, Ludmila I. "A theoretical study on six classifier fusion
@@ -44,9 +48,10 @@ class Oracle(BaseStaticEnsemble):
 
     """
 
-    def __init__(self, pool_classifiers=None, random_state=None):
+    def __init__(self, pool_classifiers=None, random_state=None, n_jobs=-1):
         super(Oracle, self).__init__(pool_classifiers=pool_classifiers,
-                                     random_state=random_state)
+                                     random_state=random_state,
+                                     n_jobs=n_jobs)
 
     def fit(self, X, y):
         """Fit the model according to the given training data.

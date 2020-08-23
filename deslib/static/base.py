@@ -34,6 +34,11 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
         If None, the random number generator is the RandomState instance used
         by `np.random`.
 
+    n_jobs : int, default=-1
+        The number of parallel jobs to run. None means 1 unless in
+        a joblib.parallel_backend context. -1 means using all processors.
+        Doesn’t affect fit method.
+
     References
     ----------
     Kuncheva, Ludmila I. Combining pattern classifiers: methods and algorithms.
@@ -47,9 +52,10 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def __init__(self, pool_classifiers=None, random_state=None):
+    def __init__(self, pool_classifiers=None, random_state=None, n_jobs=-1):
         self.pool_classifiers = pool_classifiers
         self.random_state = random_state
+        self.n_jobs = n_jobs
 
     def fit(self, X, y):
         """Fit the model according to the given training data.
@@ -73,7 +79,7 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
         # BaggingClassifier for the pool.
         if self.pool_classifiers is None:
             self.pool_classifiers_ = BaggingClassifier(
-                random_state=self.random_state_)
+                random_state=self.random_state_, n_jobs=self.n_jobs)
             self.pool_classifiers_.fit(X, y)
 
         else:
