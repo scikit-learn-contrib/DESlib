@@ -85,7 +85,8 @@ class DESKL(BaseProbabilistic):
 
     def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, mode='selection',
-                 random_state=None, knn_classifier='knn', DSEL_perc=0.5):
+                 random_state=None, knn_classifier='knn', DSEL_perc=0.5,
+                 n_jobs=-1):
         super(DESKL, self).__init__(pool_classifiers=pool_classifiers,
                                     k=k,
                                     DFP=DFP,
@@ -95,7 +96,8 @@ class DESKL(BaseProbabilistic):
                                     mode=mode,
                                     random_state=random_state,
                                     knn_classifier=knn_classifier,
-                                    DSEL_perc=DSEL_perc)
+                                    DSEL_perc=DSEL_perc,
+                                    n_jobs=n_jobs)
 
         self.selection_threshold = 0.0
 

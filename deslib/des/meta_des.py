@@ -7,9 +7,8 @@
 import warnings
 
 import numpy as np
-from sklearn.naive_bayes import MultinomialNB
-
 from deslib.des.base import BaseDES
+from sklearn.naive_bayes import MultinomialNB
 
 
 class METADES(BaseDES):
@@ -127,22 +126,11 @@ class METADES(BaseDES):
 
     """
 
-    def __init__(self,
-                 pool_classifiers=None,
-                 meta_classifier=None,
-                 k=7,
-                 Kp=5,
-                 Hc=1.0,
-                 selection_threshold=0.5,
-                 mode='selection',
-                 DFP=False,
-                 with_IH=False,
-                 safe_k=None,
-                 IH_rate=0.30,
-                 random_state=None,
-                 knn_classifier='knn',
-                 knne=False,
-                 DSEL_perc=0.5):
+    def __init__(self, pool_classifiers=None, meta_classifier=None, k=7, Kp=5,
+                 Hc=1.0, selection_threshold=0.5, mode='selection',
+                 DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
+                 random_state=None, knn_classifier='knn', knne=False,
+                 DSEL_perc=0.5, n_jobs=-1):
 
         super(METADES, self).__init__(pool_classifiers=pool_classifiers,
                                       k=k,
@@ -155,7 +143,8 @@ class METADES(BaseDES):
                                       random_state=random_state,
                                       knn_classifier=knn_classifier,
                                       knne=knne,
-                                      DSEL_perc=DSEL_perc)
+                                      DSEL_perc=DSEL_perc,
+                                      n_jobs=n_jobs)
 
         self.meta_classifier = meta_classifier
         self.Kp = Kp

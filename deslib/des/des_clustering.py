@@ -6,14 +6,13 @@
 import warnings
 
 import numpy as np
-from sklearn import metrics
-from sklearn.base import ClusterMixin
-from sklearn.cluster import KMeans
-
 from deslib.base import BaseDS
 from deslib.util.aggregation import majority_voting_rule
 from deslib.util.diversity import Q_statistic, ratio_errors, \
     negative_double_fault, compute_pairwise_diversity
+from sklearn import metrics
+from sklearn.base import ClusterMixin
+from sklearn.cluster import KMeans
 
 
 class DESClustering(BaseDS):
@@ -83,26 +82,19 @@ class DESClustering(BaseDS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers=None,
-                 clustering=None,
-                 with_IH=False,
-                 safe_k=None,
-                 IH_rate=0.30,
-                 pct_accuracy=0.5,
-                 pct_diversity=0.33,
-                 more_diverse=True,
-                 metric_diversity='DF',
-                 metric_performance='accuracy_score',
-                 n_clusters=5,
-                 random_state=None,
-                 DSEL_perc=0.5):
+    def __init__(self, pool_classifiers=None, clustering=None, with_IH=False,
+                 safe_k=None, IH_rate=0.30, pct_accuracy=0.5,
+                 pct_diversity=0.33, more_diverse=True, metric_diversity='DF',
+                 metric_performance='accuracy_score', n_clusters=5,
+                 random_state=None, DSEL_perc=0.5, n_jobs=-1):
 
         super(DESClustering, self).__init__(pool_classifiers=pool_classifiers,
                                             with_IH=with_IH,
                                             safe_k=safe_k,
                                             IH_rate=IH_rate,
                                             random_state=random_state,
-                                            DSEL_perc=DSEL_perc)
+                                            DSEL_perc=DSEL_perc,
+                                            n_jobs=n_jobs)
 
         self.metric_diversity = metric_diversity
         self.metric_performance = metric_performance
@@ -148,10 +140,12 @@ class DESClustering(BaseDS):
         if self.clustering is None:
             if self.n_samples_ >= self.n_clusters:
                 self.clustering_ = KMeans(n_clusters=self.n_clusters,
-                                          random_state=self.random_state)
+                                          random_state=self.random_state,
+                                          n_jobs=self.n_jobs)
             else:
                 warnings.warn("n_clusters is bigger than DSEL size. "
-                              "Using All DSEL examples as cluster centroids.", category=RuntimeWarning)
+                              "Using All DSEL examples as cluster centroids.",
+                              category=RuntimeWarning)
                 self.clustering_ = KMeans(n_clusters=self.n_samples_,
                                           random_state=self.random_state)
 

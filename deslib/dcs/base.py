@@ -1,10 +1,9 @@
 from abc import ABCMeta
 
 import numpy as np
-from sklearn.utils.validation import check_random_state
-
 from deslib.base import BaseDS
 from deslib.util.aggregation import majority_voting_rule
+from sklearn.utils.validation import check_random_state
 
 
 class BaseDCS(BaseDS):
@@ -21,7 +20,7 @@ class BaseDCS(BaseDS):
                  with_IH=False, IH_rate=0.30, selection_method='best',
                  diff_thresh=0.1, random_state=None, knn_classifier='knn',
                  DSEL_perc=0.5,
-                 knne=False):
+                 knne=False, n_jobs=-1):
 
         super(BaseDCS, self).__init__(pool_classifiers=pool_classifiers, k=k,
                                       DFP=DFP, with_IH=with_IH, safe_k=safe_k,
@@ -29,7 +28,7 @@ class BaseDCS(BaseDS):
                                       random_state=random_state,
                                       knn_classifier=knn_classifier,
                                       DSEL_perc=DSEL_perc,
-                                      knne=knne)
+                                      knne=knne, n_jobs=n_jobs)
 
         self.selection_method = selection_method
         self.diff_thresh = diff_thresh

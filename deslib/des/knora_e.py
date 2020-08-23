@@ -92,17 +92,9 @@ class KNORAE(BaseDES):
 
     """
 
-    def __init__(self,
-                 pool_classifiers=None,
-                 k=7,
-                 DFP=False,
-                 with_IH=False,
-                 safe_k=None,
-                 IH_rate=0.30,
-                 random_state=None,
-                 knn_classifier='knn',
-                 knne=False,
-                 DSEL_perc=0.5):
+    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
+                 safe_k=None, IH_rate=0.30, random_state=None,
+                 knn_classifier='knn', knne=False, DSEL_perc=0.5, n_jobs=-1):
 
         super(KNORAE, self).__init__(pool_classifiers=pool_classifiers,
                                      k=k,
@@ -113,7 +105,8 @@ class KNORAE(BaseDES):
                                      random_state=random_state,
                                      knn_classifier=knn_classifier,
                                      knne=knne,
-                                     DSEL_perc=DSEL_perc)
+                                     DSEL_perc=DSEL_perc,
+                                     n_jobs=n_jobs)
 
     def estimate_competence(self, query, neighbors, distances=None,
                             predictions=None):

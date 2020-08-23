@@ -83,9 +83,9 @@ class Exponential(BaseProbabilistic):
     """
 
     def __init__(self, pool_classifiers=None, k=None, DFP=False, safe_k=None,
-                 with_IH=False, IH_rate=0.30,
-                 mode='selection', random_state=None, knn_classifier='knn',
-                 DSEL_perc=0.5):
+                 with_IH=False, IH_rate=0.30, mode='selection',
+                 random_state=None, knn_classifier='knn',
+                 DSEL_perc=0.5, n_jobs=-1):
         super(Exponential, self).__init__(pool_classifiers=pool_classifiers,
                                           k=k,
                                           DFP=DFP,
@@ -95,7 +95,8 @@ class Exponential(BaseProbabilistic):
                                           mode=mode,
                                           random_state=random_state,
                                           knn_classifier=knn_classifier,
-                                          DSEL_perc=DSEL_perc)
+                                          DSEL_perc=DSEL_perc,
+                                          n_jobs=n_jobs)
 
         self.selection_threshold = 0
 
