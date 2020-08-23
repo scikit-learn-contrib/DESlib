@@ -219,7 +219,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 random_state=self.random_state_)
 
             self.pool_classifiers_ = BaggingClassifier(
-                random_state=self.random_state_)
+                random_state=self.random_state_, n_jobs=self.n_jobs)
             self.pool_classifiers_.fit(X_train, y_train)
 
         else:
