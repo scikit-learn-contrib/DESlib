@@ -90,6 +90,11 @@ class MCB(BaseDCS):
         Note: This parameter is only used if the pool of classifier is None or
         unfitted.
 
+    n_jobs : int, default=-1
+        The number of parallel jobs to run. None means 1 unless in
+        a joblib.parallel_backend context. -1 means using all processors.
+        Doesn’t affect fit method.
+
     References
     ----------
     Giacinto, Giorgio, and Fabio Roli. "Dynamic classifier selection based on
@@ -117,7 +122,7 @@ class MCB(BaseDCS):
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, similarity_threshold=0.7,
                  selection_method='diff', diff_thresh=0.1, random_state=None,
-                 knn_classifier='knn', knne=False, DSEL_perc=0.5):
+                 knn_classifier='knn', knne=False, DSEL_perc=0.5, n_jobs=-1):
 
         super(MCB, self).__init__(pool_classifiers, k, DFP=DFP,
                                   with_IH=with_IH, safe_k=safe_k,
@@ -127,7 +132,8 @@ class MCB(BaseDCS):
                                   random_state=random_state,
                                   knn_classifier=knn_classifier,
                                   knne=knne,
-                                  DSEL_perc=DSEL_perc)
+                                  DSEL_perc=DSEL_perc,
+                                  n_jobs=n_jobs)
 
         self.similarity_threshold = similarity_threshold
 

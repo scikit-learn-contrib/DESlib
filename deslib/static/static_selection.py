@@ -5,11 +5,11 @@
 # License: BSD 3 clause
 
 import numpy as np
+from deslib.util.aggregation import majority_voting_rule
+from deslib.util.aggregation import predict_proba_ensemble
 from sklearn.metrics import check_scoring
 from sklearn.utils.validation import check_is_fitted, check_X_y, check_array
 
-from deslib.util.aggregation import majority_voting_rule
-from deslib.util.aggregation import predict_proba_ensemble
 from .base import BaseStaticEnsemble
 
 
@@ -39,6 +39,11 @@ class StaticSelection(BaseStaticEnsemble):
         Percentage of base classifier that should be selected by the selection
         scheme.
 
+    n_jobs : int, default=-1
+        The number of parallel jobs to run. None means 1 unless in
+        a joblib.parallel_backend context. -1 means using all processors.
+        Doesn’t affect fit method.
+
     References
     ----------
     Britto, Alceu S., Robert Sabourin, and Luiz ES Oliveira. "Dynamic selection
@@ -53,12 +58,13 @@ class StaticSelection(BaseStaticEnsemble):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers=None,
-                 pct_classifiers=0.5,
-                 scoring=None,
-                 random_state=None):
+    def __init__(self, pool_classifiers=None, pct_classifiers=0.5,
+                 scoring=None, random_state=None, n_jobs=-1):
+
         super(StaticSelection, self).__init__(
-            pool_classifiers=pool_classifiers, random_state=random_state)
+            pool_classifiers=pool_classifiers,
+            random_state=random_state,
+            n_jobs=n_jobs)
         self.pct_classifiers = pct_classifiers
         self.scoring = scoring
 

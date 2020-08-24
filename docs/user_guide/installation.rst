@@ -16,7 +16,7 @@ Latest version (under development):
 
 .. code-block:: bash
 
-    pip install git+https://github.com/Menelau/DESlib
+    pip install git+https://github.com/scikit-learn-contrib/DESlib
 
 DESlib is tested to work with Python 3.5, 3.6 and 3.7. The dependency requirements are:
 

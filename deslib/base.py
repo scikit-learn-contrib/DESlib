@@ -11,6 +11,10 @@ import warnings
 from abc import abstractmethod, ABCMeta
 
 import numpy as np
+from deslib.util import KNNE
+from deslib.util import faiss_knn_wrapper
+from deslib.util.dfp import frienemy_pruning_preprocessed
+from deslib.util.instance_hardness import hardness_region_competence
 from scipy.stats import mode
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import BaseEnsemble, BaggingClassifier
@@ -19,11 +23,6 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import (check_X_y, check_is_fitted, check_array,
                                       check_random_state)
-
-from deslib.util import KNNE
-from deslib.util import faiss_knn_wrapper
-from deslib.util.dfp import frienemy_pruning_preprocessed
-from deslib.util.instance_hardness import hardness_region_competence
 
 
 class BaseDS(BaseEstimator, ClassifierMixin):
@@ -41,7 +40,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, needs_proba=False,
                  random_state=None, knn_classifier='knn', DSEL_perc=0.5,
-                 knne=False):
+                 knne=False, n_jobs=-1):
 
         self.pool_classifiers = pool_classifiers
         self.k = k
@@ -54,6 +53,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self.knn_classifier = knn_classifier
         self.DSEL_perc = DSEL_perc
         self.knne = knne
+        self.n_jobs = n_jobs
 
         # Check optional dependency
         if knn_classifier == 'faiss' and not faiss_knn_wrapper.is_available():
@@ -219,7 +219,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 random_state=self.random_state_)
 
             self.pool_classifiers_ = BaggingClassifier(
-                random_state=self.random_state_)
+                random_state=self.random_state_, n_jobs=self.n_jobs)
             self.pool_classifiers_.fit(X_train, y_train)
 
         else:
@@ -327,12 +327,12 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         if self.knn_classifier is None or self.knn_classifier in ['knn',
                                                                   'sklearn']:
             knn_class = functools.partial(KNeighborsClassifier,
-                                          n_jobs=-1,
+                                          n_jobs=self.n_jobs,
                                           algorithm="auto")
         elif self.knn_classifier == 'faiss':
             knn_class = functools.partial(
                 faiss_knn_wrapper.FaissKNNClassifier,
-                n_jobs=-1, algorithm="brute")
+                n_jobs=self.n_jobs, algorithm="brute")
         elif callable(self.knn_classifier):
             knn_class = self.knn_classifier
         else:
@@ -343,7 +343,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             self.knn_class_ = functools.partial(
                 KNNE,
                 knn_classifier=knn_class,
-                n_jobs=-1,
+                n_jobs=self.n_jobs,
                 algorithm="auto")
         else:
             self.knn_class_ = knn_class

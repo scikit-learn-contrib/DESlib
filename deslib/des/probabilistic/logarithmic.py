@@ -62,6 +62,11 @@ class Logarithmic(BaseProbabilistic):
         Note: This parameter is only used if the pool of classifier is None or
         unfitted.
 
+    n_jobs : int, default=-1
+        The number of parallel jobs to run. None means 1 unless in
+        a joblib.parallel_backend context. -1 means using all processors.
+        Doesn’t affect fit method.
+
     References
     ----------
     B. Antosik, M. Kurzynski, New measures of classifier competence
@@ -75,9 +80,9 @@ class Logarithmic(BaseProbabilistic):
     """
 
     def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,
-                 safe_k=None,
-                 IH_rate=0.30, mode='selection', random_state=None,
-                 knn_classifier='knn', DSEL_perc=0.5):
+                 safe_k=None, IH_rate=0.30, mode='selection',
+                 random_state=None, knn_classifier='knn', DSEL_perc=0.5,
+                 n_jobs=-1):
         super(Logarithmic, self).__init__(pool_classifiers=pool_classifiers,
                                           k=k,
                                           DFP=DFP,
@@ -87,7 +92,8 @@ class Logarithmic(BaseProbabilistic):
                                           mode=mode,
                                           random_state=random_state,
                                           knn_classifier=knn_classifier,
-                                          DSEL_perc=DSEL_perc)
+                                          DSEL_perc=DSEL_perc,
+                                          n_jobs=n_jobs)
 
     def source_competence(self):
         """The source of competence C_src at the validation point
