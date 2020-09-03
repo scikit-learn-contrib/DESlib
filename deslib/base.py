@@ -11,10 +11,6 @@ import warnings
 from abc import abstractmethod, ABCMeta
 
 import numpy as np
-from deslib.util import KNNE
-from deslib.util import faiss_knn_wrapper
-from deslib.util.dfp import frienemy_pruning_preprocessed
-from deslib.util.instance_hardness import hardness_region_competence
 from scipy.stats import mode
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import BaseEnsemble, BaggingClassifier
@@ -23,6 +19,11 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import (check_X_y, check_is_fitted, check_array,
                                       check_random_state)
+
+from deslib.util import KNNE
+from deslib.util import faiss_knn_wrapper
+from deslib.util.dfp import frienemy_pruning_preprocessed
+from deslib.util.instance_hardness import hardness_region_competence
 
 
 class BaseDS(BaseEstimator, ClassifierMixin):
@@ -802,8 +803,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         ValueError
             If the pool of classifiers is empty.
         """
-        if self.n_classifiers_ <= 0:
-            raise ValueError("n_classifiers must be greater than zero, "
+        if self.n_classifiers_ <= 1:
+            raise ValueError("n_classifiers must be greater than one, "
                              "got {}.".format(self.n_classifiers_))
 
     def _check_num_features(self, X):
