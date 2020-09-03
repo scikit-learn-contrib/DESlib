@@ -11,10 +11,6 @@ import warnings
 from abc import abstractmethod, ABCMeta
 
 import numpy as np
-from deslib.util import KNNE
-from deslib.util import faiss_knn_wrapper
-from deslib.util.dfp import frienemy_pruning_preprocessed
-from deslib.util.instance_hardness import hardness_region_competence
 from scipy.stats import mode
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import BaseEnsemble, BaggingClassifier
@@ -23,6 +19,11 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import (check_X_y, check_is_fitted, check_array,
                                       check_random_state)
+
+from deslib.util import KNNE
+from deslib.util import faiss_knn_wrapper
+from deslib.util.dfp import frienemy_pruning_preprocessed
+from deslib.util.instance_hardness import hardness_region_competence
 
 
 class BaseDS(BaseEstimator, ClassifierMixin):
@@ -405,7 +406,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         if ind_disagreement.size:
 
             distances, ind_ds_classifier, neighbors = self._IH_prediction(
-                X, ind_disagreement, predicted_labels, False
+                X, ind_disagreement, predicted_labels, is_proba=False
             )
             #  First check whether there are still samples to be classified.
             if ind_ds_classifier.size:
@@ -443,7 +444,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                                                          base_probabilities)
         if ind_disagreement.size:
             distances, ind_ds_classifier, neighbors = self._IH_prediction(
-                    X, ind_disagreement, predicted_proba, True
+                    X, ind_disagreement, predicted_proba, is_proba=True
                 )
             if ind_ds_classifier.size:
                 self._predict_DS(X,
@@ -467,42 +468,43 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                                  base_probabilities=None):
         all_agree_vector = BaseDS._all_classifier_agree(base_predictions)
         ind_all_agree = np.where(all_agree_vector)[0]
-        # Since the predictions are always the same, get the predictions of the
-        # first base classifier.
         if ind_all_agree.size:
             if base_probabilities is not None:
                 predictions[ind_all_agree] = base_probabilities[
                 ind_all_agree].mean(axis=1)
             else:
-                predictions[ind_all_agree] = base_predictions[
-                    ind_all_agree, 0]
-        # return samples with disagreement
+                predictions[ind_all_agree] = base_predictions[ind_all_agree, 0]
+
         ind_disagreement = np.where(~all_agree_vector)[0]
         return ind_disagreement
 
     def _IH_prediction(self, X, ind_disagree, predicted_proba, is_proba=False):
         X_DS = X[ind_disagree, :]
-        distances, neighbors = self._get_region_competence(X_DS)
+        distances, region_competence = self._get_region_competence(X_DS)
         if self.with_IH:
+            if hasattr(self, "clustering_"):
+                knn = KNeighborsClassifier(n_neighbors=self.safe_k)
+                knn.fit(self.DSEL_data_, self.DSEL_target_)
+                dist, neighbors = knn.kneighbors(X_DS)
+            else:
+                neighbors = region_competence
+
             ind_hard, ind_easy = self._split_easy_samples(neighbors)
-            distances, neighbors = self._predict_easy_samples(X_DS, distances,
-                                                              ind_disagree,
-                                                              ind_easy,
-                                                              neighbors,
-                                                              predicted_proba,
-                                                              is_proba)
+            distances, region_competence = self._predict_easy_samples(
+                X_DS, distances, ind_disagree, ind_easy,
+                neighbors, predicted_proba, is_proba
+            )
         else:
             # IH was not considered. So all samples go to predict with DS
             ind_hard = np.arange(ind_disagree.size)
-        return distances, ind_hard, neighbors
+        return distances, ind_hard, region_competence
 
     def _split_easy_samples(self, neighbors):
         hardness = hardness_region_competence(neighbors,
                                               self.DSEL_target_,
                                               self.safe_k)
         # Get the index associated with the easy and hard samples.
-        # easy samples are passed down to the knn while hard ones
-        # go to the DS method.
+        # easy samples are classified by the knn.
         easy_samples_mask = hardness < self.IH_rate
         ind_knn_classifier = np.where(easy_samples_mask)[0]
         ind_ds_classifier = np.where(~easy_samples_mask)[0]
@@ -532,9 +534,13 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                     distances, ind_disagreement, ind_ds_classifier, neighbors,
                     predicted, is_proba=False):
 
-        # IF the DFP pruning is considered, calculate the DFP mask
-        # for all samples in X
-        DFP_mask = self._apply_dfp(ind_ds_classifier, neighbors)
+        if self.DFP:
+            DFP_mask = frienemy_pruning_preprocessed(neighbors,
+                                                     self.DSEL_target_,
+                                                     self.DSEL_processed_)
+        else:
+            DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers_))
+
         # Get the real indices_ of the samples that will be classified
         # using a DS algorithm.
         ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
@@ -547,25 +553,13 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         args = [X[ind_disagreement][ind_ds_classifier],
                 base_predictions[ind_ds_original_matrix],
                 selected_probabilities,
-                neighbors,
-                distances,
-                DFP_mask]
+                neighbors, distances, DFP_mask]
         if is_proba:
             preds = self.predict_proba_with_ds(*args)
         else:
             preds = self.classify_with_ds(*args)
 
         predicted[ind_ds_original_matrix] = preds
-
-    def _apply_dfp(self, ind_ds_classifier, neighbors):
-        if self.DFP:
-            DFP_mask = frienemy_pruning_preprocessed(neighbors,
-                                                     self.DSEL_target_,
-                                                     self.DSEL_processed_)
-        else:
-            DFP_mask = np.ones(
-                (ind_ds_classifier.size, self.n_classifiers_))
-        return DFP_mask
 
     def _preprocess_dsel(self):
         """Compute the prediction of each base classifier for
