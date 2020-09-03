@@ -1,9 +1,10 @@
-import pytest
 import numpy as np
-from deslib.static.stacked import StackedClassifier
-from sklearn.utils.estimator_checks import check_estimator
+import pytest
 from sklearn.linear_model import Perceptron
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.utils.estimator_checks import check_estimator
+
+from deslib.static.stacked import StackedClassifier
 
 
 def test_check_estimator():
@@ -71,3 +72,10 @@ def test_passthrough_false(create_X_y):
     stacked = StackedClassifier(pool, passthrough=False)
     stacked.fit(X, y)
     assert stacked.meta_classifier_.coef_.shape == (1, 5)
+
+
+def test_single_model_pool(create_X_y):
+    X, y = create_X_y
+    pool = [DecisionTreeClassifier().fit(X, y)]
+    with pytest.raises(ValueError):
+        StackedClassifier(pool_classifiers=pool).fit(X, y)

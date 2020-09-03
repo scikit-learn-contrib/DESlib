@@ -254,3 +254,9 @@ def test_invalid_metric_performance(create_X_y):
     with pytest.raises(ValueError):
         DESClustering(metric_performance='notametric').fit(X, y)
 
+
+def test_single_classifier_pool(create_X_y):
+    X, y = create_X_y
+    pool = [Perceptron().fit(X, y)]
+    with pytest.raises(ValueError):
+        DESClustering(pool_classifiers=pool).fit(X, y)
