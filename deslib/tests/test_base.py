@@ -348,4 +348,3 @@ def test_pool_single_model(create_X_y):
     ds_tst = BaseDS(pool_classifiers=pool)
     with pytest.raises(ValueError):
         ds_tst.fit(X, y)
-

@@ -17,8 +17,8 @@ from deslib.util.prob_functions import (ccprmod,
                           ([[0.5, 0.2, 0.3], [0.5, 0.2, 0.3]], [0, 1],
                            [0.6428, 0.1194])])
 def test_ccprmod_return_value(supports, idx_correct_label, expected):
-        value = ccprmod(supports, idx_correct_label)
-        assert np.isclose(value, expected, atol=0.001).all()
+    value = ccprmod(supports, idx_correct_label)
+    assert np.isclose(value, expected, atol=0.001).all()
 
 
 @pytest.mark.parametrize('B', [0, -1, None, 0.55])

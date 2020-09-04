@@ -59,10 +59,10 @@ def test_fit_heterogeneous_clusters(example_estimate_competence,
     clustering_test.fit(X, y)
 
     # Index selected should be of any classifier that predicts the label 0
-    assert np.isclose(clustering_test.performance_cluster_[:, 1], [0.428, 0.375],
-                      atol=0.01).all()
-    assert np.isclose(clustering_test.performance_cluster_[:, 0], [0.572, 0.625],
-                      atol=0.01).all()
+    assert np.isclose(clustering_test.performance_cluster_[:, 1],
+                      [0.428, 0.375], atol=0.01).all()
+    assert np.isclose(clustering_test.performance_cluster_[:, 0],
+                      [0.572, 0.625], atol=0.01).all()
     assert clustering_test.indices_[0, 0] == 0 or clustering_test.indices_[
         0, 0] == 2
     assert clustering_test.indices_[1, 0] == 0 or clustering_test.indices_[
@@ -86,11 +86,13 @@ def test_estimate_competence(create_pool_classifiers,
     clustering_test.clustering_.predict = MagicMock(return_value=0)
     competences = clustering_test.estimate_competence(query)
 
-    assert np.array_equal(competences, clustering_test.performance_cluster_[0, :])
+    assert np.array_equal(competences,
+                          clustering_test.performance_cluster_[0, :])
 
     clustering_test.clustering_.predict = MagicMock(return_value=1)
     competences = clustering_test.estimate_competence(query)
-    assert np.array_equal(competences, clustering_test.performance_cluster_[1, :])
+    assert np.array_equal(competences,
+                          clustering_test.performance_cluster_[1, :])
 
 
 def test_fit_clusters_less_diverse(example_estimate_competence,

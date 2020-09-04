@@ -820,15 +820,14 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         Raises
         -------
         ValueError
-            If X has a different dimensionality than the training data.
+            If X has a different dimensionality than the traiØning data.
         """
         n_features = X.shape[1]
         if self.n_features_ != n_features:
             raise ValueError("Number of features of the model must "
                              "match the input. Model n_features_ is {} and "
-                             "input n_features_ is {} ".format(
-                self.n_features_,
-                n_features))
+                             "n_features_ is {} ".format(self.n_features_,
+                                                         n_features))
 
     def _check_predict_proba(self):
         """ Checks if each base classifier in the pool implements the
