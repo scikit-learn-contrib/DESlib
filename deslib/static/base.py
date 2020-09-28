@@ -89,7 +89,7 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
 
         self._validate_pool()
         # dealing with label encoder
-        self.check_label_encoder()
+        self._check_label_encoder()
         self.y_enc_ = self._setup_label_encoder(y)
 
         self.n_classes_ = self.classes_.size
@@ -97,7 +97,7 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def check_label_encoder(self):
+    def _check_label_encoder(self):
         # Check if base classifiers are not using LabelEncoder (the case for
         # scikit-learn's ensembles):
         if isinstance(self.pool_classifiers_, BaseEnsemble):
