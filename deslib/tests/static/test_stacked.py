@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from sklearn.datasets import make_classification
 from sklearn.linear_model import Perceptron
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.utils.estimator_checks import check_estimator
@@ -46,6 +47,18 @@ def test_label_encoder():
     stacked = StackedClassifier(pool).fit(X, y)
     pred = stacked.predict(X)
     assert np.array_equal(pred, y)
+
+
+def test_label_encoder_base_ensemble():
+    from sklearn.ensemble import RandomForestClassifier
+    X, y = make_classification()
+    y[y == 1] = 2
+    y = y.astype(np.float)
+    pool = RandomForestClassifier().fit(X, y)
+    st = StackedClassifier(pool)
+    st.fit(X, y)
+    pred = st.predict(X)
+    assert np.isin(st.classes_, pred).all()
 
 
 def test_one_class_meta_dataset(create_X_y):

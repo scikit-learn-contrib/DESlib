@@ -84,6 +84,18 @@ def test_label_encoder(create_label_encoder_test):
     assert np.array_equal(pred, y)
 
 
+def test_label_encoder_base_ensemble():
+    from sklearn.ensemble import RandomForestClassifier
+    X, y = make_classification()
+    y[y == 1] = 2
+    y = y.astype(np.float)
+    pool = RandomForestClassifier().fit(X, y)
+    sb = SingleBest(pool)
+    sb.fit(X, y)
+    pred = sb.predict(X)
+    assert np.isin(sb.classes_, pred).all()
+
+
 def test_different_scorer():
     X, y = make_classification(n_samples=100, random_state=42)
     X_val, y_val = make_classification(n_samples=25, random_state=123)
