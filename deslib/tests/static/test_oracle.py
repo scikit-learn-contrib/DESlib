@@ -62,5 +62,5 @@ def test_label_encoder_base_ensemble():
     pool = RandomForestClassifier().fit(X, y)
     oracle = Oracle(pool)
     oracle.fit(X, y)
-    pred = oracle.predict(X)
+    pred = oracle.predict(X, y)
     assert np.isin(oracle.classes_, pred).all()
