@@ -8,3 +8,5 @@ dist
 DESlib.egg-info
 .idea
 .pytest_cache
+
+dev_env
