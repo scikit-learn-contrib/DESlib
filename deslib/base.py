@@ -11,6 +11,7 @@ import warnings
 from abc import abstractmethod, ABCMeta
 
 import numpy as np
+from joblib import Parallel, delayed
 from scipy.stats import mode
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import BaseEnsemble, BaggingClassifier
@@ -713,11 +714,9 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                         Probabilities estimates of each base classifier for all
                         test samples.
         """
-        probabilities = np.zeros(
-            (X.shape[0], self.n_classifiers_, self.n_classes_))
-
-        for index, clf in enumerate(self.pool_classifiers_):
-            probabilities[:, index] = clf.predict_proba(X)
+        probabilities = Parallel(n_jobs=self.n_jobs)(
+            delayed(clf.predict_proba) (X) for clf in self.pool_classifiers_ )
+        
         return probabilities
 
     def _preprocess_dsel_scores(self):
