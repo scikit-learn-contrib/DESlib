@@ -1,0 +1,755 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	//
+APosteriori	deslib/dcs/a_posteriori.py	/^class APosteriori(BaseDCS):$/;"	c
+APriori	deslib/dcs/a_priori.py	/^class APriori(BaseDCS):$/;"	c
+BaseDCS	deslib/dcs/base.py	/^class BaseDCS(BaseDS):$/;"	c
+BaseDES	deslib/des/base.py	/^class BaseDES(BaseDS):$/;"	c
+BaseDS	deslib/base.py	/^class BaseDS(BaseEstimator, ClassifierMixin):$/;"	c
+BaseProbabilistic	deslib/des/probabilistic/base.py	/^class BaseProbabilistic(BaseDES):$/;"	c
+BaseStaticEnsemble	deslib/static/base.py	/^class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):$/;"	c
+DESClustering	deslib/des/des_clustering.py	/^class DESClustering(BaseDS):$/;"	c
+DESKL	deslib/des/probabilistic/deskl.py	/^class DESKL(BaseProbabilistic):$/;"	c
+DESKNN	deslib/des/des_knn.py	/^class DESKNN(BaseDS):$/;"	c
+DESMI	deslib/des/des_mi.py	/^class DESMI(BaseDS):$/;"	c
+DESP	deslib/des/des_p.py	/^class DESP(BaseDES):$/;"	c
+Exponential	deslib/des/probabilistic/exponential.py	/^class Exponential(BaseProbabilistic):$/;"	c
+FaissKNNClassifier	deslib/util/faiss_knn_wrapper.py	/^class FaissKNNClassifier:$/;"	c
+KNNE	deslib/util/knne.py	/^class KNNE(BaseEstimator):$/;"	c
+KNOP	deslib/des/knop.py	/^class KNOP(BaseDES):$/;"	c
+KNORAE	deslib/des/knora_e.py	/^class KNORAE(BaseDES):$/;"	c
+KNORAU	deslib/des/knora_u.py	/^class KNORAU(BaseDES):$/;"	c
+LCA	deslib/dcs/lca.py	/^class LCA(BaseDCS):$/;"	c
+Logarithmic	deslib/des/probabilistic/logarithmic.py	/^class Logarithmic(BaseProbabilistic):$/;"	c
+MCB	deslib/dcs/mcb.py	/^class MCB(BaseDCS):$/;"	c
+METADES	deslib/des/meta_des.py	/^class METADES(BaseDES):$/;"	c
+MLA	deslib/dcs/mla.py	/^class MLA(BaseDCS):$/;"	c
+MinimumDifference	deslib/des/probabilistic/minimum_difference.py	/^class MinimumDifference(BaseProbabilistic):$/;"	c
+OLA	deslib/dcs/ola.py	/^class OLA(BaseDCS):$/;"	c
+Oracle	deslib/static/oracle.py	/^class Oracle(BaseStaticEnsemble):$/;"	c
+Q_statistic	deslib/util/diversity.py	/^def Q_statistic(y, y_pred1, y_pred2):$/;"	f
+RRC	deslib/des/probabilistic/rrc.py	/^class RRC(BaseProbabilistic):$/;"	c
+Rank	deslib/dcs/rank.py	/^class Rank(BaseDCS):$/;"	c
+SingleBest	deslib/static/single_best.py	/^class SingleBest(BaseStaticEnsemble):$/;"	c
+StackedClassifier	deslib/static/stacked.py	/^class StackedClassifier(BaseStaticEnsemble):$/;"	c
+StaticSelection	deslib/static/static_selection.py	/^class StaticSelection(BaseStaticEnsemble):$/;"	c
+__all__	deslib/__init__.py	/^__all__ = ['des', 'dcs', 'static', 'util', 'tests']$/;"	v
+__all__	deslib/dcs/__init__.py	/^__all__ = ['BaseDCS',$/;"	v
+__all__	deslib/des/__init__.py	/^__all__ = ['BaseDES',$/;"	v
+__all__	deslib/des/probabilistic/__init__.py	/^__all__ = ['BaseProbabilistic',$/;"	v
+__all__	deslib/static/__init__.py	/^__all__ = ['Oracle',$/;"	v
+__init__	deslib/base.py	/^    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,$/;"	m	class:BaseDS
+__init__	deslib/dcs/a_posteriori.py	/^    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,$/;"	m	class:APosteriori
+__init__	deslib/dcs/a_priori.py	/^    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,$/;"	m	class:APriori
+__init__	deslib/dcs/base.py	/^    def __init__(self, pool_classifiers=None, k=7, DFP=False, safe_k=None,$/;"	m	class:BaseDCS
+__init__	deslib/dcs/lca.py	/^    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,$/;"	m	class:LCA
+__init__	deslib/dcs/mcb.py	/^    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,$/;"	m	class:MCB
+__init__	deslib/dcs/mla.py	/^    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,$/;"	m	class:MLA
+__init__	deslib/dcs/ola.py	/^    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,$/;"	m	class:OLA
+__init__	deslib/dcs/rank.py	/^    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,$/;"	m	class:Rank
+__init__	deslib/des/base.py	/^    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,$/;"	m	class:BaseDES
+__init__	deslib/des/des_clustering.py	/^    def __init__(self, pool_classifiers=None, clustering=None, with_IH=False,$/;"	m	class:DESClustering
+__init__	deslib/des/des_knn.py	/^    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,$/;"	m	class:DESKNN
+__init__	deslib/des/des_mi.py	/^    def __init__(self, pool_classifiers=None, k=7, pct_accuracy=0.4, alpha=0.9,$/;"	m	class:DESMI
+__init__	deslib/des/des_p.py	/^    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,$/;"	m	class:DESP
+__init__	deslib/des/knop.py	/^    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,$/;"	m	class:KNOP
+__init__	deslib/des/knora_e.py	/^    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,$/;"	m	class:KNORAE
+__init__	deslib/des/knora_u.py	/^    def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,$/;"	m	class:KNORAU
+__init__	deslib/des/meta_des.py	/^    def __init__(self, pool_classifiers=None, meta_classifier=None, k=7, Kp=5,$/;"	m	class:METADES
+__init__	deslib/des/probabilistic/base.py	/^    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,$/;"	m	class:BaseProbabilistic
+__init__	deslib/des/probabilistic/deskl.py	/^    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,$/;"	m	class:DESKL
+__init__	deslib/des/probabilistic/exponential.py	/^    def __init__(self, pool_classifiers=None, k=None, DFP=False, safe_k=None,$/;"	m	class:Exponential
+__init__	deslib/des/probabilistic/logarithmic.py	/^    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,$/;"	m	class:Logarithmic
+__init__	deslib/des/probabilistic/minimum_difference.py	/^    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,$/;"	m	class:MinimumDifference
+__init__	deslib/des/probabilistic/rrc.py	/^    def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,$/;"	m	class:RRC
+__init__	deslib/static/base.py	/^    def __init__(self, pool_classifiers=None, random_state=None, n_jobs=-1):$/;"	m	class:BaseStaticEnsemble
+__init__	deslib/static/oracle.py	/^    def __init__(self, pool_classifiers=None, random_state=None, n_jobs=-1):$/;"	m	class:Oracle
+__init__	deslib/static/single_best.py	/^    def __init__(self, pool_classifiers=None, scoring=None,$/;"	m	class:SingleBest
+__init__	deslib/static/stacked.py	/^    def __init__(self, pool_classifiers=None, meta_classifier=None,$/;"	m	class:StackedClassifier
+__init__	deslib/static/static_selection.py	/^    def __init__(self, pool_classifiers=None, pct_classifiers=0.5,$/;"	m	class:StaticSelection
+__init__	deslib/util/faiss_knn_wrapper.py	/^    def __init__(self,$/;"	m	class:FaissKNNClassifier
+__init__	deslib/util/knne.py	/^    def __init__(self, n_neighbors=7, knn_classifier='sklearn', **kwargs):$/;"	m	class:KNNE
+__metaclass__	deslib/base.py	/^    __metaclass__ = ABCMeta$/;"	v	class:BaseDS	file:
+__metaclass__	deslib/dcs/base.py	/^    __metaclass__ = ABCMeta$/;"	v	class:BaseDCS	file:
+__metaclass__	deslib/des/base.py	/^    __metaclass__ = ABCMeta$/;"	v	class:BaseDES	file:
+__metaclass__	deslib/des/probabilistic/base.py	/^    __metaclass__ = ABCMeta$/;"	v	class:BaseProbabilistic	file:
+__metaclass__	deslib/static/base.py	/^    __metaclass__ = ABCMeta$/;"	v	class:BaseStaticEnsemble	file:
+__version__	deslib/__init__.py	/^__version__ = '0.4.dev'$/;"	v
+_all_classifier_agree	deslib/base.py	/^    def _all_classifier_agree(predictions):$/;"	m	class:BaseDS
+_check_Kp_samples	deslib/des/meta_des.py	/^    def _check_Kp_samples(self):$/;"	m	class:METADES
+_check_base_classifier_fitted	deslib/base.py	/^    def _check_base_classifier_fitted(self):$/;"	m	class:BaseDS
+_check_is_fitted	deslib/static/single_best.py	/^    def _check_is_fitted(self):$/;"	m	class:SingleBest
+_check_is_fitted	deslib/static/static_selection.py	/^    def _check_is_fitted(self):$/;"	m	class:StaticSelection
+_check_label_encoder	deslib/static/base.py	/^    def _check_label_encoder(self):$/;"	m	class:BaseStaticEnsemble
+_check_n_neighbors	deslib/util/knne.py	/^    def _check_n_neighbors(self, n_neighbors):$/;"	m	class:KNNE
+_check_num_features	deslib/base.py	/^    def _check_num_features(self, X):$/;"	m	class:BaseDS
+_check_parameters	deslib/des/des_clustering.py	/^    def _check_parameters(self):$/;"	m	class:DESClustering
+_check_parameters	deslib/des/des_knn.py	/^    def _check_parameters(self):$/;"	m	class:DESKNN
+_check_predict_proba	deslib/base.py	/^    def _check_predict_proba(self):$/;"	m	class:BaseDS
+_check_predict_proba	deslib/static/stacked.py	/^    def _check_predict_proba(self):$/;"	m	class:StackedClassifier
+_check_predict_proba	deslib/static/static_selection.py	/^    def _check_predict_proba(self):$/;"	m	class:StaticSelection
+_check_predictions	deslib/util/aggregation.py	/^def _check_predictions(predictions):$/;"	f
+_compute_highest_possible_IH	deslib/base.py	/^    def _compute_highest_possible_IH(self):$/;"	m	class:BaseDS
+_connect_input	deslib/static/stacked.py	/^    def _connect_input(self, X, base_preds):$/;"	m	class:StackedClassifier
+_encode_base_labels	deslib/base.py	/^    def _encode_base_labels(self, y):$/;"	m	class:BaseDS
+_encode_base_labels	deslib/static/base.py	/^    def _encode_base_labels(self, y):$/;"	m	class:BaseStaticEnsemble
+_estimate_performances	deslib/static/single_best.py	/^    def _estimate_performances(self, X, y):$/;"	m	class:SingleBest
+_fit_OP	deslib/des/knop.py	/^    def _fit_OP(self, X_op, y_op, k):$/;"	m	class:KNOP
+_fit_OP	deslib/des/meta_des.py	/^    def _fit_OP(self, X_op, y_op):$/;"	m	class:METADES
+_fit_meta_classifier	deslib/des/meta_des.py	/^    def _fit_meta_classifier(self, X_meta, y_meta):$/;"	m	class:METADES
+_fit_region_competence	deslib/base.py	/^    def _fit_region_competence(self, X, y):$/;"	m	class:BaseDS
+_generate_meta_training_set	deslib/des/meta_des.py	/^    def _generate_meta_training_set(self):$/;"	m	class:METADES
+_get_ensemble_probabilities	deslib/util/aggregation.py	/^def _get_ensemble_probabilities(classifier_ensemble, X):$/;"	f
+_get_ensemble_votes	deslib/util/aggregation.py	/^def _get_ensemble_votes(classifier_ensemble, X):$/;"	f
+_get_region_competence	deslib/base.py	/^    def _get_region_competence(self, query, k=None):$/;"	m	class:BaseDS
+_get_similar_out_profiles	deslib/des/knop.py	/^    def _get_similar_out_profiles(self, probabilities):$/;"	m	class:KNOP
+_get_similar_out_profiles	deslib/des/meta_des.py	/^    def _get_similar_out_profiles(self, probabilities, kp=None):$/;"	m	class:METADES
+_handle_n_neighbors	deslib/util/knne.py	/^    def _handle_n_neighbors(self, n_neighbors):$/;"	m	class:KNNE
+_organize_neighbors	deslib/util/knne.py	/^    def _organize_neighbors(self, dists, inds):$/;"	m	class:KNNE
+_predict_base	deslib/base.py	/^    def _predict_base(self, X):$/;"	m	class:BaseDS
+_predict_proba_base	deslib/base.py	/^    def _predict_proba_base(self, X):$/;"	m	class:BaseDS
+_predict_proba_base	deslib/static/stacked.py	/^    def _predict_proba_base(self, X):$/;"	m	class:StackedClassifier
+_prepare_knn_algorithm	deslib/util/faiss_knn_wrapper.py	/^    def _prepare_knn_algorithm(self, X, d):$/;"	m	class:FaissKNNClassifier
+_preprocess_clusters	deslib/des/des_clustering.py	/^    def _preprocess_clusters(self):$/;"	m	class:DESClustering
+_preprocess_dsel	deslib/base.py	/^    def _preprocess_dsel(self):$/;"	m	class:BaseDS
+_preprocess_dsel_scores	deslib/base.py	/^    def _preprocess_dsel_scores(self):$/;"	m	class:BaseDS
+_process_predictions	deslib/util/diversity.py	/^def _process_predictions(y, y_pred1, y_pred2):$/;"	f
+_sample_selection_agreement	deslib/des/meta_des.py	/^    def _sample_selection_agreement(self):$/;"	m	class:METADES
+_set_diversity_func	deslib/des/des_clustering.py	/^    def _set_diversity_func(self):$/;"	m	class:DESClustering
+_set_diversity_func	deslib/des/des_knn.py	/^    def _set_diversity_func(self):$/;"	m	class:DESKNN
+_set_dsel	deslib/base.py	/^    def _set_dsel(self, X, y):$/;"	m	class:BaseDS
+_set_knn_type	deslib/util/knne.py	/^    def _set_knn_type(self):$/;"	m	class:KNNE
+_set_region_of_competence_algorithm	deslib/base.py	/^    def _set_region_of_competence_algorithm(self):$/;"	m	class:BaseDS
+_setup_label_encoder	deslib/base.py	/^    def _setup_label_encoder(self, y):$/;"	m	class:BaseDS
+_setup_label_encoder	deslib/static/base.py	/^    def _setup_label_encoder(self, y):$/;"	m	class:BaseStaticEnsemble
+_validate_ih	deslib/base.py	/^    def _validate_ih(self):$/;"	m	class:BaseDS
+_validate_k	deslib/base.py	/^    def _validate_k(self):$/;"	m	class:BaseDS
+_validate_parameters	deslib/base.py	/^    def _validate_parameters(self):$/;"	m	class:BaseDS
+_validate_parameters	deslib/dcs/base.py	/^    def _validate_parameters(self):$/;"	m	class:BaseDCS
+_validate_parameters	deslib/dcs/mcb.py	/^    def _validate_parameters(self):$/;"	m	class:MCB
+_validate_parameters	deslib/des/base.py	/^    def _validate_parameters(self):$/;"	m	class:BaseDES
+_validate_parameters	deslib/des/des_mi.py	/^    def _validate_parameters(self):$/;"	m	class:DESMI
+_validate_parameters	deslib/des/meta_des.py	/^    def _validate_parameters(self):$/;"	m	class:METADES
+_validate_parameters	deslib/des/probabilistic/base.py	/^    def _validate_parameters(self):$/;"	m	class:BaseProbabilistic
+_validate_parameters	deslib/static/static_selection.py	/^    def _validate_parameters(self):$/;"	m	class:StaticSelection
+_validate_pool	deslib/base.py	/^    def _validate_pool(self):$/;"	m	class:BaseDS
+_validate_pool	deslib/static/base.py	/^    def _validate_pool(self):$/;"	m	class:BaseStaticEnsemble
+aggregate_proba_ensemble_weighted	deslib/util/aggregation.py	/^def aggregate_proba_ensemble_weighted(ensemble_proba, weights):$/;"	f
+agreement_measure	deslib/util/diversity.py	/^def agreement_measure(y, y_pred1, y_pred2):$/;"	f
+average_combiner	deslib/util/aggregation.py	/^def average_combiner(classifier_ensemble, X):$/;"	f
+average_rule	deslib/util/aggregation.py	/^def average_rule(predictions):$/;"	f
+bks_dsel_ex1	deslib/tests/dcs/test_mcb.py	/^bks_dsel_ex1 = np.hstack($/;"	v
+bks_dsel_ex2	deslib/tests/dcs/test_mcb.py	/^bks_dsel_ex2 = np.hstack($/;"	v
+bks_dsel_ex3	deslib/tests/dcs/test_mcb.py	/^bks_dsel_ex3 = bks_dsel_ex1 + 1$/;"	v
+ccprmod	deslib/util/prob_functions.py	/^def ccprmod(supports, idx_correct_label, B=20):$/;"	f
+check_label_encoder	deslib/base.py	/^    def check_label_encoder(self):$/;"	m	class:BaseDS
+classify_with_ds	deslib/base.py	/^    def classify_with_ds(self, query, predictions, probabilities=None,$/;"	m	class:BaseDS
+classify_with_ds	deslib/dcs/base.py	/^    def classify_with_ds(self, query, predictions, probabilities=None,$/;"	m	class:BaseDCS
+classify_with_ds	deslib/des/base.py	/^    def classify_with_ds(self, query, predictions, probabilities=None,$/;"	m	class:BaseDES
+classify_with_ds	deslib/des/des_clustering.py	/^    def classify_with_ds(self, query, predictions, probabilities=None,$/;"	m	class:DESClustering
+classify_with_ds	deslib/des/des_knn.py	/^    def classify_with_ds(self, query, predictions, probabilities=None,$/;"	m	class:DESKNN
+classify_with_ds	deslib/des/des_mi.py	/^    def classify_with_ds(self, query, predictions, probabilities=None,$/;"	m	class:DESMI
+compute_meta_features	deslib/des/meta_des.py	/^    def compute_meta_features(self, scores, idx_neighbors, idx_neighbors_op):$/;"	m	class:METADES
+compute_pairwise_diversity	deslib/util/diversity.py	/^def compute_pairwise_diversity(targets, prediction_matrix, diversity_func):$/;"	f
+correlation_coefficient	deslib/util/diversity.py	/^def correlation_coefficient(y, y_pred1, y_pred2):$/;"	f
+create_X_y	deslib/tests/conftest.py	/^def create_X_y():$/;"	f
+create_base_classifier	deslib/tests/conftest.py	/^def create_base_classifier(return_value, return_prob=None):$/;"	f
+create_base_classifier	deslib/tests/des/test_des_knn.py	/^def create_base_classifier(value):$/;"	f
+create_classifiers_disagree	deslib/tests/test_base.py	/^def create_classifiers_disagree():$/;"	f
+create_label_encoder_test	deslib/tests/conftest.py	/^def create_label_encoder_test():$/;"	f
+create_pool_all_agree	deslib/tests/conftest.py	/^def create_pool_all_agree():$/;"	f
+create_pool_classifiers	deslib/tests/conftest.py	/^def create_pool_classifiers():$/;"	f
+create_pool_classifiers_dog	deslib/tests/test_base.py	/^def create_pool_classifiers_dog():$/;"	f
+create_pool_classifiers_dog_cat_plane	deslib/tests/test_base.py	/^def create_pool_classifiers_dog_cat_plane():$/;"	f
+disagreement_measure	deslib/util/diversity.py	/^def disagreement_measure(y, y_pred1, y_pred2):$/;"	f
+double_fault	deslib/util/diversity.py	/^def double_fault(y, y_pred1, y_pred2):$/;"	f
+entropy_func	deslib/util/prob_functions.py	/^def entropy_func(n_classes, supports, is_correct):$/;"	f
+estimate_competence	deslib/base.py	/^    def estimate_competence(self, query, neighbors, distances=None,$/;"	m	class:BaseDS
+estimate_competence	deslib/dcs/a_posteriori.py	/^    def estimate_competence(self, query, neighbors, distances,$/;"	m	class:APosteriori
+estimate_competence	deslib/dcs/a_priori.py	/^    def estimate_competence(self, query, neighbors, distances,$/;"	m	class:APriori
+estimate_competence	deslib/dcs/base.py	/^    def estimate_competence(self, query, neighbors, distances=None,$/;"	m	class:BaseDCS
+estimate_competence	deslib/dcs/lca.py	/^    def estimate_competence(self, query, neighbors, distances=None,$/;"	m	class:LCA
+estimate_competence	deslib/dcs/mcb.py	/^    def estimate_competence(self, query, neighbors, distances=None,$/;"	m	class:MCB
+estimate_competence	deslib/dcs/mla.py	/^    def estimate_competence(self, query, neighbors, distances,$/;"	m	class:MLA
+estimate_competence	deslib/dcs/ola.py	/^    def estimate_competence(self, query, neighbors, distances=None,$/;"	m	class:OLA
+estimate_competence	deslib/dcs/rank.py	/^    def estimate_competence(self, query, neighbors, distances=None,$/;"	m	class:Rank
+estimate_competence	deslib/des/base.py	/^    def estimate_competence(self, query, neighbors, distances=None,$/;"	m	class:BaseDES
+estimate_competence	deslib/des/des_clustering.py	/^    def estimate_competence(self, query, predictions=None):$/;"	m	class:DESClustering
+estimate_competence	deslib/des/des_knn.py	/^    def estimate_competence(self, query, neighbors, distances=None,$/;"	m	class:DESKNN
+estimate_competence	deslib/des/des_mi.py	/^    def estimate_competence(self, query, neighbors, distances=None,$/;"	m	class:DESMI
+estimate_competence	deslib/des/des_p.py	/^    def estimate_competence(self, query, neighbors, distances=None,$/;"	m	class:DESP
+estimate_competence	deslib/des/knora_e.py	/^    def estimate_competence(self, query, neighbors, distances=None,$/;"	m	class:KNORAE
+estimate_competence	deslib/des/knora_u.py	/^    def estimate_competence(self, query, neighbors, distances=None,$/;"	m	class:KNORAU
+estimate_competence	deslib/des/probabilistic/base.py	/^    def estimate_competence(self,$/;"	m	class:BaseProbabilistic
+estimate_competence_from_proba	deslib/des/base.py	/^    def estimate_competence_from_proba(self, query, neighbors, probabilities,$/;"	m	class:BaseDES
+estimate_competence_from_proba	deslib/des/knop.py	/^    def estimate_competence_from_proba(self, query, probabilities,$/;"	m	class:KNOP
+estimate_competence_from_proba	deslib/des/meta_des.py	/^    def estimate_competence_from_proba(self, query, neighbors, probabilities,$/;"	m	class:METADES
+example_all_ones	deslib/tests/conftest.py	/^def example_all_ones(example_estimate_competence):$/;"	f
+example_diversity	deslib/tests/util/test_diversity.py	/^def example_diversity(create_X_y):$/;"	f
+example_diversity_ones_zeros	deslib/tests/util/test_diversity.py	/^def example_diversity_ones_zeros(create_X_y):$/;"	f
+example_estimate_competence	deslib/tests/conftest.py	/^def example_estimate_competence(create_X_y):$/;"	f
+example_kuncheva	deslib/tests/conftest.py	/^def example_kuncheva():$/;"	f
+example_kuncheva	deslib/tests/util/test_aggregation.py	/^example_kuncheva = np.array($/;"	v
+example_kuncheva_batch	deslib/tests/util/test_aggregation.py	/^example_kuncheva_batch = np.expand_dims(example_kuncheva, axis=0)$/;"	v
+example_kuncheva_batch	deslib/tests/util/test_aggregation.py	/^example_kuncheva_batch = np.repeat(example_kuncheva_batch, 10, axis=0)$/;"	v
+example_static_selection	deslib/tests/conftest.py	/^def example_static_selection(create_X_y):$/;"	f
+exponential_func	deslib/util/prob_functions.py	/^def exponential_func(n_classes, support_correct):$/;"	f
+fit	deslib/base.py	/^    def fit(self, X, y):$/;"	m	class:BaseDS
+fit	deslib/dcs/a_posteriori.py	/^    def fit(self, X, y):$/;"	m	class:APosteriori
+fit	deslib/dcs/a_priori.py	/^    def fit(self, X, y):$/;"	m	class:APriori
+fit	deslib/des/des_clustering.py	/^    def fit(self, X, y):$/;"	m	class:DESClustering
+fit	deslib/des/des_knn.py	/^    def fit(self, X, y):$/;"	m	class:DESKNN
+fit	deslib/des/knop.py	/^    def fit(self, X, y):$/;"	m	class:KNOP
+fit	deslib/des/meta_des.py	/^    def fit(self, X, y):$/;"	m	class:METADES
+fit	deslib/des/probabilistic/base.py	/^    def fit(self, X, y):$/;"	m	class:BaseProbabilistic
+fit	deslib/static/base.py	/^    def fit(self, X, y):$/;"	m	class:BaseStaticEnsemble
+fit	deslib/static/oracle.py	/^    def fit(self, X, y):$/;"	m	class:Oracle
+fit	deslib/static/single_best.py	/^    def fit(self, X, y):$/;"	m	class:SingleBest
+fit	deslib/static/stacked.py	/^    def fit(self, X, y):$/;"	m	class:StackedClassifier
+fit	deslib/static/static_selection.py	/^    def fit(self, X, y):$/;"	m	class:StaticSelection
+fit	deslib/util/faiss_knn_wrapper.py	/^    def fit(self, X, y):$/;"	m	class:FaissKNNClassifier
+fit	deslib/util/knne.py	/^    def fit(self, X, y):$/;"	m	class:KNNE
+frienemy_pruning	deslib/util/dfp.py	/^def frienemy_pruning(X_query, X_dsel, y_dsel, ensemble, k):$/;"	f
+frienemy_pruning_preprocessed	deslib/util/dfp.py	/^def frienemy_pruning_preprocessed(neighbors, y_val, hit_miss):$/;"	f
+get_scores_	deslib/des/des_clustering.py	/^    def get_scores_(self, sample_indices):$/;"	m	class:DESClustering
+hardness_region_competence	deslib/util/instance_hardness.py	/^def hardness_region_competence(neighbors_idx, labels, safe_k):$/;"	f
+is_available	deslib/util/faiss_knn_wrapper.py	/^def is_available():$/;"	f
+kdn_score	deslib/util/instance_hardness.py	/^def kdn_score(X, y, k):$/;"	f
+kneighbors	deslib/util/faiss_knn_wrapper.py	/^    def kneighbors(self, X, n_neighbors=None, return_distance=True):$/;"	m	class:FaissKNNClassifier
+kneighbors	deslib/util/knne.py	/^    def kneighbors(self, X=None, n_neighbors=None, return_distance=True):$/;"	m	class:KNNE
+knn_methods	deslib/tests/test_des_integration.py	/^knn_methods = [None]$/;"	v
+load_dataset	deslib/tests/test_des_integration.py	/^def load_dataset(encode_labels, rng):$/;"	f
+load_dataset	deslib/tests/test_des_integration_multiclass.py	/^def load_dataset(rng):$/;"	f
+log_func	deslib/util/prob_functions.py	/^def log_func(n_classes, support_correct):$/;"	f
+majority_voting	deslib/util/aggregation.py	/^def majority_voting(classifier_ensemble, X):$/;"	f
+majority_voting_rule	deslib/util/aggregation.py	/^def majority_voting_rule(votes):$/;"	f
+make_P2	deslib/util/datasets.py	/^def make_P2(size_classes, random_state=None):$/;"	f
+make_banana	deslib/util/datasets.py	/^def make_banana(size_classes, na=0.1, random_state=None):$/;"	f
+make_banana2	deslib/util/datasets.py	/^def make_banana2(size_classes, sigma=1, random_state=None):$/;"	f
+make_circle_square	deslib/util/datasets.py	/^def make_circle_square(size_classes, random_state=None):$/;"	f
+make_xor	deslib/util/datasets.py	/^def make_xor(n_samples, random_state=None):$/;"	f
+maximum_combiner	deslib/util/aggregation.py	/^def maximum_combiner(classifier_ensemble, X):$/;"	f
+maximum_rule	deslib/util/aggregation.py	/^def maximum_rule(predictions):$/;"	f
+median_combiner	deslib/util/aggregation.py	/^def median_combiner(classifier_ensemble, X):$/;"	f
+median_rule	deslib/util/aggregation.py	/^def median_rule(predictions):$/;"	f
+min_difference	deslib/util/prob_functions.py	/^def min_difference(supports, idx_correct_label):$/;"	f
+minimum_combiner	deslib/util/aggregation.py	/^def minimum_combiner(classifier_ensemble, X):$/;"	f
+minimum_rule	deslib/util/aggregation.py	/^def minimum_rule(predictions):$/;"	f
+negative_double_fault	deslib/util/diversity.py	/^def negative_double_fault(y, y_pred1, y_pred2):$/;"	f
+np	deslib/base.py	/^import numpy as np$/;"	I
+np	deslib/dcs/a_posteriori.py	/^import numpy as np$/;"	I
+np	deslib/dcs/a_priori.py	/^import numpy as np$/;"	I
+np	deslib/dcs/base.py	/^import numpy as np$/;"	I
+np	deslib/dcs/lca.py	/^import numpy as np$/;"	I
+np	deslib/dcs/mcb.py	/^import numpy as np$/;"	I
+np	deslib/dcs/mla.py	/^import numpy as np$/;"	I
+np	deslib/dcs/ola.py	/^import numpy as np$/;"	I
+np	deslib/dcs/rank.py	/^import numpy as np$/;"	I
+np	deslib/des/base.py	/^import numpy as np$/;"	I
+np	deslib/des/des_clustering.py	/^import numpy as np$/;"	I
+np	deslib/des/des_knn.py	/^import numpy as np$/;"	I
+np	deslib/des/des_mi.py	/^import numpy as np$/;"	I
+np	deslib/des/des_p.py	/^import numpy as np$/;"	I
+np	deslib/des/knop.py	/^import numpy as np$/;"	I
+np	deslib/des/knora_e.py	/^import numpy as np$/;"	I
+np	deslib/des/knora_u.py	/^import numpy as np$/;"	I
+np	deslib/des/meta_des.py	/^import numpy as np$/;"	I
+np	deslib/des/probabilistic/base.py	/^import numpy as np$/;"	I
+np	deslib/des/probabilistic/deskl.py	/^import numpy as np$/;"	I
+np	deslib/des/probabilistic/exponential.py	/^import numpy as np$/;"	I
+np	deslib/des/probabilistic/logarithmic.py	/^import numpy as np$/;"	I
+np	deslib/des/probabilistic/minimum_difference.py	/^import numpy as np$/;"	I
+np	deslib/des/probabilistic/rrc.py	/^import numpy as np$/;"	I
+np	deslib/static/base.py	/^import numpy as np$/;"	I
+np	deslib/static/oracle.py	/^import numpy as np$/;"	I
+np	deslib/static/single_best.py	/^import numpy as np$/;"	I
+np	deslib/static/stacked.py	/^import numpy as np$/;"	I
+np	deslib/static/static_selection.py	/^import numpy as np$/;"	I
+np	deslib/tests/conftest.py	/^import numpy as np$/;"	I
+np	deslib/tests/dcs/test_a_posteriori.py	/^import numpy as np$/;"	I
+np	deslib/tests/dcs/test_a_priori.py	/^import numpy as np$/;"	I
+np	deslib/tests/dcs/test_base.py	/^import numpy as np$/;"	I
+np	deslib/tests/dcs/test_lca.py	/^import numpy as np$/;"	I
+np	deslib/tests/dcs/test_mcb.py	/^import numpy as np$/;"	I
+np	deslib/tests/dcs/test_mla.py	/^import numpy as np$/;"	I
+np	deslib/tests/dcs/test_ola.py	/^import numpy as np$/;"	I
+np	deslib/tests/dcs/test_rank.py	/^import numpy as np$/;"	I
+np	deslib/tests/des/test_base.py	/^import numpy as np$/;"	I
+np	deslib/tests/des/test_des_clustering.py	/^import numpy as np$/;"	I
+np	deslib/tests/des/test_des_knn.py	/^import numpy as np$/;"	I
+np	deslib/tests/des/test_des_mi.py	/^import numpy as np$/;"	I
+np	deslib/tests/des/test_desp.py	/^import numpy as np$/;"	I
+np	deslib/tests/des/test_knop.py	/^import numpy as np$/;"	I
+np	deslib/tests/des/test_knorae.py	/^import numpy as np$/;"	I
+np	deslib/tests/des/test_knorau.py	/^import numpy as np$/;"	I
+np	deslib/tests/des/test_meta_des.py	/^import numpy as np$/;"	I
+np	deslib/tests/des/test_probabilistic.py	/^import numpy as np$/;"	I
+np	deslib/tests/static/test_oracle.py	/^import numpy as np$/;"	I
+np	deslib/tests/static/test_single_best.py	/^import numpy as np$/;"	I
+np	deslib/tests/static/test_stacked.py	/^import numpy as np$/;"	I
+np	deslib/tests/static/test_static_selection.py	/^import numpy as np$/;"	I
+np	deslib/tests/test_base.py	/^import numpy as np$/;"	I
+np	deslib/tests/test_des_integration.py	/^import numpy as np$/;"	I
+np	deslib/tests/test_des_integration_multiclass.py	/^import numpy as np$/;"	I
+np	deslib/tests/test_integration_DFP_IH.py	/^import numpy as np$/;"	I
+np	deslib/tests/test_integration_dfp.py	/^import numpy as np$/;"	I
+np	deslib/tests/util/test_datasets.py	/^import numpy as np$/;"	I
+np	deslib/tests/util/test_diversity.py	/^import numpy as np$/;"	I
+np	deslib/tests/util/test_faiss.py	/^import numpy as np$/;"	I
+np	deslib/tests/util/test_fire.py	/^import numpy as np$/;"	I
+np	deslib/tests/util/test_instance_hardness.py	/^import numpy as np$/;"	I
+np	deslib/tests/util/test_knne.py	/^import numpy as np$/;"	I
+np	deslib/tests/util/test_prob_functions.py	/^import numpy as np$/;"	I
+np	deslib/util/aggregation.py	/^import numpy as np$/;"	I
+np	deslib/util/datasets.py	/^import numpy as np$/;"	I
+np	deslib/util/dfp.py	/^import numpy as np$/;"	I
+np	deslib/util/diversity.py	/^import numpy as np$/;"	I
+np	deslib/util/faiss_knn_wrapper.py	/^import numpy as np$/;"	I
+np	deslib/util/instance_hardness.py	/^import numpy as np$/;"	I
+np	deslib/util/knne.py	/^import numpy as np$/;"	I
+np	deslib/util/prob_functions.py	/^import numpy as np$/;"	I
+npm	deslib/util/prob_functions.py	/^import numpy.matlib as npm$/;"	I
+potential_func	deslib/des/probabilistic/base.py	/^    def potential_func(dist):$/;"	m	class:BaseProbabilistic
+precision_function	deslib/des/des_clustering.py	/^        def precision_function(label_predicted):$/;"	f	member:DESClustering.get_scores_	file:
+predict	deslib/base.py	/^    def predict(self, X):$/;"	m	class:BaseDS
+predict	deslib/static/oracle.py	/^    def predict(self, X, y):$/;"	m	class:Oracle
+predict	deslib/static/single_best.py	/^    def predict(self, X):$/;"	m	class:SingleBest
+predict	deslib/static/stacked.py	/^    def predict(self, X):$/;"	m	class:StackedClassifier
+predict	deslib/static/static_selection.py	/^    def predict(self, X):$/;"	m	class:StaticSelection
+predict	deslib/util/faiss_knn_wrapper.py	/^    def predict(self, X):$/;"	m	class:FaissKNNClassifier
+predict	deslib/util/knne.py	/^    def predict(self, X):$/;"	m	class:KNNE
+predict_proba	deslib/base.py	/^    def predict_proba(self, X):$/;"	m	class:BaseDS
+predict_proba	deslib/static/oracle.py	/^    def predict_proba(self, X, y):$/;"	m	class:Oracle
+predict_proba	deslib/static/single_best.py	/^    def predict_proba(self, X):$/;"	m	class:SingleBest
+predict_proba	deslib/static/stacked.py	/^    def predict_proba(self, X):$/;"	m	class:StackedClassifier
+predict_proba	deslib/static/static_selection.py	/^    def predict_proba(self, X):$/;"	m	class:StaticSelection
+predict_proba	deslib/util/faiss_knn_wrapper.py	/^    def predict_proba(self, X):$/;"	m	class:FaissKNNClassifier
+predict_proba	deslib/util/knne.py	/^    def predict_proba(self, X):$/;"	m	class:KNNE
+predict_proba_ensemble	deslib/util/aggregation.py	/^def predict_proba_ensemble(classifier_ensemble, X):$/;"	f
+predict_proba_with_ds	deslib/base.py	/^    def predict_proba_with_ds(self, query, predictions, probabilities,$/;"	m	class:BaseDS
+predict_proba_with_ds	deslib/dcs/base.py	/^    def predict_proba_with_ds(self, query, predictions, probabilities,$/;"	m	class:BaseDCS
+predict_proba_with_ds	deslib/des/base.py	/^    def predict_proba_with_ds(self, query, predictions, probabilities,$/;"	m	class:BaseDES
+predict_proba_with_ds	deslib/des/des_clustering.py	/^    def predict_proba_with_ds(self, query, predictions, probabilities,$/;"	m	class:DESClustering
+predict_proba_with_ds	deslib/des/des_knn.py	/^    def predict_proba_with_ds(self, query, predictions, probabilities,$/;"	m	class:DESKNN
+predict_proba_with_ds	deslib/des/des_mi.py	/^    def predict_proba_with_ds(self, query, predictions, probabilities,$/;"	m	class:DESMI
+product_combiner	deslib/util/aggregation.py	/^def product_combiner(classifier_ensemble, X):$/;"	f
+product_rule	deslib/util/aggregation.py	/^def product_rule(predictions):$/;"	f
+ratio_errors	deslib/util/diversity.py	/^def ratio_errors(y, y_pred1, y_pred2):$/;"	f
+return_cluster_index_ex2	deslib/tests/des/test_des_clustering.py	/^return_cluster_index_ex2 = np.array($/;"	v
+score	deslib/static/oracle.py	/^    def score(self, X, y, sample_weights=None):$/;"	m	class:Oracle
+select	deslib/base.py	/^    def select(self, competences):$/;"	m	class:BaseDS
+select	deslib/dcs/base.py	/^    def select(self, competences):$/;"	m	class:BaseDCS
+select	deslib/des/base.py	/^    def select(self, competences):$/;"	m	class:BaseDES
+select	deslib/des/des_clustering.py	/^    def select(self, query):$/;"	m	class:DESClustering
+select	deslib/des/des_knn.py	/^    def select(self, accuracy, diversity):$/;"	m	class:DESKNN
+select	deslib/des/des_mi.py	/^    def select(self, competences):$/;"	m	class:DESMI
+select	deslib/des/des_p.py	/^    def select(self, competences):$/;"	m	class:DESP
+select	deslib/des/knop.py	/^    def select(self, competences):$/;"	m	class:KNOP
+select	deslib/des/knora_e.py	/^    def select(self, competences):$/;"	m	class:KNORAE
+select	deslib/des/knora_u.py	/^    def select(self, competences):$/;"	m	class:KNORAU
+select	deslib/des/meta_des.py	/^    def select(self, competences):$/;"	m	class:METADES
+select	deslib/des/probabilistic/base.py	/^    def select(self, competences):$/;"	m	class:BaseProbabilistic
+setup_class_sizes	deslib/tests/util/test_datasets.py	/^def setup_class_sizes():$/;"	f
+setup_classifiers	deslib/tests/test_des_integration.py	/^def setup_classifiers(encode_labels=None):$/;"	f
+setup_classifiers	deslib/tests/test_des_integration_multiclass.py	/^def setup_classifiers():$/;"	f
+setup_classifiers	deslib/tests/test_integration_DFP_IH.py	/^def setup_classifiers():$/;"	f
+setup_classifiers	deslib/tests/test_integration_dfp.py	/^def setup_classifiers():$/;"	f
+setup_test	deslib/tests/util/test_knne.py	/^def setup_test(n_neighbors, knn_classifier='sklearn'):$/;"	f
+softmax	deslib/util/prob_functions.py	/^def softmax(w, theta=1.0):$/;"	f
+source_competence	deslib/des/probabilistic/base.py	/^    def source_competence(self):$/;"	m	class:BaseProbabilistic
+source_competence	deslib/des/probabilistic/deskl.py	/^    def source_competence(self):$/;"	m	class:DESKL
+source_competence	deslib/des/probabilistic/exponential.py	/^    def source_competence(self):$/;"	m	class:Exponential
+source_competence	deslib/des/probabilistic/logarithmic.py	/^    def source_competence(self):$/;"	m	class:Logarithmic
+source_competence	deslib/des/probabilistic/minimum_difference.py	/^    def source_competence(self):$/;"	m	class:MinimumDifference
+source_competence	deslib/des/probabilistic/rrc.py	/^    def source_competence(self):$/;"	m	class:RRC
+test_DFP_is_used	deslib/tests/test_base.py	/^def test_DFP_is_used(example_estimate_competence, create_pool_classifiers):$/;"	f
+test_IH_is_used	deslib/tests/test_base.py	/^def test_IH_is_used(example_estimate_competence, create_pool_classifiers):$/;"	f
+test_J_N_values	deslib/tests/des/test_des_clustering.py	/^def test_J_N_values(create_X_y):$/;"	f
+test_J_N_values	deslib/tests/des/test_des_knn.py	/^def test_J_N_values():$/;"	f
+test_J_higher_than_N	deslib/tests/des/test_des_clustering.py	/^def test_J_higher_than_N(create_X_y):$/;"	f
+test_J_higher_than_N	deslib/tests/des/test_des_knn.py	/^def test_J_higher_than_N():$/;"	f
+test_MLA	deslib/tests/test_des_integration.py	/^def test_MLA(knn_methods):$/;"	f
+test_MLA	deslib/tests/test_integration_dfp.py	/^def test_MLA():$/;"	f
+test_P2_class_distribution	deslib/tests/util/test_datasets.py	/^def test_P2_class_distribution():$/;"	f
+test_agreement	deslib/tests/util/test_diversity.py	/^def test_agreement(example_diversity):$/;"	f
+test_all_classifiers_agree	deslib/tests/test_base.py	/^def test_all_classifiers_agree():$/;"	f
+test_aposteriori	deslib/tests/test_des_integration.py	/^def test_aposteriori(knn_methods):$/;"	f
+test_aposteriori	deslib/tests/test_integration_DFP_IH.py	/^def test_aposteriori():$/;"	f
+test_aposteriori	deslib/tests/test_integration_dfp.py	/^def test_aposteriori():$/;"	f
+test_apriori	deslib/tests/test_des_integration.py	/^def test_apriori(knn_methods):$/;"	f
+test_apriori	deslib/tests/test_des_integration_multiclass.py	/^def test_apriori():$/;"	f
+test_apriori	deslib/tests/test_integration_dfp.py	/^def test_apriori():$/;"	f
+test_average_combiner	deslib/tests/util/test_aggregation.py	/^def test_average_combiner(create_pool_classifiers):$/;"	f
+test_average_rule	deslib/tests/util/test_aggregation.py	/^def test_average_rule():$/;"	f
+test_bad_input_X	deslib/tests/test_base.py	/^def test_bad_input_X(X_test, create_X_y):$/;"	f
+test_banana2_class_distribution	deslib/tests/util/test_datasets.py	/^def test_banana2_class_distribution():$/;"	f
+test_banana_class_distribution	deslib/tests/util/test_datasets.py	/^def test_banana_class_distribution():$/;"	f
+test_banana_n_higher_than_one	deslib/tests/util/test_datasets.py	/^def test_banana_n_higher_than_one():$/;"	f
+test_ccprmod_one_support	deslib/tests/util/test_prob_functions.py	/^def test_ccprmod_one_support():$/;"	f
+test_ccprmod_return_value	deslib/tests/util/test_prob_functions.py	/^def test_ccprmod_return_value(supports, idx_correct_label, expected):$/;"	f
+test_ccprmod_zero_support	deslib/tests/util/test_prob_functions.py	/^def test_ccprmod_zero_support():$/;"	f
+test_check_alpha_type	deslib/tests/des/test_des_mi.py	/^def test_check_alpha_type(alpha, create_X_y):$/;"	f
+test_check_alpha_value	deslib/tests/des/test_des_mi.py	/^def test_check_alpha_value(alpha, create_X_y):$/;"	f
+test_check_estimator	deslib/tests/dcs/test_a_posteriori.py	/^def test_check_estimator():$/;"	f
+test_check_estimator	deslib/tests/dcs/test_a_priori.py	/^def test_check_estimator():$/;"	f
+test_check_estimator	deslib/tests/dcs/test_lca.py	/^def test_check_estimator():$/;"	f
+test_check_estimator	deslib/tests/dcs/test_mcb.py	/^def test_check_estimator():$/;"	f
+test_check_estimator	deslib/tests/dcs/test_mla.py	/^def test_check_estimator():$/;"	f
+test_check_estimator	deslib/tests/dcs/test_ola.py	/^def test_check_estimator():$/;"	f
+test_check_estimator	deslib/tests/dcs/test_rank.py	/^def test_check_estimator():$/;"	f
+test_check_estimator	deslib/tests/des/test_des_clustering.py	/^def test_check_estimator():$/;"	f
+test_check_estimator	deslib/tests/des/test_des_knn.py	/^def test_check_estimator():$/;"	f
+test_check_estimator	deslib/tests/des/test_des_mi.py	/^def test_check_estimator():$/;"	f
+test_check_estimator	deslib/tests/des/test_desp.py	/^def test_check_estimator():$/;"	f
+test_check_estimator	deslib/tests/des/test_knop.py	/^def test_check_estimator():$/;"	f
+test_check_estimator	deslib/tests/des/test_knorae.py	/^def test_check_estimator():$/;"	f
+test_check_estimator	deslib/tests/des/test_knorau.py	/^def test_check_estimator():$/;"	f
+test_check_estimator	deslib/tests/des/test_meta_des.py	/^def test_check_estimator():$/;"	f
+test_check_estimator	deslib/tests/static/test_single_best.py	/^def test_check_estimator():$/;"	f
+test_check_estimator	deslib/tests/static/test_stacked.py	/^def test_check_estimator():$/;"	f
+test_check_estimator	deslib/tests/static/test_static_selection.py	/^def test_check_estimator():$/;"	f
+test_check_estimator_DESKL	deslib/tests/des/test_probabilistic.py	/^def test_check_estimator_DESKL():$/;"	f
+test_check_estimator_Exponential	deslib/tests/des/test_probabilistic.py	/^def test_check_estimator_Exponential():$/;"	f
+test_check_estimator_Logarithmic	deslib/tests/des/test_probabilistic.py	/^def test_check_estimator_Logarithmic():$/;"	f
+test_check_estimator_MinimumDifference	deslib/tests/des/test_probabilistic.py	/^def test_check_estimator_MinimumDifference():$/;"	f
+test_check_estimator_RRC	deslib/tests/des/test_probabilistic.py	/^def test_check_estimator_RRC():$/;"	f
+test_check_k_type	deslib/tests/test_base.py	/^def test_check_k_type(k):$/;"	f
+test_check_k_value	deslib/tests/test_base.py	/^def test_check_k_value(k):$/;"	f
+test_check_pct_accuracy_value	deslib/tests/des/test_des_mi.py	/^def test_check_pct_accuracy_value(pct_accuracy, create_X_y):$/;"	f
+test_check_predictions	deslib/tests/util/test_aggregation.py	/^def test_check_predictions():$/;"	f
+test_check_safe_k_type	deslib/tests/test_base.py	/^def test_check_safe_k_type(safe_k):$/;"	f
+test_check_safe_k_value	deslib/tests/test_base.py	/^def test_check_safe_k_value(safe_k):$/;"	f
+test_circle_square_class_distribution	deslib/tests/util/test_datasets.py	/^def test_circle_square_class_distribution():$/;"	f
+test_classify_instance	deslib/tests/dcs/test_base.py	/^def test_classify_instance(create_pool_classifiers):$/;"	f
+test_classify_instance	deslib/tests/des/test_des_clustering.py	/^def test_classify_instance(create_pool_classifiers):$/;"	f
+test_classify_instance_all	deslib/tests/dcs/test_base.py	/^def test_classify_instance_all(competences, expected, create_pool_classifiers):$/;"	f
+test_classify_instance_all_batch	deslib/tests/dcs/test_base.py	/^def test_classify_instance_all_batch(create_pool_classifiers):$/;"	f
+test_classify_instance_batch	deslib/tests/dcs/test_base.py	/^def test_classify_instance_batch(create_pool_classifiers):$/;"	f
+test_classify_instance_hybrid	deslib/tests/des/test_base.py	/^def test_classify_instance_hybrid(create_pool_classifiers):$/;"	f
+test_classify_instance_hybrid_batch	deslib/tests/des/test_base.py	/^def test_classify_instance_hybrid_batch(create_pool_classifiers):$/;"	f
+test_classify_instance_selection	deslib/tests/des/test_base.py	/^def test_classify_instance_selection(create_pool_classifiers):$/;"	f
+test_classify_instance_selection_batch	deslib/tests/des/test_base.py	/^def test_classify_instance_selection_batch(create_pool_classifiers):$/;"	f
+test_classify_instance_weighting	deslib/tests/des/test_base.py	/^def test_classify_instance_weighting(create_pool_classifiers):$/;"	f
+test_classify_instance_weighting_batch	deslib/tests/des/test_base.py	/^def test_classify_instance_weighting_batch(create_pool_classifiers):$/;"	f
+test_classify_with_ds_batch_samples	deslib/tests/des/test_des_mi.py	/^def test_classify_with_ds_batch_samples():$/;"	f
+test_classify_with_ds_diff_sizes	deslib/tests/dcs/test_base.py	/^def test_classify_with_ds_diff_sizes():$/;"	f
+test_classify_with_ds_diff_sizes	deslib/tests/des/test_base.py	/^def test_classify_with_ds_diff_sizes(create_pool_classifiers):$/;"	f
+test_classify_with_ds_diff_sizes	deslib/tests/des/test_des_clustering.py	/^def test_classify_with_ds_diff_sizes():$/;"	f
+test_classify_with_ds_diff_sizes	deslib/tests/des/test_des_knn.py	/^def test_classify_with_ds_diff_sizes():$/;"	f
+test_classify_with_ds_diff_sizes	deslib/tests/des/test_des_mi.py	/^def test_classify_with_ds_diff_sizes():$/;"	f
+test_classify_with_ds_single_sample	deslib/tests/des/test_des_clustering.py	/^def test_classify_with_ds_single_sample():$/;"	f
+test_classify_with_ds_single_sample	deslib/tests/des/test_des_knn.py	/^def test_classify_with_ds_single_sample():$/;"	f
+test_classify_with_ds_single_sample	deslib/tests/des/test_des_mi.py	/^def test_classify_with_ds_single_sample():$/;"	f
+test_coefficient_correlation	deslib/tests/util/test_diversity.py	/^def test_coefficient_correlation(example_diversity):$/;"	f
+test_compute_meta_features	deslib/tests/des/test_meta_des.py	/^def test_compute_meta_features(example_estimate_competence,$/;"	f
+test_des_clustering	deslib/tests/test_des_integration.py	/^def test_des_clustering():$/;"	f
+test_des_clustering	deslib/tests/test_integration_DFP_IH.py	/^def test_des_clustering():$/;"	f
+test_des_clustering_proba	deslib/tests/test_des_integration.py	/^def test_des_clustering_proba():$/;"	f
+test_deskl	deslib/tests/test_des_integration.py	/^def test_deskl(knn_methods):$/;"	f
+test_deskl	deslib/tests/test_integration_dfp.py	/^def test_deskl():$/;"	f
+test_desknn	deslib/tests/test_des_integration.py	/^def test_desknn(knn_methods):$/;"	f
+test_desknn	deslib/tests/test_integration_dfp.py	/^def test_desknn():$/;"	f
+test_desknn_proba	deslib/tests/test_des_integration.py	/^def test_desknn_proba(knn_methods):$/;"	f
+test_desknn_proba	deslib/tests/test_integration_dfp.py	/^def test_desknn_proba():$/;"	f
+test_desp	deslib/tests/test_des_integration.py	/^def test_desp(knn_methods):$/;"	f
+test_desp	deslib/tests/test_des_integration_multiclass.py	/^def test_desp():$/;"	f
+test_desp	deslib/tests/test_integration_DFP_IH.py	/^def test_desp():$/;"	f
+test_desp	deslib/tests/test_integration_dfp.py	/^def test_desp(knne, expected):$/;"	f
+test_desp_proba	deslib/tests/test_des_integration.py	/^def test_desp_proba(knn_methods):$/;"	f
+test_desp_proba	deslib/tests/test_integration_dfp.py	/^def test_desp_proba():$/;"	f
+test_different_input_shape	deslib/tests/test_base.py	/^def test_different_input_shape(create_X_y):$/;"	f
+test_different_scorer	deslib/tests/static/test_single_best.py	/^def test_different_scorer():$/;"	f
+test_different_scorer	deslib/tests/static/test_static_selection.py	/^def test_different_scorer():$/;"	f
+test_disagreement	deslib/tests/util/test_diversity.py	/^def test_disagreement(example_diversity):$/;"	f
+test_diversity_metric_DF	deslib/tests/des/test_des_clustering.py	/^def test_diversity_metric_DF(create_X_y):$/;"	f
+test_diversity_metric_Q	deslib/tests/des/test_des_clustering.py	/^def test_diversity_metric_Q(create_X_y):$/;"	f
+test_diversity_metric_ratio	deslib/tests/des/test_des_clustering.py	/^def test_diversity_metric_ratio(create_X_y):$/;"	f
+test_double_fault	deslib/tests/util/test_diversity.py	/^def test_double_fault():$/;"	f
+test_double_fault_ones	deslib/tests/util/test_diversity.py	/^def test_double_fault_ones(example_diversity_ones_zeros):$/;"	f
+test_double_fault_ones_zeros	deslib/tests/util/test_diversity.py	/^def test_double_fault_ones_zeros(example_diversity_ones_zeros):$/;"	f
+test_double_fault_order	deslib/tests/util/test_diversity.py	/^def test_double_fault_order(example_diversity_ones_zeros):$/;"	f
+test_double_fault_zeros	deslib/tests/util/test_diversity.py	/^def test_double_fault_zeros(example_diversity_ones_zeros):$/;"	f
+test_empty_pool	deslib/tests/test_base.py	/^def test_empty_pool(create_X_y):$/;"	f
+test_entropy_func_parameter_shape	deslib/tests/util/test_prob_functions.py	/^def test_entropy_func_parameter_shape():$/;"	f
+test_entropy_func_three_classes	deslib/tests/util/test_prob_functions.py	/^def test_entropy_func_three_classes():$/;"	f
+test_equal_classes	deslib/tests/util/test_knne.py	/^def test_equal_classes():$/;"	f
+test_estimate_competence	deslib/tests/des/test_des_clustering.py	/^def test_estimate_competence(create_pool_classifiers,$/;"	f
+test_estimate_competence	deslib/tests/des/test_des_knn.py	/^def test_estimate_competence():$/;"	f
+test_estimate_competence	deslib/tests/des/test_meta_des.py	/^def test_estimate_competence(example_estimate_competence,$/;"	f
+test_estimate_competence2	deslib/tests/dcs/test_mcb.py	/^def test_estimate_competence2(index, expected, example_estimate_competence):$/;"	f
+test_estimate_competence_Q	deslib/tests/des/test_des_knn.py	/^def test_estimate_competence_Q():$/;"	f
+test_estimate_competence_Q_batch	deslib/tests/des/test_des_knn.py	/^def test_estimate_competence_Q_batch():$/;"	f
+test_estimate_competence_all_ones	deslib/tests/dcs/test_a_posteriori.py	/^def test_estimate_competence_all_ones(index, example_all_ones):$/;"	f
+test_estimate_competence_all_ones	deslib/tests/dcs/test_a_priori.py	/^def test_estimate_competence_all_ones(index, expected, example_all_ones):$/;"	f
+test_estimate_competence_all_ones	deslib/tests/dcs/test_mla.py	/^def test_estimate_competence_all_ones(index, example_all_ones):$/;"	f
+test_estimate_competence_batch	deslib/tests/dcs/test_a_priori.py	/^def test_estimate_competence_batch(example_estimate_competence):$/;"	f
+test_estimate_competence_batch	deslib/tests/dcs/test_lca.py	/^def test_estimate_competence_batch(example_estimate_competence):$/;"	f
+test_estimate_competence_batch	deslib/tests/dcs/test_mcb.py	/^def test_estimate_competence_batch(example_estimate_competence):$/;"	f
+test_estimate_competence_batch	deslib/tests/dcs/test_mla.py	/^def test_estimate_competence_batch(example_estimate_competence):$/;"	f
+test_estimate_competence_batch	deslib/tests/dcs/test_ola.py	/^def test_estimate_competence_batch(example_estimate_competence):$/;"	f
+test_estimate_competence_batch	deslib/tests/dcs/test_rank.py	/^def test_estimate_competence_batch(example_estimate_competence):$/;"	f
+test_estimate_competence_batch	deslib/tests/des/test_des_knn.py	/^def test_estimate_competence_batch():$/;"	f
+test_estimate_competence_batch	deslib/tests/des/test_desp.py	/^def test_estimate_competence_batch(example_estimate_competence,$/;"	f
+test_estimate_competence_batch	deslib/tests/des/test_knop.py	/^def test_estimate_competence_batch(example_estimate_competence,$/;"	f
+test_estimate_competence_batch	deslib/tests/des/test_knorae.py	/^def test_estimate_competence_batch(example_estimate_competence,$/;"	f
+test_estimate_competence_batch	deslib/tests/des/test_knorau.py	/^def test_estimate_competence_batch(example_estimate_competence,$/;"	f
+test_estimate_competence_batch	deslib/tests/des/test_meta_des.py	/^def test_estimate_competence_batch(example_estimate_competence,$/;"	f
+test_estimate_competence_batch	deslib/tests/des/test_probabilistic.py	/^def test_estimate_competence_batch():$/;"	f
+test_estimate_competence_diff_target	deslib/tests/dcs/test_a_posteriori.py	/^def test_estimate_competence_diff_target(index, example_all_ones):$/;"	f
+test_estimate_competence_diff_target	deslib/tests/dcs/test_lca.py	/^def test_estimate_competence_diff_target(index,$/;"	f
+test_estimate_competence_diff_target	deslib/tests/dcs/test_mla.py	/^def test_estimate_competence_diff_target(index, example_estimate_competence):$/;"	f
+test_estimate_competence_kuncheva_ex	deslib/tests/dcs/test_a_posteriori.py	/^def test_estimate_competence_kuncheva_ex(example_kuncheva):$/;"	f
+test_estimate_competence_kuncheva_ex	deslib/tests/dcs/test_a_priori.py	/^def test_estimate_competence_kuncheva_ex(example_kuncheva):$/;"	f
+test_estimate_competence_kuncheva_ex	deslib/tests/dcs/test_mla.py	/^def test_estimate_competence_kuncheva_ex(example_kuncheva):$/;"	f
+test_estimate_competence_kuncheva_ex_batch	deslib/tests/dcs/test_a_posteriori.py	/^def test_estimate_competence_kuncheva_ex_batch(example_kuncheva):$/;"	f
+test_estimate_competence_ones	deslib/tests/des/test_probabilistic.py	/^def test_estimate_competence_ones(example_estimate_competence):$/;"	f
+test_estimate_competence_ratio	deslib/tests/des/test_des_knn.py	/^def test_estimate_competence_ratio():$/;"	f
+test_estimate_competence_ratio_batch	deslib/tests/des/test_des_knn.py	/^def test_estimate_competence_ratio_batch():$/;"	f
+test_estimate_competence_zeros	deslib/tests/des/test_probabilistic.py	/^def test_estimate_competence_zeros(example_estimate_competence):$/;"	f
+test_exponential_func	deslib/tests/util/test_prob_functions.py	/^def test_exponential_func():$/;"	f
+test_exponential_func_multi_class	deslib/tests/util/test_prob_functions.py	/^def test_exponential_func_multi_class(supports_correct, expected):$/;"	f
+test_exponential_func_multi_class_batch	deslib/tests/util/test_prob_functions.py	/^def test_exponential_func_multi_class_batch():$/;"	f
+test_exponential_func_two_class	deslib/tests/util/test_prob_functions.py	/^def test_exponential_func_two_class(supports_correct, expected):$/;"	f
+test_faiss_knne	deslib/tests/util/test_knne.py	/^def test_faiss_knne():$/;"	f
+test_faiss_knne_inds	deslib/tests/util/test_knne.py	/^def test_faiss_knne_inds():$/;"	f
+test_faiss_predict	deslib/tests/util/test_faiss.py	/^def test_faiss_predict():$/;"	f
+test_fit	deslib/tests/dcs/test_a_posteriori.py	/^def test_fit(create_X_y, create_pool_classifiers):$/;"	f
+test_fit	deslib/tests/dcs/test_a_priori.py	/^def test_fit(create_pool_classifiers, create_X_y):$/;"	f
+test_fit	deslib/tests/des/test_knop.py	/^def test_fit(example_estimate_competence, create_pool_classifiers):$/;"	f
+test_fit	deslib/tests/static/test_single_best.py	/^def test_fit(create_X_y, create_pool_classifiers):$/;"	f
+test_fit	deslib/tests/static/test_static_selection.py	/^def test_fit(example_static_selection):$/;"	f
+test_fit_clusters_less_diverse	deslib/tests/des/test_des_clustering.py	/^def test_fit_clusters_less_diverse(example_estimate_competence,$/;"	f
+test_fit_heterogeneous_clusters	deslib/tests/des/test_des_clustering.py	/^def test_fit_heterogeneous_clusters(example_estimate_competence,$/;"	f
+test_fit_homogeneous_clusters	deslib/tests/des/test_des_clustering.py	/^def test_fit_homogeneous_clusters(create_pool_classifiers,$/;"	f
+test_fitted_meta_classifier	deslib/tests/des/test_meta_des.py	/^def test_fitted_meta_classifier():$/;"	f
+test_frienemy_all_classifiers_crosses	deslib/tests/util/test_fire.py	/^def test_frienemy_all_classifiers_crosses(example_all_ones):$/;"	f
+test_frienemy_no_classifier_crosses	deslib/tests/util/test_fire.py	/^def test_frienemy_no_classifier_crosses(example_estimate_competence):$/;"	f
+test_frienemy_not_all_classifiers_crosses	deslib/tests/util/test_fire.py	/^def test_frienemy_not_all_classifiers_crosses(example_estimate_competence):$/;"	f
+test_frienemy_not_processed	deslib/tests/util/test_fire.py	/^def test_frienemy_not_processed():$/;"	f
+test_frienemy_safe_region	deslib/tests/util/test_fire.py	/^def test_frienemy_safe_region(example_estimate_competence):$/;"	f
+test_grid_search	deslib/tests/test_des_integration.py	/^def test_grid_search():$/;"	f
+test_import_faiss_mode	deslib/tests/test_base.py	/^def test_import_faiss_mode():$/;"	f
+test_input_IH_rate	deslib/tests/test_base.py	/^def test_input_IH_rate(IH_rate):$/;"	f
+test_input_diversity_parameter	deslib/tests/des/test_des_clustering.py	/^def test_input_diversity_parameter(create_X_y):$/;"	f
+test_input_diversity_parameter	deslib/tests/des/test_des_knn.py	/^def test_input_diversity_parameter():$/;"	f
+test_input_shape_fit	deslib/tests/test_base.py	/^def test_input_shape_fit():$/;"	f
+test_instance_hardness_region	deslib/tests/util/test_instance_hardness.py	/^def test_instance_hardness_region(index,$/;"	f
+test_instance_hardness_region_all_same	deslib/tests/util/test_instance_hardness.py	/^def test_instance_hardness_region_all_same(example_estimate_competence):$/;"	f
+test_instance_hardness_region_batch	deslib/tests/util/test_instance_hardness.py	/^def test_instance_hardness_region_batch(example_estimate_competence):$/;"	f
+test_invalid_metric_performance	deslib/tests/des/test_des_clustering.py	/^def test_invalid_metric_performance(create_X_y):$/;"	f
+test_invalid_pct	deslib/tests/static/test_static_selection.py	/^def test_invalid_pct():$/;"	f
+test_invalid_pct2	deslib/tests/static/test_static_selection.py	/^def test_invalid_pct2():$/;"	f
+test_kdn_score	deslib/tests/util/test_instance_hardness.py	/^def test_kdn_score(example_estimate_competence):$/;"	f
+test_kne	deslib/tests/test_des_integration.py	/^def test_kne(knn_methods):$/;"	f
+test_kne	deslib/tests/test_integration_dfp.py	/^def test_kne():$/;"	f
+test_kne_proba	deslib/tests/test_des_integration.py	/^def test_kne_proba(knn_methods):$/;"	f
+test_kne_proba	deslib/tests/test_integration_dfp.py	/^def test_kne_proba():$/;"	f
+test_knne_not_allowed	deslib/tests/des/test_probabilistic.py	/^def test_knne_not_allowed(create_X_y):$/;"	f
+test_knop	deslib/tests/test_des_integration.py	/^def test_knop(knn_methods):$/;"	f
+test_knop	deslib/tests/test_des_integration_multiclass.py	/^def test_knop():$/;"	f
+test_knop	deslib/tests/test_integration_dfp.py	/^def test_knop(knne, expected):$/;"	f
+test_knop_proba	deslib/tests/test_des_integration.py	/^def test_knop_proba(knn_methods):$/;"	f
+test_knorau	deslib/tests/test_des_integration.py	/^def test_knorau(knn_methods):$/;"	f
+test_knorau	deslib/tests/test_integration_DFP_IH.py	/^def test_knorau():$/;"	f
+test_knorau	deslib/tests/test_integration_dfp.py	/^def test_knorau():$/;"	f
+test_label_encoder	deslib/tests/static/test_single_best.py	/^def test_label_encoder(create_label_encoder_test):$/;"	f
+test_label_encoder	deslib/tests/static/test_stacked.py	/^def test_label_encoder():$/;"	f
+test_label_encoder	deslib/tests/static/test_static_selection.py	/^def test_label_encoder(create_label_encoder_test):$/;"	f
+test_label_encoder_base	deslib/tests/test_base.py	/^def test_label_encoder_base():$/;"	f
+test_label_encoder_base_ensemble	deslib/tests/static/test_oracle.py	/^def test_label_encoder_base_ensemble():$/;"	f
+test_label_encoder_base_ensemble	deslib/tests/static/test_single_best.py	/^def test_label_encoder_base_ensemble():$/;"	f
+test_label_encoder_base_ensemble	deslib/tests/static/test_stacked.py	/^def test_label_encoder_base_ensemble():$/;"	f
+test_label_encoder_base_ensemble	deslib/tests/static/test_static_selection.py	/^def test_label_encoder_base_ensemble():$/;"	f
+test_label_encoder_integration_list_classifiers	deslib/tests/test_des_integration.py	/^def test_label_encoder_integration_list_classifiers():$/;"	f
+test_label_encoder_integration_sklearn_ensembles	deslib/tests/test_des_integration.py	/^def test_label_encoder_integration_sklearn_ensembles():$/;"	f
+test_label_encoder_integration_sklearn_ensembles_not_encoding	deslib/tests/test_des_integration.py	/^def test_label_encoder_integration_sklearn_ensembles_not_encoding():$/;"	f
+test_label_encoder_only_dsel	deslib/tests/test_base.py	/^def test_label_encoder_only_dsel():$/;"	f
+test_label_encoder_only_dsel_allagree	deslib/tests/test_base.py	/^def test_label_encoder_only_dsel_allagree():$/;"	f
+test_labels_not_encoded	deslib/tests/util/test_knne.py	/^def test_labels_not_encoded():$/;"	f
+test_lca	deslib/tests/test_des_integration.py	/^def test_lca(knn_methods):$/;"	f
+test_lca	deslib/tests/test_integration_dfp.py	/^def test_lca(knne, expected):$/;"	f
+test_log_func_multi_class	deslib/tests/util/test_prob_functions.py	/^def test_log_func_multi_class(supports_correct, expected):$/;"	f
+test_log_func_two_classes	deslib/tests/util/test_prob_functions.py	/^def test_log_func_two_classes(supports_correct, expected):$/;"	f
+test_majority_voting	deslib/tests/util/test_aggregation.py	/^def test_majority_voting():$/;"	f
+test_majority_voting_multi_class	deslib/tests/util/test_aggregation.py	/^def test_majority_voting_multi_class():$/;"	f
+test_maximum_combiner	deslib/tests/util/test_aggregation.py	/^def test_maximum_combiner(create_pool_classifiers):$/;"	f
+test_maximum_rule	deslib/tests/util/test_aggregation.py	/^def test_maximum_rule():$/;"	f
+test_mcb	deslib/tests/test_des_integration.py	/^def test_mcb(knn_methods):$/;"	f
+test_mcb	deslib/tests/test_des_integration_multiclass.py	/^def test_mcb():$/;"	f
+test_mcb	deslib/tests/test_integration_DFP_IH.py	/^def test_mcb():$/;"	f
+test_mcb	deslib/tests/test_integration_dfp.py	/^def test_mcb():$/;"	f
+test_mcb_proba	deslib/tests/test_des_integration.py	/^def test_mcb_proba(knn_methods):$/;"	f
+test_mcb_proba	deslib/tests/test_integration_dfp.py	/^def test_mcb_proba():$/;"	f
+test_median_combiner	deslib/tests/util/test_aggregation.py	/^def test_median_combiner(create_pool_classifiers):$/;"	f
+test_median_rule	deslib/tests/util/test_aggregation.py	/^def test_median_rule():$/;"	f
+test_meta	deslib/tests/test_des_integration.py	/^def test_meta(knn_methods):$/;"	f
+test_meta	deslib/tests/test_des_integration_multiclass.py	/^def test_meta():$/;"	f
+test_meta	deslib/tests/test_integration_dfp.py	/^def test_meta(knne, expected):$/;"	f
+test_meta_classifier_not_none	deslib/tests/des/test_meta_des.py	/^def test_meta_classifier_not_none():$/;"	f
+test_meta_classifier_not_predict_proba	deslib/tests/des/test_meta_des.py	/^def test_meta_classifier_not_predict_proba(create_pool_classifiers, model):$/;"	f
+test_meta_no_pool_of_classifiers	deslib/tests/test_des_integration.py	/^def test_meta_no_pool_of_classifiers(knn_methods):$/;"	f
+test_mi	deslib/tests/test_des_integration.py	/^def test_mi(knn_methods):$/;"	f
+test_mi	deslib/tests/test_des_integration_multiclass.py	/^def test_mi():$/;"	f
+test_min_difference	deslib/tests/util/test_prob_functions.py	/^def test_min_difference(supports, idx_correct_label, expected):$/;"	f
+test_minimum_combiner	deslib/tests/util/test_aggregation.py	/^def test_minimum_combiner(create_pool_classifiers):$/;"	f
+test_minimum_diff	deslib/tests/test_des_integration.py	/^def test_minimum_diff(knn_methods):$/;"	f
+test_minimum_rule	deslib/tests/util/test_aggregation.py	/^def test_minimum_rule():$/;"	f
+test_n_neighbors_less_n_classes	deslib/tests/util/test_knne.py	/^def test_n_neighbors_less_n_classes():$/;"	f
+test_n_neighbors_none	deslib/tests/util/test_knne.py	/^def test_n_neighbors_none():$/;"	f
+test_n_neighbors_not_integer	deslib/tests/util/test_knne.py	/^def test_n_neighbors_not_integer():$/;"	f
+test_n_neighbors_not_multiple_raise_warning	deslib/tests/util/test_knne.py	/^def test_n_neighbors_not_multiple_raise_warning():$/;"	f
+test_not_all_classifiers_agree	deslib/tests/test_base.py	/^def test_not_all_classifiers_agree():$/;"	f
+test_not_clustering_algorithm	deslib/tests/des/test_des_clustering.py	/^def test_not_clustering_algorithm(create_X_y):$/;"	f
+test_not_fitted	deslib/tests/static/test_single_best.py	/^def test_not_fitted():$/;"	f
+test_not_fitted	deslib/tests/static/test_static_selection.py	/^def test_not_fitted():$/;"	f
+test_not_fitted_ds	deslib/tests/test_base.py	/^def test_not_fitted_ds():$/;"	f
+test_not_predict_proba	deslib/tests/dcs/test_a_posteriori.py	/^def test_not_predict_proba(create_X_y):$/;"	f
+test_not_predict_proba	deslib/tests/dcs/test_a_priori.py	/^def test_not_predict_proba(create_X_y):$/;"	f
+test_not_predict_proba	deslib/tests/des/test_knop.py	/^def test_not_predict_proba(create_X_y):$/;"	f
+test_not_predict_proba	deslib/tests/des/test_meta_des.py	/^def test_not_predict_proba(create_X_y):$/;"	f
+test_not_predict_proba	deslib/tests/des/test_probabilistic.py	/^def test_not_predict_proba(create_X_y):$/;"	f
+test_not_predict_proba	deslib/tests/static/test_single_best.py	/^def test_not_predict_proba(create_X_y):$/;"	f
+test_not_predict_proba	deslib/tests/static/test_stacked.py	/^def test_not_predict_proba(create_X_y):$/;"	f
+test_not_predict_proba_meta	deslib/tests/static/test_stacked.py	/^def test_not_predict_proba_meta(create_X_y, create_pool_classifiers):$/;"	f
+test_ola	deslib/tests/test_des_integration.py	/^def test_ola(knn_methods):$/;"	f
+test_ola	deslib/tests/test_integration_DFP_IH.py	/^def test_ola():$/;"	f
+test_ola	deslib/tests/test_integration_dfp.py	/^def test_ola():$/;"	f
+test_ola_proba	deslib/tests/test_des_integration.py	/^def test_ola_proba(knn_methods):$/;"	f
+test_ola_proba	deslib/tests/test_integration_dfp.py	/^def test_ola_proba():$/;"	f
+test_one_class_meta_dataset	deslib/tests/static/test_stacked.py	/^def test_one_class_meta_dataset(create_X_y):$/;"	f
+test_oracle	deslib/tests/test_des_integration.py	/^def test_oracle():$/;"	f
+test_parameter_Hc	deslib/tests/des/test_meta_des.py	/^def test_parameter_Hc(Hc, create_pool_classifiers):$/;"	f
+test_parameter_Kp	deslib/tests/des/test_meta_des.py	/^def test_parameter_Kp(Kp, create_pool_classifiers):$/;"	f
+test_parameter_gamma	deslib/tests/des/test_meta_des.py	/^def test_parameter_gamma(selection_threshold, create_pool_classifiers):$/;"	f
+test_passthrough_false	deslib/tests/static/test_stacked.py	/^def test_passthrough_false(create_X_y):$/;"	f
+test_passthrough_true	deslib/tests/static/test_stacked.py	/^def test_passthrough_true(create_X_y):$/;"	f
+test_pect_zero	deslib/tests/des/test_des_knn.py	/^def test_pect_zero():$/;"	f
+test_pool_single_model	deslib/tests/test_base.py	/^def test_pool_single_model(create_X_y):$/;"	f
+test_potential_function	deslib/tests/des/test_probabilistic.py	/^def test_potential_function():$/;"	f
+test_potential_function_batch	deslib/tests/des/test_probabilistic.py	/^def test_potential_function_batch():$/;"	f
+test_potential_function_zeros	deslib/tests/des/test_probabilistic.py	/^def test_potential_function_zeros():$/;"	f
+test_predict	deslib/tests/static/test_oracle.py	/^def test_predict(create_X_y, create_pool_classifiers):$/;"	f
+test_predict	deslib/tests/static/test_single_best.py	/^def test_predict(create_X_y, create_pool_classifiers):$/;"	f
+test_predict	deslib/tests/static/test_static_selection.py	/^def test_predict(example_static_selection, create_pool_classifiers):$/;"	f
+test_predict	deslib/tests/util/test_knne.py	/^def test_predict():$/;"	f
+test_predict_all_same	deslib/tests/static/test_oracle.py	/^def test_predict_all_same(create_X_y, create_pool_all_agree):$/;"	f
+test_predict_diff	deslib/tests/static/test_static_selection.py	/^def test_predict_diff(example_static_selection):$/;"	f
+test_predict_proba	deslib/tests/dcs/test_lca.py	/^def test_predict_proba(create_X_y):$/;"	f
+test_predict_proba	deslib/tests/dcs/test_mcb.py	/^def test_predict_proba(create_X_y):$/;"	f
+test_predict_proba	deslib/tests/dcs/test_mla.py	/^def test_predict_proba(create_X_y):$/;"	f
+test_predict_proba	deslib/tests/dcs/test_ola.py	/^def test_predict_proba(create_X_y):$/;"	f
+test_predict_proba	deslib/tests/dcs/test_rank.py	/^def test_predict_proba(create_X_y):$/;"	f
+test_predict_proba	deslib/tests/des/test_des_clustering.py	/^def test_predict_proba(example_estimate_competence):$/;"	f
+test_predict_proba	deslib/tests/des/test_des_knn.py	/^def test_predict_proba():$/;"	f
+test_predict_proba	deslib/tests/des/test_desp.py	/^def test_predict_proba(create_X_y):$/;"	f
+test_predict_proba	deslib/tests/des/test_knorae.py	/^def test_predict_proba(create_X_y):$/;"	f
+test_predict_proba	deslib/tests/des/test_knorau.py	/^def test_predict_proba(create_X_y):$/;"	f
+test_predict_proba	deslib/tests/static/test_single_best.py	/^def test_predict_proba(create_X_y, create_pool_classifiers):$/;"	f
+test_predict_proba	deslib/tests/static/test_static_selection.py	/^def test_predict_proba(example_static_selection):$/;"	f
+test_predict_proba	deslib/tests/util/test_aggregation.py	/^def test_predict_proba(create_pool_classifiers):$/;"	f
+test_predict_proba	deslib/tests/util/test_knne.py	/^def test_predict_proba():$/;"	f
+test_predict_proba_IH_knn	deslib/tests/test_base.py	/^def test_predict_proba_IH_knn(index,$/;"	f
+test_predict_proba_all_agree	deslib/tests/test_base.py	/^def test_predict_proba_all_agree(example_estimate_competence,$/;"	f
+test_predict_proba_hybrid	deslib/tests/des/test_base.py	/^def test_predict_proba_hybrid(create_pool_classifiers):$/;"	f
+test_predict_proba_instance	deslib/tests/dcs/test_base.py	/^def test_predict_proba_instance(create_pool_classifiers):$/;"	f
+test_predict_proba_instance_all	deslib/tests/dcs/test_base.py	/^def test_predict_proba_instance_all(competences, expected,$/;"	f
+test_predict_proba_instance_called	deslib/tests/test_base.py	/^def test_predict_proba_instance_called(index,$/;"	f
+test_predict_proba_right_class	deslib/tests/static/test_oracle.py	/^def test_predict_proba_right_class():$/;"	f
+test_predict_proba_selection	deslib/tests/des/test_base.py	/^def test_predict_proba_selection(create_pool_classifiers):$/;"	f
+test_predict_proba_shape	deslib/tests/static/test_oracle.py	/^def test_predict_proba_shape():$/;"	f
+test_predict_proba_weighting	deslib/tests/des/test_base.py	/^def test_predict_proba_weighting(create_pool_classifiers):$/;"	f
+test_predict_proba_with_ds	deslib/tests/des/test_des_mi.py	/^def test_predict_proba_with_ds(create_pool_classifiers):$/;"	f
+test_predict_value	deslib/tests/test_base.py	/^def test_predict_value(query):$/;"	f
+test_preprocess_dsel_scores	deslib/tests/test_base.py	/^def test_preprocess_dsel_scores(create_X_y, create_pool_classifiers):$/;"	f
+test_proba_with_ds_diff_sizes	deslib/tests/dcs/test_base.py	/^def test_proba_with_ds_diff_sizes():$/;"	f
+test_proba_with_ds_diff_sizes	deslib/tests/des/test_base.py	/^def test_proba_with_ds_diff_sizes(create_pool_classifiers):$/;"	f
+test_proba_with_ds_diff_sizes	deslib/tests/des/test_des_clustering.py	/^def test_proba_with_ds_diff_sizes():$/;"	f
+test_proba_with_ds_diff_sizes	deslib/tests/des/test_des_knn.py	/^def test_proba_with_ds_diff_sizes():$/;"	f
+test_proba_with_ds_diff_sizes	deslib/tests/des/test_des_mi.py	/^def test_proba_with_ds_diff_sizes():$/;"	f
+test_process_predictions_diff_sizes	deslib/tests/util/test_diversity.py	/^def test_process_predictions_diff_sizes(example_diversity_ones_zeros):$/;"	f
+test_process_predictions_ones	deslib/tests/util/test_diversity.py	/^def test_process_predictions_ones(example_diversity_ones_zeros):$/;"	f
+test_process_predictions_ones_zeros	deslib/tests/util/test_diversity.py	/^def test_process_predictions_ones_zeros(example_diversity_ones_zeros):$/;"	f
+test_process_predictions_zeros	deslib/tests/util/test_diversity.py	/^def test_process_predictions_zeros(example_diversity_ones_zeros):$/;"	f
+test_process_predictions_zeros_ones	deslib/tests/util/test_diversity.py	/^def test_process_predictions_zeros_ones(example_diversity_ones_zeros):$/;"	f
+test_product_combiner	deslib/tests/util/test_aggregation.py	/^def test_product_combiner(create_pool_classifiers):$/;"	f
+test_product_rule	deslib/tests/util/test_aggregation.py	/^def test_product_rule():$/;"	f
+test_q_statistic_ones	deslib/tests/util/test_diversity.py	/^def test_q_statistic_ones(example_diversity_ones_zeros):$/;"	f
+test_q_statistic_ones_zeros	deslib/tests/util/test_diversity.py	/^def test_q_statistic_ones_zeros(example_diversity_ones_zeros):$/;"	f
+test_q_statistic_zeros	deslib/tests/util/test_diversity.py	/^def test_q_statistic_zeros(example_diversity_ones_zeros):$/;"	f
+test_rank	deslib/tests/test_des_integration.py	/^def test_rank(knn_methods):$/;"	f
+test_rank	deslib/tests/test_integration_dfp.py	/^def test_rank():$/;"	f
+test_ratio_errors_diff_classifiers	deslib/tests/util/test_diversity.py	/^def test_ratio_errors_diff_classifiers(example_diversity):$/;"	f
+test_ratio_errors_ones	deslib/tests/util/test_diversity.py	/^def test_ratio_errors_ones(example_diversity_ones_zeros):$/;"	f
+test_ratio_errors_zeros	deslib/tests/util/test_diversity.py	/^def test_ratio_errors_zeros(example_diversity_ones_zeros):$/;"	f
+test_ratio_ones_zeros	deslib/tests/util/test_diversity.py	/^def test_ratio_ones_zeros(example_diversity_ones_zeros):$/;"	f
+test_ratio_order	deslib/tests/util/test_diversity.py	/^def test_ratio_order(example_diversity_ones_zeros):$/;"	f
+test_require_proba	deslib/tests/des/test_des_mi.py	/^def test_require_proba():$/;"	f
+test_return_indices_only	deslib/tests/util/test_knne.py	/^def test_return_indices_only():$/;"	f
+test_rrc	deslib/tests/test_des_integration.py	/^def test_rrc(knn_methods):$/;"	f
+test_sample_selection	deslib/tests/des/test_meta_des.py	/^def test_sample_selection():$/;"	f
+test_sample_selection_working	deslib/tests/des/test_meta_des.py	/^def test_sample_selection_working():$/;"	f
+test_select	deslib/tests/des/test_des_clustering.py	/^def test_select():$/;"	f
+test_select	deslib/tests/des/test_des_knn.py	/^def test_select():$/;"	f
+test_select	deslib/tests/des/test_knop.py	/^def test_select():$/;"	f
+test_select	deslib/tests/des/test_knorae.py	/^def test_select(index, expected, create_pool_classifiers,$/;"	f
+test_select	deslib/tests/des/test_knorau.py	/^def test_select():$/;"	f
+test_select	deslib/tests/des/test_meta_des.py	/^def test_select():$/;"	f
+test_select_all	deslib/tests/dcs/test_base.py	/^def test_select_all(competences, expected, create_pool_classifiers):$/;"	f
+test_select_all_batch	deslib/tests/dcs/test_base.py	/^def test_select_all_batch():$/;"	f
+test_select_all_ones	deslib/tests/des/test_probabilistic.py	/^def test_select_all_ones():$/;"	f
+test_select_all_zeros	deslib/tests/des/test_probabilistic.py	/^def test_select_all_zeros():$/;"	f
+test_select_batch	deslib/tests/des/test_des_knn.py	/^def test_select_batch():$/;"	f
+test_select_batch	deslib/tests/des/test_meta_des.py	/^def test_select_batch():$/;"	f
+test_select_batch_samples	deslib/tests/des/test_des_mi.py	/^def test_select_batch_samples():$/;"	f
+test_select_best	deslib/tests/dcs/test_base.py	/^def test_select_best(competences, expected, create_pool_classifiers):$/;"	f
+test_select_best_batch	deslib/tests/dcs/test_base.py	/^def test_select_best_batch():$/;"	f
+test_select_diff	deslib/tests/dcs/test_base.py	/^def test_select_diff(competences, expected):$/;"	f
+test_select_diff_batch	deslib/tests/dcs/test_base.py	/^def test_select_diff_batch():$/;"	f
+test_select_less_diverse	deslib/tests/des/test_des_knn.py	/^def test_select_less_diverse():$/;"	f
+test_select_no_competent_classifiers_batch	deslib/tests/des/test_meta_des.py	/^def test_select_no_competent_classifiers_batch():$/;"	f
+test_select_none_competent	deslib/tests/des/test_desp.py	/^def test_select_none_competent():$/;"	f
+test_select_none_competent	deslib/tests/des/test_knorae.py	/^def test_select_none_competent():$/;"	f
+test_select_random	deslib/tests/dcs/test_base.py	/^def test_select_random(competences, expected):$/;"	f
+test_select_random_batch	deslib/tests/dcs/test_base.py	/^def test_select_random_batch():$/;"	f
+test_select_random_classifier	deslib/tests/des/test_probabilistic.py	/^def test_select_random_classifier():$/;"	f
+test_select_single_sample	deslib/tests/des/test_des_mi.py	/^def test_select_single_sample():$/;"	f
+test_select_three_classes	deslib/tests/des/test_desp.py	/^def test_select_three_classes():$/;"	f
+test_select_threshold	deslib/tests/des/test_probabilistic.py	/^def test_select_threshold():$/;"	f
+test_select_two_classes	deslib/tests/des/test_desp.py	/^def test_select_two_classes():$/;"	f
+test_selection_method_type	deslib/tests/dcs/test_base.py	/^def test_selection_method_type(selection_method, create_pool_classifiers):$/;"	f
+test_selection_method_type	deslib/tests/des/test_base.py	/^def test_selection_method_type(mode, create_pool_classifiers):$/;"	f
+test_similarity_threshold	deslib/tests/dcs/test_mcb.py	/^def test_similarity_threshold(similarity_threshold, create_X_y):$/;"	f
+test_similarity_threshold_type	deslib/tests/dcs/test_mcb.py	/^def test_similarity_threshold_type(similarity_threshold, create_X_y):$/;"	f
+test_single_best	deslib/tests/test_des_integration.py	/^def test_single_best():$/;"	f
+test_single_classifier_pool	deslib/tests/des/test_des_clustering.py	/^def test_single_classifier_pool(create_X_y):$/;"	f
+test_single_model_pool	deslib/tests/static/test_stacked.py	/^def test_single_model_pool(create_X_y):$/;"	f
+test_softmax	deslib/tests/util/test_prob_functions.py	/^def test_softmax(vector, expected):$/;"	f
+test_softmax_sum_to_one	deslib/tests/util/test_prob_functions.py	/^def test_softmax_sum_to_one():$/;"	f
+test_source_competence_exponential	deslib/tests/des/test_probabilistic.py	/^def test_source_competence_exponential():$/;"	f
+test_source_competence_kl	deslib/tests/des/test_probabilistic.py	/^def test_source_competence_kl():$/;"	f
+test_source_competence_logarithmic	deslib/tests/des/test_probabilistic.py	/^def test_source_competence_logarithmic():$/;"	f
+test_source_competence_minimum_difference	deslib/tests/des/test_probabilistic.py	/^def test_source_competence_minimum_difference():$/;"	f
+test_source_competence_rrc	deslib/tests/des/test_probabilistic.py	/^def test_source_competence_rrc():$/;"	f
+test_static_selection	deslib/tests/test_des_integration.py	/^def test_static_selection():$/;"	f
+test_string_selection_mode	deslib/tests/test_base.py	/^def test_string_selection_mode(create_X_y):$/;"	f
+test_uneven_k	deslib/tests/util/test_knne.py	/^def test_uneven_k():$/;"	f
+test_valid_ccprmod_beta	deslib/tests/util/test_prob_functions.py	/^def test_valid_ccprmod_beta(B):$/;"	f
+test_valid_diff_threshold_type	deslib/tests/dcs/test_base.py	/^def test_valid_diff_threshold_type(diff_thresh, create_pool_classifiers):$/;"	f
+test_valid_diff_threshold_value	deslib/tests/dcs/test_base.py	/^def test_valid_diff_threshold_value(diff_thresh, create_pool_classifiers):$/;"	f
+test_valid_safe_k	deslib/tests/test_base.py	/^def test_valid_safe_k(k, safe_k):$/;"	f
+test_valid_selection_method	deslib/tests/dcs/test_base.py	/^def test_valid_selection_method(selection_method, create_pool_classifiers):$/;"	f
+test_valid_selection_mode	deslib/tests/des/test_base.py	/^def test_valid_selection_mode(mode, create_pool_classifiers):$/;"	f
+test_valid_selection_mode	deslib/tests/test_base.py	/^def test_valid_selection_mode(knn_method, create_X_y):$/;"	f
+test_weighted_majority_voting	deslib/tests/util/test_aggregation.py	/^def test_weighted_majority_voting():$/;"	f
+test_weighted_majority_voting_single_sample	deslib/tests/util/test_aggregation.py	/^def test_weighted_majority_voting_single_sample():$/;"	f
+test_weights_zero	deslib/tests/des/test_knop.py	/^def test_weights_zero():$/;"	f
+test_weights_zero	deslib/tests/des/test_knorau.py	/^def test_weights_zero():$/;"	f
+test_wrong_weights_votes	deslib/tests/util/test_aggregation.py	/^def test_wrong_weights_votes(create_pool_classifiers):$/;"	f
+test_xor	deslib/tests/util/test_datasets.py	/^def test_xor():$/;"	f
+test_xor_size	deslib/tests/util/test_datasets.py	/^def test_xor_size():$/;"	f
+weighted_majority_voting	deslib/util/aggregation.py	/^def weighted_majority_voting(classifier_ensemble, weights, X):$/;"	f
+weighted_majority_voting_rule	deslib/util/aggregation.py	/^def weighted_majority_voting_rule(votes, weights, labels_set=None):$/;"	f
