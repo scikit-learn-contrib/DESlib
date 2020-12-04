@@ -715,8 +715,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                         test samples.
         """
         probabilities = Parallel(n_jobs=self.n_jobs)(
-            delayed(clf.predict_proba) (X) for clf in self.pool_classifiers_ )
-        
+            delayed(clf.predict_proba)(X) for clf in self.pool_classifiers_)
+
         return probabilities
 
     def _preprocess_dsel_scores(self):
