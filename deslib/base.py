@@ -691,12 +691,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                       The predictions of each base classifier for all samples
                       in X.
         """
-        predictions = np.zeros((X.shape[0], self.n_classifiers_),
-                               dtype=np.intp)
-
-        for index, clf in enumerate(self.pool_classifiers_):
-            labels = clf.predict(X)
-            predictions[:, index] = self._encode_base_labels(labels)
+        predictions = Parallel(n_jobs=self.n_jobs)(
+            delayed(clf.predict)(clf.predict(X)) for clf in self.pool_classifiers_)
         return predictions
 
     def _predict_proba_base(self, X):
