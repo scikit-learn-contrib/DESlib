@@ -688,9 +688,32 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         ValueError
             If the pool of classifiers is empty.
         """
-        if self.n_classifiers_ <= 0:
-            raise ValueError("n_classifiers must be greater than zero, "
+        if self.n_classifiers_ <= 1:
+            raise ValueError("n_classifiers must be greater than one, "
                              "got {}.".format(self.n_classifiers_))
+
+
+    def _check_num_features(self, X):
+        """ Verify if the number of features (n_features) of X is equals to
+        the number of features used to fit the model. Raises an error if
+        n_features is different.
+
+        Parameters
+        ----------
+        X : array of shape (classes, n_features)
+            The input data.
+
+        Raises
+        -------
+        ValueError
+            If X has a different dimensionality than the traiØning data.
+        """
+        n_features = X.shape[1]
+        if self.n_features_ != n_features:
+            raise ValueError("Number of features of the model must "
+                             "match the input. Model n_features_ is {} and "
+                             "n_features_ is {} ".format(self.n_features_,
+                                                         n_features))
 
     def _check_predict_proba(self):
         """ Checks if each base classifier in the pool implements the

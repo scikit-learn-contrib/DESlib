@@ -87,8 +87,9 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
 
         self.n_classifiers_ = len(self.pool_classifiers_)
 
+        self._validate_pool()
         # dealing with label encoder
-        self.check_label_encoder()
+        self._check_label_encoder()
         self.y_enc_ = self._setup_label_encoder(y)
 
         self.n_classes_ = self.classes_.size
@@ -96,7 +97,7 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def check_label_encoder(self):
+    def _check_label_encoder(self):
         # Check if base classifiers are not using LabelEncoder (the case for
         # scikit-learn's ensembles):
         if isinstance(self.pool_classifiers_, BaseEnsemble):
@@ -123,3 +124,16 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
             return y
         else:
             return self.enc_.transform(y)
+
+    def _validate_pool(self):
+        """ Check the estimator and the n_estimator attribute, set the
+        `base_estimator_` attribute.
+
+        Raises
+        -------
+        ValueError
+            If the pool of classifiers is empty or just a single model.
+        """
+        if self.n_classifiers_ <= 1:
+            raise ValueError("n_classifiers must be greater than one, "
+                             "got {}.".format(len(self.pool_classifiers)))

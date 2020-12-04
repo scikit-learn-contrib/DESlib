@@ -1,14 +1,14 @@
-import pytest
 import numpy as np
+import pytest
 from sklearn.linear_model import Perceptron
+from sklearn.utils.estimator_checks import check_estimator
+
 from deslib.des.probabilistic import (BaseProbabilistic,
                                       Logarithmic,
                                       Exponential,
                                       RRC,
                                       DESKL,
                                       MinimumDifference)
-
-from sklearn.utils.estimator_checks import check_estimator
 
 
 def test_check_estimator_RRC():
@@ -294,4 +294,3 @@ def test_knne_not_allowed(create_X_y):
 
     with pytest.raises(ValueError):
         BaseProbabilistic(knn_classifier='knne').fit(X, y)
-

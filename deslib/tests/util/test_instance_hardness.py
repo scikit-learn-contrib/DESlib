@@ -38,6 +38,6 @@ def test_instance_hardness_region_all_same(example_estimate_competence):
 
 def test_kdn_score(example_estimate_competence):
     X, y, neigh, dist, _, _ = example_estimate_competence
-    X, y = X[0:6, :], y [0:6]
+    X, y = X[0:6, :], y[0:6]
     score, _ = kdn_score(X, y, 3)
     assert np.allclose(score, 0.3333333)
