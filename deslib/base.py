@@ -9,6 +9,7 @@ import functools
 import math
 import warnings
 from abc import abstractmethod, ABCMeta
+from copy import copy
 
 import numpy as np
 from scipy.stats import mode
@@ -201,7 +202,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         -------
         self
         """
-        self.random_state_ = check_random_state(self.random_state)
+        self.random_state_ = check_random_state(copy(self.random_state))
 
         # Check if the length of X and y are consistent.
         X, y = check_X_y(X, y)
