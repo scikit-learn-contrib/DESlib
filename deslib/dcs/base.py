@@ -1,9 +1,11 @@
 from abc import ABCMeta
+from copy import copy
 
 import numpy as np
+from sklearn.utils.validation import check_random_state
+
 from deslib.base import BaseDS
 from deslib.util.aggregation import majority_voting_rule
-from sklearn.utils.validation import check_random_state
 
 
 class BaseDCS(BaseDS):
@@ -109,16 +111,7 @@ class BaseDCS(BaseDS):
             selected_classifiers = best_index
 
         elif self.selection_method == 'diff':
-            # Selects a base classifier if its competence level is significant
-            # better than the rest. If there is no such classifier, select
-            # randomly a base model.
-            #
-            # the best classifier will always have diff < diff_thresh. In a
-            # case it is superior than all others, it will be the only member
-            # selected. Otherwise, a random classifier from this list is
-            # selected.
-
-            rng = check_random_state(self.random_state)
+            rng = check_random_state(copy(self.random_state))
             best_competence = competences[
                 np.arange(competences.shape[0]), best_index]
             # best_competence = np.max(competences)
@@ -137,7 +130,7 @@ class BaseDCS(BaseDS):
 
         elif self.selection_method == 'random':
             # TODO: Improve this part of the code
-            rng = check_random_state(self.random_state)
+            rng = check_random_state(copy(self.random_state))
             selected_classifiers = np.zeros(competences.shape[0], dtype=np.int)
             best_competence = competences[
                 np.arange(competences.shape[0]), best_index]
