@@ -112,7 +112,6 @@ class BaseDCS(BaseDS):
 
         elif self.selection_method == 'diff':
             rng = check_random_state(copy(self.random_state))
-            print(rng.rand())
             best_competence = competences[
                 np.arange(competences.shape[0]), best_index]
             # best_competence = np.max(competences)
