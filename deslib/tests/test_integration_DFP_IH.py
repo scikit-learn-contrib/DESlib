@@ -10,10 +10,10 @@ from sklearn.preprocessing import StandardScaler
 from deslib.dcs.a_posteriori import APosteriori
 from deslib.dcs.mcb import MCB
 from deslib.dcs.ola import OLA
+from deslib.des import DESClustering
 # DES techniques
 from deslib.des.des_p import DESP
 from deslib.des.knora_u import KNORAU
-from deslib.des import DESClustering
 
 
 def setup_classifiers():
@@ -36,7 +36,7 @@ def setup_classifiers():
                                                         test_size=0.5,
                                                         random_state=rng)
     # Considering a pool composed of 10 base classifiers
-    model = CalibratedClassifierCV(Perceptron(max_iter=5))
+    model = CalibratedClassifierCV(Perceptron(max_iter=100))
 
     pool_classifiers = BaggingClassifier(model, n_estimators=100,
                                          random_state=rng)
@@ -49,7 +49,7 @@ def test_knorau():
 
     knorau = KNORAU(pool_classifiers, DFP=True, with_IH=True, IH_rate=0.1)
     knorau.fit(X_dsel, y_dsel)
-    assert np.isclose(knorau.score(X_test, y_test), 0.9090909090909091)
+    assert np.isclose(knorau.score(X_test, y_test), 0.9)
 
 
 def test_desp():
@@ -57,7 +57,7 @@ def test_desp():
 
     desp = DESP(pool_classifiers, DFP=True, with_IH=True, IH_rate=0.1)
     desp.fit(X_dsel, y_dsel)
-    assert np.isclose(desp.score(X_test, y_test), 0.9090909090909091)
+    assert np.isclose(desp.score(X_test, y_test), 0.906060606060606)
 
 
 def test_ola():
@@ -75,7 +75,7 @@ def test_mcb():
     mcb = MCB(pool_classifiers, random_state=rng, DFP=True, with_IH=True,
               IH_rate=0.1)
     mcb.fit(X_dsel, y_dsel)
-    assert np.isclose(mcb.score(X_test, y_test), 0.9)
+    assert np.isclose(mcb.score(X_test, y_test), 0.8818181818181818)
 
 
 def test_aposteriori():
@@ -85,7 +85,7 @@ def test_aposteriori():
     a_posteriori = APosteriori(pool_classifiers, random_state=rng, DFP=True,
                                with_IH=True, IH_rate=0.1)
     a_posteriori.fit(X_dsel, y_dsel)
-    assert np.isclose(a_posteriori.score(X_test, y_test), 0.8303030303030303)
+    assert np.isclose(a_posteriori.score(X_test, y_test), 0.8212121212121212)
 
 
 def test_des_clustering():
@@ -95,4 +95,4 @@ def test_des_clustering():
     des_clustering = DESClustering(pool_classifiers, random_state=rng,
                                    with_IH=True, IH_rate=0.28)
     des_clustering.fit(X_dsel, y_dsel)
-    assert np.isclose(des_clustering.score(X_test, y_test), 0.906060606060606)
+    assert np.isclose(des_clustering.score(X_test, y_test), 0.9030303030303031)
