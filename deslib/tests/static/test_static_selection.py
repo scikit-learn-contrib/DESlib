@@ -10,7 +10,7 @@ from deslib.static.static_selection import StaticSelection
 
 
 def test_check_estimator():
-    check_estimator(StaticSelection)
+    check_estimator(StaticSelection())
 
 
 # Testing if the fit function selects the correct classifiers.

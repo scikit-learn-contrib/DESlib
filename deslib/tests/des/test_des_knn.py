@@ -3,13 +3,13 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 from sklearn.linear_model import Perceptron
+from sklearn.utils.estimator_checks import check_estimator
 
 from deslib.des.des_knn import DESKNN
-from sklearn.utils.estimator_checks import check_estimator
 
 
 def test_check_estimator():
-    check_estimator(DESKNN)
+    check_estimator(DESKNN())
 
 
 def test_estimate_competence():

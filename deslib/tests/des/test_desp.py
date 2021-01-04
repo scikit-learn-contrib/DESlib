@@ -6,7 +6,7 @@ from deslib.des.des_p import DESP
 
 
 def test_check_estimator():
-    check_estimator(DESP)
+    check_estimator(DESP())
 
 
 # Test the estimate competence method receiving n samples as input

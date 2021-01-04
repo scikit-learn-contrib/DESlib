@@ -7,7 +7,7 @@ from deslib.des.knora_e import KNORAE
 
 
 def test_check_estimator():
-        check_estimator(KNORAE)
+        check_estimator(KNORAE())
 
 
 def test_estimate_competence_batch(example_estimate_competence,
