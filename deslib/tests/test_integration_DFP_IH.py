@@ -36,9 +36,9 @@ def setup_classifiers():
                                                         test_size=0.5,
                                                         random_state=rng)
     # Considering a pool composed of 10 base classifiers
-    model = CalibratedClassifierCV(Perceptron(max_iter=100))
+    model = CalibratedClassifierCV(Perceptron(max_iter=100), cv=5)
 
-    pool_classifiers = BaggingClassifier(model, n_estimators=100,
+    pool_classifiers = BaggingClassifier(model, n_estimators=100, n_jobs=-1,
                                          random_state=rng)
     pool_classifiers.fit(X_train, y_train)
     return pool_classifiers, X_dsel, y_dsel, X_test, y_test
@@ -49,7 +49,7 @@ def test_knorau():
 
     knorau = KNORAU(pool_classifiers, DFP=True, with_IH=True, IH_rate=0.1)
     knorau.fit(X_dsel, y_dsel)
-    assert np.isclose(knorau.score(X_test, y_test), 0.9)
+    assert np.isclose(knorau.score(X_test, y_test), 0.896969696969697)
 
 
 def test_desp():
@@ -57,7 +57,7 @@ def test_desp():
 
     desp = DESP(pool_classifiers, DFP=True, with_IH=True, IH_rate=0.1)
     desp.fit(X_dsel, y_dsel)
-    assert np.isclose(desp.score(X_test, y_test), 0.906060606060606)
+    assert np.isclose(desp.score(X_test, y_test), 0.90)
 
 
 def test_ola():
@@ -65,7 +65,7 @@ def test_ola():
 
     ola = OLA(pool_classifiers, DFP=True, with_IH=True, IH_rate=0.1)
     ola.fit(X_dsel, y_dsel)
-    assert np.isclose(ola.score(X_test, y_test), 0.88181818181818183)
+    assert np.isclose(ola.score(X_test, y_test), 0.9030303030303031)
 
 
 def test_mcb():
@@ -75,7 +75,7 @@ def test_mcb():
     mcb = MCB(pool_classifiers, random_state=rng, DFP=True, with_IH=True,
               IH_rate=0.1)
     mcb.fit(X_dsel, y_dsel)
-    assert np.isclose(mcb.score(X_test, y_test), 0.8818181818181818)
+    assert np.isclose(mcb.score(X_test, y_test), 0.9030303030303031)
 
 
 def test_aposteriori():
@@ -85,7 +85,7 @@ def test_aposteriori():
     a_posteriori = APosteriori(pool_classifiers, random_state=rng, DFP=True,
                                with_IH=True, IH_rate=0.1)
     a_posteriori.fit(X_dsel, y_dsel)
-    assert np.isclose(a_posteriori.score(X_test, y_test), 0.8212121212121212)
+    assert np.isclose(a_posteriori.score(X_test, y_test), 0.8333333333333334)
 
 
 def test_des_clustering():
