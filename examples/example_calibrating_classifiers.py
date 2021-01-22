@@ -23,9 +23,6 @@ approach versus the application of dynamic selection technique to select the
 set of most competent classifiers
 """
 
-###############################################################################
-# Let's start by importing all required modules, and defining helper functions
-# to facilitate plotting the decision boundaries:
 
 import numpy as np
 from sklearn.calibration import CalibratedClassifierCV
