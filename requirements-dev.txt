@@ -1,6 +1,6 @@
 numpy>=1.17.0
 scipy>=1.4.0
-scikit-learn==0.20.0
+scikit-learn>=0.24.0
 sphinx
 sphinx_rtd_theme
 numpydoc
