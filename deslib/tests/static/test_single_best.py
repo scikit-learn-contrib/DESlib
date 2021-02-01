@@ -12,7 +12,7 @@ from deslib.static.single_best import SingleBest
 
 
 def test_check_estimator():
-    check_estimator(SingleBest)
+    check_estimator(SingleBest())
 
 
 # Testing if the fit function selects the correct classifier (the one with

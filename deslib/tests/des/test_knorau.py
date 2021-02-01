@@ -6,7 +6,7 @@ from deslib.des.knora_u import KNORAU
 
 
 def test_check_estimator():
-    check_estimator(KNORAU)
+    check_estimator(KNORAU())
 
 
 # Test the estimate competence method receiving n samples as input

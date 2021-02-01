@@ -6,13 +6,14 @@
 import warnings
 
 import numpy as np
+from sklearn import metrics
+from sklearn.base import ClusterMixin
+from sklearn.cluster import KMeans
+
 from deslib.base import BaseDS
 from deslib.util.aggregation import majority_voting_rule
 from deslib.util.diversity import Q_statistic, ratio_errors, \
     negative_double_fault, compute_pairwise_diversity
-from sklearn import metrics
-from sklearn.base import ClusterMixin
-from sklearn.cluster import KMeans
 
 
 class DESClustering(BaseDS):
@@ -133,7 +134,7 @@ class DESClustering(BaseDS):
         self
         """
         super(DESClustering, self).fit(X, y)
-
+        self.DSEL_data_ = self.DSEL_data_.astype(np.double)
         self.N_ = int(self.n_classifiers_ * self.pct_accuracy)
         self.J_ = int(np.ceil(self.n_classifiers_ * self.pct_diversity))
 
@@ -268,7 +269,7 @@ class DESClustering(BaseDS):
             Indices of the selected base classifier for each test example.
 
         """
-        cluster_index = self.clustering_.predict(query)
+        cluster_index = self.clustering_.predict(query.astype(np.double))
         selected_classifiers = self.indices_[cluster_index, :]
         return selected_classifiers
 

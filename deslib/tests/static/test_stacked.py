@@ -9,7 +9,7 @@ from deslib.static.stacked import StackedClassifier
 
 
 def test_check_estimator():
-    check_estimator(StackedClassifier)
+    check_estimator(StackedClassifier())
 
 
 # Test if the class is raising an error when the base classifiers do not

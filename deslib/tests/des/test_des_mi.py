@@ -9,7 +9,7 @@ from deslib.des.des_mi import DESMI
 
 
 def test_check_estimator():
-    check_estimator(DESMI)
+    check_estimator(DESMI())
 
 
 # TODO: create test routine for the estimate_competence method

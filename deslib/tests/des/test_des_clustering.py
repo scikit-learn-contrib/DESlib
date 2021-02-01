@@ -12,7 +12,7 @@ from deslib.util.diversity import Q_statistic, ratio_errors, \
 
 
 def test_check_estimator():
-    check_estimator(DESClustering)
+    check_estimator(DESClustering())
 
 
 """ Considering a test scenario in which all samples from class 0 are indexed
