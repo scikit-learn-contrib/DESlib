@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
-from setuptools import find_packages
-import os
 import codecs
+import os
+from distutils.core import setup
+
+from setuptools import find_packages
 
 setup_path = os.path.abspath(os.path.dirname(__file__))
 with codecs.open(os.path.join(setup_path, 'README.rst'), encoding='utf-8-sig') as f:
     README = f.read()
 
 setup(name='DESlib',
-      version='0.4.dev',
+      version='0.3.5',
       url='https://github.com/Menelau/DESlib',
       maintainer='Rafael M. O. Cruz, L. G. Hafemann',
       maintainer_email='rafaelmenelau@gmail.com',
@@ -32,7 +33,7 @@ setup(name='DESlib',
           'Topic :: Scientific/Engineering :: Artificial Intelligence',
       ],
       install_requires=[
-          'scikit-learn>=0.20.0',
+          'scikit-learn>=0.21.0',
           'numpy>=1.17.0',
           'scipy>=1.4.0',
       ],
