@@ -11,7 +11,7 @@ with codecs.open(os.path.join(setup_path, 'README.rst'), encoding='utf-8-sig') a
     README = f.read()
 
 setup(name='DESlib',
-      version='0.4.dev',
+      version='0.3.5',
       url='https://github.com/Menelau/DESlib',
       maintainer='Rafael M. O. Cruz, L. G. Hafemann',
       maintainer_email='rafaelmenelau@gmail.com',
