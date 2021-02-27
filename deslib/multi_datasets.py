@@ -12,6 +12,7 @@ from sklearn.utils.validation import (check_is_fitted, check_array)
 from deslib.base import BaseDS
 from deslib.dcs.base import BaseDCS
 from deslib.des.base import BaseDES
+from deslib.static.oracle import Oracle
 from deslib.util.aggregation import (weighted_majority_voting_rule,
                                      majority_voting_rule,
                                      aggregate_proba_ensemble_weighted)
@@ -42,16 +43,20 @@ class MultiDatasets(BaseDS):
             self.ds_classifiers.append(ds_classifier)
         self._setup_label_encoder(y[0])
 
-    def predict(self, X):
+    def predict(self, X, y=None):
+        if issubclass(type(self.ds_classifier), Oracle):
+            return self._predict_oracle(X, y)
+
         merged_base_probabilities = []
         merged_base_predictions = []
         n_datasets = len(X)
+
         for i in range(n_datasets):
             base_probabilities, base_predictions = \
                 self._get_base_proba_and_pred(self.ds_classifiers[i], X[i])
             merged_base_probabilities.append(base_probabilities)
             merged_base_predictions.append(base_predictions)
-        
+
         if merged_base_probabilities[0] is not None:
             merged_base_probabilities = np.concatenate(
                 merged_base_probabilities, axis=1)
@@ -59,13 +64,13 @@ class MultiDatasets(BaseDS):
             merged_base_probabilities = None
         merged_base_predictions = np.concatenate(
                 merged_base_predictions, axis=1)
-        
+
         n_samples = len(X[0])
         predicted_labels = np.empty(n_samples, dtype=np.intp)
-        
+
         all_agree_vector = BaseDS._all_classifier_agree(merged_base_predictions)
         ind_all_agree = np.where(all_agree_vector)[0]   
-        
+
         # Since the predictions are always the same, get the predictions of the
         # first base classifier.
         if ind_all_agree.size:
@@ -158,6 +163,34 @@ class MultiDatasets(BaseDS):
             
             predicted_labels[ind_ds_original_matrix] = pred_ds
         
+        return self.classes_.take(predicted_labels)
+
+    def _predict_oracle(self, X, y):
+        n_datasets = len(X)
+        predicted_labels = -np.ones(y.size, dtype=int)
+
+        for sample_index in range(len(y)):
+            predictions = []
+
+            for i in range(n_datasets):
+                classifier = self.ds_classifiers[i]
+                X[i] = check_array(X[i])
+                y = classifier.enc_.transform(y)
+                x_sample = X[i][sample_index]
+                y_sample = y[sample_index]
+
+                for clf in classifier.pool_classifiers_:
+                    predictions.append(clf.predict(x_sample.reshape(1, -1))[0])
+
+            for p in predictions:
+                # If one base classifier predicts the correct answer,
+                # consider as a correct prediction
+                if p == y_sample:
+                    p = int(p)
+                    predicted_labels[sample_index] = p
+                    break
+                predicted_labels[sample_index] = p
+
         return self.classes_.take(predicted_labels)
 
     def predict_proba(self, X):
