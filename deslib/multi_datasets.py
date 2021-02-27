@@ -20,12 +20,24 @@ from deslib.util.instance_hardness import hardness_region_competence
 
 # Créer à partir de KNORA-U
 class MultiDatasets(BaseDS):
-    def __init__(self, ds_classifier, pool_classifiers=None):
+    def __init__(self, ds_classifier, pool_classifiers):
+        """
+        Parameters
+        ----------
+        ds_classifier : classifier from the library
+            The DS model serves as a template for all the datasets.
+
+        pool_classifiers : array of shape (n_datasets, n_classifiers)
+            Classifiers of each dataset.
+        """
         super(MultiDatasets, self).__init__(pool_classifiers)
         self.ds_classifier = ds_classifier
 
     def fit(self, X, y):
-        """
+        """Prepare the DS models by setting the KNN algorithm and
+        pre-processing the information required to apply the DS
+        methods
+
         Parameters
         ----------
         X : array of shape (n_datasets, n_samples, n_features)
@@ -36,17 +48,33 @@ class MultiDatasets(BaseDS):
         """
         n_datasets = len(X)
         self.ds_classifiers = []
+
         for i in range(n_datasets):
             ds_classifier = copy.deepcopy(self.ds_classifier)
             ds_classifier.pool_classifiers = self.pool_classifiers[i]
             ds_classifier.fit(X[i], y[i])
             self.ds_classifiers.append(ds_classifier)
+
         self._setup_label_encoder(y[0])
+        return self
 
     def predict(self, X, y=None):
+        """
+        Parameters
+        ----------
+        X : array of shape (n_datasets, n_samples, n_features)
+            The input data.
+
+        y : array of shape (n_datasets, n_samples)
+            class labels of each example in X.
+            It's added as a parameter so Oracle can be used.
+        """
+        # Oracle is not a DS model, so there is no need to execute
+        # the code below.
         if issubclass(type(self.ds_classifier), Oracle):
             return self._predict_oracle(X, y)
 
+        # TODO: move the code below in a function called _predict_ds(X).
         merged_base_probabilities = []
         merged_base_predictions = []
         n_datasets = len(X)
@@ -149,20 +177,20 @@ class MultiDatasets(BaseDS):
                 merged_competences.append(competences)
                 merged_left_base_predictions.append(base_predictions[
                                                     ind_ds_original_matrix])
-            
+
             merged_left_base_predictions = np.concatenate(
                 merged_left_base_predictions, axis=1)
             merged_competences = np.concatenate(merged_competences, axis=1)
-            
+
             if issubclass(type(self.ds_classifier), BaseDCS):
                 pred_ds = self._get_dcs_predicted_label(self.ds_classifier,
                     merged_left_base_predictions, merged_competences)
             elif issubclass(type(self.ds_classifier), BaseDES):
                 pred_ds = self._get_des_predicted_label(self.ds_classifier,
                     merged_left_base_predictions, merged_competences)
-            
+
             predicted_labels[ind_ds_original_matrix] = pred_ds
-        
+
         return self.classes_.take(predicted_labels)
 
     def _predict_oracle(self, X, y):
@@ -197,31 +225,36 @@ class MultiDatasets(BaseDS):
         raise ValueError("Méthode incomplète!")
 
     def _get_base_proba_and_pred(self, ds_classifier, X):
+        """
+        This code has been copied, but "self" has been replaced by
+        "ds_classifier" because this function doesn't exist elsewhere.
+        """
+        self = ds_classifier
         # Check if the DS model was trained
-        check_is_fitted(ds_classifier,
+        check_is_fitted(self,
                         ["DSEL_processed_", "DSEL_data_", "DSEL_target_"])
 
         # Check if X is a valid input
         X = check_array(X)
-        ds_classifier._check_num_features(X)
+        self._check_num_features(X)
 
         if self.needs_proba:
-            base_probabilities = ds_classifier._predict_proba_base(X)
+            base_probabilities = self._predict_proba_base(X)
             base_predictions = base_probabilities.argmax(axis=2)
         else:
             base_probabilities = None
-            base_predictions = ds_classifier._predict_base(X)
+            base_predictions = self._predict_base(X)
 
         return base_probabilities, base_predictions
 
     def _calculate_hardness_level(self, ds_classifier, ind_disagreement,
             predicted_labels, neighbors, distances):
         """
-        This function exists so parameters represent all datasets.
         This code has been copied, but "self" has been replaced by
         "ds_classifier" because this function doesn't exist elsewhere.
         """
         self = ds_classifier
+
         # if IH is used, calculate the hardness level associated with
         # each sample
         hardness = hardness_region_competence(neighbors,
@@ -262,18 +295,30 @@ class MultiDatasets(BaseDS):
         return ind_ds_classifier, predicted_labels, neighbors, distances
 
     def _get_DFP_mask(self, ds_classifier, ind_ds_classifier, neighbors):
-        if ds_classifier.DFP:
+        """
+        This code has been copied, but "self" has been replaced by
+        "ds_classifier" because this function doesn't exist elsewhere.
+        """
+        self = ds_classifier
+
+        if self.DFP:
             DFP_mask = frienemy_pruning_preprocessed(
                 neighbors,
-                ds_classifier.DSEL_target_,
-                ds_classifier.DSEL_processed_)
+                self.DSEL_target_,
+                self.DSEL_processed_)
         else:
             DFP_mask = np.ones(
-                (ind_ds_classifier.size, ds_classifier.n_classifiers_))
+                (ind_ds_classifier.size, self.n_classifiers_))
 
     def _get_competences(self, ds_classifier, query, predictions, 
                         probabilities=None, neighbors=None, distances=None,
                         DFP_mask=None):
+        """
+        This code has been copied, but "self" has been replaced by
+        "ds_classifier" because this function doesn't exist elsewhere.
+        """
+        self = ds_classifier
+
         if query.ndim < 2:
             query = query.reshape(1, -1)
 
@@ -288,13 +333,13 @@ class MultiDatasets(BaseDS):
                                                      predictions.shape))
 
         if self.needs_proba:
-            competences = ds_classifier.estimate_competence_from_proba(
+            competences = self.estimate_competence_from_proba(
                 query,
                 neighbors=neighbors,
                 distances=distances,
                 probabilities=probabilities)
         else:
-            competences = ds_classifier.estimate_competence(
+            competences = self.estimate_competence(
                 query,
                 neighbors=neighbors,
                 distances=distances,
@@ -306,11 +351,11 @@ class MultiDatasets(BaseDS):
 
     def _get_dcs_predicted_label(self, ds_classifier, predictions, competences):
         """
-        This function exists so parameters represent all datasets.
         This code has been copied, but "self" has been replaced by
         "ds_classifier" because this function doesn't exist elsewhere.
         """
         self = ds_classifier
+
         if self.selection_method != 'all':
             # only one classifier is selected
             clf_index = self.select(competences)
@@ -327,25 +372,25 @@ class MultiDatasets(BaseDS):
 
     def _get_des_predicted_label(self, ds_classifier, predictions, competences):
         """
-        This function exists so parameters represent all datasets.
         This code has been copied, but "self" has been replaced by
         "ds_classifier" because this function doesn't exist elsewhere.
         """
         self = ds_classifier
+
         if self.mode == "selection":
             # The selected_classifiers matrix is used as a mask to remove
             # the predictions of certain base classifiers.
-            selected_classifiers = ds_classifier.select(competences)
+            selected_classifiers = self.select(competences)
             votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
             predicted_label = majority_voting_rule(votes)
         elif self.mode == "weighting":
             votes = np.atleast_2d(predictions)
             predicted_label = weighted_majority_voting_rule(votes, competences,
-                np.arange(ds_classifier.n_classes_))
+                np.arange(self.n_classes_))
         else:
-            selected_classifiers = ds_classifier.select(competences)
+            selected_classifiers = self.select(competences)
             votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
             predicted_label = weighted_majority_voting_rule(votes, competences,
-                np.arange(ds_classifier.n_classes_))
+                np.arange(self.n_classes_))
 
         return predicted_label
