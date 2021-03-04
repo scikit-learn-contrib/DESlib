@@ -56,7 +56,10 @@ class MultiDatasets(BaseDS):
             ds_classifier.fit(X[i], y[i])
             self.ds_classifiers.append(ds_classifier)
 
+        one_classifier = self.ds_classifiers[0]
+        self.ds_classifier.n_classes_ = one_classifier.n_classes_
         self._setup_label_encoder(y[0])
+
         return self
 
     def predict(self, X, y=None):
