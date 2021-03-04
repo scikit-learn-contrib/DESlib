@@ -13,6 +13,7 @@ from deslib.base import BaseDS
 from deslib.dcs.base import BaseDCS
 from deslib.des.base import BaseDES
 from deslib.static.oracle import Oracle
+from deslib.static.stacked import StackedClassifier
 from deslib.util.aggregation import (weighted_majority_voting_rule,
                                      majority_voting_rule,
                                      aggregate_proba_ensemble_weighted)
@@ -73,8 +74,12 @@ class MultiDatasets(BaseDS):
         # the code below.
         if issubclass(type(self.ds_classifier), Oracle):
             return self._predict_oracle(X, y)
+        elif issubclass(type(self.ds_classifier), StackedClassifier):
+            return self._predict_stacked(X)
+        else:
+            return self._predict_ds(X)
 
-        # TODO: move the code below in a function called _predict_ds(X).
+    def _predict_ds(self, X):
         merged_base_probabilities = []
         merged_base_predictions = []
         n_datasets = len(X)
@@ -220,6 +225,24 @@ class MultiDatasets(BaseDS):
                 predicted_labels[sample_index] = p
 
         return self.classes_.take(predicted_labels)
+
+    def _predict_stacked(self, X):
+        merged_base_preds = []
+        n_datasets = len(X)
+
+        for i in range(n_datasets):
+            classifier = self.ds_classifiers[i]
+            X[i] = check_array(X[i])
+            check_is_fitted(classifier, "meta_classifier_")
+            base_preds = classifier._predict_proba_base(X[i])
+            X_meta = classifier._connect_input(X[i], base_preds)
+            preds = classifier.meta_classifier_.predict_proba(X_meta)
+            merged_base_preds.append(preds)
+
+        merged_base_preds = np.sum(merged_base_preds,0)
+        preds = np.argmax(merged_base_preds,axis=1)
+
+        return self.classes_.take(preds)
 
     def predict_proba(self, X):
         raise ValueError("Méthode incomplète!")
