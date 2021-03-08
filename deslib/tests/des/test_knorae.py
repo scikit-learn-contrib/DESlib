@@ -2,14 +2,12 @@ import numpy as np
 import pytest
 from sklearn.linear_model import Perceptron
 from sklearn.utils.estimator_checks import check_estimator
-from sklearn.utils.testing import ignore_warnings
 
 from deslib.des.knora_e import KNORAE
 
 
 def test_check_estimator():
-    with ignore_warnings(category=RuntimeWarning):
-        check_estimator(KNORAE)
+    check_estimator(KNORAE())
 
 
 def test_estimate_competence_batch(example_estimate_competence,

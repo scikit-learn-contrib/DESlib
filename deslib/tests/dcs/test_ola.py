@@ -1,11 +1,12 @@
 import numpy as np
 from sklearn.linear_model import Perceptron
-from deslib.dcs.ola import OLA
 from sklearn.utils.estimator_checks import check_estimator
+
+from deslib.dcs.ola import OLA
 
 
 def test_check_estimator():
-    check_estimator(OLA)
+    check_estimator(OLA())
 
 
 def test_estimate_competence_batch(example_estimate_competence):

@@ -36,23 +36,24 @@ arXiv preprint arXiv:1804.07882 (2018).
 # Let's start by importing all required modules. In this example we use the
 # new sklearn-OpenML interface to fetch the diabetes classification problem.
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.datasets import fetch_openml
+from sklearn.ensemble import BaggingClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.tree import DecisionTreeClassifier
+
 from deslib.dcs import MCB
 from deslib.dcs import OLA
 from deslib.dcs import Rank
 from deslib.des import DESP
 from deslib.des import KNORAE
 from deslib.des import KNORAU
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import BaggingClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn.datasets import fetch_openml
 
 rng = np.random.RandomState(123456)
 
-data = fetch_openml(name='diabetes', cache=False)
+data = fetch_openml(name='diabetes', cache=False, as_frame=False)
 X = data.data
 y = data.target
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=rng)

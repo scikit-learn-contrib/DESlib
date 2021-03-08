@@ -1,0 +1,39 @@
+Version 0.3.5
+=============
+
+- Fourth release of the stable API. By `Rafael M O Cruz`_  and `Luiz G Hafemann`_. This release was mainly focused on compatibility with newer scikit-learn versions, performance improvement and bug fixes.
+
+
+Changes
+~~~~~~~~~~~~~~~~~~~~~
+* Update tests according to the new scikit-learn standards.
+* Added n_jobs parameter for parallelization.
+* Refactored FIRE-DES for faster processing.
+* Added new approximated KNN methods using Facebook FAISS search.
+* Added passtrhough features for StackedClassifier.
+* Added different scoring methods (e.g., AUC, F1-Score) for Single best and Static Selection methods
+* Added different scoring methods for DESClustering
+* Added predict_proba for the Oracle method.
+* Added batch processing for probabilistic methods.
+* Added KNearest Neighbors equality option and 'n_neighbors parameter.
+* Improved weighted majority voting performance with bath processing.
+* Removal of redundant information in documentation.
+* Update reference article.
+
+Bug Fixes
+~~~~~~~~~~~~
+
+* Fixed randomness with APosteriori and APriori methods during test.
+* Fixed error with label encoder for the Oracle and static combination methods
+* Methods do not allow a pool containing a single classifier mdoel.
+* Removal of Collinear features in stacked classifier.
+* Fixed meta-classfier when passing a classifier model to the META-DES technique.
+* Fixed DCS-OLA documentation.
+* Fixed bug when support given to a class is very small but not zero.
+* Fixed FAISS batch processing mode.
+
+
+
+.. _Rafael M O Cruz: https://github.com/Menelau
+.. _Luiz G Hafemann: https://github.com/luizgh
+

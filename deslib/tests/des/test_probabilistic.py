@@ -12,23 +12,23 @@ from deslib.des.probabilistic import (BaseProbabilistic,
 
 
 def test_check_estimator_RRC():
-    check_estimator(RRC)
+    check_estimator(RRC())
 
 
 def test_check_estimator_DESKL():
-    check_estimator(DESKL)
+    check_estimator(DESKL())
 
 
 def test_check_estimator_Logarithmic():
-    check_estimator(Logarithmic)
+    check_estimator(Logarithmic())
 
 
 def test_check_estimator_Exponential():
-    check_estimator(Exponential)
+    check_estimator(Exponential())
 
 
 def test_check_estimator_MinimumDifference():
-    check_estimator(MinimumDifference)
+    check_estimator(MinimumDifference())
 
 
 # Test if the class is raising an error when the base classifiers do not

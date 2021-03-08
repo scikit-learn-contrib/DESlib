@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 from sklearn.linear_model import Perceptron
+from sklearn.utils.estimator_checks import check_estimator
 
 from deslib.dcs.mcb import MCB
-from sklearn.utils.estimator_checks import check_estimator
 
 # ex1 the similarity will always be 100%
 bks_dsel_ex1 = np.hstack(
@@ -18,7 +18,7 @@ bks_dsel_ex3 = bks_dsel_ex1 + 1
 
 
 def test_check_estimator():
-    check_estimator(MCB)
+    check_estimator(MCB())
 
 
 @pytest.mark.parametrize('similarity_threshold', [2.0, -1.0, -0.5])

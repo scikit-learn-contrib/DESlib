@@ -20,36 +20,30 @@ performance of the RandomForest classifier as a baseline comparison.
 """
 
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
-from matplotlib.cm import get_cmap
 import numpy as np
-
-
+from matplotlib.cm import get_cmap
+from matplotlib.ticker import FuncFormatter
 from sklearn.datasets import fetch_openml
-from sklearn.model_selection import train_test_split
-
 # Pool of base classifiers
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
 
+from deslib.dcs.mcb import MCB
 # Example of a dcs techniques
 from deslib.dcs.ola import OLA
-from deslib.dcs.mcb import MCB
-
 # Example of a des techniques
 from deslib.des.des_p import DESP
-from deslib.des.meta_des import METADES
 from deslib.des.knora_e import KNORAE
 from deslib.des.knora_u import KNORAU
-
+from deslib.des.meta_des import METADES
 # Example of stacked model
 from deslib.static.stacked import StackedClassifier
-from sklearn.linear_model import LogisticRegression
-
 
 rng = np.random.RandomState(42)
 
 # Fetch a classification dataset from OpenML
-data = fetch_openml(name='credit-g', cache=False)
+data = fetch_openml(name='credit-g', cache=False, as_frame=False)
 X = data.data
 y = data.target
 # split the data into training and test data
