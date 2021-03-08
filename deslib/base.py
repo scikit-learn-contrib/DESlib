@@ -694,7 +694,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         predictions = Parallel(n_jobs=self.n_jobs, verbose=10)(
             delayed(clf.predict)(X) for clf in self.pool_classifiers_)
 
-        return predictions
+        return np.array(predictions)
 
     def _predict_proba_base(self, X):
         """ Get the predictions (probabilities) of each base classifier in the
@@ -714,7 +714,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         probabilities = Parallel(n_jobs=self.n_jobs)(
             delayed(clf.predict_proba)(X) for clf in self.pool_classifiers_)
 
-        return probabilities
+        return np.array(probabilities)
 
     def _preprocess_dsel_scores(self):
         """Compute the output profiles of the dynamic selection dataset (DSEL)
