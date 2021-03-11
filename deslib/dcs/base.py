@@ -21,7 +21,7 @@ class BaseDCS(BaseDS):
     def __init__(self, pool_classifiers=None, k=7, DFP=False, safe_k=None,
                  with_IH=False, IH_rate=0.30, selection_method='best',
                  diff_thresh=0.1, random_state=None, knn_classifier='knn',
-                 DSEL_perc=0.5,
+                 knn_metric='minkowski', DSEL_perc=0.5,
                  knne=False, n_jobs=-1):
 
         super(BaseDCS, self).__init__(pool_classifiers=pool_classifiers, k=k,
@@ -29,6 +29,7 @@ class BaseDCS(BaseDS):
                                       IH_rate=IH_rate,
                                       random_state=random_state,
                                       knn_classifier=knn_classifier,
+                                      knn_metric=knn_metric,
                                       DSEL_perc=DSEL_perc,
                                       knne=knne, n_jobs=n_jobs)
 

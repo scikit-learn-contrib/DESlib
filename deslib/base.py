@@ -16,7 +16,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import BaseEnsemble, BaggingClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, normalize
 from sklearn.utils.validation import (check_X_y, check_is_fitted, check_array,
                                       check_random_state)
 
@@ -24,6 +24,7 @@ from deslib.util import KNNE
 from deslib.util import faiss_knn_wrapper
 from deslib.util.dfp import frienemy_pruning_preprocessed
 from deslib.util.instance_hardness import hardness_region_competence
+from deslib.util.stats import stats
 
 
 class BaseDS(BaseEstimator, ClassifierMixin):
@@ -40,8 +41,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
     @abstractmethod
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, needs_proba=False,
-                 random_state=None, knn_classifier='knn', DSEL_perc=0.5,
-                 knne=False, n_jobs=-1):
+                 random_state=None, knn_classifier='knn',
+                 knn_metric='minkowski', DSEL_perc=0.5, knne=False, n_jobs=-1):
 
         self.pool_classifiers = pool_classifiers
         self.k = k
@@ -52,9 +53,11 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self.needs_proba = needs_proba
         self.random_state = random_state
         self.knn_classifier = knn_classifier
+        self.knn_metric = knn_metric
         self.DSEL_perc = DSEL_perc
         self.knne = knne
         self.n_jobs = n_jobs
+        self.stats = stats()
 
         # Check optional dependency
         if knn_classifier == 'faiss' and not faiss_knn_wrapper.is_available():
@@ -202,6 +205,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self
         """
         self.random_state_ = check_random_state(self.random_state)
+        self.stats.true_labels = y
 
         # Check if the length of X and y are consistent.
         X, y = check_X_y(X, y)
@@ -244,7 +248,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         # validate the value of k
         self._validate_k()
-        self._set_region_of_competence_algorithm()
+        self._set_region_of_competence_algorithm(X_dsel)
         self._fit_region_competence(X_dsel, y_dsel)
 
         # validate the IH
@@ -315,6 +319,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             class labels of each sample in X.
 
         """
+        if self.knn_metric == 'cosine': X = normalize(X)
         self.roc_algorithm_.fit(X, y)
 
     def _set_dsel(self, X, y):
@@ -337,17 +342,30 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self.n_samples_ = self.DSEL_target_.size
         self.DSEL_processed_, self.BKS_DSEL_ = self._preprocess_dsel()
 
-    def _set_region_of_competence_algorithm(self):
+    def _set_region_of_competence_algorithm(self, X):
+
+        algorithm = "auto"
+        metric = 'minkowski'
+        metric_params = None
+
+        if self.knn_metric == 'mahalanobis':
+            metric = 'mahalanobis'
+            metric_params = {'V': np.cov(X)}
+            algorithm = "brute"
 
         if self.knn_classifier is None or self.knn_classifier in ['knn',
                                                                   'sklearn']:
             knn_class = functools.partial(KNeighborsClassifier,
                                           n_jobs=self.n_jobs,
-                                          algorithm="auto")
+                                          algorithm=algorithm,
+                                          metric=metric,
+                                          metric_params=metric_params)
         elif self.knn_classifier == 'faiss':
             knn_class = functools.partial(
                 faiss_knn_wrapper.FaissKNNClassifier,
-                n_jobs=self.n_jobs, algorithm="brute")
+                n_jobs=self.n_jobs, algorithm="brute",
+                metric=self.knn_metric,
+                metric_params=metric_params)
         elif callable(self.knn_classifier):
             knn_class = self.knn_classifier
         else:
@@ -427,6 +445,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             base_probabilities = None
             base_predictions = self._predict_base(X)
 
+        self.stats.bases_labels = base_predictions
         all_agree_vector = BaseDS._all_classifier_agree(base_predictions)
         ind_all_agree = np.where(all_agree_vector)[0]
 
@@ -435,6 +454,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         if ind_all_agree.size:
             predicted_labels[ind_all_agree] = base_predictions[
                 ind_all_agree, 0]
+            self.stats.agree_ind = ind_all_agree
 
         # For the samples with disagreement, perform the dynamic selection
         # steps. First step is to collect the samples with disagreement
@@ -534,6 +554,9 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                                                 distances=distances,
                                                 DFP_mask=DFP_mask)
                 predicted_labels[ind_ds_original_matrix] = pred_ds
+                self.stats.disagree_ind = ind_ds_original_matrix
+
+        self.stats.predicted_labels = predicted_labels
 
         return self.classes_.take(predicted_labels)
 
