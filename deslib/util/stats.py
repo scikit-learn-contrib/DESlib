@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class stats():
+class Stats():
     def __init__(self):
         self.agree_ind = []
         self.disagree_ind = []
@@ -19,7 +19,7 @@ class stats():
         n_disagree = len(self.disagree_ind)
         
         n_right_clf_by_query, n_right_clf_ind = \
-            self._get_n_right_clf_stats(n_classes)
+            self._get_n_right_clf_stats(n_bases)
 
         predicted_dis = self._get_distribution()
         agree_dis = self._get_distribution(ind=self.agree_ind)
@@ -90,9 +90,9 @@ class stats():
         _, counts = np.unique(labels, return_counts=True)
         return counts
 
-    def _get_n_right_clf_stats(self, n_classes):
+    def _get_n_right_clf_stats(self, n_bases):
         n_right_clf_by_query = []
-        n_right_clf_ind = [[] for i in range(n_classes)]
+        n_right_clf_ind = [[] for i in range(n_bases + 1)]
 
         for i,label in enumerate(self.true_labels):
             row = self.bases_labels[i]

@@ -24,7 +24,7 @@ from deslib.util import KNNE
 from deslib.util import faiss_knn_wrapper
 from deslib.util.dfp import frienemy_pruning_preprocessed
 from deslib.util.instance_hardness import hardness_region_competence
-from deslib.util.stats import stats
+from deslib.util.stats import Stats
 
 
 class BaseDS(BaseEstimator, ClassifierMixin):
@@ -57,7 +57,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self.DSEL_perc = DSEL_perc
         self.knne = knne
         self.n_jobs = n_jobs
-        self.stats = stats()
+        self.stats = Stats()
 
         # Check optional dependency
         if knn_classifier == 'faiss' and not faiss_knn_wrapper.is_available():
@@ -205,7 +205,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self
         """
         self.random_state_ = check_random_state(self.random_state)
-        self.stats.true_labels = y
 
         # Check if the length of X and y are consistent.
         X, y = check_X_y(X, y)
@@ -445,7 +444,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             base_probabilities = None
             base_predictions = self._predict_base(X)
 
-        self.stats.bases_labels = base_predictions
         all_agree_vector = BaseDS._all_classifier_agree(base_predictions)
         ind_all_agree = np.where(all_agree_vector)[0]
 
@@ -454,7 +452,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         if ind_all_agree.size:
             predicted_labels[ind_all_agree] = base_predictions[
                 ind_all_agree, 0]
-            self.stats.agree_ind = ind_all_agree
 
         # For the samples with disagreement, perform the dynamic selection
         # steps. First step is to collect the samples with disagreement
@@ -539,6 +536,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 # Get the real indices_ of the samples that will be classified
                 # using a DS algorithm.
                 ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
+                self.stats.disagree_ind = ind_ds_original_matrix
 
                 if self.needs_proba:
                     selected_probabilities = base_probabilities[
@@ -554,8 +552,9 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                                                 distances=distances,
                                                 DFP_mask=DFP_mask)
                 predicted_labels[ind_ds_original_matrix] = pred_ds
-                self.stats.disagree_ind = ind_ds_original_matrix
 
+        self.stats.bases_labels = base_predictions
+        self.stats.agree_ind = ind_all_agree
         self.stats.predicted_labels = predicted_labels
 
         return self.classes_.take(predicted_labels)
