@@ -27,8 +27,9 @@ class Stats():
         lines.extend(self._get_general_lines())
         lines.extend(self._get_agree_lines())
         lines.extend(self._get_n_right_clf_lines())
-        lines.extend(self._get_disagree_lines())
-        lines.extend(self._get_competences_lines())
+        if self.n_disagree > 0:
+            lines.extend(self._get_disagree_lines())
+            lines.extend(self._get_competences_lines())
         return lines
 
     def _get_general_lines(self):
@@ -50,7 +51,7 @@ class Stats():
             "Instances, ratio on queries:",
             n_agree,
             round(n_agree / self.n_queries, 3),
-            "Classes distribution, ratio on predictions:",
+            "Distribution, ratio on predictions:",
             agree_dis,
             np.round(agree_dis / predicted_dis, 3),
             "Score, ratio on agreements:",
@@ -64,24 +65,18 @@ class Stats():
         n_right_clf_by_query, n_right_clf_ind = \
             self._get_n_right_clf_stats()
         n_right_clf_dis = self._get_distribution(n_right_clf_by_query)
+        scores = [self._get_score(n_right_clf_ind[i]) \
+            for i in range(len(n_right_clf_dis))]
 
         lines = [
             "--- Right classifiers:",
-            "Distribution:",
+            "Distribution, ratio on queries:",
             n_right_clf_dis,
+            np.round(n_right_clf_dis / self.n_queries, 3),
+            "Scores, ratio on N right clf",
+            scores,
+            np.round(scores / n_right_clf_dis, 3),
         ]
-
-        for i,n_right_clf in enumerate(n_right_clf_dis):
-            score = self._get_score(n_right_clf_ind[i])
-            lines.extend([
-                "--- "+str(i)+" right classifiers",
-                "Instances, ratio on queries:",
-                n_right_clf_dis[i],
-                round(n_right_clf / self.n_queries, 3),
-                "Score, ratio on "+str(i)+" right clf:",
-                score,
-                round(score / n_right_clf_dis[i], 3),
-            ])
 
         return lines
 
@@ -110,7 +105,7 @@ class Stats():
             round(competences_mean, 3),
             "Mean by classifier:",
             np.round(competences_mean_by_clf, 3),
-            "Even max competences times, ratio on disagreements:",
+            "Even max competences times, \nratio on disagreements:",
             n_even_max_competence,
             round(n_even_max_competence / self.n_disagree, 3),
         ]
@@ -153,3 +148,37 @@ class Stats():
         matches = np.equal(true_labels, labels)
         score = np.sum(matches)
         return score
+
+
+class MultiStats(Stats):
+    def __init__(self):
+        super().__init__()
+        self.n_datasets = 1
+
+    def _get_all_lines(self):
+        lines = super()._get_all_lines()
+        lines.extend(self._get_multistats_lines())
+        return lines
+
+    def _get_competences_lines(self):
+        competences_mean, competences_mean_by_clf, n_even_max_competence = \
+            self._get_competences_stats()
+
+        means = competences_mean_by_clf.reshape(self.n_datasets, -1)
+        competences_mean_by_dataset = np.mean(means, axis=1)
+
+        lines = super()._get_competences_lines()
+        lines.extend([
+            "Mean by dataset:",
+            np.round(competences_mean_by_dataset, 3),
+        ])
+
+        return lines
+
+    def _get_multistats_lines(self):
+        lines = [
+            "--- Multidatasets",
+            self.n_datasets
+        ]
+
+        return lines

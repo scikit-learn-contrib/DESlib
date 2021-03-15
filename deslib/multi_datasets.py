@@ -18,7 +18,7 @@ from deslib.util.aggregation import (weighted_majority_voting_rule,
                                      majority_voting_rule,
                                      aggregate_proba_ensemble_weighted)
 from deslib.util.instance_hardness import hardness_region_competence
-
+from deslib.util.stats import MultiStats
 
 # Créer à partir de KNORA-U
 class MultiDatasets(BaseDS):
@@ -34,6 +34,9 @@ class MultiDatasets(BaseDS):
         """
         super(MultiDatasets, self).__init__(pool_classifiers)
         self.ds_classifier = ds_classifier
+
+    def _set_stats(self):
+        self.stats = MultiStats()
 
     def fit(self, X, y):
         """Prepare the DS models by setting the KNN algorithm and
@@ -202,6 +205,7 @@ class MultiDatasets(BaseDS):
 
             predicted_labels[ind_ds_original_matrix] = pred_ds
 
+        self.stats.n_datasets = n_datasets
         self.stats.bases_labels = merged_base_predictions
         self.stats.agree_ind = ind_all_agree
         self.stats.predicted_labels = predicted_labels

@@ -57,13 +57,16 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self.DSEL_perc = DSEL_perc
         self.knne = knne
         self.n_jobs = n_jobs
-        self.stats = Stats()
+        self._set_stats()
 
         # Check optional dependency
         if knn_classifier == 'faiss' and not faiss_knn_wrapper.is_available():
             raise ImportError(
                 'Using knn_classifier="faiss" requires that the FAISS library '
                 'be installed.Please check the Installation Guide.')
+
+    def _set_stats(self):
+        self.stats = Stats()
 
     @abstractmethod
     def select(self, competences):
