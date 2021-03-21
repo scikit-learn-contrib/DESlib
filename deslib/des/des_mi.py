@@ -5,9 +5,10 @@
 # License: BSD 3 clause
 
 import numpy as np
+from sklearn.preprocessing import normalize
+
 from deslib.base import BaseDS
 from deslib.util.aggregation import majority_voting_rule
-from sklearn.preprocessing import normalize
 
 
 class DESMI(BaseDS):
@@ -94,7 +95,7 @@ class DESMI(BaseDS):
     def __init__(self, pool_classifiers=None, k=7, pct_accuracy=0.4, alpha=0.9,
                  DFP=False, with_IH=False, safe_k=None,
                  IH_rate=0.30, random_state=None, knn_classifier='knn',
-                 knne=False, DSEL_perc=0.5, n_jobs=-1):
+                 knne=False, DSEL_perc=0.5, n_jobs=-1, voting='hard'):
 
         super(DESMI, self).__init__(pool_classifiers=pool_classifiers,
                                     k=k,
@@ -106,7 +107,8 @@ class DESMI(BaseDS):
                                     knn_classifier=knn_classifier,
                                     knne=knne,
                                     DSEL_perc=DSEL_perc,
-                                    n_jobs=n_jobs)
+                                    n_jobs=n_jobs,
+                                    voting='hard')
 
         self.alpha = alpha
         self.pct_accuracy = pct_accuracy

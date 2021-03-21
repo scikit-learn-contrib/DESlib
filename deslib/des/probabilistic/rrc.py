@@ -79,7 +79,7 @@ class RRC(BaseProbabilistic):
     """
 
     def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,
-                 safe_k=None, IH_rate=0.30, mode='selection',
+                 safe_k=None, IH_rate=0.30, mode='selection', voting='hard',
                  random_state=None, knn_classifier='knn', DSEL_perc=0.5,
                  n_jobs=-1):
 
@@ -93,7 +93,8 @@ class RRC(BaseProbabilistic):
                                   random_state=random_state,
                                   knn_classifier=knn_classifier,
                                   DSEL_perc=DSEL_perc,
-                                  n_jobs=n_jobs)
+                                  n_jobs=n_jobs,
+                                  voting=voting)
 
         self.selection_threshold = None
 
