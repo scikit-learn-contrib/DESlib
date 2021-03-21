@@ -168,6 +168,29 @@ def get_weighted_votes(votes, weights, labels_set=None):
     return w_votes.T, labels_set
 
 
+def sum_votes_masked_array(predictions, n_classes):
+    """Sum the number of votes for each class. Accepts masked arrays as input.
+
+    Parameters
+    ----------
+    predictions : array of shape (n_samples, n_classifiers),
+        The votes obtained by each classifier for each sample. Can be a masked
+        array.
+
+    n_classes : int
+        Number of classes.
+
+    Returns
+    -------
+    summed_votes : array of shape (n_samples, n_classes)
+        Summation of votes for each class
+    """
+    votes = np.zeros((predictions.shape[0], n_classes), dtype=np.int)
+    for label in range(n_classes):
+        votes[:, label] = np.sum(predictions == label, axis=1)
+    return votes
+
+
 def _get_ensemble_probabilities(classifier_ensemble, X):
     """Get the probabilities estimate for each base classifier in the ensemble
 
