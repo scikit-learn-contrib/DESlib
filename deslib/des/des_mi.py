@@ -14,7 +14,6 @@ from deslib.util.aggregation import majority_voting_rule
 class DESMI(BaseDS):
     """Dynamic ensemble Selection for multi-class imbalanced datasets (DES-MI).
 
-
     Parameters
     ----------
      pool_classifiers : list of classifiers (Default = None)
@@ -107,11 +106,11 @@ class DESMI(BaseDS):
                                     knn_classifier=knn_classifier,
                                     knne=knne,
                                     DSEL_perc=DSEL_perc,
-                                    n_jobs=n_jobs,
-                                    voting='hard')
+                                    n_jobs=n_jobs)
 
         self.alpha = alpha
         self.pct_accuracy = pct_accuracy
+        self.voting = voting
 
     def estimate_competence(self, query, neighbors, distances=None,
                             predictions=None):
