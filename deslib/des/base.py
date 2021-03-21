@@ -4,6 +4,7 @@ import numpy as np
 
 from deslib.base import BaseDS
 from deslib.util.aggregation import (aggregate_proba_ensemble_weighted,
+                                     sum_votes_masked_array,
                                      get_weighted_votes)
 
 
@@ -231,7 +232,7 @@ class BaseDES(BaseDS):
 
             if self.voting == 'hard':
                 votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
-                votes = self._sum_votes_masked_array(votes)
+                votes = sum_votes_masked_array(votes, self.n_classes_)
                 predicted_proba = votes / votes.sum(axis=1)[:, None]
             else:
                 # Broadcast the selected classifiers mask
@@ -288,6 +289,12 @@ class BaseDES(BaseDS):
                 'Invalid value for parameter "mode".'
                 ' "mode" should be one of these options '
                 '{selection, hybrid, weighting}')
+
+        if self.voting not in ['soft', 'hard']:
+            raise ValueError('Invalid value for parameter "voting".'
+                             ' "voting" should be one of these options '
+                             '{selection, hybrid, weighting}')
+
 
     def _sum_votes_masked_array(self, predictions):
         votes = np.zeros((predictions.shape[0], self.n_classes_))
