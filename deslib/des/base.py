@@ -294,10 +294,3 @@ class BaseDES(BaseDS):
             raise ValueError('Invalid value for parameter "voting".'
                              ' "voting" should be one of these options '
                              '{selection, hybrid, weighting}')
-
-
-    def _sum_votes_masked_array(self, predictions):
-        votes = np.zeros((predictions.shape[0], self.n_classes_))
-        for label in range(self.n_classes_):
-            votes[:, label] = np.sum(predictions == label, axis=1)
-        return np.array(votes, np.int)
