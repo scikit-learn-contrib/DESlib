@@ -88,7 +88,7 @@ class DESClustering(BaseDS):
     """
 
     def __init__(self, pool_classifiers=None, clustering=None, with_IH=False,
-                 safe_k=None, IH_rate=0.30, pct_accuracy=0.5,
+                 safe_k=None, IH_rate=0.30, pct_accuracy=0.5, voting='hard',
                  pct_diversity=0.33, more_diverse=True, metric_diversity='DF',
                  metric_performance='accuracy_score', n_clusters=5,
                  random_state=None, DSEL_perc=0.5, n_jobs=-1):
@@ -99,10 +99,12 @@ class DESClustering(BaseDS):
                                             IH_rate=IH_rate,
                                             random_state=random_state,
                                             DSEL_perc=DSEL_perc,
-                                            n_jobs=n_jobs)
+                                            n_jobs=n_jobs,
+                                            )
 
         self.metric_diversity = metric_diversity
         self.metric_performance = metric_performance
+        self.voting = voting
 
         self.clustering = clustering
         self.pct_accuracy = pct_accuracy

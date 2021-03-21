@@ -114,7 +114,7 @@ class DESKNN(BaseDS):
                  safe_k=None, IH_rate=0.30, pct_accuracy=0.5,
                  pct_diversity=0.3, more_diverse=True, metric='DF',
                  random_state=None, knn_classifier='knn', knne=False,
-                 DSEL_perc=0.5, n_jobs=-1):
+                 DSEL_perc=0.5, n_jobs=-1, voting='hard'):
 
         super(DESKNN, self).__init__(pool_classifiers=pool_classifiers,
                                      k=k,
@@ -126,7 +126,8 @@ class DESKNN(BaseDS):
                                      knn_classifier=knn_classifier,
                                      knne=knne,
                                      DSEL_perc=DSEL_perc,
-                                     n_jobs=n_jobs)
+                                     n_jobs=n_jobs,
+                                     voting=voting)
 
         self.metric = metric
         self.pct_accuracy = pct_accuracy
