@@ -1,10 +1,10 @@
 from abc import ABCMeta
 
 import numpy as np
+
 from deslib.base import BaseDS
-from deslib.util.aggregation import (weighted_majority_voting_rule,
-                                     majority_voting_rule,
-                                     aggregate_proba_ensemble_weighted)
+from deslib.util.aggregation import (aggregate_proba_ensemble_weighted,
+                                     get_weighted_votes)
 
 
 class BaseDES(BaseDS):
@@ -19,7 +19,7 @@ class BaseDES(BaseDS):
     __metaclass__ = ABCMeta
 
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
-                 safe_k=None, IH_rate=0.30, mode='selection',
+                 safe_k=None, IH_rate=0.30, mode='selection', voting='hard',
                  needs_proba=False, random_state=None,
                  knn_classifier='knn', knne=False, DSEL_perc=0.5, n_jobs=-1):
 
@@ -35,6 +35,7 @@ class BaseDES(BaseDS):
                                       knne=knne,
                                       DSEL_perc=DSEL_perc, n_jobs=n_jobs)
         self.mode = mode
+        self.voting = voting
 
     def estimate_competence(self, query, neighbors, distances=None,
                             predictions=None):
@@ -163,56 +164,59 @@ class BaseDES(BaseDS):
         predicted_label : array of shape (n_samples)
                           Predicted class label for each test example.
         """
-        if query.ndim < 2:
-            query = query.reshape(1, -1)
-
-        if predictions.ndim < 2:
-            predictions = predictions.reshape(1, -1)
-
-        if query.shape[0] != predictions.shape[0]:
-            raise ValueError(
-                'The arrays query and predictions must have the same number'
-                ' of samples. query.shape is {}'
-                'and predictions.shape is {}'.format(query.shape,
-                                                     predictions.shape))
-
-        if self.needs_proba:
-            competences = self.estimate_competence_from_proba(
-                query,
-                neighbors=neighbors,
-                distances=distances,
-                probabilities=probabilities)
-        else:
-            competences = self.estimate_competence(query,
-                                                   neighbors=neighbors,
-                                                   distances=distances,
-                                                   predictions=predictions)
-
-        if self.DFP:
-            competences = competences * DFP_mask
-
-        if self.mode == "selection":
-            # The selected_classifiers matrix is used as a mask to remove
-            # the predictions of certain base classifiers.
-            selected_classifiers = self.select(competences)
-            votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
-            predicted_label = majority_voting_rule(votes)
-
-        elif self.mode == "weighting":
-            votes = np.atleast_2d(predictions)
-            predicted_label = weighted_majority_voting_rule(votes, competences,
-                                                            np.arange(
-                                                                self.n_classes_
-                                                                      ))
-        else:
-            selected_classifiers = self.select(competences)
-            votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
-            predicted_label = weighted_majority_voting_rule(votes, competences,
-                                                            np.arange(
-                                                                self.n_classes_
-                                                                      ))
-
-        return predicted_label
+        # if query.ndim < 2:
+        #     query = query.reshape(1, -1)
+        #
+        # if predictions.ndim < 2:
+        #     predictions = predictions.reshape(1, -1)
+        #
+        # if query.shape[0] != predictions.shape[0]:
+        #     raise ValueError(
+        #         'The arrays query and predictions must have the same number'
+        #         ' of samples. query.shape is {}'
+        #         'and predictions.shape is {}'.format(query.shape,
+        #                                              predictions.shape))
+        #
+        # if self.needs_proba:
+        #     competences = self.estimate_competence_from_proba(
+        #         query,
+        #         neighbors=neighbors,
+        #         distances=distances,
+        #         probabilities=probabilities)
+        # else:
+        #     competences = self.estimate_competence(query,
+        #                                            neighbors=neighbors,
+        #                                            distances=distances,
+        #                                            predictions=predictions)
+        #
+        # if self.DFP:
+        #     competences = competences * DFP_mask
+        #
+        # if self.mode == "selection":
+        #     # The selected_classifiers matrix is used as a mask to remove
+        #     # the predictions of certain base classifiers.
+        #     selected_classifiers = self.select(competences)
+        #     votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
+        #     predicted_label = majority_voting_rule(votes)
+        #
+        # elif self.mode == "weighting":
+        #     votes = np.atleast_2d(predictions)
+        #     predicted_label = weighted_majority_voting_rule(votes, competences,
+        #                                                     np.arange(
+        #                                                         self.n_classes_
+        #                                                               ))
+        # else:
+        #     selected_classifiers = self.select(competences)
+        #     votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
+        #     predicted_label = weighted_majority_voting_rule(votes, competences,
+        #                                                     np.arange(
+        #                                                         self.n_classes_
+        #                                                               ))
+        #
+        # return predicted_label
+        probas = self.predict_proba_with_ds(query, predictions, probabilities,
+                                            neighbors, distances, DFP_mask)
+        return probas.argmax(axis=1)
 
     def predict_proba_with_ds(self, query, predictions, probabilities,
                               neighbors=None, distances=None, DFP_mask=None):
@@ -258,12 +262,12 @@ class BaseDES(BaseDS):
                           The probability estimates for all test examples.
         """
 
-        if query.shape[0] != probabilities.shape[0]:
-            raise ValueError(
-                'The arrays query and predictions must have the same number'
-                ' of samples. query.shape is {}'
-                'and predictions.shape is {}'.format(query.shape,
-                                                     predictions.shape))
+        # if query.shape[0] != probabilities.shape[0]:
+            # raise ValueError(
+            #     'The arrays query and predictions must have the same number'
+            #     ' of samples. query.shape is {}'
+            #     'and predictions.shape is {}'.format(query.shape,
+            #                                          predictions.shape))
 
         if self.needs_proba:
             competences = self.estimate_competence_from_proba(
@@ -283,19 +287,31 @@ class BaseDES(BaseDS):
         if self.mode == "selection":
             selected_classifiers = self.select(competences)
 
-            # Broadcast the selected classifiers mask
-            # to cover the last axis (n_classes):
-            selected_classifiers = np.expand_dims(selected_classifiers, axis=2)
-            selected_classifiers = np.broadcast_to(selected_classifiers,
-                                                   probabilities.shape)
-            masked_proba = np.ma.MaskedArray(probabilities,
-                                             ~selected_classifiers)
+            if self.voting == 'hard':
+                votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
+                votes = self._sum_votes_masked_array(votes)
+                predicted_proba = votes / votes.sum(axis=1)[:, None]
+            else:
+                # Broadcast the selected classifiers mask
+                # to cover the last axis (n_classes):
+                selected_classifiers = np.expand_dims(selected_classifiers,
+                                                      axis=2)
+                selected_classifiers = np.broadcast_to(selected_classifiers,
+                                                       probabilities.shape)
+                masked_proba = np.ma.MaskedArray(probabilities,
+                                                 ~selected_classifiers)
 
-            predicted_proba = np.mean(masked_proba, axis=1)
+                predicted_proba = np.mean(masked_proba, axis=1)
 
         elif self.mode == "weighting":
-            predicted_proba = aggregate_proba_ensemble_weighted(probabilities,
-                                                                competences)
+            if self.voting == 'hard':
+                w_votes, _ = get_weighted_votes(predictions,
+                                                competences,
+                                                np.arange(self.n_classes_))
+                predicted_proba = w_votes / w_votes.sum(axis=1)[:, None]
+            else:
+                predicted_proba = aggregate_proba_ensemble_weighted(probabilities,
+                                                                    competences)
         else:
             selected_classifiers = self.select(competences)
 
@@ -326,3 +342,9 @@ class BaseDES(BaseDS):
                 'Invalid value for parameter "mode".'
                 ' "mode" should be one of these options '
                 '{selection, hybrid, weighting}')
+
+    def _sum_votes_masked_array(self, predictions):
+        votes = np.zeros((predictions.shape[0], self.n_classes_))
+        for label in range(self.n_classes_):
+            votes[:, label] = np.sum(predictions == label, axis=1)
+        return np.array(votes, np.int)
