@@ -319,7 +319,7 @@ def test_static_selection():
 def test_kne_proba(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    kne = KNORAE(pool_classifiers, knn_classifier=knn_methods)
+    kne = KNORAE(pool_classifiers, knn_classifier=knn_methods, voting='soft')
     kne.fit(X_dsel, y_dsel)
     probas = kne.predict_proba(X_test)
     expected = np.load(
@@ -330,7 +330,7 @@ def test_kne_proba(knn_methods):
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_desp_proba(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-    desp = DESP(pool_classifiers, knn_classifier=knn_methods)
+    desp = DESP(pool_classifiers, knn_classifier=knn_methods, voting='soft')
     desp.fit(X_dsel, y_dsel)
     probas = desp.predict_proba(X_test)
     expected = np.load(
@@ -368,7 +368,8 @@ def test_mcb_proba(knn_methods):
 def test_desknn_proba(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    desknn = DESKNN(pool_classifiers, knn_classifier=knn_methods)
+    desknn = DESKNN(pool_classifiers, knn_classifier=knn_methods,
+                    voting='soft')
     desknn.fit(X_dsel, y_dsel)
     probas = desknn.predict_proba(X_test)
     expected = np.load(
@@ -380,7 +381,8 @@ def test_des_clustering_proba():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
     cluster = KMeans(n_clusters=5, random_state=rng)
-    des_clustering = DESClustering(pool_classifiers, clustering=cluster)
+    des_clustering = DESClustering(pool_classifiers, clustering=cluster,
+                                   voting='soft')
     des_clustering.fit(X_dsel, y_dsel)
     probas = des_clustering.predict_proba(X_test)
     expected = np.load(
@@ -392,7 +394,7 @@ def test_des_clustering_proba():
 def test_knop_proba(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    knop = KNOP(pool_classifiers, knn_classifier=knn_methods)
+    knop = KNOP(pool_classifiers, knn_classifier=knn_methods, voting='soft')
     knop.fit(X_dsel, y_dsel)
     probas = knop.predict_proba(X_test)
     expected = np.load(
