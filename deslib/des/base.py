@@ -4,7 +4,7 @@ import numpy as np
 
 from deslib.base import BaseDS
 from deslib.util.aggregation import (aggregate_proba_ensemble_weighted,
-                                     sum_votes_masked_array,
+                                     sum_votes_per_class,
                                      get_weighted_votes)
 
 
@@ -232,7 +232,7 @@ class BaseDES(BaseDS):
 
             if self.voting == 'hard':
                 votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
-                votes = sum_votes_masked_array(votes, self.n_classes_)
+                votes = sum_votes_per_class(votes, self.n_classes_)
                 predicted_proba = votes / votes.sum(axis=1)[:, None]
             else:
                 # Broadcast the selected classifiers mask
