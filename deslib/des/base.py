@@ -223,58 +223,74 @@ class BaseDES(BaseDS):
                                                    neighbors=neighbors,
                                                    distances=distances,
                                                    predictions=predictions)
-
         if self.DFP:
+            # FIRE-DES pruning.
             competences = competences * DFP_mask
 
         if self.mode == "selection":
-            selected_classifiers = self.select(competences)
-
-            if self.voting == 'hard':
-                votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
-                votes = sum_votes_per_class(votes, self.n_classes_)
-                predicted_proba = votes / votes.sum(axis=1)[:, None]
-            else:
-                # Broadcast the selected classifiers mask
-                # to cover the last axis (n_classes):
-                selected_classifiers = np.expand_dims(selected_classifiers,
-                                                      axis=2)
-                selected_classifiers = np.broadcast_to(selected_classifiers,
-                                                       probabilities.shape)
-                masked_proba = np.ma.MaskedArray(probabilities,
-                                                 ~selected_classifiers)
-
-                predicted_proba = np.mean(masked_proba, axis=1)
-
+            predicted_proba = self._dynamic_selection(competences,
+                                                      predictions,
+                                                      probabilities)
         elif self.mode == "weighting":
-            if self.voting == 'hard':
-                w_votes, _ = get_weighted_votes(predictions,
-                                                competences,
-                                                np.arange(self.n_classes_))
-                predicted_proba = w_votes / w_votes.sum(axis=1)[:, None]
-            else:
-                predicted_proba = aggregate_proba_ensemble_weighted(probabilities,
-                                                                    competences)
+            predicted_proba = self._dynamic_weighting(competences, predictions,
+                                                      probabilities)
         else:
-            selected_classifiers = self.select(competences)
-            if self.voting == 'hard':
-                votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
-                w_votes, _ = get_weighted_votes(votes, competences,
-                                                np.arange(self.n_classes_))
-                predicted_proba = w_votes / w_votes.sum(axis=1)[:, None]
-            else:
-                # Broadcast the selected classifiers mask
-                # to cover the last axis (n_classes):
-                selected_classifiers = np.expand_dims(selected_classifiers,
-                                                      axis=2)
-                selected_classifiers = np.broadcast_to(selected_classifiers,
-                                                       probabilities.shape)
-                masked_proba = np.ma.MaskedArray(probabilities,
-                                                 ~selected_classifiers)
-                predicted_proba = aggregate_proba_ensemble_weighted(masked_proba,
-                                                                    competences)
+            predicted_proba = self._hybrid(competences, predictions,
+                                           probabilities)
 
         return predicted_proba
+
+    def _dynamic_selection(self, competences, predictions, probabilities):
+        """ Combine models using dynamic ensemble selection. """
+        selected_classifiers = self.select(competences)
+        if self.voting == 'hard':
+            votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
+            votes = sum_votes_per_class(votes, self.n_classes_)
+            predicted_proba = votes / votes.sum(axis=1)[:, None]
+        else:
+            masked_proba = self._mask_proba(probabilities,
+                                            selected_classifiers)
+            predicted_proba = np.mean(masked_proba, axis=1)
+        return predicted_proba
+
+    def _dynamic_weighting(self, competences, predictions, probabilities):
+        """ Combine models using dynamic weighting. """
+        if self.voting == 'hard':
+            w_votes, _ = get_weighted_votes(predictions,
+                                            competences,
+                                            np.arange(self.n_classes_))
+            predicted_proba = w_votes / w_votes.sum(axis=1)[:, None]
+        else:
+            predicted_proba = aggregate_proba_ensemble_weighted(
+                probabilities, competences)
+        return predicted_proba
+
+    def _hybrid(self, competences, predictions, probabilities):
+        """ Combine models using a hybrid dynamic selection + weighting. """
+        selected_classifiers = self.select(competences)
+        if self.voting == 'hard':
+            votes = np.ma.MaskedArray(predictions, ~selected_classifiers)
+            w_votes, _ = get_weighted_votes(votes, competences,
+                                            np.arange(self.n_classes_))
+            predicted_proba = w_votes / w_votes.sum(axis=1)[:, None]
+        else:
+            masked_proba = self._mask_proba(probabilities,
+                                            selected_classifiers)
+            predicted_proba = aggregate_proba_ensemble_weighted(
+                masked_proba, competences)
+        return predicted_proba
+
+    @staticmethod
+    def _mask_proba(probabilities, selected_classifiers):
+        # Broadcast the selected classifiers mask
+        # to cover the last axis (n_classes):
+        selected_classifiers = np.expand_dims(selected_classifiers,
+                                              axis=2)
+        selected_classifiers = np.broadcast_to(selected_classifiers,
+                                               probabilities.shape)
+        masked_proba = np.ma.MaskedArray(probabilities,
+                                         ~selected_classifiers)
+        return masked_proba
 
     def _validate_parameters(self):
         super(BaseDES, self)._validate_parameters()
@@ -294,3 +310,5 @@ class BaseDES(BaseDS):
             raise ValueError('Invalid value for parameter "voting".'
                              ' "voting" should be one of these options '
                              '{selection, hybrid, weighting}')
+        if self.voting == 'soft':
+            self._check_predict_proba()
