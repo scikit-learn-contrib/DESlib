@@ -7,7 +7,7 @@
 import numpy as np
 
 from deslib.base import BaseDS
-from deslib.util.aggregation import sum_votes_masked_array
+from deslib.util.aggregation import sum_votes_per_class
 from deslib.util.diversity import negative_double_fault, Q_statistic, \
     ratio_errors, compute_pairwise_diversity
 
@@ -364,7 +364,7 @@ class DESKNN(BaseDS):
         if self.voting == 'hard':
             votes = predictions[np.arange(predictions.shape[0])[:, None],
                                 selected_classifiers]
-            votes = sum_votes_masked_array(votes, self.n_classes_)
+            votes = sum_votes_per_class(votes, self.n_classes_)
             predicted_proba = votes / votes.sum(axis=1)[:, None]
         else:
             ensemble_proba = probabilities[

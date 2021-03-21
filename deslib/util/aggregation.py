@@ -168,7 +168,7 @@ def get_weighted_votes(votes, weights, labels_set=None):
     return w_votes.T, labels_set
 
 
-def sum_votes_masked_array(predictions, n_classes):
+def sum_votes_per_class(predictions, n_classes):
     """Sum the number of votes for each class. Accepts masked arrays as input.
 
     Parameters
