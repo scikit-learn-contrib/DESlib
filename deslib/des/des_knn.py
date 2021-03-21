@@ -7,7 +7,7 @@
 import numpy as np
 
 from deslib.base import BaseDS
-from deslib.util.aggregation import majority_voting_rule
+from deslib.util.aggregation import sum_votes_masked_array
 from deslib.util.diversity import negative_double_fault, Q_statistic, \
     ratio_errors, compute_pairwise_diversity
 
@@ -126,13 +126,13 @@ class DESKNN(BaseDS):
                                      knn_classifier=knn_classifier,
                                      knne=knne,
                                      DSEL_perc=DSEL_perc,
-                                     n_jobs=n_jobs,
-                                     voting=voting)
+                                     n_jobs=n_jobs)
 
         self.metric = metric
         self.pct_accuracy = pct_accuracy
         self.pct_diversity = pct_diversity
         self.more_diverse = more_diverse
+        self.voting = voting
 
     def fit(self, X, y):
         """ Prepare the DS model by setting the KNN algorithm and
@@ -152,15 +152,10 @@ class DESKNN(BaseDS):
         self
         """
         super(DESKNN, self).fit(X, y)
-
         self.N_ = int(self.n_classifiers_ * self.pct_accuracy)
-
         self.J_ = int(np.ceil(self.n_classifiers_ * self.pct_diversity))
-
         self._check_parameters()
-
         self._set_diversity_func()
-
         return self
 
     def estimate_competence(self, query, neighbors, distances=None,
@@ -313,32 +308,9 @@ class DESKNN(BaseDS):
         predicted_label : array of shape (n_samples)
                           Predicted class label for each test example.
         """
-        if query.ndim < 2:
-            query = query.reshape(1, -1)
-
-        if predictions.ndim < 2:
-            predictions = predictions.reshape(1, -1)
-
-        if query.shape[0] != predictions.shape[0]:
-            raise ValueError(
-                'The arrays query and predictions must have the same number'
-                ' of samples. query.shape is {}'
-                'and predictions.shape is {}'.format(query.shape,
-                                                     predictions.shape))
-
-        accuracy, diversity = self.estimate_competence(query,
-                                                       neighbors,
-                                                       distances=distances,
-                                                       predictions=predictions)
-
-        if self.DFP:
-            accuracy = accuracy * DFP_mask
-
-        selected_classifiers = self.select(accuracy, diversity)
-        votes = predictions[
-            np.arange(predictions.shape[0])[:, None], selected_classifiers]
-        predicted_label = majority_voting_rule(votes)
-
+        proba = self.predict_proba_with_ds(query, predictions, probabilities,
+                                           neighbors, distances, DFP_mask)
+        predicted_label = proba.argmax(axis=1)
         return predicted_label
 
     def predict_proba_with_ds(self, query, predictions, probabilities,
@@ -379,14 +351,6 @@ class DESKNN(BaseDS):
         predicted_proba : array = [n_samples, n_classes]
                           Probability estimates for all test examples.
         """
-
-        if query.shape[0] != probabilities.shape[0]:
-            raise ValueError(
-                'The arrays query and predictions must have the same number'
-                ' of samples. query.shape is {}'
-                'and predictions.shape is {}'.format(query.shape,
-                                                     predictions.shape))
-
         accuracy, diversity = self.estimate_competence(query,
                                                        neighbors,
                                                        distances=distances,
@@ -396,11 +360,18 @@ class DESKNN(BaseDS):
 
         # This method always performs selection. There is no weighted version.
         selected_classifiers = self.select(accuracy, diversity)
-        ensemble_proba = probabilities[
-                         np.arange(probabilities.shape[0])[:, None],
-                         selected_classifiers, :]
 
-        predicted_proba = np.mean(ensemble_proba, axis=1)
+        if self.voting == 'hard':
+            votes = predictions[np.arange(predictions.shape[0])[:, None],
+                                selected_classifiers]
+            votes = sum_votes_masked_array(votes, self.n_classes_)
+            predicted_proba = votes / votes.sum(axis=1)[:, None]
+        else:
+            ensemble_proba = probabilities[
+                             np.arange(probabilities.shape[0])[:, None],
+                             selected_classifiers, :]
+
+            predicted_proba = np.mean(ensemble_proba, axis=1)
 
         return predicted_proba
 
@@ -425,6 +396,11 @@ class DESKNN(BaseDS):
             raise ValueError(
                 "The value of N_ should be greater or equals than J_"
                 "N_ = {}, J_= {} ".format(self.N_, self.J_))
+
+        if self.voting not in ['soft', 'hard']:
+            raise ValueError('Invalid value for parameter "mode".'
+                             ' "mode" should be one of these options '
+                             '{selection, hybrid, weighting}')
 
     def _set_diversity_func(self):
         """Set the diversity function to be used according to the
