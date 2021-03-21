@@ -11,7 +11,7 @@ from sklearn.base import ClusterMixin
 from sklearn.cluster import KMeans
 
 from deslib.base import BaseDS
-from deslib.util.aggregation import majority_voting_rule
+from deslib.util.aggregation import sum_votes_per_class
 from deslib.util.diversity import Q_statistic, ratio_errors, \
     negative_double_fault, compute_pairwise_diversity
 
@@ -306,24 +306,9 @@ class DESClustering(BaseDS):
         predicted_label : array of shape (n_samples)
                           Predicted class label for each test example.
         """
-        if query.ndim < 2:
-            query = query.reshape(1, -1)
-
-        if predictions.ndim < 2:
-            predictions = predictions.reshape(1, -1)
-
-        if query.shape[0] != predictions.shape[0]:
-            raise ValueError(
-                'The arrays query and predictions must have the same number'
-                ' of samples. query.shape is {}'
-                'and predictions.shape is {}'.format(query.shape,
-                                                     predictions.shape))
-
-        selected_classifiers = self.select(query)
-        votes = predictions[
-            np.arange(predictions.shape[0])[:, None], selected_classifiers]
-        predicted_label = majority_voting_rule(votes)
-
+        proba = self.predict_proba_with_ds(query, predictions, probabilities,
+                                           neighbors, distances, DFP_mask)
+        predicted_label = proba.argmax(axis=1)
         return predicted_label
 
     def predict_proba_with_ds(self, query, predictions, probabilities,
@@ -356,18 +341,18 @@ class DESClustering(BaseDS):
         predicted_proba : array of shape (n_samples, n_classes)
             Posterior probabilities estimates for each test example.
         """
-        if query.shape[0] != probabilities.shape[0]:
-            raise ValueError(
-                'The arrays query and predictions must have the same number of'
-                ' samples. query.shape is {}'
-                'and predictions.shape is {}'.format(query.shape,
-                                                     predictions.shape))
-
         selected_classifiers = self.select(query)
-        ensemble_proba = probabilities[
-            np.arange(probabilities.shape[0])[:, None],
-            selected_classifiers, :]
-        predicted_proba = np.mean(ensemble_proba, axis=1)
+        if self.voting == 'hard':
+            votes = predictions[np.arange(predictions.shape[0])[:, None],
+                                selected_classifiers]
+            votes = sum_votes_per_class(votes, self.n_classes_)
+            predicted_proba = votes / votes.sum(axis=1)[:, None]
+
+        else:
+            ensemble_proba = probabilities[
+                np.arange(probabilities.shape[0])[:, None],
+                selected_classifiers, :]
+            predicted_proba = np.mean(ensemble_proba, axis=1)
 
         return predicted_proba
 
