@@ -101,55 +101,35 @@ def test_classify_instance_hybrid(create_pool_classifiers):
 # The prediction of probability here should be an average_rule of the
 # probabilities estimates of the three selected base classifiers
 def test_predict_proba_selection_soft_voting(create_pool_classifiers):
-    query = np.array([-1, 1])
-    pool_classifiers = create_pool_classifiers + create_pool_classifiers
-    des_test = BaseDES(pool_classifiers, mode='selection', voting='soft')
-    selected_indices = np.array([0, 1, 5])
-    selected_classifiers = np.zeros((1, 6), dtype=bool)
-    selected_classifiers[0, selected_indices] = 1
-    des_test.select = MagicMock(return_value=selected_classifiers)
-
-    des_test.n_classes_ = 2
+    query = np.array([[-1, 1]])
     expected = np.array([0.61, 0.39])
+    predictions = np.array([[0, 1, 0, 0, 1, 0]])
+    probabilities = np.array([[[0.5, 0.5], [1., 0.], [0.33, 0.67],
+                               [0.5, 0.5], [1., 0.], [0.33, 0.67]]])
+    selected_indices = np.array([[True, True, False, False, False, True]])
+    pool_classifiers = create_pool_classifiers + create_pool_classifiers
 
-    predictions = []
-    probabilities = []
-    for clf in des_test.pool_classifiers:
-        predictions.append(clf.predict(query)[0])
-        probabilities.append(clf.predict_proba(query)[0])
-
-    query = np.atleast_2d(query)
-    predictions = np.atleast_2d(predictions)
-    probabilities = np.array(probabilities)
-    probabilities = np.expand_dims(probabilities, axis=0)
+    des_test = BaseDES(pool_classifiers, mode='selection', voting='soft')
+    des_test.select = MagicMock(return_value=selected_indices)
+    des_test.n_classes_ = 2
 
     predicted_proba = des_test.predict_proba_with_ds(query, predictions,
                                                      probabilities)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
 
-
 # The predicted probabilities must also consider the assigned weights of each
 # base classifier
 def test_predict_proba_weighting_soft_voting(create_pool_classifiers):
-    query = np.array([-1, 1])
-    pool_classifiers = create_pool_classifiers
-    des_test = BaseDES(pool_classifiers, mode='weighting', voting='soft')
-    competences = np.array([[0.5, 1.0, 0.2]])
-    des_test.estimate_competence = MagicMock(return_value=competences)
-
-    des_test.n_classes_ = 2
+    query = np.array([[-1, 1]])
     expected = np.array([0.5769, 0.4231])
+    competences = np.array([[0.5, 1.0, 0.2]])
+    predictions = np.array([[0, 1, 0]])
+    probabilities = np.array([[[0.5, 0.5], [1., 0.], [0.33, 0.67]]])
+    pool_classifiers = create_pool_classifiers
 
-    predictions = []
-    probabilities = []
-    for clf in des_test.pool_classifiers:
-        predictions.append(clf.predict(query)[0])
-        probabilities.append(clf.predict_proba(query)[0])
-
-    query = np.atleast_2d(query)
-    predictions = np.atleast_2d(predictions)
-    probabilities = np.array(probabilities)
-    probabilities = np.expand_dims(probabilities, axis=0)
+    des_test = BaseDES(pool_classifiers, mode='weighting', voting='soft')
+    des_test.estimate_competence = MagicMock(return_value=competences)
+    des_test.n_classes_ = 2
 
     predicted_proba = des_test.predict_proba_with_ds(query, predictions,
                                                      probabilities)
@@ -159,33 +139,19 @@ def test_predict_proba_weighting_soft_voting(create_pool_classifiers):
 # The predicted probabilities must also consider the assigned weights of each
 # base classifier selected
 def test_predict_proba_hybrid_soft_voting(create_pool_classifiers):
-    query = np.array([-1, 1])
+    query = np.array([[-1, 1]])
+    expected = np.array([0.5744, 0.4256])
+    competences = np.array([[0.55, 1.0, 0.2, 0.60, 0.75, 0.3]])
+    predictions = np.array([[0, 1, 0, 0, 1, 0]])
+    probabilities = np.array([[[0.5, 0.5], [1., 0.], [0.33, 0.67],
+                               [0.5, 0.5], [1., 0.], [0.33, 0.67]]])
+    selected_indices = np.array([[True, True, False, False, False, True]])
     pool_classifiers = create_pool_classifiers + create_pool_classifiers
+
     des_test = BaseDES(pool_classifiers, mode='hybrid', voting='soft')
     des_test.n_classes_ = 2
-
-    selected_indices = [0, 1, 5]
-    competences = np.array([[0.55, 1.0, 0.2, 0.60, 0.75, 0.3]])
-
-    expected = np.array([0.5744, 0.4256])
-
     des_test.estimate_competence = MagicMock(return_value=competences)
-
-    selected_classifiers = np.zeros((1, 6), dtype=bool)
-    selected_classifiers[0, selected_indices] = 1
-    des_test.select = MagicMock(return_value=selected_classifiers)
-
-    predictions = []
-    probabilities = []
-    for clf in des_test.pool_classifiers:
-        predictions.append(clf.predict(query)[0])
-        probabilities.append(clf.predict_proba(query)[0])
-
-    query = np.atleast_2d(query)
-    predictions = np.atleast_2d(predictions)
-    probabilities = np.array(probabilities)
-    probabilities = np.expand_dims(probabilities, axis=0)
-
+    des_test.select = MagicMock(return_value=selected_indices)
     predicted_proba = des_test.predict_proba_with_ds(query, predictions,
                                                      probabilities)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
@@ -237,7 +203,7 @@ def test_predict_proba_hybrid_hard_voting(create_pool_classifiers):
     des_test = BaseDES(pool_classifiers, mode='hybrid', voting='hard')
     des_test.n_classes_ = 2
     des_test.estimate_competence = MagicMock(return_value=competences)
-    des_test.select = MagicMock(selected_indices)
+    des_test.select = MagicMock(return_value=selected_indices)
 
     predicted_proba = des_test.predict_proba_with_ds(query, predictions)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
