@@ -126,3 +126,13 @@ def test_predict_proba_with_ds_hard(create_pool_classifiers):
                                                        probabilities,
                                                        DFP_mask=DFP_mask)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
+
+
+def test_soft_voting_no_proba(create_X_y):
+    from sklearn.linear_model import Perceptron
+    X, y = create_X_y
+    clf = Perceptron()
+    clf.fit(X, y)
+    with pytest.raises(ValueError):
+        DESMI([clf, clf, clf, clf], voting='soft').fit(X, y)
+

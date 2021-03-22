@@ -388,6 +388,8 @@ class DESClustering(BaseDS):
                 raise ValueError(
                     "Parameter clustering must be a sklearn"
                     " cluster estimator.")
+        if self.voting == 'soft':
+            self._check_predict_proba()
 
     def get_scores_(self, sample_indices):
 

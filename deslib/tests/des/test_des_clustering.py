@@ -232,3 +232,12 @@ def test_single_classifier_pool(create_X_y):
     pool = [Perceptron().fit(X, y)]
     with pytest.raises(ValueError):
         DESClustering(pool_classifiers=pool).fit(X, y)
+
+
+def test_soft_voting_no_proba(create_X_y):
+    from sklearn.linear_model import Perceptron
+    X, y = create_X_y
+    clf = Perceptron()
+    clf.fit(X, y)
+    with pytest.raises(ValueError):
+        model = DESClustering([clf, clf], voting='soft').fit(X, y)

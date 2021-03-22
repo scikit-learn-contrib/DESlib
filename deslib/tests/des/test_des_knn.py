@@ -307,3 +307,12 @@ def test_predict_proba():
     clf1 = Perceptron()
     clf1.fit(X, y)
     DESKNN([clf1, clf1, clf1]).fit(X, y)
+
+
+def test_soft_voting_no_proba(create_X_y):
+    from sklearn.linear_model import Perceptron
+    X, y = create_X_y
+    clf = Perceptron()
+    clf.fit(X, y)
+    with pytest.raises(ValueError):
+        DESKNN([clf, clf], voting='soft').fit(X, y)
