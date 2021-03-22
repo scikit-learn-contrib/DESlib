@@ -365,9 +365,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         elif self.knn_classifier == 'faiss':
             knn_class = functools.partial(
                 faiss_knn_wrapper.FaissKNNClassifier,
-                n_jobs=self.n_jobs, algorithm="brute",
-                metric=self.knn_metric,
-                metric_params=metric_params)
+                n_jobs=self.n_jobs, algorithm="brute")
         elif callable(self.knn_classifier):
             knn_class = self.knn_classifier
         else:
