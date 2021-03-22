@@ -117,6 +117,7 @@ def test_predict_proba_selection_soft_voting(create_pool_classifiers):
                                                      probabilities)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
 
+
 # The predicted probabilities must also consider the assigned weights of each
 # base classifier
 def test_predict_proba_weighting_soft_voting(create_pool_classifiers):
@@ -207,3 +208,12 @@ def test_predict_proba_hybrid_hard_voting(create_pool_classifiers):
 
     predicted_proba = des_test.predict_proba_with_ds(query, predictions)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
+
+
+def test_soft_voting_no_proba(create_X_y):
+    from sklearn.linear_model import Perceptron
+    X, y = create_X_y
+    clf = Perceptron()
+    clf.fit(X, y)
+    with pytest.raises(ValueError):
+        BaseDES([clf, clf], voting='soft').fit(X, y)

@@ -383,7 +383,6 @@ class DESKNN(BaseDS):
         ValueError
             If the hyper-parameters are incorrect.
         """
-
         if self.metric not in ['DF', 'Q', 'ratio']:
             raise ValueError(
                 'Diversity metric must be one of the following values:'
@@ -401,6 +400,8 @@ class DESKNN(BaseDS):
             raise ValueError('Invalid value for parameter "mode".'
                              ' "mode" should be one of these options '
                              '{selection, hybrid, weighting}')
+        if self.voting == 'soft':
+            self._check_predict_proba()
 
     def _set_diversity_func(self):
         """Set the diversity function to be used according to the

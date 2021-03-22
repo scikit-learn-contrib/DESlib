@@ -324,3 +324,5 @@ class DESMI(BaseDS):
             raise ValueError('Invalid value for parameter "voting".'
                              ' "voting" should be one of these options '
                              '{selection, hybrid, weighting}')
+        if self.voting == 'soft':
+            self._check_predict_proba()
