@@ -136,3 +136,10 @@ def test_soft_voting_no_proba(create_X_y):
     with pytest.raises(ValueError):
         DESMI([clf, clf, clf, clf], voting='soft').fit(X, y)
 
+
+@pytest.mark.parametrize('voting', [None, 'product', 1])
+def test_wrong_voting_value(voting, create_X_y, create_pool_classifiers):
+    X, y = create_X_y
+    pool = create_pool_classifiers
+    with pytest.raises(ValueError):
+        DESMI(pool, voting=voting).fit(X, y)
