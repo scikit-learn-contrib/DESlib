@@ -198,13 +198,11 @@ def test_mcb(knn_methods):
     assert np.isclose(mcb.score(X_test, y_test), 0.9627659574468085)
 
 
-@pytest.mark.parametrize('knn_methods', knn_methods)
-def test_apriori(knn_methods):
+def test_apriori():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    apriori = APriori(pool_classifiers, random_state=rng,
-                      knn_classifier=knn_methods)
+    apriori = APriori(pool_classifiers, random_state=rng)
     apriori.fit(X_dsel, y_dsel)
     assert np.isclose(apriori.score(X_test, y_test), 0.973404255319149)
 
@@ -218,13 +216,11 @@ def test_rank(knn_methods):
     assert np.isclose(rank.score(X_test, y_test), 0.9787234042553191)
 
 
-@pytest.mark.parametrize('knn_methods', knn_methods)
-def test_aposteriori(knn_methods):
+def test_aposteriori():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    a_posteriori = APosteriori(pool_classifiers, random_state=rng,
-                               knn_classifier=knn_methods)
+    a_posteriori = APosteriori(pool_classifiers, random_state=rng)
     a_posteriori.fit(X_dsel, y_dsel)
     assert np.isclose(a_posteriori.score(X_test, y_test), 0.973404255319149)
 
@@ -240,13 +236,11 @@ def test_meta(knn_methods, voting):
     assert np.isclose(meta_des.score(X_test, y_test), 0.9787234042553191)
 
 
-@pytest.mark.parametrize('knn_methods, voting',
-                         itertools.product(knn_methods, voting))
-def test_rrc(knn_methods, voting):
+@pytest.mark.parametrize('voting', voting)
+def test_rrc(voting):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    rrc = RRC(pool_classifiers,
-              knn_classifier=knn_methods, voting=voting)
+    rrc = RRC(pool_classifiers, voting=voting)
     rrc.fit(X_dsel, y_dsel)
     assert np.isclose(rrc.score(X_test, y_test), 0.9840425531914894)
 
@@ -415,8 +409,7 @@ def test_knop_proba(knn_methods):
     assert np.allclose(probas, expected)
 
 
-@pytest.mark.parametrize('knn_methods', knn_methods)
-def test_meta_no_pool_of_classifiers(knn_methods):
+def test_meta_no_pool_of_classifiers():
     rng = np.random.RandomState(123456)
     data = load_breast_cancer()
     X = data.data
@@ -429,7 +422,6 @@ def test_meta_no_pool_of_classifiers(knn_methods):
     scalar = StandardScaler()
     X_train = scalar.fit_transform(X_train)
     X_test = scalar.transform(X_test)
-    meta_des = METADES(knn_classifier=knn_methods, random_state=rng,
-                       DSEL_perc=0.5)
+    meta_des = METADES(random_state=rng, DSEL_perc=0.5)
     meta_des.fit(X_train, y_train)
     assert np.isclose(meta_des.score(X_test, y_test), 0.8936170212765957)
