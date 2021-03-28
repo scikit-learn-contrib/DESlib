@@ -1,15 +1,9 @@
 language: python
 python:
   - "3.6"
+  - "3.7"
   - "3.8"
   - "3.9"
-
-# Python 3.7 workaround https://github.com/travis-ci/travis-ci/issues/9815
-matrix:
-  include:
-    - python: "3.7"
-      dist: xenial
-      sudo: true
 
 install:
   - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
