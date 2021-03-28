@@ -33,7 +33,7 @@ jobs:
             chmod +x miniconda.sh && ./miniconda.sh -b -p ~/miniconda
             export PATH="~/miniconda/bin:$PATH"
             conda update --yes --quiet conda
-            conda create -n testenv --yes --quiet python=3.9u
+            conda create -n testenv --yes --quiet python=3.9
             source activate testenv
             conda install --yes pip numpy
             pip install -r requirements-dev.txt
