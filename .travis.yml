@@ -25,7 +25,7 @@ install:
   - travis_retry python setup.py build
   - travis_retry python setup.py install
   # Faiss requires anaconda and only works for python 3.5 and 3.6:
-  - if [[ "$TRAVIS_PYTHON_VERSION" != "3.7" ]]; then
+  - if [[ "$TRAVIS_PYTHON_VERSION" < "3.9" ]]; then
       travis_retry conda install faiss-cpu -c pytorch;
     fi
 
