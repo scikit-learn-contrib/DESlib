@@ -216,7 +216,7 @@ def test_rank(knn_methods):
     assert np.isclose(rank.score(X_test, y_test), 0.9787234042553191)
 
 
-def test_aposteriori(knn_methods):
+def test_aposteriori():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
