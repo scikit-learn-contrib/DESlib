@@ -30,7 +30,8 @@ class BaseDCS(BaseDS):
                                       random_state=random_state,
                                       knn_classifier=knn_classifier,
                                       DSEL_perc=DSEL_perc,
-                                      knne=knne, n_jobs=n_jobs)
+                                      knne=knne, n_jobs=n_jobs,
+                                      voting='single')
 
         self.selection_method = selection_method
         self.diff_thresh = diff_thresh
