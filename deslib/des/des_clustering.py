@@ -67,6 +67,12 @@ class DESClustering(BaseDS):
         Note: This parameter is only used if the pool of classifier is None or
         unfitted.
 
+    voting : {'hard', 'soft'}, default='hard'
+            If 'hard', uses predicted class labels for majority rule voting.
+            Else if 'soft', predicts the class label based on the argmax of
+            the sums of the predicted probabilities, which is recommended for
+            an ensemble of well-calibrated classifiers.
+
     n_jobs : int, default=-1
         The number of parallel jobs to run. None means 1 unless in
         a joblib.parallel_backend context. -1 means using all processors.
