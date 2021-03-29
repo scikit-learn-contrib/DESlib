@@ -399,24 +399,28 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         check_is_fitted(self,
                         ["DSEL_processed_", "DSEL_data_", "DSEL_target_"])
         X = check_array(X)
-        predicted_labels = np.empty(X.shape[0], dtype=np.intp)
+        preds = np.empty(X.shape[0], dtype=np.intp)
         is_soft = self.voting == 'soft'
-        base_preds, base_probas = self._preprocess_predictions(X, is_soft)
-        ind_disagreement = self._prediction_by_agreement(base_preds,
-                                                         predicted_labels)
-        if ind_disagreement.size:
 
+        base_preds, base_probas = self._preprocess_predictions(X, is_soft)
+        # predict all agree
+        ind_disagreement, ind_all_agree = self._split_agreement(base_preds)
+        if ind_all_agree.size:
+            preds[ind_all_agree] = base_preds[ind_all_agree, 0]
+        # predict IH
+        if ind_disagreement.size:
             distances, ind_ds_classifier, neighbors = self._IH_prediction(
-                X, ind_disagreement, predicted_labels, is_proba=False
+                X, ind_disagreement, preds, is_proba=False
             )
-            #  First check whether there are still samples to be classified.
+            # Predict DS
+            # First check whether there are still samples to be classified.
             if ind_ds_classifier.size:
                 self._predict_DS(X, base_preds, base_probas,
                                  distances, ind_disagreement,
                                  ind_ds_classifier, neighbors,
-                                 predicted_labels)
+                                 preds)
 
-        return self.classes_.take(predicted_labels)
+        return self.classes_.take(preds)
 
     def predict_proba(self, X):
         """Estimates the posterior probabilities for sample in X.
@@ -433,27 +437,27 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self,
                         ["DSEL_processed_", "DSEL_data_", "DSEL_target_"])
-
-        X = check_array(X, ensure_2d=False)
         self._check_predict_proba()
+        X = check_array(X, ensure_2d=False)
+        probas = np.zeros((X.shape[0], self.n_classes_))
 
         base_preds, base_probas = self._preprocess_predictions(X, True)
-        predicted_proba = np.zeros((X.shape[0], self.n_classes_))
-        ind_disagreement = self._prediction_by_agreement(base_preds,
-                                                         predicted_proba,
-                                                         base_probas)
+        ind_disagreement, ind_all_agree = self._split_agreement(base_preds)
+        if ind_all_agree.size:
+            probas[ind_all_agree] = base_probas[ind_all_agree].mean(axis=1)
+
         if ind_disagreement.size:
             distances, ind_ds_classifier, neighbors = self._IH_prediction(
-                    X, ind_disagreement, predicted_proba, is_proba=True
+                    X, ind_disagreement, probas, is_proba=True
                 )
             if ind_ds_classifier.size:
                 self._predict_DS(X,
                                  base_preds, base_probas,
                                  distances, ind_disagreement,
                                  ind_ds_classifier, neighbors,
-                                 predicted_proba, is_proba=True)
+                                 probas, is_proba=True)
 
-        return predicted_proba
+        return probas
 
     def _preprocess_predictions(self, X, req_proba=False):
         if self.needs_proba or req_proba:
@@ -464,19 +468,11 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             base_predictions = self._predict_base(X)
         return base_predictions, base_probabilities
 
-    def _prediction_by_agreement(self, base_predictions, predictions,
-                                 base_probabilities=None):
+    def _split_agreement(self, base_predictions):
         all_agree_vector = BaseDS._all_classifier_agree(base_predictions)
         ind_all_agree = np.where(all_agree_vector)[0]
-        if ind_all_agree.size:
-            if base_probabilities is not None:
-                predictions[ind_all_agree] = base_probabilities[
-                ind_all_agree].mean(axis=1)
-            else:
-                predictions[ind_all_agree] = base_predictions[ind_all_agree, 0]
-
         ind_disagreement = np.where(~all_agree_vector)[0]
-        return ind_disagreement
+        return ind_disagreement, ind_all_agree
 
     def _IH_prediction(self, X, ind_disagree, predicted_proba, is_proba=False):
         X_DS = X[ind_disagree, :]
@@ -579,7 +575,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         """
         BKS_dsel = self._predict_base(self.DSEL_data_)
         processed_dsel = BKS_dsel == self.DSEL_target_[:, np.newaxis]
-
         return processed_dsel, BKS_dsel
 
     def _predict_base(self, X):
