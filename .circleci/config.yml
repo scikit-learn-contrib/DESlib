@@ -7,7 +7,7 @@ jobs:
   python3:
     docker:
       # specify the version you desire here
-      - image: circleci/python:3.6.1
+      - image: circleci/python:3.9
       # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
     environment:
       - USERNAME: "Menelau"
@@ -28,12 +28,13 @@ jobs:
     steps:
       - checkout
       - run:
+          no_output_timeout: 30m
           command: |
             wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
             chmod +x miniconda.sh && ./miniconda.sh -b -p ~/miniconda
             export PATH="~/miniconda/bin:$PATH"
             conda update --yes --quiet conda
-            conda create -n testenv --yes --quiet python=3.6
+            conda create -n testenv --yes --quiet python=3.9
             source activate testenv
             conda install --yes pip numpy
             pip install -r requirements-dev.txt
