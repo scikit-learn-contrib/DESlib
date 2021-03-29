@@ -12,7 +12,7 @@ from deslib.util.diversity import Q_statistic, ratio_errors, \
 
 
 def test_check_estimator():
-    check_estimator(DESClustering)
+    check_estimator(DESClustering())
 
 
 """ Considering a test scenario in which all samples from class 0 are indexed
@@ -59,10 +59,10 @@ def test_fit_heterogeneous_clusters(example_estimate_competence,
     clustering_test.fit(X, y)
 
     # Index selected should be of any classifier that predicts the label 0
-    assert np.isclose(clustering_test.performance_cluster_[:, 1], [0.428, 0.375],
-                      atol=0.01).all()
-    assert np.isclose(clustering_test.performance_cluster_[:, 0], [0.572, 0.625],
-                      atol=0.01).all()
+    assert np.isclose(clustering_test.performance_cluster_[:, 1],
+                      [0.428, 0.375], atol=0.01).all()
+    assert np.isclose(clustering_test.performance_cluster_[:, 0],
+                      [0.572, 0.625], atol=0.01).all()
     assert clustering_test.indices_[0, 0] == 0 or clustering_test.indices_[
         0, 0] == 2
     assert clustering_test.indices_[1, 0] == 0 or clustering_test.indices_[
@@ -86,11 +86,13 @@ def test_estimate_competence(create_pool_classifiers,
     clustering_test.clustering_.predict = MagicMock(return_value=0)
     competences = clustering_test.estimate_competence(query)
 
-    assert np.array_equal(competences, clustering_test.performance_cluster_[0, :])
+    assert np.array_equal(competences,
+                          clustering_test.performance_cluster_[0, :])
 
     clustering_test.clustering_.predict = MagicMock(return_value=1)
     competences = clustering_test.estimate_competence(query)
-    assert np.array_equal(competences, clustering_test.performance_cluster_[1, :])
+    assert np.array_equal(competences,
+                          clustering_test.performance_cluster_[1, :])
 
 
 def test_fit_clusters_less_diverse(example_estimate_competence,
@@ -131,13 +133,14 @@ def test_classify_instance(create_pool_classifiers):
     query = np.ones((1, 2))
     clustering_test = DESClustering(create_pool_classifiers * 4,
                                     clustering=KMeans(n_clusters=2))
-
+    clustering_test.n_classes_ = 2
     clustering_test.select = MagicMock(return_value=[0, 1, 2, 3, 5, 6, 7, 9])
     predictions = []
     for clf in clustering_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
 
-    predicted = clustering_test.classify_with_ds(query, np.array(predictions))
+    predicted = clustering_test.classify_with_ds(query,
+                                                 np.atleast_2d(predictions))
     assert predicted == 0
 
 
@@ -210,37 +213,6 @@ def test_predict_proba(example_estimate_competence):
     DESClustering([clf1, clf1]).fit(X, y)
 
 
-def test_classify_with_ds_single_sample():
-    query = np.ones(2)
-    predictions = np.array([0, 1, 0])
-
-    des_clustering_test = DESClustering()
-    des_clustering_test.select = MagicMock(return_value=np.array([[0, 2]]))
-    result = des_clustering_test.classify_with_ds(query, predictions)
-    assert np.allclose(result, 0)
-
-
-def test_classify_with_ds_diff_sizes():
-    query = np.ones((10, 2))
-    predictions = np.ones((5, 3))
-
-    des_clustering = DESClustering()
-
-    with pytest.raises(ValueError):
-        des_clustering.classify_with_ds(query, predictions)
-
-
-def test_proba_with_ds_diff_sizes():
-    query = np.ones((10, 2))
-    predictions = np.ones((5, 3))
-    probabilities = np.ones((5, 3, 2))
-
-    des_clustering = DESClustering()
-
-    with pytest.raises(ValueError):
-        des_clustering.predict_proba_with_ds(query, predictions, probabilities)
-
-
 def test_not_clustering_algorithm(create_X_y):
     X, y = create_X_y
 
@@ -254,3 +226,26 @@ def test_invalid_metric_performance(create_X_y):
     with pytest.raises(ValueError):
         DESClustering(metric_performance='notametric').fit(X, y)
 
+
+def test_single_classifier_pool(create_X_y):
+    X, y = create_X_y
+    pool = [Perceptron().fit(X, y)]
+    with pytest.raises(ValueError):
+        DESClustering(pool_classifiers=pool).fit(X, y)
+
+
+def test_soft_voting_no_proba(create_X_y):
+    from sklearn.linear_model import Perceptron
+    X, y = create_X_y
+    clf = Perceptron()
+    clf.fit(X, y)
+    with pytest.raises(ValueError):
+        model = DESClustering([clf, clf], voting='soft').fit(X, y)
+
+
+@pytest.mark.parametrize('voting', [None, 'product', 1])
+def test_wrong_voting_value(voting, create_X_y, create_pool_classifiers):
+    X, y = create_X_y
+    pool = create_pool_classifiers
+    with pytest.raises(ValueError):
+        DESClustering(pool, voting=voting).fit(X, y)

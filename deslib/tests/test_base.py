@@ -340,3 +340,10 @@ def test_label_encoder_base():
 
     assert np.array_equal(predictions, np.array(['dog', 'cat']))
 
+
+def test_pool_single_model(create_X_y):
+    X, y = create_X_y
+    pool = [create_base_classifier(return_value=0, return_prob=[0.9, 0.1])]
+    ds_tst = BaseDS(pool_classifiers=pool)
+    with pytest.raises(ValueError):
+        ds_tst.fit(X, y)

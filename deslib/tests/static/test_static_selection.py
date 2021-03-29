@@ -10,7 +10,7 @@ from deslib.static.static_selection import StaticSelection
 
 
 def test_check_estimator():
-    check_estimator(StaticSelection)
+    check_estimator(StaticSelection())
 
 
 # Testing if the fit function selects the correct classifiers.
@@ -73,6 +73,18 @@ def test_label_encoder(create_label_encoder_test):
     static = StaticSelection(pool).fit(X, y)
     pred = static.predict(X)
     assert np.array_equal(pred, y)
+
+
+def test_label_encoder_base_ensemble():
+    from sklearn.ensemble import RandomForestClassifier
+    X, y = make_classification()
+    y[y == 1] = 2
+    y = y.astype(np.float)
+    pool = RandomForestClassifier().fit(X, y)
+    ss = StaticSelection(pool)
+    ss.fit(X, y)
+    pred = ss.predict(X)
+    assert np.isin(ss.classes_, pred).all()
 
 
 def test_predict_proba(example_static_selection):

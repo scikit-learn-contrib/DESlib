@@ -9,7 +9,7 @@ from deslib.des.knop import KNOP
 
 
 def test_check_estimator():
-    check_estimator(KNOP)
+    check_estimator(KNOP())
 
 
 # Test the estimate competence method receiving n samples as input

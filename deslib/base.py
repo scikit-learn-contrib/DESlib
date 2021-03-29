@@ -41,7 +41,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, needs_proba=False,
                  random_state=None, knn_classifier='knn', DSEL_perc=0.5,
-                 knne=False, n_jobs=-1):
+                 knne=False, n_jobs=-1, voting=None):
 
         self.pool_classifiers = pool_classifiers
         self.k = k
@@ -55,6 +55,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self.DSEL_perc = DSEL_perc
         self.knne = knne
         self.n_jobs = n_jobs
+        self.voting = voting
 
         # Check optional dependency
         if knn_classifier == 'faiss' and not faiss_knn_wrapper.is_available():
@@ -399,9 +400,9 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                         ["DSEL_processed_", "DSEL_data_", "DSEL_target_"])
         X = check_array(X)
         predicted_labels = np.empty(X.shape[0], dtype=np.intp)
-
-        base_predictions, base_probabilities = self._preprocess_predictions(X)
-        ind_disagreement = self._prediction_by_agreement(base_predictions,
+        is_soft = self.voting == 'soft'
+        base_preds, base_probas = self._preprocess_predictions(X, is_soft)
+        ind_disagreement = self._prediction_by_agreement(base_preds,
                                                          predicted_labels)
         if ind_disagreement.size:
 
@@ -410,7 +411,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             )
             #  First check whether there are still samples to be classified.
             if ind_ds_classifier.size:
-                self._predict_DS(X, base_predictions, base_probabilities,
+                self._predict_DS(X, base_preds, base_probas,
                                  distances, ind_disagreement,
                                  ind_ds_classifier, neighbors,
                                  predicted_labels)
@@ -435,20 +436,19 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         X = check_array(X, ensure_2d=False)
         self._check_predict_proba()
-        base_probabilities = self._predict_proba_base(X)
-        base_predictions = base_probabilities.argmax(axis=2)
 
+        base_preds, base_probas = self._preprocess_predictions(X, True)
         predicted_proba = np.zeros((X.shape[0], self.n_classes_))
-        ind_disagreement = self._prediction_by_agreement(base_predictions,
+        ind_disagreement = self._prediction_by_agreement(base_preds,
                                                          predicted_proba,
-                                                         base_probabilities)
+                                                         base_probas)
         if ind_disagreement.size:
             distances, ind_ds_classifier, neighbors = self._IH_prediction(
                     X, ind_disagreement, predicted_proba, is_proba=True
                 )
             if ind_ds_classifier.size:
                 self._predict_DS(X,
-                                 base_predictions, base_probabilities,
+                                 base_preds, base_probas,
                                  distances, ind_disagreement,
                                  ind_ds_classifier, neighbors,
                                  predicted_proba, is_proba=True)
@@ -544,7 +544,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         # Get the real indices_ of the samples that will be classified
         # using a DS algorithm.
         ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
-        if self.needs_proba or is_proba:
+        if base_probabilities is not None:
             selected_probabilities = base_probabilities[
                 ind_ds_original_matrix]
         else:
@@ -688,8 +688,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         ValueError
             If the pool of classifiers is empty.
         """
-        if self.n_classifiers_ <= 0:
-            raise ValueError("n_classifiers must be greater than zero, "
+        if self.n_classifiers_ <= 1:
+            raise ValueError("n_classifiers must be greater than one, "
                              "got {}.".format(self.n_classifiers_))
 
     def _check_predict_proba(self):

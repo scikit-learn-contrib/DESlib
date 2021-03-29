@@ -1,6 +1,8 @@
-import pytest
 import numpy as np
+import pytest
 from sklearn.linear_model import Perceptron
+from sklearn.utils.estimator_checks import check_estimator
+
 from deslib.des.probabilistic import (BaseProbabilistic,
                                       Logarithmic,
                                       Exponential,
@@ -8,27 +10,25 @@ from deslib.des.probabilistic import (BaseProbabilistic,
                                       DESKL,
                                       MinimumDifference)
 
-from sklearn.utils.estimator_checks import check_estimator
-
 
 def test_check_estimator_RRC():
-    check_estimator(RRC)
+    check_estimator(RRC())
 
 
 def test_check_estimator_DESKL():
-    check_estimator(DESKL)
+    check_estimator(DESKL())
 
 
 def test_check_estimator_Logarithmic():
-    check_estimator(Logarithmic)
+    check_estimator(Logarithmic())
 
 
 def test_check_estimator_Exponential():
-    check_estimator(Exponential)
+    check_estimator(Exponential())
 
 
 def test_check_estimator_MinimumDifference():
-    check_estimator(MinimumDifference)
+    check_estimator(MinimumDifference())
 
 
 # Test if the class is raising an error when the base classifiers do not
@@ -294,4 +294,3 @@ def test_knne_not_allowed(create_X_y):
 
     with pytest.raises(ValueError):
         BaseProbabilistic(knn_classifier='knne').fit(X, y)
-

@@ -1,8 +1,8 @@
 import numpy as np
-
-from deslib.static.oracle import Oracle
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
+
+from deslib.static.oracle import Oracle
 
 
 def test_predict(create_X_y, create_pool_classifiers):
@@ -52,3 +52,15 @@ def test_predict_proba_right_class():
     proba = oracle.predict_proba(X_test, y_test)
     probas_max = np.argmax(proba, axis=1)
     assert np.allclose(probas_max, preds)
+
+
+def test_label_encoder_base_ensemble():
+    from sklearn.ensemble import RandomForestClassifier
+    X, y = make_classification()
+    y[y == 1] = 2
+    y = y.astype(np.float)
+    pool = RandomForestClassifier().fit(X, y)
+    oracle = Oracle(pool)
+    oracle.fit(X, y)
+    pred = oracle.predict(X, y)
+    assert np.isin(oracle.classes_, pred).all()

@@ -143,6 +143,12 @@ def weighted_majority_voting_rule(votes, weights, labels_set=None):
     predicted_label : array of shape (n_samples)
         The label of each query sample predicted using the majority voting rule
     """
+    w_votes, labels_set = get_weighted_votes(votes, weights, labels_set)
+    predicted_label = labels_set[np.argmax(w_votes, axis=1)]
+    return predicted_label
+
+
+def get_weighted_votes(votes, weights, labels_set=None):
     if weights.shape != votes.shape:
         raise ValueError(
             'The shape of the arrays votes and weights should be the '
@@ -154,12 +160,35 @@ def weighted_majority_voting_rule(votes, weights, labels_set=None):
     n_samples = votes.shape[0]
     w_votes = np.zeros((len(labels_set), n_samples))
     ma_weights = weights.view(np.ma.MaskedArray)
+
     for ind, label in enumerate(labels_set):
         ma_weights.mask = votes != label
         w_votes[ind, :] = ma_weights.sum(axis=1)
 
-    predicted_label = labels_set[np.argmax(w_votes, axis=0)]
-    return predicted_label
+    return w_votes.T, labels_set
+
+
+def sum_votes_per_class(predictions, n_classes):
+    """Sum the number of votes for each class. Accepts masked arrays as input.
+
+    Parameters
+    ----------
+    predictions : array of shape (n_samples, n_classifiers),
+        The votes obtained by each classifier for each sample. Can be a masked
+        array.
+
+    n_classes : int
+        Number of classes.
+
+    Returns
+    -------
+    summed_votes : array of shape (n_samples, n_classes)
+        Summation of votes for each class
+    """
+    votes = np.zeros((predictions.shape[0], n_classes), dtype=np.int)
+    for label in range(n_classes):
+        votes[:, label] = np.sum(predictions == label, axis=1)
+    return votes
 
 
 def _get_ensemble_probabilities(classifier_ensemble, X):

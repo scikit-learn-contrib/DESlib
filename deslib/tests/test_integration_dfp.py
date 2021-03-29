@@ -1,5 +1,5 @@
-import pytest
 import numpy as np
+import pytest
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -13,6 +13,7 @@ from deslib.dcs.mcb import MCB
 from deslib.dcs.mla import MLA
 from deslib.dcs.ola import OLA
 from deslib.dcs.rank import Rank
+from deslib.des import DESKL
 # DES techniques
 from deslib.des.des_knn import DESKNN
 from deslib.des.des_p import DESP
@@ -20,7 +21,6 @@ from deslib.des.knop import KNOP
 from deslib.des.knora_e import KNORAE
 from deslib.des.knora_u import KNORAU
 from deslib.des.meta_des import METADES
-from deslib.des import DESKL
 
 
 def setup_classifiers():
@@ -43,7 +43,7 @@ def setup_classifiers():
                                                         test_size=0.5,
                                                         random_state=rng)
     # Considering a pool composed of 10 base classifiers
-    pool_classifiers = RandomForestClassifier(n_estimators=10,
+    pool_classifiers = RandomForestClassifier(n_estimators=10, n_jobs=-1,
                                               random_state=rng, max_depth=10)
     pool_classifiers.fit(X_train, y_train)
     return pool_classifiers, X_dsel, y_dsel, X_test, y_test
@@ -177,7 +177,7 @@ def test_deskl():
 def test_kne_proba():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    kne = KNORAE(pool_classifiers, DFP=True)
+    kne = KNORAE(pool_classifiers, DFP=True, voting='soft')
     kne.fit(X_dsel, y_dsel)
     probas = kne.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/kne_proba_DFP.npy')
@@ -187,7 +187,7 @@ def test_kne_proba():
 def test_desp_proba():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    desp = DESP(pool_classifiers, DFP=True)
+    desp = DESP(pool_classifiers, DFP=True, voting='soft')
     desp.fit(X_dsel, y_dsel)
     probas = desp.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/desp_proba_DFP.npy')
@@ -218,7 +218,7 @@ def test_mcb_proba():
 def test_desknn_proba():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    desknn = DESKNN(pool_classifiers, DFP=True)
+    desknn = DESKNN(pool_classifiers, DFP=True, voting='soft')
     desknn.fit(X_dsel, y_dsel)
     probas = desknn.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/desknn_probas_DFP.npy')

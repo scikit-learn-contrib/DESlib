@@ -1,13 +1,13 @@
 import numpy as np
 import pytest
 from sklearn.linear_model import Perceptron
+from sklearn.utils.estimator_checks import check_estimator
 
 from deslib.dcs.lca import LCA
-from sklearn.utils.estimator_checks import check_estimator
 
 
 def test_check_estimator():
-    check_estimator(LCA)
+    check_estimator(LCA())
 
 
 def test_estimate_competence_batch(example_estimate_competence):

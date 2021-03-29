@@ -12,7 +12,7 @@ from deslib.static.single_best import SingleBest
 
 
 def test_check_estimator():
-    check_estimator(SingleBest)
+    check_estimator(SingleBest())
 
 
 # Testing if the fit function selects the correct classifier (the one with
@@ -82,6 +82,18 @@ def test_label_encoder(create_label_encoder_test):
     sb = SingleBest(pool).fit(X, y)
     pred = sb.predict(X)
     assert np.array_equal(pred, y)
+
+
+def test_label_encoder_base_ensemble():
+    from sklearn.ensemble import RandomForestClassifier
+    X, y = make_classification()
+    y[y == 1] = 2
+    y = y.astype(np.float)
+    pool = RandomForestClassifier().fit(X, y)
+    sb = SingleBest(pool)
+    sb.fit(X, y)
+    pred = sb.predict(X)
+    assert np.isin(sb.classes_, pred).all()
 
 
 def test_different_scorer():

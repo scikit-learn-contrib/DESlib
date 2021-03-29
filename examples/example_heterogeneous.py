@@ -10,32 +10,31 @@ Gaussian Naive Bayes, Perceptron, k-NN, Decision tree and Gaussian SVM. We
 also compare the result of DS methods with the voting classifier from sklearn.
 """
 import numpy as np
-
+from sklearn.calibration import CalibratedClassifierCV
 # Importing dataset and preprocessing routines
 from sklearn.datasets import fetch_openml
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import VotingClassifier
 # Base classifier models:
 from sklearn.linear_model import Perceptron
-from sklearn.calibration import CalibratedClassifierCV
+from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import VotingClassifier
 
+from deslib.dcs import MCB
 # Example of DCS techniques
 from deslib.dcs import OLA
-from deslib.dcs import MCB
+from deslib.des import DESP
 # Example of DES techniques
 from deslib.des import KNORAE
-from deslib.des import DESP
 from deslib.des import KNORAU
 from deslib.des import METADES
 from deslib.static import StackedClassifier
 
 rng = np.random.RandomState(42)
-data = fetch_openml(name='australian', cache=False)
+data = fetch_openml(name='phoneme', cache=False, as_frame=False)
 X = data.data
 y = data.target
 
@@ -60,8 +59,9 @@ model_perceptron.fit(X_train, y_train)
 model_svc = SVC(probability=True, gamma='auto',
                 random_state=rng).fit(X_train, y_train)
 model_bayes = GaussianNB().fit(X_train, y_train)
-model_tree = DecisionTreeClassifier(random_state=rng).fit(X_train, y_train)
-model_knn = KNeighborsClassifier(n_neighbors=1).fit(X_train, y_train)
+model_tree = DecisionTreeClassifier(random_state=rng,
+                                    max_depth=10).fit(X_train, y_train)
+model_knn = KNeighborsClassifier(n_neighbors=7).fit(X_train, y_train)
 
 pool_classifiers = [model_perceptron,
                     model_svc,
@@ -82,7 +82,7 @@ model_voting = VotingClassifier(estimators=voting_classifiers).fit(
 knorau = KNORAU(pool_classifiers)
 kne = KNORAE(pool_classifiers)
 desp = DESP(pool_classifiers)
-metades = METADES(pool_classifiers, mode='hybrid')
+metades = METADES(pool_classifiers)
 # DCS techniques
 ola = OLA(pool_classifiers)
 mcb = MCB(pool_classifiers)

@@ -1,13 +1,15 @@
-import pytest
 import numpy as np
-from deslib.static.stacked import StackedClassifier
-from sklearn.utils.estimator_checks import check_estimator
+import pytest
+from sklearn.datasets import make_classification
 from sklearn.linear_model import Perceptron
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.utils.estimator_checks import check_estimator
+
+from deslib.static.stacked import StackedClassifier
 
 
 def test_check_estimator():
-    check_estimator(StackedClassifier)
+    check_estimator(StackedClassifier())
 
 
 # Test if the class is raising an error when the base classifiers do not
@@ -47,6 +49,18 @@ def test_label_encoder():
     assert np.array_equal(pred, y)
 
 
+def test_label_encoder_base_ensemble():
+    from sklearn.ensemble import RandomForestClassifier
+    X, y = make_classification()
+    y[y == 1] = 2
+    y = y.astype(np.float)
+    pool = RandomForestClassifier().fit(X, y)
+    st = StackedClassifier(pool)
+    st.fit(X, y)
+    pred = st.predict(X)
+    assert np.isin(st.classes_, pred).all()
+
+
 def test_one_class_meta_dataset(create_X_y):
     X, y = create_X_y
     pool = [DecisionTreeClassifier().fit(X, y) for _ in range(5)]
@@ -71,3 +85,10 @@ def test_passthrough_false(create_X_y):
     stacked = StackedClassifier(pool, passthrough=False)
     stacked.fit(X, y)
     assert stacked.meta_classifier_.coef_.shape == (1, 5)
+
+
+def test_single_model_pool(create_X_y):
+    X, y = create_X_y
+    pool = [DecisionTreeClassifier().fit(X, y)]
+    with pytest.raises(ValueError):
+        StackedClassifier(pool_classifiers=pool).fit(X, y)

@@ -7,8 +7,9 @@
 import warnings
 
 import numpy as np
-from deslib.des.base import BaseDES
 from sklearn.naive_bayes import MultinomialNB
+
+from deslib.des.base import BaseDES
 
 
 class METADES(BaseDES):
@@ -109,6 +110,12 @@ class METADES(BaseDES):
         Note: This parameter is only used if the pool of classifier is None or
         unfitted.
 
+    voting : {'hard', 'soft'}, default='hard'
+            If 'hard', uses predicted class labels for majority rule voting.
+            Else if 'soft', predicts the class label based on the argmax of
+            the sums of the predicted probabilities, which is recommended for
+            an ensemble of well-calibrated classifiers.
+
     n_jobs : int, default=-1
         The number of parallel jobs to run. None means 1 unless in
         a joblib.parallel_backend context. -1 means using all processors.
@@ -135,7 +142,7 @@ class METADES(BaseDES):
                  Hc=1.0, selection_threshold=0.5, mode='selection',
                  DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
                  random_state=None, knn_classifier='knn', knne=False,
-                 DSEL_perc=0.5, n_jobs=-1):
+                 DSEL_perc=0.5, n_jobs=-1, voting='hard'):
 
         super(METADES, self).__init__(pool_classifiers=pool_classifiers,
                                       k=k,
@@ -149,7 +156,8 @@ class METADES(BaseDES):
                                       knn_classifier=knn_classifier,
                                       knne=knne,
                                       DSEL_perc=DSEL_perc,
-                                      n_jobs=n_jobs)
+                                      n_jobs=n_jobs,
+                                      voting=voting)
 
         self.meta_classifier = meta_classifier
         self.Kp = Kp

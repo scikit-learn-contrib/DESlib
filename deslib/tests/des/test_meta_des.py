@@ -12,7 +12,7 @@ from deslib.des.meta_des import METADES
 
 
 def test_check_estimator():
-    check_estimator(METADES)
+    check_estimator(METADES())
 
 
 # ---------------------- Testing Hyper-parameters -----------------------

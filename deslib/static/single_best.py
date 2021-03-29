@@ -113,7 +113,7 @@ class SingleBest(BaseStaticEnsemble):
         X = check_array(X)
         self._check_is_fitted()
         predicted_labels = self._encode_base_labels(self.best_clf_.predict(X))
-        return self.classes_.take(predicted_labels)
+        return self.classes_.take(predicted_labels.astype(np.int))
 
     def predict_proba(self, X):
         """Estimates the posterior probabilities for each class for each sample

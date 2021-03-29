@@ -1,15 +1,13 @@
-import pytest
 import numpy as np
+import pytest
 from sklearn.linear_model import Perceptron
+from sklearn.utils.estimator_checks import check_estimator
 
 from deslib.dcs.mla import MLA
 
 
-from sklearn.utils.estimator_checks import check_estimator
-
-
 def test_check_estimator():
-    check_estimator(MLA)
+    check_estimator(MLA())
 
 
 # Should always be 1.0 since the supports for the correct class is always 1.
