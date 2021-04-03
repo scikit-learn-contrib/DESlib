@@ -415,11 +415,12 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             # Predict with DS - Check if there are still samples to be labeled.
             if ind_ds_classifier.size:
                 DFP_mask = self._get_DFP_mask(neighbors)
-                inds, sel_preds, sel_probas = self.prepare_indices(
+                inds, sel_preds, sel_probas = self._prepare_indices_DS(
                     base_preds, base_probas, ind_disagreement,
                     ind_ds_classifier)
                 preds_ds = self.classify_with_ds(None, sel_preds, sel_probas,
-                                                 neighbors, distances, DFP_mask)
+                                                 neighbors, distances,
+                                                 DFP_mask)
                 preds[inds] = preds_ds
 
         return self.classes_.take(preds)
@@ -454,7 +455,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             # Predict with DS - Check if there are still samples to be labeled.
             if ind_ds_classifier.size:
                 DFP_mask = self._get_DFP_mask(neighbors)
-                inds, sel_preds, sel_probas = self.prepare_indices(
+                inds, sel_preds, sel_probas = self._prepare_indices_DS(
                     base_preds, base_probas, ind_disagreement,
                     ind_ds_classifier)
                 probas_ds = self.predict_proba_with_ds(None, sel_preds,
@@ -523,18 +524,18 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             distances = np.delete(distances, ind_easy, axis=0)
         return distances, neighbors
 
-    def prepare_indices(self, base_predictions, base_probabilities,
-                        ind_disagreement, ind_ds_classifier):
+    def _prepare_indices_DS(self, base_predictions, base_probabilities,
+                            ind_disagreement, ind_ds_classifier):
         # Get the real indices_ of the samples that will be classified
         # using a DS algorithm.
         ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
         if base_probabilities is not None:
-            selected_probabilities = base_probabilities[
+            selected_probas = base_probabilities[
                 ind_ds_original_matrix]
         else:
-            selected_probabilities = None
-        selected_predictions = base_predictions[ind_ds_original_matrix]
-        return ind_ds_original_matrix, selected_predictions, selected_probabilities
+            selected_probas = None
+        selected_preds = base_predictions[ind_ds_original_matrix]
+        return ind_ds_original_matrix, selected_preds, selected_probas
 
     def _get_DFP_mask(self, neighbors):
         if self.DFP:

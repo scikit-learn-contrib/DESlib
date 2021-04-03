@@ -86,4 +86,3 @@ def test_aposteriori():
                                with_IH=True, IH_rate=0.1)
     a_posteriori.fit(X_dsel, y_dsel)
     assert np.isclose(a_posteriori.score(X_test, y_test), 0.8333333333333334)
-

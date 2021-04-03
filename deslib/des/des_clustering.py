@@ -405,7 +405,6 @@ class DESClustering(BaseDS):
         if self.voting == 'soft':
             self._check_predict_proba()
 
-
     def get_scores_(self, sample_indices):
 
         def precision_function(label_predicted):
