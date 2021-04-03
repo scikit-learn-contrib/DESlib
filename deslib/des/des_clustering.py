@@ -233,7 +233,8 @@ class DESClustering(BaseDS):
             self.indices_[cluster_index, :] = performance_indices[
                 diversity_indices]
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, neighbors, distances=None,
+                            predictions=None):
         """Get the competence estimates of each base classifier :math:`c_{i}`
         for the classification of the query sample.
 
@@ -255,11 +256,11 @@ class DESClustering(BaseDS):
         competences : array = [n_samples, n_classifiers]
                       The competence level estimated for each base classifier.
         """
-        cluster_index = self.clustering_.predict(query)
-        competences = self.performance_cluster_[cluster_index][:]
+        # cluster_index = self.clustering_.predict(query)
+        competences = self.performance_cluster_[neighbors][:]
         return competences
 
-    def select(self, query):
+    def select(self, competences):
         """Select an ensemble with the most accurate and most diverse
         classifier for the classification of the query.
 
@@ -269,8 +270,8 @@ class DESClustering(BaseDS):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
+        competences : array of shape (n_samples)
+            Array containing closest cluster index.
 
         Returns
         -------
@@ -278,8 +279,7 @@ class DESClustering(BaseDS):
             Indices of the selected base classifier for each test example.
 
         """
-        cluster_index = self.clustering_.predict(query)
-        selected_classifiers = self.indices_[cluster_index, :]
+        selected_classifiers = self.indices_[competences, :]
         return selected_classifiers
 
     def classify_with_ds(self, query, predictions, probabilities=None,
@@ -348,7 +348,8 @@ class DESClustering(BaseDS):
         predicted_proba : array of shape (n_samples, n_classes)
             Posterior probabilities estimates for each test example.
         """
-        selected_classifiers = self.select(query.astype(np.double))
+        selected_classifiers = self.select(neighbors)
+
         if self.voting == 'hard':
             votes = predictions[np.arange(predictions.shape[0])[:, None],
                                 selected_classifiers]
