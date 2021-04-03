@@ -78,16 +78,12 @@ def test_estimate_competence(create_pool_classifiers,
 
     X, y = example_estimate_competence[0:2]
     clustering_test.fit(X, y)
-    clustering_test.clustering_.predict = MagicMock(return_value=0)
-    _, competence_region = clustering_test._get_region_competence(query)
-    competences = clustering_test.estimate_competence(query, competence_region)
+    competences = clustering_test.estimate_competence(query, 0)
 
     assert np.array_equal(competences,
                           clustering_test.performance_cluster_[0, :])
 
-    clustering_test.clustering_.predict = MagicMock(return_value=1)
-    _, competence_region = clustering_test._get_region_competence(query)
-    competences = clustering_test.estimate_competence(query, competence_region)
+    competences = clustering_test.estimate_competence(query, 1)
     assert np.array_equal(competences,
                           clustering_test.performance_cluster_[1, :])
 
@@ -112,9 +108,7 @@ def test_fit_clusters_less_diverse(example_estimate_competence,
 
 
 def test_select():
-    query = np.atleast_2d([1, -1])
     clustering_test = DESClustering()
-
     clustering_test.clustering_ = KMeans()
     roc = [0]
     clustering_test.indices_ = np.array([[0, 2], [1, 4]])
