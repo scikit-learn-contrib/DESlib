@@ -219,10 +219,7 @@ def test_predict_proba_all_agree(example_estimate_competence,
     ds_test = BaseDS(create_pool_all_agree)
     ds_test.fit(X, y)
     ds_test.DSEL_scores = dsel_scores
-    backup_all_agree = BaseDS._all_classifier_agree
     proba = ds_test.predict_proba(query)
-
-    BaseDS._all_classifier_agree = backup_all_agree
     assert np.allclose(proba, np.atleast_2d([0.61, 0.39]))
 
 

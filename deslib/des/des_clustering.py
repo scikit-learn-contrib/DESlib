@@ -93,16 +93,16 @@ class DESClustering(BaseDS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers=None, clustering=None, with_IH=False,
-                 safe_k=None, IH_rate=0.30, pct_accuracy=0.5, voting='hard',
+    def __init__(self, pool_classifiers=None, clustering=None,
+                 pct_accuracy=0.5, voting='hard',
                  pct_diversity=0.33, more_diverse=True, metric_diversity='DF',
                  metric_performance='accuracy_score', n_clusters=5,
                  random_state=None, DSEL_perc=0.5, n_jobs=-1):
 
         super(DESClustering, self).__init__(pool_classifiers=pool_classifiers,
-                                            with_IH=with_IH,
-                                            safe_k=safe_k,
-                                            IH_rate=IH_rate,
+                                            with_IH=False,
+                                            safe_k=None,
+                                            IH_rate=None,
                                             random_state=random_state,
                                             DSEL_perc=DSEL_perc,
                                             n_jobs=n_jobs,
@@ -111,7 +111,6 @@ class DESClustering(BaseDS):
         self.metric_diversity = metric_diversity
         self.metric_performance = metric_performance
         self.voting = voting
-
         self.clustering = clustering
         self.pct_accuracy = pct_accuracy
         self.pct_diversity = pct_diversity
