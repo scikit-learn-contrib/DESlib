@@ -100,9 +100,6 @@ class DESClustering(BaseDS):
                  random_state=None, DSEL_perc=0.5, n_jobs=-1):
 
         super(DESClustering, self).__init__(pool_classifiers=pool_classifiers,
-                                            with_IH=False,
-                                            safe_k=None,
-                                            IH_rate=None,
                                             random_state=random_state,
                                             DSEL_perc=DSEL_perc,
                                             n_jobs=n_jobs,
