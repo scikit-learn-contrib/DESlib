@@ -400,9 +400,9 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                         ["DSEL_processed_", "DSEL_data_", "DSEL_target_"])
         X = check_array(X)
         preds = np.empty(X.shape[0], dtype=np.intp)
-        is_soft = self.voting == 'soft'
+        need_proba = self.needs_proba or self.voting == 'soft'
 
-        base_preds, base_probas = self._preprocess_predictions(X, is_soft)
+        base_preds, base_probas = self._preprocess_predictions(X, need_proba)
         # predict all agree
         ind_disagreement, ind_all_agree = self._split_agreement(base_preds)
         if ind_all_agree.size:
@@ -412,13 +412,14 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             distances, ind_ds_classifier, neighbors = self._IH_prediction(
                 X, ind_disagreement, preds, is_proba=False
             )
-            # Predict DS
-            # First check whether there are still samples to be classified.
+            # Predict DS - Check if there are still samples to be classified
             if ind_ds_classifier.size:
-                self._predict_DS(X, base_preds, base_probas,
-                                 distances, ind_disagreement,
-                                 ind_ds_classifier, neighbors,
-                                 preds)
+                DFP_mask, sel_probas, sel_preds, inds = self._predict_DS(base_preds,
+                        base_probas, ind_disagreement, ind_ds_classifier,
+                        neighbors)
+                preds_ds = self.classify_with_ds(None, sel_preds, sel_probas,
+                                                 neighbors, distances, DFP_mask)
+                preds[inds] = preds_ds
 
         return self.classes_.take(preds)
 
@@ -448,19 +449,21 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         if ind_disagreement.size:
             distances, ind_ds_classifier, neighbors = self._IH_prediction(
-                    X, ind_disagreement, probas, is_proba=True
-                )
-            if ind_ds_classifier.size:
-                self._predict_DS(X,
-                                 base_preds, base_probas,
-                                 distances, ind_disagreement,
-                                 ind_ds_classifier, neighbors,
-                                 probas, is_proba=True)
+                    X, ind_disagreement, probas, is_proba=True)
 
+            if ind_ds_classifier.size:
+                DFP_mask, sel_probas, sel_preds, inds = self._predict_DS(
+                    base_preds, base_probas, ind_disagreement,
+                    ind_ds_classifier, neighbors)
+                probas_ds = self.predict_proba_with_ds(None, sel_preds,
+                                                       sel_probas,
+                                                       neighbors, distances,
+                                                       DFP_mask)
+                probas[inds] = probas_ds
         return probas
 
-    def _preprocess_predictions(self, X, req_proba=False):
-        if self.needs_proba or req_proba:
+    def _preprocess_predictions(self, X, req_proba):
+        if req_proba:
             base_probabilities = self._predict_proba_base(X)
             base_predictions = base_probabilities.argmax(axis=2)
         else:
@@ -478,18 +481,10 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         X_DS = X[ind_disagree, :]
         distances, region_competence = self._get_region_competence(X_DS)
         if self.with_IH:
-            if hasattr(self, "clustering_"):
-                knn = KNeighborsClassifier(n_neighbors=self.safe_k)
-                knn.fit(self.DSEL_data_, self.DSEL_target_)
-                dist, neighbors = knn.kneighbors(X_DS)
-            else:
-                neighbors = region_competence
-
-            ind_hard, ind_easy = self._split_easy_samples(neighbors)
+            ind_hard, ind_easy = self._split_easy_samples(region_competence)
             distances, region_competence = self._predict_easy_samples(
                 X_DS, distances, ind_disagree, ind_easy,
-                neighbors, predicted_proba, is_proba
-            )
+                region_competence, predicted_proba, is_proba)
         else:
             # IH was not considered. So all samples go to predict with DS
             ind_hard = np.arange(ind_disagree.size)
@@ -526,9 +521,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             distances = np.delete(distances, ind_easy, axis=0)
         return distances, neighbors
 
-    def _predict_DS(self, X, base_predictions, base_probabilities,
-                    distances, ind_disagreement, ind_ds_classifier, neighbors,
-                    predicted, is_proba=False):
+    def _predict_DS(self, base_predictions, base_probabilities,
+                    ind_disagreement, ind_ds_classifier, neighbors):
 
         if self.DFP:
             DFP_mask = frienemy_pruning_preprocessed(neighbors,
@@ -545,17 +539,10 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 ind_ds_original_matrix]
         else:
             selected_probabilities = None
+        selected_predictions = base_predictions[ind_ds_original_matrix]
 
-        args = [X[ind_disagreement][ind_ds_classifier],
-                base_predictions[ind_ds_original_matrix],
-                selected_probabilities,
-                neighbors, distances, DFP_mask]
-        if is_proba:
-            preds = self.predict_proba_with_ds(*args)
-        else:
-            preds = self.classify_with_ds(*args)
-
-        predicted[ind_ds_original_matrix] = preds
+        return DFP_mask, selected_probabilities, \
+               selected_predictions, ind_ds_original_matrix
 
     def _preprocess_dsel(self):
         """Compute the prediction of each base classifier for

@@ -217,8 +217,8 @@ class DESKNN(BaseDS):
         targets = self.DSEL_target_[neighbors]
 
         # TODO: optimize this part with numpy instead of for loops
-        diversity = np.zeros((query.shape[0], self.n_classifiers_))
-        for sample_idx in range(query.shape[0]):
+        diversity = np.zeros((neighbors.shape[0], self.n_classifiers_))
+        for sample_idx in range(neighbors.shape[0]):
             this_diversity = compute_pairwise_diversity(targets[sample_idx, :],
                                                         predicted_matrix[
                                                         sample_idx, :, :],

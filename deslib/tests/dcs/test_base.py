@@ -269,22 +269,3 @@ def test_predict_proba_instance_all(competences, expected,
     predicted_proba = dcs_test.predict_proba_with_ds(query, predictions,
                                                      probabilities)
     assert np.isclose(predicted_proba, expected).all()
-
-
-def test_classify_with_ds_diff_sizes():
-    query = np.ones((10, 2))
-    predictions = np.ones((5, 3))
-    dcs_test = BaseDCS()
-
-    with pytest.raises(ValueError):
-        dcs_test.classify_with_ds(query, predictions)
-
-
-def test_proba_with_ds_diff_sizes():
-    query = np.ones((10, 2))
-    predictions = np.ones((5, 3))
-    probabilities = np.ones((5, 3, 2))
-    dcs_test = BaseDCS()
-
-    with pytest.raises(ValueError):
-        dcs_test.predict_proba_with_ds(query, predictions, probabilities)

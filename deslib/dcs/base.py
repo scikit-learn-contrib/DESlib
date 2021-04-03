@@ -189,18 +189,18 @@ class BaseDCS(BaseDS):
         predicted_label : array of shape (n_samples)
             The predicted label for each query
         """
-        if query.ndim < 2:
-            query = query.reshape(1, -1)
+        # if query.ndim < 2:
+        #     query = query.reshape(1, -1)
 
         if predictions.ndim < 2:
             predictions = predictions.reshape(1, -1)
 
-        if query.shape[0] != predictions.shape[0]:
-            raise ValueError(
-                'The arrays query and predictions must have the same shape. '
-                'query.shape is {}'
-                'and predictions.shape is {}'.format(query.shape,
-                                                     predictions.shape))
+        # if query.shape[0] != predictions.shape[0]:
+        #     raise ValueError(
+        #         'The arrays query and predictions must have the same shape. '
+        #         'query.shape is {}'
+        #         'and predictions.shape is {}'.format(query.shape,
+        #                                              predictions.shape))
 
         competences = self.estimate_competence(query, neighbors,
                                                distances=distances,
@@ -259,12 +259,12 @@ class BaseDCS(BaseDS):
         predicted_proba: array of shape (n_samples, n_classes)
             Posterior probabilities estimates for each test example.
         """
-        if query.shape[0] != probabilities.shape[0]:
-            raise ValueError(
-                'The arrays query and predictions must have the same number '
-                'of samples. query.shape is {}'
-                'and predictions.shape is {}'.format(query.shape,
-                                                     predictions.shape))
+        # if query.shape[0] != probabilities.shape[0]:
+        #     raise ValueError(
+        #         'The arrays query and predictions must have the same number '
+        #         'of samples. query.shape is {}'
+        #         'and predictions.shape is {}'.format(query.shape,
+        #                                              predictions.shape))
 
         competences = self.estimate_competence(query, neighbors,
                                                distances=distances,
