@@ -700,8 +700,12 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         
         labels = np.vstack(labels)
         
+        print(np.vstack(labels))
+
         predictions = Parallel(n_jobs=self.n_jobs, verbose=10)(delayed(
-            self._encode_base_labels)(labels[index,:]) for index, _ in enumerate(self.pool_classifiers_))
+            self._encode_base_labels)(labels[index]) for index, _ in enumerate(self.pool_classifiers_))
+
+        print(np.vstack(predictions))
 
         return np.vstack(predictions)
 
@@ -726,6 +730,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         delayed_probabilities = [delayed(clf.predict_proba)(X) for clf in self.pool_classifiers_]
         probabilities = Parallel(n_jobs=self.n_jobs, verbose=10)(delayed_probabilities)
+
+        print(probabilities)
 
         return np.vstack(probabilities)
 
