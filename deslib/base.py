@@ -407,12 +407,12 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         ind_disagreement, ind_all_agree = self._split_agreement(base_preds)
         if ind_all_agree.size:
             preds[ind_all_agree] = base_preds[ind_all_agree, 0]
-        # predict IH
+        # predict with IH
         if ind_disagreement.size:
             distances, ind_ds_classifier, neighbors = self._IH_prediction(
                 X, ind_disagreement, preds, is_proba=False
             )
-            # Predict DS - Check if there are still samples to be classified
+            # Predict with DS - Check if there are still samples to be labeled.
             if ind_ds_classifier.size:
                 DFP_mask, sel_probas, sel_preds, inds = self._predict_DS(base_preds,
                         base_probas, ind_disagreement, ind_ds_classifier,
@@ -441,16 +441,16 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self._check_predict_proba()
         X = check_array(X, ensure_2d=False)
         probas = np.zeros((X.shape[0], self.n_classes_))
-
         base_preds, base_probas = self._preprocess_predictions(X, True)
+        # predict all agree
         ind_disagreement, ind_all_agree = self._split_agreement(base_preds)
         if ind_all_agree.size:
             probas[ind_all_agree] = base_probas[ind_all_agree].mean(axis=1)
-
+        # predict with IH
         if ind_disagreement.size:
             distances, ind_ds_classifier, neighbors = self._IH_prediction(
                     X, ind_disagreement, probas, is_proba=True)
-
+            # Predict with DS - Check if there are still samples to be labeled.
             if ind_ds_classifier.size:
                 DFP_mask, sel_probas, sel_preds, inds = self._predict_DS(
                     base_preds, base_probas, ind_disagreement,
