@@ -61,6 +61,12 @@ class RRC(BaseProbabilistic):
         Note: This parameter is only used if the pool of classifier is None or
         unfitted.
 
+    voting : {'hard', 'soft'}, default='hard'
+            If 'hard', uses predicted class labels for majority rule voting.
+            Else if 'soft', predicts the class label based on the argmax of
+            the sums of the predicted probabilities, which is recommended for
+            an ensemble of well-calibrated classifiers.
+
     n_jobs : int, default=-1
         The number of parallel jobs to run. None means 1 unless in
         a joblib.parallel_backend context. -1 means using all processors.
@@ -79,7 +85,7 @@ class RRC(BaseProbabilistic):
     """
 
     def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,
-                 safe_k=None, IH_rate=0.30, mode='selection',
+                 safe_k=None, IH_rate=0.30, mode='selection', voting='hard',
                  random_state=None, knn_classifier='knn', DSEL_perc=0.5,
                  n_jobs=-1):
 
@@ -93,7 +99,8 @@ class RRC(BaseProbabilistic):
                                   random_state=random_state,
                                   knn_classifier=knn_classifier,
                                   DSEL_perc=DSEL_perc,
-                                  n_jobs=n_jobs)
+                                  n_jobs=n_jobs,
+                                  voting=voting)
 
         self.selection_threshold = None
 

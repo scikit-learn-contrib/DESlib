@@ -34,7 +34,7 @@ from deslib.des import METADES
 from deslib.static import StackedClassifier
 
 rng = np.random.RandomState(42)
-data = fetch_openml(name='australian', cache=False, as_frame=False)
+data = fetch_openml(name='phoneme', cache=False, as_frame=False)
 X = data.data
 y = data.target
 
@@ -59,8 +59,9 @@ model_perceptron.fit(X_train, y_train)
 model_svc = SVC(probability=True, gamma='auto',
                 random_state=rng).fit(X_train, y_train)
 model_bayes = GaussianNB().fit(X_train, y_train)
-model_tree = DecisionTreeClassifier(random_state=rng).fit(X_train, y_train)
-model_knn = KNeighborsClassifier(n_neighbors=1).fit(X_train, y_train)
+model_tree = DecisionTreeClassifier(random_state=rng,
+                                    max_depth=10).fit(X_train, y_train)
+model_knn = KNeighborsClassifier(n_neighbors=7).fit(X_train, y_train)
 
 pool_classifiers = [model_perceptron,
                     model_svc,
@@ -81,7 +82,7 @@ model_voting = VotingClassifier(estimators=voting_classifiers).fit(
 knorau = KNORAU(pool_classifiers)
 kne = KNORAE(pool_classifiers)
 desp = DESP(pool_classifiers)
-metades = METADES(pool_classifiers, mode='hybrid')
+metades = METADES(pool_classifiers)
 # DCS techniques
 ola = OLA(pool_classifiers)
 mcb = MCB(pool_classifiers)

@@ -42,7 +42,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, needs_proba=False,
                  random_state=None, knn_classifier='knn', DSEL_perc=0.5,
-                 knne=False, n_jobs=-1):
+                 knne=False, n_jobs=-1, voting=None):
 
         self.pool_classifiers = pool_classifiers
         self.k = k
@@ -56,6 +56,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self.DSEL_perc = DSEL_perc
         self.knne = knne
         self.n_jobs = n_jobs
+        self.voting = voting
+
 
         # Check optional dependency
         if knn_classifier == 'faiss' and not faiss_knn_wrapper.is_available():
@@ -421,7 +423,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         n_samples = X.shape[0]
         predicted_labels = np.empty(n_samples, dtype=np.intp)
 
-        if self.needs_proba:
+        if self.needs_proba or self.voting == 'soft':
             base_probabilities = self._predict_proba_base(X)
             base_predictions = base_probabilities.argmax(axis=2)
         else:
@@ -521,7 +523,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 # using a DS algorithm.
                 ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
 
-                if self.needs_proba:
+                if self.needs_proba or self.voting == 'soft':
                     selected_probabilities = base_probabilities[
                         ind_ds_original_matrix]
                 else:

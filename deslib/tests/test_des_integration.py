@@ -1,3 +1,4 @@
+import itertools
 import warnings
 
 import numpy as np
@@ -49,6 +50,7 @@ def test_grid_search():
 
 
 knn_methods = [None]
+voting = ['hard', 'soft']
 
 if faiss_knn_wrapper.is_available():
     # knn_methods.append(faiss_knn_wrapper.FaissKNNClassifier)
@@ -139,20 +141,22 @@ def test_knorau(knn_methods):
     assert np.isclose(knorau.score(X_test, y_test), 0.9787234042553191)
 
 
-@pytest.mark.parametrize('knn_methods', knn_methods)
-def test_kne(knn_methods):
+@pytest.mark.parametrize('knn_methods, voting',
+                         itertools.product(knn_methods, voting))
+def test_kne(knn_methods, voting):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    kne = KNORAE(pool_classifiers, knn_classifier=knn_methods)
+    kne = KNORAE(pool_classifiers, knn_classifier=knn_methods, voting=voting)
     kne.fit(X_dsel, y_dsel)
     assert np.isclose(kne.score(X_test, y_test), 0.9787234042553191)
 
 
-@pytest.mark.parametrize('knn_methods', knn_methods)
-def test_desp(knn_methods):
+@pytest.mark.parametrize('knn_methods, voting',
+                         itertools.product(knn_methods, voting))
+def test_desp(knn_methods, voting):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    desp = DESP(pool_classifiers, knn_classifier=knn_methods)
+    desp = DESP(pool_classifiers, knn_classifier=knn_methods, voting=voting)
     desp.fit(X_dsel, y_dsel)
     assert np.isclose(desp.score(X_test, y_test), 0.9787234042553191)
 
@@ -194,13 +198,11 @@ def test_mcb(knn_methods):
     assert np.isclose(mcb.score(X_test, y_test), 0.9627659574468085)
 
 
-@pytest.mark.parametrize('knn_methods', knn_methods)
-def test_apriori(knn_methods):
+def test_apriori():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    apriori = APriori(pool_classifiers, random_state=rng,
-                      knn_classifier=knn_methods)
+    apriori = APriori(pool_classifiers, random_state=rng)
     apriori.fit(X_dsel, y_dsel)
     assert np.isclose(apriori.score(X_test, y_test), 0.973404255319149)
 
@@ -214,31 +216,31 @@ def test_rank(knn_methods):
     assert np.isclose(rank.score(X_test, y_test), 0.9787234042553191)
 
 
-@pytest.mark.parametrize('knn_methods', knn_methods)
-def test_aposteriori(knn_methods):
+def test_aposteriori():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
 
-    a_posteriori = APosteriori(pool_classifiers, random_state=rng,
-                               knn_classifier=knn_methods)
+    a_posteriori = APosteriori(pool_classifiers, random_state=rng)
     a_posteriori.fit(X_dsel, y_dsel)
     assert np.isclose(a_posteriori.score(X_test, y_test), 0.973404255319149)
 
 
-@pytest.mark.parametrize('knn_methods', knn_methods)
-def test_meta(knn_methods):
+@pytest.mark.parametrize('knn_methods, voting',
+                         itertools.product(knn_methods, voting))
+def test_meta(knn_methods, voting):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    meta_des = METADES(pool_classifiers, knn_classifier=knn_methods)
+    meta_des = METADES(pool_classifiers,
+                       knn_classifier=knn_methods, voting=voting)
     meta_des.fit(X_dsel, y_dsel)
     assert np.isclose(meta_des.score(X_test, y_test), 0.9787234042553191)
 
 
-@pytest.mark.parametrize('knn_methods', knn_methods)
-def test_rrc(knn_methods):
+@pytest.mark.parametrize('voting', voting)
+def test_rrc(voting):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    rrc = RRC(pool_classifiers, knn_classifier=knn_methods)
+    rrc = RRC(pool_classifiers, voting=voting)
     rrc.fit(X_dsel, y_dsel)
     assert np.isclose(rrc.score(X_test, y_test), 0.9840425531914894)
 
@@ -262,28 +264,33 @@ def test_minimum_diff(knn_methods):
     assert np.isclose(minimum_diff.score(X_test, y_test), 0.9787234042553191)
 
 
-@pytest.mark.parametrize('knn_methods', knn_methods)
-def test_knop(knn_methods):
+@pytest.mark.parametrize('knn_methods, voting',
+                         itertools.product(knn_methods, voting))
+def test_knop(knn_methods, voting):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    knop = KNOP(pool_classifiers, knn_classifier=knn_methods)
+    knop = KNOP(pool_classifiers, knn_classifier=knn_methods, voting=voting)
     knop.fit(X_dsel, y_dsel)
     assert np.isclose(knop.score(X_test, y_test), 0.9787234042553191)
 
 
-@pytest.mark.parametrize('knn_methods', knn_methods)
-def test_desknn(knn_methods):
+@pytest.mark.parametrize('knn_methods, voting',
+                         itertools.product(knn_methods, voting))
+def test_desknn(knn_methods, voting):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    desknn = DESKNN(pool_classifiers, knn_classifier=knn_methods)
+    desknn = DESKNN(pool_classifiers,
+                    knn_classifier=knn_methods, voting=voting)
     desknn.fit(X_dsel, y_dsel)
     assert np.isclose(desknn.score(X_test, y_test), 0.9787234042553191)
 
 
-def test_des_clustering():
+@pytest.mark.parametrize('voting', voting)
+def test_des_clustering(voting):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
-    des_clustering = DESClustering(pool_classifiers, random_state=rng)
+    des_clustering = DESClustering(pool_classifiers,
+                                   random_state=rng, voting=voting)
     des_clustering.fit(X_dsel, y_dsel)
     assert np.isclose(des_clustering.score(X_test, y_test),
                       0.973404255319149)
@@ -319,7 +326,7 @@ def test_static_selection():
 def test_kne_proba(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    kne = KNORAE(pool_classifiers, knn_classifier=knn_methods)
+    kne = KNORAE(pool_classifiers, knn_classifier=knn_methods, voting='soft')
     kne.fit(X_dsel, y_dsel)
     probas = kne.predict_proba(X_test)
     expected = np.load(
@@ -330,7 +337,7 @@ def test_kne_proba(knn_methods):
 @pytest.mark.parametrize('knn_methods', knn_methods)
 def test_desp_proba(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-    desp = DESP(pool_classifiers, knn_classifier=knn_methods)
+    desp = DESP(pool_classifiers, knn_classifier=knn_methods, voting='soft')
     desp.fit(X_dsel, y_dsel)
     probas = desp.predict_proba(X_test)
     expected = np.load(
@@ -368,7 +375,8 @@ def test_mcb_proba(knn_methods):
 def test_desknn_proba(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    desknn = DESKNN(pool_classifiers, knn_classifier=knn_methods)
+    desknn = DESKNN(pool_classifiers, knn_classifier=knn_methods,
+                    voting='soft')
     desknn.fit(X_dsel, y_dsel)
     probas = desknn.predict_proba(X_test)
     expected = np.load(
@@ -380,7 +388,8 @@ def test_des_clustering_proba():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     rng = np.random.RandomState(123456)
     cluster = KMeans(n_clusters=5, random_state=rng)
-    des_clustering = DESClustering(pool_classifiers, clustering=cluster)
+    des_clustering = DESClustering(pool_classifiers, clustering=cluster,
+                                   voting='soft')
     des_clustering.fit(X_dsel, y_dsel)
     probas = des_clustering.predict_proba(X_test)
     expected = np.load(
@@ -392,7 +401,7 @@ def test_des_clustering_proba():
 def test_knop_proba(knn_methods):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    knop = KNOP(pool_classifiers, knn_classifier=knn_methods)
+    knop = KNOP(pool_classifiers, knn_classifier=knn_methods, voting='soft')
     knop.fit(X_dsel, y_dsel)
     probas = knop.predict_proba(X_test)
     expected = np.load(
@@ -400,8 +409,7 @@ def test_knop_proba(knn_methods):
     assert np.allclose(probas, expected)
 
 
-@pytest.mark.parametrize('knn_methods', knn_methods)
-def test_meta_no_pool_of_classifiers(knn_methods):
+def test_meta_no_pool_of_classifiers():
     rng = np.random.RandomState(123456)
     data = load_breast_cancer()
     X = data.data
@@ -414,7 +422,6 @@ def test_meta_no_pool_of_classifiers(knn_methods):
     scalar = StandardScaler()
     X_train = scalar.fit_transform(X_train)
     X_test = scalar.transform(X_test)
-    meta_des = METADES(knn_classifier=knn_methods, random_state=rng,
-                       DSEL_perc=0.5)
+    meta_des = METADES(random_state=rng, DSEL_perc=0.5)
     meta_des.fit(X_train, y_train)
     assert np.isclose(meta_des.score(X_test, y_test), 0.8936170212765957)
