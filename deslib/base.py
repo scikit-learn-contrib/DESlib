@@ -414,9 +414,10 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             )
             # Predict with DS - Check if there are still samples to be labeled.
             if ind_ds_classifier.size:
-                DFP_mask, sel_probas, sel_preds, inds = self._predict_DS(base_preds,
-                        base_probas, ind_disagreement, ind_ds_classifier,
-                        neighbors)
+                DFP_mask = self._get_DFP_mask(neighbors)
+                inds, sel_preds, sel_probas = self.prepare_indices(
+                    base_preds, base_probas, ind_disagreement,
+                    ind_ds_classifier)
                 preds_ds = self.classify_with_ds(None, sel_preds, sel_probas,
                                                  neighbors, distances, DFP_mask)
                 preds[inds] = preds_ds
@@ -452,9 +453,10 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                     X, ind_disagreement, probas, is_proba=True)
             # Predict with DS - Check if there are still samples to be labeled.
             if ind_ds_classifier.size:
-                DFP_mask, sel_probas, sel_preds, inds = self._predict_DS(
+                DFP_mask = self._get_DFP_mask(neighbors)
+                inds, sel_preds, sel_probas = self.prepare_indices(
                     base_preds, base_probas, ind_disagreement,
-                    ind_ds_classifier, neighbors)
+                    ind_ds_classifier)
                 probas_ds = self.predict_proba_with_ds(None, sel_preds,
                                                        sel_probas,
                                                        neighbors, distances,
@@ -521,16 +523,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             distances = np.delete(distances, ind_easy, axis=0)
         return distances, neighbors
 
-    def _predict_DS(self, base_predictions, base_probabilities,
-                    ind_disagreement, ind_ds_classifier, neighbors):
-
-        if self.DFP:
-            DFP_mask = frienemy_pruning_preprocessed(neighbors,
-                                                     self.DSEL_target_,
-                                                     self.DSEL_processed_)
-        else:
-            DFP_mask = np.ones((ind_ds_classifier.size, self.n_classifiers_))
-
+    def prepare_indices(self, base_predictions, base_probabilities,
+                        ind_disagreement, ind_ds_classifier):
         # Get the real indices_ of the samples that will be classified
         # using a DS algorithm.
         ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
@@ -540,9 +534,16 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         else:
             selected_probabilities = None
         selected_predictions = base_predictions[ind_ds_original_matrix]
+        return ind_ds_original_matrix, selected_predictions, selected_probabilities
 
-        return DFP_mask, selected_probabilities, \
-               selected_predictions, ind_ds_original_matrix
+    def _get_DFP_mask(self, neighbors):
+        if self.DFP:
+            DFP_mask = frienemy_pruning_preprocessed(neighbors,
+                                                     self.DSEL_target_,
+                                                     self.DSEL_processed_)
+        else:
+            DFP_mask = np.ones((neighbors.shape[0], self.n_classifiers_))
+        return DFP_mask
 
     def _preprocess_dsel(self):
         """Compute the prediction of each base classifier for
