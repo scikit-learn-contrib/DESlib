@@ -164,7 +164,7 @@ class DESKNN(BaseDS):
         self._set_diversity_func()
         return self
 
-    def estimate_competence(self, query, neighbors, distances=None,
+    def estimate_competence(self, neighbors, distances=None,
                             predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}`
         for the classification of the query sample.
@@ -179,9 +179,6 @@ class DESKNN(BaseDS):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The query sample.
-
         neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 
@@ -274,15 +271,12 @@ class DESKNN(BaseDS):
 
         return selected_classifiers
 
-    def classify_with_ds(self, query, predictions, probabilities=None,
+    def classify_with_ds(self, predictions, probabilities=None,
                          neighbors=None, distances=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples
-
         predictions : array of shape (n_samples, n_classifiers)
                       Predictions of the base classifiers for all test examples
 
@@ -314,20 +308,17 @@ class DESKNN(BaseDS):
         predicted_label : array of shape (n_samples)
                           Predicted class label for each test example.
         """
-        proba = self.predict_proba_with_ds(query, predictions, probabilities,
+        proba = self.predict_proba_with_ds(predictions, probabilities,
                                            neighbors, distances, DFP_mask)
         predicted_label = proba.argmax(axis=1)
         return predicted_label
 
-    def predict_proba_with_ds(self, query, predictions, probabilities,
+    def predict_proba_with_ds(self, predictions, probabilities,
                               neighbors=None, distances=None, DFP_mask=None):
         """Predicts the posterior probabilities.
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples.
 
@@ -357,8 +348,7 @@ class DESKNN(BaseDS):
         predicted_proba : array = [n_samples, n_classes]
                           Probability estimates for all test examples.
         """
-        accuracy, diversity = self.estimate_competence(query,
-                                                       neighbors,
+        accuracy, diversity = self.estimate_competence(neighbors,
                                                        distances=distances,
                                                        predictions=predictions)
         if self.DFP:
