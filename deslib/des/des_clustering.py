@@ -179,7 +179,7 @@ class DESClustering(BaseDS):
         self._preprocess_clusters()
         return self
 
-    def _get_region_competence(self, query, k=None):
+    def get_region_competence(self, query, k=None):
         distances = self.clustering_.transform(query.astype(np.double))
         region = self.clustering_.predict(query.astype(np.double))
         return distances, region

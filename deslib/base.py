@@ -352,7 +352,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         self.roc_algorithm_ = self.knn_class_(n_neighbors=self.k)
 
-    def _get_region_competence(self, query, k=None):
+    def get_region_competence(self, query, k=None):
         """Compute the region of competence of the query sample
         using the data belonging to DSEL.
 
@@ -482,7 +482,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
     def _IH_prediction(self, X, ind_disagree, predicted_proba, is_proba=False):
         X_DS = X[ind_disagree, :]
-        distances, region_competence = self._get_region_competence(X_DS)
+        distances, region_competence = self.get_region_competence(X_DS)
         if self.with_IH:
             ind_hard, ind_easy = self._split_easy_samples(region_competence)
             distances, region_competence = self._predict_easy_samples(
