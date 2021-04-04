@@ -449,7 +449,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 inds, sel_preds, sel_probas = self._prepare_indices_DS(
                     base_preds, base_probas, ind_disagreement,
                     ind_ds_classifier)
-                probas_ds = self.predict_proba_with_ds(None, sel_preds,
+                probas_ds = self.predict_proba_with_ds(sel_preds,
                                                        sel_probas,
                                                        neighbors, distances,
                                                        DFP_mask)
