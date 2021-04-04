@@ -233,7 +233,7 @@ class DESClustering(BaseDS):
             self.indices_[cluster_index, :] = performance_indices[
                 diversity_indices]
 
-    def estimate_competence(self, query, neighbors, distances=None,
+    def estimate_competence(self, neighbors, distances=None,
                             predictions=None):
         """Get the competence estimates of each base classifier :math:`c_{i}`
         for the classification of the query sample.
@@ -245,9 +245,6 @@ class DESClustering(BaseDS):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The query sample.
-
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples.
 
@@ -256,7 +253,6 @@ class DESClustering(BaseDS):
         competences : array = [n_samples, n_classifiers]
                       The competence level estimated for each base classifier.
         """
-        # cluster_index = self.clustering_.predict(query)
         competences = self.performance_cluster_[neighbors][:]
         return competences
 
@@ -282,15 +278,12 @@ class DESClustering(BaseDS):
         selected_classifiers = self.indices_[competences, :]
         return selected_classifiers
 
-    def classify_with_ds(self, query, predictions, probabilities=None,
+    def classify_with_ds(self, predictions, probabilities=None,
                          neighbors=None, distances=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
 
         Parameters
         ----------
-        query : array of shape = [n_features]
-                The test sample.
-
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples.
 
@@ -313,20 +306,17 @@ class DESClustering(BaseDS):
         predicted_label : array of shape (n_samples)
                           Predicted class label for each test example.
         """
-        proba = self.predict_proba_with_ds(query, predictions, probabilities,
+        proba = self.predict_proba_with_ds(predictions, probabilities,
                                            neighbors, distances, DFP_mask)
         predicted_label = proba.argmax(axis=1)
         return predicted_label
 
-    def predict_proba_with_ds(self, query, predictions, probabilities,
+    def predict_proba_with_ds(self, predictions, probabilities,
                               neighbors=None, distances=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples.
 
