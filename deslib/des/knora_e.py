@@ -121,9 +121,9 @@ class KNORAE(BaseDES):
                                      voting=voting,
                                      )
 
-    def estimate_competence(self, query, neighbors, distances=None,
+    def estimate_competence(self, neighbors, distances=None,
                             predictions=None):
-        """Estimate the competence of the base classifiers. In the case of
+        """ Estimate the competence of the base classifiers. In the case of
         the KNORA-E technique, the classifiers are only considered competent
         when they achieve a 100% accuracy in the region of competence.
         For each base, we estimate the maximum size of the region of competence
@@ -133,9 +133,6 @@ class KNORAE(BaseDES):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
         neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 

@@ -92,11 +92,7 @@ class BaseProbabilistic(BaseDES):
             )
         super(BaseProbabilistic, self)._validate_parameters()
 
-    def estimate_competence(self,
-                            query,
-                            neighbors,
-                            distances,
-                            predictions=None):
+    def estimate_competence(self, neighbors, distances, predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}`
         using the source of competence :math:`C_{src}` and the potential
         function model. The source of competence :math:`C_{src}` for all
@@ -108,9 +104,6 @@ class BaseProbabilistic(BaseDES):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
         neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 

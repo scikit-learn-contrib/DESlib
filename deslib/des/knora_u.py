@@ -115,7 +115,7 @@ class KNORAU(BaseDES):
                                      n_jobs=n_jobs,
                                      voting=voting)
 
-    def estimate_competence(self, query, neighbors, distances=None,
+    def estimate_competence(self, neighbors, distances=None,
                             predictions=None):
         """The competence of the base classifiers is simply estimated as the
         number of samples in the region of competence that it
@@ -126,9 +126,6 @@ class KNORAU(BaseDES):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
         neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 
