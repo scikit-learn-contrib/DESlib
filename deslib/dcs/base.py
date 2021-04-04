@@ -185,7 +185,7 @@ class BaseDCS(BaseDS):
         """
         if predictions.ndim < 2:
             predictions = predictions.reshape(1, -1)
-        competences = self.estimate_competence(query, neighbors,
+        competences = self.estimate_competence(neighbors,
                                                distances=distances,
                                                predictions=predictions)
 
@@ -239,7 +239,7 @@ class BaseDCS(BaseDS):
         predicted_proba: array of shape (n_samples, n_classes)
             Posterior probabilities estimates for each test example.
         """
-        competences = self.estimate_competence(query, neighbors,
+        competences = self.estimate_competence(neighbors,
                                                distances=distances,
                                                predictions=predictions)
 
