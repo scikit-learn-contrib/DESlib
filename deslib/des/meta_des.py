@@ -444,7 +444,7 @@ class METADES(BaseDES):
 
         return selected_classifiers
 
-    def estimate_competence_from_proba(self, query, neighbors, probabilities,
+    def estimate_competence_from_proba(self, neighbors, probabilities,
                                        distances=None):
         """Estimate the competence of each base classifier :math:`c_i`
         the classification of the query sample. This method received an array
@@ -457,9 +457,6 @@ class METADES(BaseDES):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
         neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 

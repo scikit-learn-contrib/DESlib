@@ -38,7 +38,7 @@ class BaseDES(BaseDS):
         self.mode = mode
         self.voting = voting
 
-    def estimate_competence(self, query, neighbors, distances=None,
+    def estimate_competence(self, neighbors, distances=None,
                             predictions=None):
         """Estimate the competence of each base classifier :math:`c_{i}`
         the classification of the query sample x.
@@ -48,9 +48,6 @@ class BaseDES(BaseDS):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples
-
         neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 
@@ -68,7 +65,7 @@ class BaseDES(BaseDS):
         """
         pass
 
-    def estimate_competence_from_proba(self, query, neighbors, probabilities,
+    def estimate_competence_from_proba(self, neighbors, probabilities,
                                        distances=None):
         """ estimate the competence of each base classifier :math:`c_{i}`
         the classification of the query sample x, for methods that require
@@ -80,9 +77,6 @@ class BaseDES(BaseDS):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The query sample.
-
         neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 
@@ -119,7 +113,7 @@ class BaseDES(BaseDS):
         """
         pass
 
-    def classify_with_ds(self, query, predictions, probabilities=None,
+    def classify_with_ds(self, predictions, probabilities=None,
                          neighbors=None, distances=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
 
@@ -139,9 +133,6 @@ class BaseDES(BaseDS):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
         predictions : array of shape (n_samples, n_classifiers)
                       Predictions of the base classifier for all test examples.
 
@@ -165,11 +156,11 @@ class BaseDES(BaseDS):
         predicted_label : array of shape (n_samples)
                           Predicted class label for each test example.
         """
-        probas = self.predict_proba_with_ds(query, predictions, probabilities,
+        probas = self.predict_proba_with_ds(predictions, probabilities,
                                             neighbors, distances, DFP_mask)
         return probas.argmax(axis=1)
 
-    def predict_proba_with_ds(self, query, predictions, probabilities=None,
+    def predict_proba_with_ds(self, predictions, probabilities=None,
                               neighbors=None, distances=None, DFP_mask=None):
         """Predicts the posterior probabilities of the corresponding query.
 
@@ -189,9 +180,6 @@ class BaseDES(BaseDS):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifier for all test examples.
 
@@ -214,13 +202,11 @@ class BaseDES(BaseDS):
         """
         if self.needs_proba:
             competences = self.estimate_competence_from_proba(
-                query,
                 neighbors=neighbors,
                 distances=distances,
                 probabilities=probabilities)
         else:
-            competences = self.estimate_competence(query,
-                                                   neighbors=neighbors,
+            competences = self.estimate_competence(neighbors=neighbors,
                                                    distances=distances,
                                                    predictions=predictions)
         if self.DFP:

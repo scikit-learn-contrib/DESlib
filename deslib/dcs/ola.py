@@ -122,7 +122,7 @@ class OLA(BaseDCS):
                                   knne=knne,
                                   DSEL_perc=DSEL_perc, n_jobs=n_jobs)
 
-    def estimate_competence(self, query, neighbors, distances=None,
+    def estimate_competence(self, neighbors, distances=None,
                             predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}`
         for the classification of the query sample.
@@ -140,9 +140,6 @@ class OLA(BaseDCS):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-            The test examples.
-
         neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 

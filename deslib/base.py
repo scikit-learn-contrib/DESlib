@@ -85,7 +85,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         pass
 
     @abstractmethod
-    def estimate_competence(self, query, neighbors, distances=None,
+    def estimate_competence(self, neighbors, distances=None,
                             predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}`
         the classification of the query sample :math:`\\mathbf{x}`.
@@ -95,9 +95,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The query sample
-
         neighbors : array of shape (n_samples, n_neighbors)
                     Indices of the k nearest neighbors according for each
                     test sample.
@@ -116,16 +113,13 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         pass
 
     @abstractmethod
-    def classify_with_ds(self, query, predictions, probabilities=None,
+    def classify_with_ds(self,predictions, probabilities=None,
                          neighbors=None, distances=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
         Returns the predicted label.
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-            The test examples.
-
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples
 
@@ -151,16 +145,13 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         pass
 
     @abstractmethod
-    def predict_proba_with_ds(self, query, predictions, probabilities,
+    def predict_proba_with_ds(self, predictions, probabilities,
                               neighbors=None, distances=None, DFP_mask=None):
         """Predicts the posterior probabilities of the corresponding
         query sample. Returns the probability estimates of each class.
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-            The test examples.
-
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples
 
@@ -418,7 +409,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 inds, sel_preds, sel_probas = self._prepare_indices_DS(
                     base_preds, base_probas, ind_disagreement,
                     ind_ds_classifier)
-                preds_ds = self.classify_with_ds(None, sel_preds, sel_probas,
+                preds_ds = self.classify_with_ds(sel_preds, sel_probas,
                                                  neighbors, distances,
                                                  DFP_mask)
                 preds[inds] = preds_ds

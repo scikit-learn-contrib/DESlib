@@ -36,16 +36,13 @@ class BaseDCS(BaseDS):
         self.selection_method = selection_method
         self.diff_thresh = diff_thresh
 
-    def estimate_competence(self, query, neighbors, distances=None,
+    def estimate_competence(self, neighbors, distances=None,
                             predictions=None):
         """Estimate the competence of each base classifier for the
         classification of the query sample.
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-            The test examples.
-
         neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 
@@ -154,7 +151,7 @@ class BaseDCS(BaseDS):
 
         return selected_classifiers
 
-    def classify_with_ds(self, query, predictions, probabilities=None,
+    def classify_with_ds(self, predictions, probabilities=None,
                          neighbors=None, distances=None, DFP_mask=None):
         """Predicts the class label of the corresponding query sample.
 
@@ -164,9 +161,6 @@ class BaseDCS(BaseDS):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-            The test examples.
-
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples
 
@@ -189,19 +183,8 @@ class BaseDCS(BaseDS):
         predicted_label : array of shape (n_samples)
             The predicted label for each query
         """
-        # if query.ndim < 2:
-        #     query = query.reshape(1, -1)
-
         if predictions.ndim < 2:
             predictions = predictions.reshape(1, -1)
-
-        # if query.shape[0] != predictions.shape[0]:
-        #     raise ValueError(
-        #         'The arrays query and predictions must have the same shape. '
-        #         'query.shape is {}'
-        #         'and predictions.shape is {}'.format(query.shape,
-        #                                              predictions.shape))
-
         competences = self.estimate_competence(query, neighbors,
                                                distances=distances,
                                                predictions=predictions)
@@ -223,7 +206,7 @@ class BaseDCS(BaseDS):
 
         return predicted_label
 
-    def predict_proba_with_ds(self, query, predictions, probabilities,
+    def predict_proba_with_ds(self, predictions, probabilities,
                               neighbors=None, distances=None, DFP_mask=None):
         """Predicts the posterior probabilities of the corresponding query
         sample.
@@ -234,9 +217,6 @@ class BaseDCS(BaseDS):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-            The test examples.
-
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples
 
@@ -259,13 +239,6 @@ class BaseDCS(BaseDS):
         predicted_proba: array of shape (n_samples, n_classes)
             Posterior probabilities estimates for each test example.
         """
-        # if query.shape[0] != probabilities.shape[0]:
-        #     raise ValueError(
-        #         'The arrays query and predictions must have the same number '
-        #         'of samples. query.shape is {}'
-        #         'and predictions.shape is {}'.format(query.shape,
-        #                                              predictions.shape))
-
         competences = self.estimate_competence(query, neighbors,
                                                distances=distances,
                                                predictions=predictions)
