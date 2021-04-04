@@ -338,7 +338,7 @@ class METADES(BaseDES):
         # Get the region of competence using the feature space and
         # the decision space. Use K + 1 to later remove itself
         # from the set.
-        _, idx_neighbors = self.get_region_competence(
+        _, idx_neighbors = self.get_competence_region(
             self.DSEL_data_[indices_selected, :], self.k_ + 1)
         _, idx_neighbors_op = self._get_similar_out_profiles(
             self.dsel_scores_[indices_selected], self.Kp_ + 1)

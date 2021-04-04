@@ -38,81 +38,6 @@ class BaseDES(BaseDS):
         self.mode = mode
         self.voting = voting
 
-    def estimate_competence(self, neighbors, distances=None,
-                            predictions=None):
-        """Estimate the competence of each base classifier :math:`c_{i}`
-        the classification of the query sample x.
-        Returns an array containing the level of competence estimated
-        for each base classifier. The size of the vector is equals to
-        the size of the generated_pool of classifiers.
-
-        Parameters
-        ----------
-        neighbors : array of shape (n_samples, n_neighbors)
-            Indices of the k nearest neighbors according for each test sample
-
-        distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test sample
-
-        predictions : array of shape (n_samples, n_classifiers)
-            Predictions of the base classifiers for the test examples.
-
-        Returns
-        -------
-        competences : array of shape (n_samples, n_classifiers)
-            Competence level estimated for each base classifier and test
-            example.
-        """
-        pass
-
-    def estimate_competence_from_proba(self, neighbors, probabilities,
-                                       distances=None):
-        """ estimate the competence of each base classifier :math:`c_{i}`
-        the classification of the query sample x, for methods that require
-        probabilities.
-
-        Returns an array containing the level of competence estimated
-        for each base classifier. The size of the vector is equals to
-        the size of the generated_pool of classifiers.
-
-        Parameters
-        ----------
-        neighbors : array of shape (n_samples, n_neighbors)
-            Indices of the k nearest neighbors according for each test sample.
-
-        distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test
-            sample.
-
-        probabilities : array of shape (n_samples, n_classifiers, n_classes)
-            Probabilities estimates of each base classifier for all samples.
-
-        Returns
-        -------
-        competences : array = [n_samples, n_classifiers]
-            Competence level estimated for each base classifier and test
-            example.
-        """
-        pass
-
-    def select(self, competences):
-        """Select the most competent classifiers to compose an ensemble for
-        the classification of the query sample X.
-
-        Parameters
-        ----------
-        competences : array of shape (n_samples, n_classifiers)
-            Estimated competence level of each base classifier for each test
-            example.
-
-        Returns
-        -------
-        selected_classifiers : array of shape (n_samples, n_classifiers)
-            Boolean matrix containing True if the base classifier is selected.
-            False otherwise.
-        """
-        pass
-
     def classify_with_ds(self, predictions, probabilities=None,
                          neighbors=None, distances=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
@@ -206,7 +131,7 @@ class BaseDES(BaseDS):
                 distances=distances,
                 probabilities=probabilities)
         else:
-            competences = self.estimate_competence(neighbors=neighbors,
+            competences = self.estimate_competence(competence_region=neighbors,
                                                    distances=distances,
                                                    predictions=predictions)
         if self.DFP:

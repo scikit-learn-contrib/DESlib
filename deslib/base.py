@@ -85,7 +85,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         pass
 
     @abstractmethod
-    def estimate_competence(self, neighbors, distances=None,
+    def estimate_competence(self, competence_region, distances=None,
                             predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}`
         the classification of the query sample :math:`\\mathbf{x}`.
@@ -95,7 +95,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        neighbors : array of shape (n_samples, n_neighbors)
+        competence_region : array of shape (n_samples, n_neighbors)
                     Indices of the k nearest neighbors according for each
                     test sample.
 
@@ -343,7 +343,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         self.roc_algorithm_ = self.knn_class_(n_neighbors=self.k)
 
-    def get_region_competence(self, query, k=None):
+    def get_competence_region(self, query, k=None):
         """Compute the region of competence of the query sample
         using the data belonging to DSEL.
 
@@ -473,7 +473,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
     def _IH_prediction(self, X, ind_disagree, predicted_proba, is_proba=False):
         X_DS = X[ind_disagree, :]
-        distances, region_competence = self.get_region_competence(X_DS)
+        distances, region_competence = self.get_competence_region(X_DS)
         if self.with_IH:
             ind_hard, ind_easy = self._split_easy_samples(region_competence)
             distances, region_competence = self._predict_easy_samples(

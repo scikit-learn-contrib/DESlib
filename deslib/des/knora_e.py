@@ -121,7 +121,7 @@ class KNORAE(BaseDES):
                                      voting=voting,
                                      )
 
-    def estimate_competence(self, neighbors, distances=None,
+    def estimate_competence(self, competence_region, distances=None,
                             predictions=None):
         """ Estimate the competence of the base classifiers. In the case of
         the KNORA-E technique, the classifiers are only considered competent
@@ -133,7 +133,7 @@ class KNORAE(BaseDES):
 
         Parameters
         ----------
-        neighbors : array of shape (n_samples, n_neighbors)
+        competence_region : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 
         distances : array of shape (n_samples, n_neighbors)
@@ -149,7 +149,7 @@ class KNORAE(BaseDES):
             Competence level estimated for each base classifier and test
             example.
         """
-        results_neighbors = self.DSEL_processed_[neighbors, :]
+        results_neighbors = self.DSEL_processed_[competence_region, :]
 
         # Get the shape of the vector in order to know the number of samples,
         # base classifiers and neighbors considered.

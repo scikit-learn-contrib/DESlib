@@ -36,14 +36,14 @@ class BaseDCS(BaseDS):
         self.selection_method = selection_method
         self.diff_thresh = diff_thresh
 
-    def estimate_competence(self, neighbors, distances=None,
+    def estimate_competence(self, competence_region, distances=None,
                             predictions=None):
         """Estimate the competence of each base classifier for the
         classification of the query sample.
 
         Parameters
         ----------
-        neighbors : array of shape (n_samples, n_neighbors)
+        competence_region : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 
         distances : array of shape (n_samples, n_neighbors)

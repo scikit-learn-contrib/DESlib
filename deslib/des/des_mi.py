@@ -118,7 +118,7 @@ class DESMI(BaseDS):
         self.pct_accuracy = pct_accuracy
         self.voting = voting
 
-    def estimate_competence(self, neighbors, distances=None,
+    def estimate_competence(self, competence_region, distances=None,
                             predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}`
         for the classification of the query sample. Returns a ndarray
@@ -133,7 +133,7 @@ class DESMI(BaseDS):
 
         Parameters
         ----------
-        neighbors : array of shape (n_samples, n_neighbors)
+        competence_region : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 
         distances : array of shape (n_samples, n_neighbors)
@@ -152,12 +152,12 @@ class DESMI(BaseDS):
         """
         # calculate the weight
         class_frequency = np.bincount(self.DSEL_target_)
-        targets = self.DSEL_target_[neighbors]  # [n_samples, K_neighbors]
+        targets = self.DSEL_target_[competence_region]  # [n_samples, K_neighbors]
         num = class_frequency[targets]
         weight = 1. / (1 + np.exp(self.alpha * num))
         weight = normalize(weight, norm='l1')
-        correct_num = self.DSEL_processed_[neighbors, :]
-        correct = np.zeros((neighbors.shape[0], self.k_, self.n_classifiers_))
+        correct_num = self.DSEL_processed_[competence_region, :]
+        correct = np.zeros((competence_region.shape[0], self.k_, self.n_classifiers_))
         for i in range(self.n_classifiers_):
             correct[:, :, i] = correct_num[:, :, i] * weight
 
@@ -263,7 +263,7 @@ class DESMI(BaseDS):
         predicted_proba : array = [n_samples, n_classes]
                           Probability estimates for all test examples.
         """
-        accuracy = self.estimate_competence(neighbors=neighbors,
+        accuracy = self.estimate_competence(competence_region=neighbors,
                                             distances=distances)
 
         if self.DFP:

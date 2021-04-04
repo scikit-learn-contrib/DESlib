@@ -156,7 +156,7 @@ class APosteriori(BaseDCS):
         self.dsel_scores_ = self._predict_proba_base(self.DSEL_data_)
         return self
 
-    def estimate_competence(self, neighbors, distances,
+    def estimate_competence(self, competence_region, distances,
                             predictions=None):
         """Estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the A Posteriori method.
@@ -180,7 +180,7 @@ class APosteriori(BaseDCS):
 
         Parameters
         ----------
-        neighbors : array of shape (n_samples, n_neighbors)
+        competence_region : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 
         distances : array of shape (n_samples, n_neighbors)
@@ -206,7 +206,7 @@ class APosteriori(BaseDCS):
         # Expanding the dimensions of the predictions and target arrays in
         # order to compare both.
         predictions_3d = np.expand_dims(predictions, axis=1)
-        target_3d = self.DSEL_target_[neighbors, np.newaxis]
+        target_3d = self.DSEL_target_[competence_region, np.newaxis]
 
         # Create a mask to remove the neighbors belonging to a different class
         # than the predicted by the base classifier
@@ -219,8 +219,8 @@ class APosteriori(BaseDCS):
 
         # Multiply the pre-processed correct predictions by the base
         # classifiers to the distance array
-        scores_target = self.dsel_scores_[neighbors, :,
-                                          self.DSEL_target_[neighbors]]
+        scores_target = self.dsel_scores_[competence_region, :,
+                                          self.DSEL_target_[competence_region]]
         scores_target_norm = scores_target * dists_normalized
 
         # Create masked arrays to remove samples with different label in the

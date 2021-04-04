@@ -179,7 +179,7 @@ class DESClustering(BaseDS):
         self._preprocess_clusters()
         return self
 
-    def get_region_competence(self, query, k=None):
+    def get_competence_region(self, query, k=None):
         distances = self.clustering_.transform(query.astype(np.double))
         region = self.clustering_.predict(query.astype(np.double))
         return distances, region
@@ -233,7 +233,7 @@ class DESClustering(BaseDS):
             self.indices_[cluster_index, :] = performance_indices[
                 diversity_indices]
 
-    def estimate_competence(self, neighbors, distances=None,
+    def estimate_competence(self, competence_region, distances=None,
                             predictions=None):
         """Get the competence estimates of each base classifier :math:`c_{i}`
         for the classification of the query sample.
@@ -253,7 +253,7 @@ class DESClustering(BaseDS):
         competences : array = [n_samples, n_classifiers]
                       The competence level estimated for each base classifier.
         """
-        competences = self.performance_cluster_[neighbors][:]
+        competences = self.performance_cluster_[competence_region][:]
         return competences
 
     def select(self, competences):

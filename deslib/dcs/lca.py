@@ -125,7 +125,7 @@ class LCA(BaseDCS):
                                   knne=knne,
                                   n_jobs=n_jobs)
 
-    def estimate_competence(self, neighbors, distances=None,
+    def estimate_competence(self, competence_region, distances=None,
                             predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the local class accuracy
@@ -149,7 +149,7 @@ class LCA(BaseDCS):
 
         Parameters
         ----------
-        neighbors : array of shape (n_samples, n_neighbors)
+        competence_region : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 
         distances : array of shape (n_samples, n_neighbors)
@@ -169,12 +169,12 @@ class LCA(BaseDCS):
         # Expanding the dimensions of the predictions and target arrays in
         # order to compare both.
         predictions_3d = np.expand_dims(predictions, axis=1)
-        target_3d = np.expand_dims(self.DSEL_target_[neighbors], axis=2)
+        target_3d = np.expand_dims(self.DSEL_target_[competence_region], axis=2)
         # Create a mask to remove the neighbors belonging to a different class
         # than the predicted by the base classifier
         mask = (predictions_3d != target_3d)
         masked_preprocessed = np.ma.MaskedArray(
-            self.DSEL_processed_[neighbors, :], mask=mask)
+            self.DSEL_processed_[competence_region, :], mask=mask)
 
         competences_masked = np.mean(masked_preprocessed, axis=1)
         # Fill 0 to the masked values in the resulting array (when no neighbors

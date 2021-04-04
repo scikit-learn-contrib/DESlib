@@ -164,7 +164,7 @@ class DESKNN(BaseDS):
         self._set_diversity_func()
         return self
 
-    def estimate_competence(self, neighbors, distances=None,
+    def estimate_competence(self, competence_region, distances=None,
                             predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}`
         for the classification of the query sample.
@@ -179,7 +179,7 @@ class DESKNN(BaseDS):
 
         Parameters
         ----------
-        neighbors : array of shape (n_samples, n_neighbors)
+        competence_region : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 
         distances : array of shape (n_samples, n_neighbors)
@@ -208,14 +208,14 @@ class DESKNN(BaseDS):
                     all test examples.
 
         """
-        accuracy = np.mean(self.DSEL_processed_[neighbors, :], axis=1)
+        accuracy = np.mean(self.DSEL_processed_[competence_region, :], axis=1)
 
-        predicted_matrix = self.BKS_DSEL_[neighbors, :]
-        targets = self.DSEL_target_[neighbors]
+        predicted_matrix = self.BKS_DSEL_[competence_region, :]
+        targets = self.DSEL_target_[competence_region]
 
         # TODO: optimize this part with numpy instead of for loops
-        diversity = np.zeros((neighbors.shape[0], self.n_classifiers_))
-        for sample_idx in range(neighbors.shape[0]):
+        diversity = np.zeros((competence_region.shape[0], self.n_classifiers_))
+        for sample_idx in range(competence_region.shape[0]):
             this_diversity = compute_pairwise_diversity(targets[sample_idx, :],
                                                         predicted_matrix[
                                                         sample_idx, :, :],

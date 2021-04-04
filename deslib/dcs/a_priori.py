@@ -150,7 +150,7 @@ class APriori(BaseDCS):
         self.dsel_scores_ = self._predict_proba_base(self.DSEL_data_)
         return self
 
-    def estimate_competence(self, neighbors, distances,
+    def estimate_competence(self, competence_region, distances,
                             predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the A Priori rule:
@@ -172,7 +172,7 @@ class APriori(BaseDCS):
 
         Parameters
         ----------
-        neighbors : array of shape (n_samples, n_neighbors)
+        competence_region : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample
 
         distances : array of shape (n_samples, n_neighbors)
@@ -192,8 +192,8 @@ class APriori(BaseDCS):
 
         # Get the ndarray containing the scores obtained for the correct class
         # for each neighbor (and test sample)
-        scores_target_class = self.dsel_scores_[neighbors, :,
-                                                self.DSEL_target_[neighbors]]
+        scores_target_class = self.dsel_scores_[competence_region, :,
+                                                self.DSEL_target_[competence_region]]
 
         # Multiply the scores obtained for the correct class to the distances
         # of each corresponding neighbor
