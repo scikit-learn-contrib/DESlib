@@ -168,7 +168,7 @@ def test_preprocess_dsel_scores(create_X_y, create_pool_classifiers):
     X, y = create_X_y
     ds_test = BaseDS(create_pool_classifiers)
     ds_test.fit(X, y)
-    dsel_scores = ds_test._preprocess_dsel_scores()
+    dsel_scores = ds_test._predict_proba_base(X)
     expected = np.array([[0.5, 0.5], [1.0, 0.0], [0.33, 0.67]])
     expected = np.tile(expected, (15, 1, 1))
     assert np.array_equal(dsel_scores, expected)
@@ -212,18 +212,14 @@ def test_input_IH_rate(IH_rate):
 
 
 def test_predict_proba_all_agree(example_estimate_competence,
-                                 create_pool_classifiers):
+                                 create_pool_all_agree):
     X, y, _, _, _, dsel_scores = example_estimate_competence
 
     query = np.atleast_2d([1, 1])
-    ds_test = BaseDS(create_pool_classifiers)
+    ds_test = BaseDS(create_pool_all_agree)
     ds_test.fit(X, y)
     ds_test.DSEL_scores = dsel_scores
-    backup_all_agree = BaseDS._all_classifier_agree
-    BaseDS._all_classifier_agree = MagicMock(return_value=np.array([True]))
     proba = ds_test.predict_proba(query)
-
-    BaseDS._all_classifier_agree = backup_all_agree
     assert np.allclose(proba, np.atleast_2d([0.61, 0.39]))
 
 

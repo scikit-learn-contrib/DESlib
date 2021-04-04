@@ -86,13 +86,3 @@ def test_aposteriori():
                                with_IH=True, IH_rate=0.1)
     a_posteriori.fit(X_dsel, y_dsel)
     assert np.isclose(a_posteriori.score(X_test, y_test), 0.8333333333333334)
-
-
-def test_des_clustering():
-    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-    rng = np.random.RandomState(123456)
-
-    des_clustering = DESClustering(pool_classifiers, random_state=rng,
-                                   with_IH=True, IH_rate=0.28)
-    des_clustering.fit(X_dsel, y_dsel)
-    assert np.isclose(des_clustering.score(X_test, y_test), 0.9030303030303031)

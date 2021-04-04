@@ -196,7 +196,7 @@ class METADES(BaseDES):
         # Check if the base classifier is able to estimate probabilities
         self._check_predict_proba()
 
-        self.dsel_scores_ = self._preprocess_dsel_scores()
+        self.dsel_scores_ = self._predict_proba_base(self.DSEL_data_)
 
         # Reshape DSEL_scores as a 2-D array for nearest neighbor calculations
         dsel_output_profiles = self.dsel_scores_.reshape(self.n_samples_,

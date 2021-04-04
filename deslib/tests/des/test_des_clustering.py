@@ -77,20 +77,13 @@ def test_estimate_competence(create_pool_classifiers,
                                     pct_accuracy=0.5, pct_diversity=0.33)
 
     X, y = example_estimate_competence[0:2]
-
-    # Keep the original predict method to change after
-    clustering_test.clustering.predict = MagicMock(
-        return_value=return_cluster_index_ex2)
     clustering_test.fit(X, y)
-
-    clustering_test.clustering_.predict = MagicMock(return_value=0)
-    competences = clustering_test.estimate_competence(query)
+    competences = clustering_test.estimate_competence(query, 0)
 
     assert np.array_equal(competences,
                           clustering_test.performance_cluster_[0, :])
 
-    clustering_test.clustering_.predict = MagicMock(return_value=1)
-    competences = clustering_test.estimate_competence(query)
+    competences = clustering_test.estimate_competence(query, 1)
     assert np.array_equal(competences,
                           clustering_test.performance_cluster_[1, :])
 
@@ -115,16 +108,14 @@ def test_fit_clusters_less_diverse(example_estimate_competence,
 
 
 def test_select():
-    query = np.atleast_2d([1, -1])
     clustering_test = DESClustering()
-
     clustering_test.clustering_ = KMeans()
-    clustering_test.clustering_.predict = MagicMock(return_value=[0])
+    roc = [0]
     clustering_test.indices_ = np.array([[0, 2], [1, 4]])
-    assert np.array_equal(clustering_test.select(query), [[0, 2]])
-
+    assert np.array_equal(clustering_test.select(roc), [[0, 2]])
+    roc = [1]
     clustering_test.clustering_.predict = MagicMock(return_value=[1])
-    assert np.array_equal(clustering_test.select(query), [[1, 4]])
+    assert np.array_equal(clustering_test.select(roc), [[1, 4]])
 
 
 # Since the majority of the base classifiers selected predicts class 0,

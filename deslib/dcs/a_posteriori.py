@@ -153,7 +153,7 @@ class APosteriori(BaseDCS):
         super(APosteriori, self).fit(X, y)
         self._check_predict_proba()
 
-        self.dsel_scores_ = self._preprocess_dsel_scores()
+        self.dsel_scores_ = self._predict_proba_base(self.DSEL_data_)
         return self
 
     def estimate_competence(self, query, neighbors, distances,

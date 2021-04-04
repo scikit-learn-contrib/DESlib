@@ -93,16 +93,13 @@ class DESClustering(BaseDS):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
     """
 
-    def __init__(self, pool_classifiers=None, clustering=None, with_IH=False,
-                 safe_k=None, IH_rate=0.30, pct_accuracy=0.5, voting='hard',
+    def __init__(self, pool_classifiers=None, clustering=None,
+                 pct_accuracy=0.5, voting='hard',
                  pct_diversity=0.33, more_diverse=True, metric_diversity='DF',
                  metric_performance='accuracy_score', n_clusters=5,
                  random_state=None, DSEL_perc=0.5, n_jobs=-1):
 
         super(DESClustering, self).__init__(pool_classifiers=pool_classifiers,
-                                            with_IH=with_IH,
-                                            safe_k=safe_k,
-                                            IH_rate=IH_rate,
                                             random_state=random_state,
                                             DSEL_perc=DSEL_perc,
                                             n_jobs=n_jobs,
@@ -111,7 +108,6 @@ class DESClustering(BaseDS):
         self.metric_diversity = metric_diversity
         self.metric_performance = metric_performance
         self.voting = voting
-
         self.clustering = clustering
         self.pct_accuracy = pct_accuracy
         self.pct_diversity = pct_diversity
@@ -183,6 +179,11 @@ class DESClustering(BaseDS):
         self._preprocess_clusters()
         return self
 
+    def _get_region_competence(self, query, k=None):
+        distances = self.clustering_.transform(query.astype(np.double))
+        region = self.clustering_.predict(query.astype(np.double))
+        return distances, region
+
     def _preprocess_clusters(self):
         """Preprocess the competence as well as the average diversity of each
         base classifier for each specific cluster.
@@ -232,7 +233,8 @@ class DESClustering(BaseDS):
             self.indices_[cluster_index, :] = performance_indices[
                 diversity_indices]
 
-    def estimate_competence(self, query, predictions=None):
+    def estimate_competence(self, query, neighbors, distances=None,
+                            predictions=None):
         """Get the competence estimates of each base classifier :math:`c_{i}`
         for the classification of the query sample.
 
@@ -254,11 +256,11 @@ class DESClustering(BaseDS):
         competences : array = [n_samples, n_classifiers]
                       The competence level estimated for each base classifier.
         """
-        cluster_index = self.clustering_.predict(query)
-        competences = self.performance_cluster_[cluster_index][:]
+        # cluster_index = self.clustering_.predict(query)
+        competences = self.performance_cluster_[neighbors][:]
         return competences
 
-    def select(self, query):
+    def select(self, competences):
         """Select an ensemble with the most accurate and most diverse
         classifier for the classification of the query.
 
@@ -268,8 +270,8 @@ class DESClustering(BaseDS):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
+        competences : array of shape (n_samples)
+            Array containing closest cluster index.
 
         Returns
         -------
@@ -277,8 +279,7 @@ class DESClustering(BaseDS):
             Indices of the selected base classifier for each test example.
 
         """
-        cluster_index = self.clustering_.predict(query.astype(np.double))
-        selected_classifiers = self.indices_[cluster_index, :]
+        selected_classifiers = self.indices_[competences, :]
         return selected_classifiers
 
     def classify_with_ds(self, query, predictions, probabilities=None,
@@ -347,7 +348,8 @@ class DESClustering(BaseDS):
         predicted_proba : array of shape (n_samples, n_classes)
             Posterior probabilities estimates for each test example.
         """
-        selected_classifiers = self.select(query)
+        selected_classifiers = self.select(neighbors)
+
         if self.voting == 'hard':
             votes = predictions[np.arange(predictions.shape[0])[:, None],
                                 selected_classifiers]
@@ -402,7 +404,6 @@ class DESClustering(BaseDS):
 
         if self.voting == 'soft':
             self._check_predict_proba()
-
 
     def get_scores_(self, sample_indices):
 
