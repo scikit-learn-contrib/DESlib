@@ -81,54 +81,38 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self
         """
         self.random_state_ = check_random_state(self.random_state)
-
-        # Check if the length of X and y are consistent.
         X, y = check_X_y(X, y)
 
         # Check if the pool of classifiers is None.
         # If yes, use a BaggingClassifier for the pool.
         if self.pool_classifiers is None:
-            if len(X) < 2:
-                raise ValueError('More than one sample is needed '
-                                 'if the pool of classifiers is not informed.')
-
-            # Split the dataset into training (for the base classifier) and
-            # DSEL (for DS)
-            X_train, X_dsel, y_train, y_dsel = train_test_split(
-                X, y, test_size=self.DSEL_perc,
-                random_state=self.random_state_)
-
-            self.pool_classifiers_ = BaggingClassifier(
-                random_state=self.random_state_, n_jobs=self.n_jobs)
-            self.pool_classifiers_.fit(X_train, y_train)
-
+            X_dsel, y_dsel = self._fit_pool_classifiers(X, y)
         else:
             self._check_base_classifier_fitted()
             self.pool_classifiers_ = self.pool_classifiers
             X_dsel = X
             y_dsel = y
 
+        # allow base models with feature subspaces.
+        if hasattr(self.pool_classifiers_, "estimators_features_"):
+            self.estimator_features_ = self.pool_classifiers_.estimators_features_
+        else:
+            self.estimator_features_ = np.arange(X.shape[1])
+
         self.n_classifiers_ = len(self.pool_classifiers_)
 
-        # check if the input parameters are correct. Raise an error if the
-        # generated_pool is not fitted or k < 1
-        self._validate_parameters()
-
-        # Check label encoder on the pool of classifiers
-        self._check_label_encoder()
-
+        # check if the input parameters are correct.
         self._setup_label_encoder(y)
         y_dsel = self.enc_.transform(y_dsel)
         self._set_dsel(X_dsel, y_dsel)
-
-        # validate the value of k
-        self._validate_k()
         self._set_region_of_competence_algorithm()
-        self.roc_algorithm_.fit(X_dsel, y_dsel)
+        self._validate_parameters()
 
-        # validate the IH
-        if self.with_IH:
-            self._validate_ih()
+        # TODO: PRocess
+        self.roc_algorithm_.fit(X_dsel, y_dsel)
+        self.BKS_DSEL_ = self._predict_base(self.DSEL_data_)
+        self.DSEL_processed_ = self.BKS_DSEL_ == y_dsel[:, np.newaxis]
+
         return self
 
     def get_competence_region(self, query, k=None):
@@ -436,6 +420,20 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             DFP_mask = np.ones((neighbors.shape[0], self.n_classifiers_))
         return DFP_mask
 
+    def _fit_pool_classifiers(self, X, y):
+        if len(X) < 2:
+            raise ValueError('More than one sample is needed '
+                             'if the pool of classifiers is not informed.')
+        # Split the dataset into training (for the base classifier) and
+        # DSEL (for DS)
+        X_train, X_dsel, y_train, y_dsel = train_test_split(
+            X, y, test_size=self.DSEL_perc,
+            random_state=self.random_state_)
+        self.pool_classifiers_ = BaggingClassifier(
+            random_state=self.random_state_, n_jobs=self.n_jobs)
+        self.pool_classifiers_.fit(X_train, y_train)
+        return X_dsel, y_dsel
+
     def _check_label_encoder(self):
         # Check if base classifiers are not using LabelEncoder (the case for
         # scikit-learn's ensembles):
@@ -476,6 +474,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             self.safe_k = self.k
 
     def _setup_label_encoder(self, y):
+        self._check_label_encoder()
         self.enc_ = LabelEncoder()
         self.enc_.fit(y)
         self.classes_ = self.enc_.classes_
@@ -504,8 +503,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self.n_classes_ = self.classes_.size
         self.n_features_ = X.shape[1]
         self.n_samples_ = self.DSEL_target_.size
-        self.BKS_DSEL_ = self._predict_base(self.DSEL_data_)
-        self.DSEL_processed_ = self.BKS_DSEL_ == y[:, np.newaxis]
 
     def _set_region_of_competence_algorithm(self):
         if self.knn_classifier is None or self.knn_classifier in ['knn',
@@ -611,9 +608,9 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        array of shape = [classes] containing True if all classifiers in the
-        generated_pool
-                          agrees on the same label, otherwise False.
+        array of shape (classes)
+            containing True if all classifiers in the generated_pool agrees
+            on the same label, otherwise False.
         """
         return np.all(predictions == predictions[:, 0].reshape(-1, 1), axis=1)
 
@@ -649,9 +646,14 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             raise ValueError("Parameter IH_rate should be between [0.0, 0.5]."
                              "IH_rate = {}".format(self.IH_rate))
 
-        self._validate_pool()
+        self._validate_pool_classifiers()
+        # validate the value of k
+        self._validate_k()
+        # validate the IH
+        if self.with_IH:
+            self._validate_ih()
 
-    def _validate_pool(self):
+    def _validate_pool_classifiers(self):
         """ Check the estimator and the n_estimator attribute, set the
         `base_estimator_` attribute.
 
