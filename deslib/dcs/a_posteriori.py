@@ -184,7 +184,7 @@ class APosteriori(BaseDCS):
             Indices of the k nearest neighbors.
 
         distances : array of shape (n_samples, n_neighbors)
-            Distances from the k nearest neighbors to the query
+            Distances from the k nearest neighbors to the query.
 
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for the test examples.

@@ -234,8 +234,9 @@ class KNOP(BaseDES):
         ----------
         neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors.
+
         distances : array of shape (n_samples, n_neighbors)
-                        Distances from the k nearest neighbors to the query
+                        Distances from the k nearest neighbors to the query.
 
         probabilities : array of shape (n_samples, n_classifiers, n_classes)
             Probabilities estimates obtained by each each base classifier
