@@ -39,7 +39,8 @@ class BaseDES(BaseDS):
         self.voting = voting
 
     def classify_with_ds(self, predictions, probabilities=None,
-                         neighbors=None, distances=None, DFP_mask=None):
+                         competence_region=None, distances=None,
+                         DFP_mask=None):
         """Predicts the label of the corresponding query sample.
 
         If self.mode == "selection", the selected ensemble is combined using
@@ -66,12 +67,11 @@ class BaseDES(BaseDS):
             examples. (For methods that always require probabilities from
             the base classifiers).
 
-        neighbors : array of shape (n_samples, n_neighbors)
+        competence_region : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 
         distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test
-            sample.
+                        Distances from the k nearest neighbors to the query
 
         DFP_mask : array of shape (n_samples, n_classifiers)
             Mask containing 1 for the selected base classifier and 0 otherwise.
@@ -82,11 +82,13 @@ class BaseDES(BaseDS):
                           Predicted class label for each test example.
         """
         probas = self.predict_proba_with_ds(predictions, probabilities,
-                                            neighbors, distances, DFP_mask)
+                                            competence_region, distances,
+                                            DFP_mask)
         return probas.argmax(axis=1)
 
     def predict_proba_with_ds(self, predictions, probabilities=None,
-                              neighbors=None, distances=None, DFP_mask=None):
+                              competence_region=None, distances=None,
+                              DFP_mask=None):
         """Predicts the posterior probabilities of the corresponding query.
 
         If self.mode == "selection", the selected ensemble is used to estimate
@@ -111,11 +113,10 @@ class BaseDES(BaseDS):
         probabilities : array of shape (n_samples, n_classifiers, n_classes)
             Probabilities estimates of each base classifier for all samples.
 
-        neighbors : array of shape (n_samples, n_neighbors)
-            Indices of the k nearest neighbors according for each test sample
-
+        competence_region : array of shape (n_samples, n_neighbors)
+            Indices of the k nearest neighbors.
         distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test sample
+            Distances from the k nearest neighbors to the query
 
         DFP_mask : array of shape (n_samples, n_classifiers)
             Mask containing 1 for the selected base classifier and 0 otherwise.
@@ -127,13 +128,14 @@ class BaseDES(BaseDS):
         """
         if self.needs_proba:
             competences = self.estimate_competence_from_proba(
-                neighbors=neighbors,
+                neighbors=competence_region,
                 distances=distances,
                 probabilities=probabilities)
         else:
-            competences = self.estimate_competence(competence_region=neighbors,
-                                                   distances=distances,
-                                                   predictions=predictions)
+            competences = self.estimate_competence(
+                competence_region=competence_region,
+                distances=distances,
+                predictions=predictions)
         if self.DFP:
             # FIRE-DES pruning.
             competences = competences * DFP_mask

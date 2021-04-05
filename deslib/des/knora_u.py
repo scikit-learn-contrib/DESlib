@@ -127,10 +127,9 @@ class KNORAU(BaseDES):
         Parameters
         ----------
         competence_region : array of shape (n_samples, n_neighbors)
-            Indices of the k nearest neighbors according for each test sample
-
+            Indices of the k nearest neighbors.
         distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test sample
+            Distances from the k nearest neighbors to the query
 
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples.

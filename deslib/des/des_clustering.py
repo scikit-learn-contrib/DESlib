@@ -279,7 +279,8 @@ class DESClustering(BaseDS):
         return selected_classifiers
 
     def classify_with_ds(self, predictions, probabilities=None,
-                         neighbors=None, distances=None, DFP_mask=None):
+                         competence_region=None, distances=None,
+                         DFP_mask=None):
         """Predicts the label of the corresponding query sample.
 
         Parameters
@@ -291,12 +292,11 @@ class DESClustering(BaseDS):
             Probabilities estimates of each base classifier for all test
             examples.
 
-        neighbors : array of shape (n_samples, n_neighbors)
-            Indices of the k nearest neighbors according for each test sample.
+        competence_region : array of shape (n_samples)
+            Indices of the nearest clusters to each sample.
 
-        distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test
-            sample.
+        distances : array of shape (n_samples)
+            Distances of the nearest clusters to each sample.
 
         DFP_mask : array of shape (n_samples, n_classifiers)
             Mask containing 1 for the selected base classifier and 0 otherwise.
@@ -307,12 +307,14 @@ class DESClustering(BaseDS):
                           Predicted class label for each test example.
         """
         proba = self.predict_proba_with_ds(predictions, probabilities,
-                                           neighbors, distances, DFP_mask)
+                                           competence_region, distances,
+                                           DFP_mask)
         predicted_label = proba.argmax(axis=1)
         return predicted_label
 
     def predict_proba_with_ds(self, predictions, probabilities,
-                              neighbors=None, distances=None, DFP_mask=None):
+                              competence_region=None, distances=None,
+                              DFP_mask=None):
         """Predicts the label of the corresponding query sample.
 
         Parameters
@@ -324,11 +326,11 @@ class DESClustering(BaseDS):
             Probabilities estimates of each base classifier for all test
             examples.
 
-        neighbors : array of shape (n_samples, n_neighbors)
-            Indices of the k nearest neighbors according for each test sample.
+        competence_region : array of shape (n_samples)
+            Indices of the nearest clusters to each sample.
 
-        distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test sample
+        distances : array of shape (n_samples)
+            Distances of the nearest clusters to each sample.
 
         DFP_mask : array of shape (n_samples, n_classifiers)
             Mask containing 1 for the selected base classifier and 0 otherwise.
@@ -338,7 +340,7 @@ class DESClustering(BaseDS):
         predicted_proba : array of shape (n_samples, n_classes)
             Posterior probabilities estimates for each test example.
         """
-        selected_classifiers = self.select(neighbors)
+        selected_classifiers = self.select(competence_region)
 
         if self.voting == 'hard':
             votes = predictions[np.arange(predictions.shape[0])[:, None],
