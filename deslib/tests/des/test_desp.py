@@ -12,7 +12,6 @@ def test_check_estimator():
 # Test the estimate competence method receiving n samples as input
 def test_estimate_competence_batch(example_estimate_competence,
                                    create_pool_classifiers):
-    query = np.ones((3, 2))
     X, y, neighbors, distances, dsel_processed, _ = example_estimate_competence
 
     expected = np.array([[0.57142857, 0.4285714, 0.57142857],
@@ -21,7 +20,7 @@ def test_estimate_competence_batch(example_estimate_competence,
 
     des_p_test = DESP(create_pool_classifiers)
     des_p_test.fit(X, y)
-    competences = des_p_test.estimate_competence(query, neighbors, distances)
+    competences = des_p_test.estimate_competence(neighbors, distances)
     assert np.allclose(competences, expected, atol=0.01)
 
 

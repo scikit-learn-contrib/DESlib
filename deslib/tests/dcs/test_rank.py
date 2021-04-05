@@ -17,8 +17,7 @@ def test_estimate_competence_batch(example_estimate_competence):
                          [0, 0, 1]])
     rank_test = Rank()
     rank_test.DSEL_processed_ = dsel_processed
-    query = np.array([[1, 1], [1, 1], [1, 1]])
-    competences = rank_test.estimate_competence(query, neighbors,
+    competences = rank_test.estimate_competence(neighbors,
                                                 distances=distances)
     assert np.allclose(competences, expected)
 

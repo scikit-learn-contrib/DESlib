@@ -33,7 +33,6 @@ def test_estimate_competence():
     clf3 diversity = (2+1)/7 = -3/7
 
     """
-    query = np.ones((1, 2))
     x = np.array([0, 1, 2, 3, 4, 5, 6]).reshape(-1, 1)
     y = np.array([0, 0, 0, 0, 1, 1, 1])
 
@@ -46,7 +45,7 @@ def test_estimate_competence():
     target = DESKNN(pool_classifiers, k=7, pct_accuracy=1, pct_diversity=1)
     target.fit(x, y)
     neighbors = np.array([[0, 1, 2, 3, 4, 5, 6]])
-    competences, diversity = target.estimate_competence(query, neighbors)
+    competences, diversity = target.estimate_competence(neighbors)
     assert np.allclose(competences, [2. / 7, 4. / 7, 5. / 7])
     assert np.allclose(diversity, [-5. / 7, -4. / 7, -3. / 7])
 
@@ -74,7 +73,6 @@ def test_estimate_competence_batch():
     """
 
     n_samples = 10
-    query = np.ones((n_samples, 2))
     x = np.array([0, 1, 2, 3, 4, 5, 6]).reshape(-1, 1)
     y = np.array([0, 0, 0, 0, 1, 1, 1])
 
@@ -88,13 +86,12 @@ def test_estimate_competence_batch():
     target.fit(x, y)
     neighbors = np.tile([0, 1, 2, 3, 4, 5, 6], (10, 1))
 
-    competences, diversity = target.estimate_competence(query, neighbors)
+    competences, diversity = target.estimate_competence(neighbors)
     assert np.allclose(competences, [2. / 7, 4. / 7, 5. / 7])
     assert np.allclose(diversity, [-5. / 7, -4. / 7, -3. / 7])
 
 
 def test_estimate_competence_Q():
-    query = np.ones((1, 2))
     x = np.array([0, 1, 2, 3, 4, 5, 6]).reshape(-1, 1)
     y = np.array([0, 0, 0, 0, 1, 1, 1])
 
@@ -109,14 +106,13 @@ def test_estimate_competence_Q():
     target.fit(x, y)
     neighbors = np.array([[0, 1, 2, 3, 4, 5, 6]])
 
-    competences, diversity = target.estimate_competence(query, neighbors)
+    competences, diversity = target.estimate_competence(neighbors)
     assert np.allclose(competences, [2. / 7, 4. / 7, 5. / 7])
     assert np.allclose(diversity, [2, 1.2, 1.2])
 
 
 def test_estimate_competence_Q_batch():
     n_samples = 10
-    query = np.ones((n_samples, 2))
     x = np.array([0, 1, 2, 3, 4, 5, 6]).reshape(-1, 1)
     y = np.array([0, 0, 0, 0, 1, 1, 1])
 
@@ -131,14 +127,12 @@ def test_estimate_competence_Q_batch():
     target.fit(x, y)
     neighbors = np.tile([0, 1, 2, 3, 4, 5, 6], (n_samples, 1))
 
-    competences, diversity = target.estimate_competence(query, neighbors)
+    competences, diversity = target.estimate_competence(neighbors)
     assert np.allclose(competences, [2. / 7, 4. / 7, 5. / 7])
     assert np.allclose(diversity, [2, 1.2, 1.2])
 
 
 def test_estimate_competence_ratio():
-    query = np.ones((1, 2))
-
     x = np.array([0, 1, 2, 3, 4, 5, 6]).reshape(-1, 1)
     y = np.array([0, 0, 0, 0, 1, 1, 1])
 
@@ -153,15 +147,13 @@ def test_estimate_competence_ratio():
     target.fit(x, y)
     neighbors = np.array([[0, 1, 2, 3, 4, 5, 6]])
 
-    competences, diversity = target.estimate_competence(query, neighbors)
+    competences, diversity = target.estimate_competence(neighbors)
     assert np.allclose(competences, [2. / 7, 4. / 7, 5. / 7])
     assert np.allclose(diversity, [2.166, 3.666, 4.500], atol=0.01)
 
 
 def test_estimate_competence_ratio_batch():
     n_samples = 10
-    query = np.ones((n_samples, 2))
-
     x = np.array([0, 1, 2, 3, 4, 5, 6]).reshape(-1, 1)
     y = np.array([0, 0, 0, 0, 1, 1, 1])
 
@@ -176,7 +168,7 @@ def test_estimate_competence_ratio_batch():
     target.fit(x, y)
     neighbors = np.tile([0, 1, 2, 3, 4, 5, 6], (n_samples, 1))
 
-    competences, diversity = target.estimate_competence(query, neighbors)
+    competences, diversity = target.estimate_competence(neighbors)
     assert np.allclose(competences, [2. / 7, 4. / 7, 5. / 7])
     assert np.allclose(diversity, [2.166, 3.666, 4.500], atol=0.01)
 

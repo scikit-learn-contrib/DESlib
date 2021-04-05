@@ -46,7 +46,6 @@ def test_similarity_threshold_type(similarity_threshold, create_X_y):
 def test_estimate_competence2(index, expected, example_estimate_competence):
 
     _, _, neighbors, distances, dsel_processed, _ = example_estimate_competence
-    query = np.ones((1, 2))
 
     mcb_test = MCB()
     mcb_test.n_classifiers_ = 3
@@ -59,8 +58,7 @@ def test_estimate_competence2(index, expected, example_estimate_competence):
 
     predictions = np.array([[0, 1, 0]])
 
-    competences = mcb_test.estimate_competence(query,
-                                               neighbors,
+    competences = mcb_test.estimate_competence(neighbors,
                                                distances=distances,
                                                predictions=np.atleast_2d(
                                                    predictions))
@@ -73,7 +71,6 @@ def test_estimate_competence2(index, expected, example_estimate_competence):
 def test_estimate_competence_batch(example_estimate_competence):
     _, _, neighbors, distances, dsel_processed, _ = example_estimate_competence
 
-    query = np.ones((3, 2))
     expected = np.array([[0.57142857, 0.71428571, 0.71428571],
                          [0.71428571, 0.85714286, 0.71428571],
                          [0.57142857, 0.71428571, 0.57142857]])
@@ -86,8 +83,7 @@ def test_estimate_competence_batch(example_estimate_competence):
 
     predictions = np.array([0, 1, 0])
 
-    competences = mcb_test.estimate_competence(query,
-                                               neighbors,
+    competences = mcb_test.estimate_competence(neighbors,
                                                distances=distances,
                                                predictions=np.tile(predictions,
                                                                    (3, 1)))

@@ -23,7 +23,7 @@ def test_estimate_competence_batch(example_estimate_competence):
     query = np.ones((3, 2))
 
     predictions = np.array([[0, 1, 0]])
-    competences = lca_test.estimate_competence(query, neighbors,
+    competences = lca_test.estimate_competence(neighbors,
                                                distances=distances,
                                                predictions=np.array(
                                                    predictions))
@@ -50,8 +50,7 @@ def test_estimate_competence_diff_target(index,
     expected = [0.0, 0.0, 0.0]
 
     predictions = np.array([[0, 1, 0]])
-    competences = lca_test.estimate_competence(query,
-                                               neighbors,
+    competences = lca_test.estimate_competence(neighbors,
                                                distances=distances,
                                                predictions=np.array(
                                                    predictions))
