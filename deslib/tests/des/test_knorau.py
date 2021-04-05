@@ -15,14 +15,13 @@ def test_estimate_competence_batch(example_estimate_competence,
 
     X, y, neighbors = example_estimate_competence[0:3]
 
-    query = np.ones((3, 2))
     expected = np.array([[4.0, 3.0, 4.0],
                          [5.0, 2.0, 5.0],
                          [2.0, 5.0, 2.0]])
     knora_u_test = KNORAU(create_pool_classifiers)
     knora_u_test.fit(X, y)
 
-    competences = knora_u_test.estimate_competence(query, neighbors)
+    competences = knora_u_test.estimate_competence(neighbors)
     assert np.allclose(competences, expected, atol=0.01)
 
 

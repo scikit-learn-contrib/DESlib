@@ -48,8 +48,8 @@ def test_classify_instance_selection(create_pool_classifiers):
     for clf in des_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
 
-    predicted_label = des_test.classify_with_ds(query, np.tile(predictions,
-                                                               (n_samples, 1)))
+    predicted_label = des_test.classify_with_ds(np.tile(predictions,
+                                                        (n_samples, 1)))
     assert np.allclose(predicted_label, 0) and predicted_label.size == 3
 
 
@@ -67,8 +67,7 @@ def test_classify_instance_weighting(create_pool_classifiers):
     predictions = []
     for clf in des_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    predicted_label = des_test.classify_with_ds(query,
-                                                np.tile(predictions, (3, 1)))
+    predicted_label = des_test.classify_with_ds(np.tile(predictions, (3, 1)))
     assert np.allclose(predicted_label, 1) and predicted_label.size == 3
 
 
@@ -92,8 +91,7 @@ def test_classify_instance_hybrid(create_pool_classifiers):
     for clf in des_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
 
-    predicted_label = des_test.classify_with_ds(query,
-                                                np.tile(predictions, (3, 1)))
+    predicted_label = des_test.classify_with_ds(np.tile(predictions, (3, 1)))
     assert np.allclose(predicted_label, expected)
 
 
@@ -113,7 +111,7 @@ def test_predict_proba_selection_soft_voting(create_pool_classifiers):
     des_test.select = MagicMock(return_value=selected_indices)
     des_test.n_classes_ = 2
 
-    predicted_proba = des_test.predict_proba_with_ds(query, predictions,
+    predicted_proba = des_test.predict_proba_with_ds(predictions,
                                                      probabilities)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
 
@@ -132,7 +130,7 @@ def test_predict_proba_weighting_soft_voting(create_pool_classifiers):
     des_test.estimate_competence = MagicMock(return_value=competences)
     des_test.n_classes_ = 2
 
-    predicted_proba = des_test.predict_proba_with_ds(query, predictions,
+    predicted_proba = des_test.predict_proba_with_ds(predictions,
                                                      probabilities)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
 
@@ -153,7 +151,7 @@ def test_predict_proba_hybrid_soft_voting(create_pool_classifiers):
     des_test.n_classes_ = 2
     des_test.estimate_competence = MagicMock(return_value=competences)
     des_test.select = MagicMock(return_value=selected_indices)
-    predicted_proba = des_test.predict_proba_with_ds(query, predictions,
+    predicted_proba = des_test.predict_proba_with_ds(predictions,
                                                      probabilities)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
 
@@ -170,7 +168,7 @@ def test_predict_proba_selection_hard_voting(create_pool_classifiers):
     des_test.n_classes_ = 2
     des_test.select = MagicMock(return_value=selected_indices)
 
-    predicted_proba = des_test.predict_proba_with_ds(query, predictions)
+    predicted_proba = des_test.predict_proba_with_ds(predictions)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
 
 
@@ -187,7 +185,7 @@ def test_predict_proba_weighting_hard_voting(create_pool_classifiers):
     des_test.estimate_competence = MagicMock(return_value=competences)
     des_test.n_classes_ = 2
 
-    predicted_proba = des_test.predict_proba_with_ds(query, predictions)
+    predicted_proba = des_test.predict_proba_with_ds(predictions)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
 
 
@@ -206,7 +204,7 @@ def test_predict_proba_hybrid_hard_voting(create_pool_classifiers):
     des_test.estimate_competence = MagicMock(return_value=competences)
     des_test.select = MagicMock(return_value=selected_indices)
 
-    predicted_proba = des_test.predict_proba_with_ds(query, predictions)
+    predicted_proba = des_test.predict_proba_with_ds(predictions)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
 
 

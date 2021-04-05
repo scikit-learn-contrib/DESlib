@@ -338,7 +338,7 @@ class METADES(BaseDES):
         # Get the region of competence using the feature space and
         # the decision space. Use K + 1 to later remove itself
         # from the set.
-        _, idx_neighbors = self._get_region_competence(
+        _, idx_neighbors = self.get_competence_region(
             self.DSEL_data_[indices_selected, :], self.k_ + 1)
         _, idx_neighbors_op = self._get_similar_out_profiles(
             self.dsel_scores_[indices_selected], self.Kp_ + 1)
@@ -444,7 +444,7 @@ class METADES(BaseDES):
 
         return selected_classifiers
 
-    def estimate_competence_from_proba(self, query, neighbors, probabilities,
+    def estimate_competence_from_proba(self, neighbors, probabilities,
                                        distances=None):
         """Estimate the competence of each base classifier :math:`c_i`
         the classification of the query sample. This method received an array
@@ -457,15 +457,11 @@ class METADES(BaseDES):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
         neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 
         distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test
-            sample.
+            Distances from the k nearest neighbors to the query.
 
         probabilities : array of shape (n_samples, n_classifiers, n_classes)
             Probabilities estimates obtained by each each base classifier for

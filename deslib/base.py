@@ -63,128 +63,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 'Using knn_classifier="faiss" requires that the FAISS library '
                 'be installed.Please check the Installation Guide.')
 
-    @abstractmethod
-    def select(self, competences):
-        """Select the most competent classifier for
-        the classification of the query sample x.
-        The most competent classifier (dcs) or an ensemble
-        with the most competent classifiers (des) is returned
-
-        Parameters
-        ----------
-        competences : array of shape (n_samples, n_classifiers)
-                      The estimated competence level of each base classifier
-                      for test example
-
-        Returns
-        -------
-        selected_classifiers : array containing the selected base classifiers
-                               for each test sample
-
-        """
-        pass
-
-    @abstractmethod
-    def estimate_competence(self, query, neighbors, distances=None,
-                            predictions=None):
-        """estimate the competence of each base classifier :math:`c_{i}`
-        the classification of the query sample :math:`\\mathbf{x}`.
-        Returns an array containing the level of competence estimated
-        for each base classifier. The size of the vector is equals to
-        the size of the generated_pool of classifiers.
-
-        Parameters
-        ----------
-        query : array of shape (n_samples, n_features)
-                The query sample
-
-        neighbors : array of shape (n_samples, n_neighbors)
-                    Indices of the k nearest neighbors according for each
-                    test sample.
-
-        distances : array of shape (n_samples, n_neighbors)
-                    Distances of the k nearest neighbors according for each
-                    test sample.
-
-        predictions : array of shape (n_samples, n_classifiers)
-                      Predictions of the base classifiers for all test examples
-        Returns
-        -------
-        competences : array (n_classifiers) containing the competence level
-                      estimated for each base classifier
-        """
-        pass
-
-    @abstractmethod
-    def classify_with_ds(self, query, predictions, probabilities=None,
-                         neighbors=None, distances=None, DFP_mask=None):
-        """Predicts the label of the corresponding query sample.
-        Returns the predicted label.
-
-        Parameters
-        ----------
-        query : array of shape (n_samples, n_features)
-            The test examples.
-
-        predictions : array of shape (n_samples, n_classifiers)
-            Predictions of the base classifiers for all test examples
-
-        probabilities : array of shape (n_samples, n_classifiers, n_classes)
-            Probabilities estimates of each base classifier for all test
-            examples (For methods that always require probabilities from the
-            base classifiers)
-
-        neighbors : array of shape (n_samples, n_neighbors)
-            Indices of the k nearest neighbors according for each test sample
-
-        distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test sample
-
-        DFP_mask : array of shape (n_samples, n_classifiers)
-            Mask containing 1 for the selected base classifier and 0 otherwise.
-
-        Returns
-        -------
-        predicted_label : array of shape (n_samples)
-            The predicted label for each query
-        """
-        pass
-
-    @abstractmethod
-    def predict_proba_with_ds(self, query, predictions, probabilities,
-                              neighbors=None, distances=None, DFP_mask=None):
-        """Predicts the posterior probabilities of the corresponding
-        query sample. Returns the probability estimates of each class.
-
-        Parameters
-        ----------
-        query : array of shape (n_samples, n_features)
-            The test examples.
-
-        predictions : array of shape (n_samples, n_classifiers)
-            Predictions of the base classifiers for all test examples
-
-        probabilities : array of shape (n_samples, n_classifiers, n_classes)
-            The predictions of each base classifier for all samples (For
-            methods that always require probabilities from the base
-            classifiers).
-
-        neighbors : array of shape (n_samples, n_neighbors)
-            Indices of the k nearest neighbors according for each test sample
-
-        distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test sample
-
-        DFP_mask : array of shape (n_samples, n_classifiers)
-           Mask containing 1 for the selected base classifier and 0 otherwise.
-
-        Returns
-        -------
-        predicted_proba: array of shape (n_samples, n_classes)
-            Posterior probabilities estimates for each test example.
-        """
-        pass
-
     def fit(self, X, y):
         """Prepare the DS model by setting the KNN algorithm and
         pre-processing the information required to apply the DS
@@ -237,7 +115,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self._validate_parameters()
 
         # Check label encoder on the pool of classifiers
-        self.check_label_encoder()
+        self._check_label_encoder()
 
         self._setup_label_encoder(y)
         y_dsel = self.enc_.transform(y_dsel)
@@ -253,7 +131,312 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             self._validate_ih()
         return self
 
-    def check_label_encoder(self):
+    def get_competence_region(self, query, k=None):
+        """Compute the region of competence of the query sample
+        using the data belonging to DSEL.
+
+        Parameters
+        ----------
+        query : array of shape (n_samples, n_features)
+                The test examples.
+
+        k : int (Default = self.k)
+            The number of neighbors used to in the region of competence.
+
+        Returns
+        -------
+        dists : array of shape (n_samples, k)
+                The distances between the query and each sample in the region
+                of competence. The vector is ordered in an ascending fashion.
+
+        idx : array of shape (n_samples, k)
+              Indices of the instances belonging to the region of competence of
+              the given query sample.
+        """
+        if k is None:
+            k = self.k_
+
+        dists, idx = self.roc_algorithm_.kneighbors(query,
+                                                    n_neighbors=k,
+                                                    return_distance=True)
+
+        return np.atleast_2d(dists), np.atleast_2d(idx)
+
+    @abstractmethod
+    def estimate_competence(self, competence_region, distances=None,
+                            predictions=None):
+        """estimate the competence of each base classifier :math:`c_{i}`
+        the classification of the query sample :math:`\\mathbf{x}`.
+        Returns an array containing the level of competence estimated
+        for each base classifier. The size of the vector is equals to
+        the size of the generated_pool of classifiers.
+
+        Parameters
+        ----------
+        competence_region : array of shape (n_samples, n_neighbors)
+                    Indices of the k nearest neighbors according for each
+                    test sample.
+
+        distances : array of shape (n_samples, n_neighbors)
+                    Distances of the k nearest neighbors according for each
+                    test sample.
+
+        predictions : array of shape (n_samples, n_classifiers)
+                      Predictions of the base classifiers for all test examples
+        Returns
+        -------
+        competences : array (n_classifiers) containing the competence level
+                      estimated for each base classifier
+        """
+        pass
+
+    @abstractmethod
+    def select(self, competences):
+        """Select the most competent classifier for
+        the classification of the query sample x.
+        The most competent classifier (dcs) or an ensemble
+        with the most competent classifiers (des) is returned
+
+        Parameters
+        ----------
+        competences : array of shape (n_samples, n_classifiers)
+                      The estimated competence level of each base classifier
+                      for test example
+
+        Returns
+        -------
+        selected_classifiers : array containing the selected base classifiers
+                               for each test sample
+
+        """
+        pass
+
+    @abstractmethod
+    def classify_with_ds(self,predictions, probabilities=None,
+                         neighbors=None, distances=None, DFP_mask=None):
+        """Predicts the label of the corresponding query sample.
+        Returns the predicted label.
+
+        Parameters
+        ----------
+        predictions : array of shape (n_samples, n_classifiers)
+            Predictions of the base classifiers for all test examples
+
+        probabilities : array of shape (n_samples, n_classifiers, n_classes)
+            Probabilities estimates of each base classifier for all test
+            examples (For methods that always require probabilities from the
+            base classifiers)
+
+        neighbors : array of shape (n_samples, n_neighbors)
+            Indices of the k nearest neighbors.
+        distances : array of shape (n_samples, n_neighbors)
+            Distances from the k nearest neighbors to the query
+
+        DFP_mask : array of shape (n_samples, n_classifiers)
+            Mask containing 1 for the selected base classifier and 0 otherwise.
+
+        Returns
+        -------
+        predicted_label : array of shape (n_samples)
+            The predicted label for each query
+        """
+        pass
+
+    @abstractmethod
+    def predict_proba_with_ds(self, predictions, probabilities,
+                              neighbors=None, distances=None, DFP_mask=None):
+        """Predicts the posterior probabilities of the corresponding
+        query sample. Returns the probability estimates of each class.
+
+        Parameters
+        ----------
+        predictions : array of shape (n_samples, n_classifiers)
+            Predictions of the base classifiers for all test examples
+
+        probabilities : array of shape (n_samples, n_classifiers, n_classes)
+            The predictions of each base classifier for all samples (For
+            methods that always require probabilities from the base
+            classifiers).
+
+        neighbors : array of shape (n_samples, n_neighbors)
+            Indices of the k nearest neighbors.
+        distances : array of shape (n_samples, n_neighbors)
+            Distances from the k nearest neighbors to the query
+
+        DFP_mask : array of shape (n_samples, n_classifiers)
+           Mask containing 1 for the selected base classifier and 0 otherwise.
+
+        Returns
+        -------
+        predicted_proba: array of shape (n_samples, n_classes)
+            Posterior probabilities estimates for each test example.
+        """
+        pass
+
+    def predict(self, X):
+        """Predict the class label for each sample in X.
+
+        Parameters
+        ----------
+        X : array of shape (n_samples, n_features)
+            The input data.
+
+        Returns
+        -------
+        predicted_labels : array of shape (n_samples)
+                           Predicted class label for each sample in X.
+        """
+        check_is_fitted(self,
+                        ["DSEL_processed_", "DSEL_data_", "DSEL_target_"])
+        X = check_array(X)
+        preds = np.empty(X.shape[0], dtype=np.intp)
+        need_proba = self.needs_proba or self.voting == 'soft'
+
+        base_preds, base_probas = self._preprocess_predictions(X, need_proba)
+        # predict all agree
+        ind_disagreement, ind_all_agree = self._split_agreement(base_preds)
+        if ind_all_agree.size:
+            preds[ind_all_agree] = base_preds[ind_all_agree, 0]
+        # predict with IH
+        if ind_disagreement.size:
+            distances, ind_ds_classifier, neighbors = self._IH_prediction(
+                X, ind_disagreement, preds, is_proba=False
+            )
+            # Predict with DS - Check if there are still samples to be labeled.
+            if ind_ds_classifier.size:
+                DFP_mask = self._get_DFP_mask(neighbors)
+                inds, sel_preds, sel_probas = self._prepare_indices_DS(
+                    base_preds, base_probas, ind_disagreement,
+                    ind_ds_classifier)
+                preds_ds = self.classify_with_ds(sel_preds, sel_probas,
+                                                 neighbors, distances,
+                                                 DFP_mask)
+                preds[inds] = preds_ds
+
+        return self.classes_.take(preds)
+
+    def predict_proba(self, X):
+        """Estimates the posterior probabilities for sample in X.
+
+        Parameters
+        ----------
+        X : array of shape (n_samples, n_features)
+            The input data.
+
+        Returns
+        -------
+        predicted_proba : array of shape (n_samples, n_classes)
+                          Probabilities estimates for each sample in X.
+        """
+        check_is_fitted(self,
+                        ["DSEL_processed_", "DSEL_data_", "DSEL_target_"])
+        self._check_predict_proba()
+        X = check_array(X, ensure_2d=False)
+        probas = np.zeros((X.shape[0], self.n_classes_))
+        base_preds, base_probas = self._preprocess_predictions(X, True)
+        # predict all agree
+        ind_disagreement, ind_all_agree = self._split_agreement(base_preds)
+        if ind_all_agree.size:
+            probas[ind_all_agree] = base_probas[ind_all_agree].mean(axis=1)
+        # predict with IH
+        if ind_disagreement.size:
+            distances, ind_ds_classifier, neighbors = self._IH_prediction(
+                    X, ind_disagreement, probas, is_proba=True)
+            # Predict with DS - Check if there are still samples to be labeled.
+            if ind_ds_classifier.size:
+                DFP_mask = self._get_DFP_mask(neighbors)
+                inds, sel_preds, sel_probas = self._prepare_indices_DS(
+                    base_preds, base_probas, ind_disagreement,
+                    ind_ds_classifier)
+                probas_ds = self.predict_proba_with_ds(sel_preds,
+                                                       sel_probas,
+                                                       neighbors, distances,
+                                                       DFP_mask)
+                probas[inds] = probas_ds
+        return probas
+
+    def _preprocess_predictions(self, X, req_proba):
+        if req_proba:
+            base_probabilities = self._predict_proba_base(X)
+            base_predictions = base_probabilities.argmax(axis=2)
+        else:
+            base_probabilities = None
+            base_predictions = self._predict_base(X)
+        return base_predictions, base_probabilities
+
+    def _split_agreement(self, base_predictions):
+        all_agree_vector = BaseDS._all_classifier_agree(base_predictions)
+        ind_all_agree = np.where(all_agree_vector)[0]
+        ind_disagreement = np.where(~all_agree_vector)[0]
+        return ind_disagreement, ind_all_agree
+
+    def _IH_prediction(self, X, ind_disagree, predicted_proba, is_proba=False):
+        X_DS = X[ind_disagree, :]
+        distances, region_competence = self.get_competence_region(X_DS)
+        if self.with_IH:
+            ind_hard, ind_easy = self._split_easy_samples(region_competence)
+            distances, region_competence = self._predict_easy_samples(
+                X_DS, distances, ind_disagree, ind_easy,
+                region_competence, predicted_proba, is_proba)
+        else:
+            # IH was not considered. So all samples go to predict with DS
+            ind_hard = np.arange(ind_disagree.size)
+        return distances, ind_hard, region_competence
+
+    def _split_easy_samples(self, neighbors):
+        hardness = hardness_region_competence(neighbors,
+                                              self.DSEL_target_,
+                                              self.safe_k)
+        # Get the index associated with the easy and hard samples.
+        # easy samples are classified by the knn.
+        easy_samples_mask = hardness < self.IH_rate
+        ind_knn_classifier = np.where(easy_samples_mask)[0]
+        ind_ds_classifier = np.where(~easy_samples_mask)[0]
+        return ind_ds_classifier, ind_knn_classifier
+
+    def _predict_easy_samples(self, X_DS, distances, ind_disagreement,
+                              ind_easy, neighbors, predictions, is_proba):
+        if ind_easy.size:
+            # Accessing which samples in the original array.
+            ind_knn_original_matrix = ind_disagreement[ind_easy]
+
+            if is_proba:
+                predictions[ind_knn_original_matrix] = \
+                    self.roc_algorithm_.predict_proba(
+                        X_DS[ind_easy])
+            else:
+                y_neighbors = self.DSEL_target_[neighbors[ind_easy,
+                                                :self.safe_k]]
+                predictions_knn, _ = mode(y_neighbors, axis=1)
+                predictions[ind_knn_original_matrix] = predictions_knn.reshape(
+                    -1, )
+            neighbors = np.delete(neighbors, ind_easy, axis=0)
+            distances = np.delete(distances, ind_easy, axis=0)
+        return distances, neighbors
+
+    def _prepare_indices_DS(self, base_predictions, base_probabilities,
+                            ind_disagreement, ind_ds_classifier):
+        # Get the real indices_ of the samples that will be classified
+        # using a DS algorithm.
+        ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
+        if base_probabilities is not None:
+            selected_probas = base_probabilities[
+                ind_ds_original_matrix]
+        else:
+            selected_probas = None
+        selected_preds = base_predictions[ind_ds_original_matrix]
+        return ind_ds_original_matrix, selected_preds, selected_probas
+
+    def _get_DFP_mask(self, neighbors):
+        if self.DFP:
+            DFP_mask = frienemy_pruning_preprocessed(neighbors,
+                                                     self.DSEL_target_,
+                                                     self.DSEL_processed_)
+        else:
+            DFP_mask = np.ones((neighbors.shape[0], self.n_classifiers_))
+        return DFP_mask
+
+    def _check_label_encoder(self):
         # Check if base classifiers are not using LabelEncoder (the case for
         # scikit-learn's ensembles):
         if isinstance(self.pool_classifiers_, BaseEnsemble):
@@ -277,7 +460,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                           category=RuntimeWarning)
 
     def _validate_k(self):
-
         # validate safe_k
         if self.k is None:
             self.k_ = self.n_samples_
@@ -351,200 +533,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             self.knn_class_ = knn_class
 
         self.roc_algorithm_ = self.knn_class_(n_neighbors=self.k)
-
-    def _get_region_competence(self, query, k=None):
-        """Compute the region of competence of the query sample
-        using the data belonging to DSEL.
-
-        Parameters
-        ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
-        k : int (Default = self.k)
-            The number of neighbors used to in the region of competence.
-
-        Returns
-        -------
-        dists : array of shape (n_samples, k)
-                The distances between the query and each sample in the region
-                of competence. The vector is ordered in an ascending fashion.
-
-        idx : array of shape (n_samples, k)
-              Indices of the instances belonging to the region of competence of
-              the given query sample.
-        """
-        if k is None:
-            k = self.k_
-
-        dists, idx = self.roc_algorithm_.kneighbors(query,
-                                                    n_neighbors=k,
-                                                    return_distance=True)
-
-        return np.atleast_2d(dists), np.atleast_2d(idx)
-
-    def predict(self, X):
-        """Predict the class label for each sample in X.
-
-        Parameters
-        ----------
-        X : array of shape (n_samples, n_features)
-            The input data.
-
-        Returns
-        -------
-        predicted_labels : array of shape (n_samples)
-                           Predicted class label for each sample in X.
-        """
-        check_is_fitted(self,
-                        ["DSEL_processed_", "DSEL_data_", "DSEL_target_"])
-        X = check_array(X)
-        preds = np.empty(X.shape[0], dtype=np.intp)
-        need_proba = self.needs_proba or self.voting == 'soft'
-
-        base_preds, base_probas = self._preprocess_predictions(X, need_proba)
-        # predict all agree
-        ind_disagreement, ind_all_agree = self._split_agreement(base_preds)
-        if ind_all_agree.size:
-            preds[ind_all_agree] = base_preds[ind_all_agree, 0]
-        # predict with IH
-        if ind_disagreement.size:
-            distances, ind_ds_classifier, neighbors = self._IH_prediction(
-                X, ind_disagreement, preds, is_proba=False
-            )
-            # Predict with DS - Check if there are still samples to be labeled.
-            if ind_ds_classifier.size:
-                DFP_mask = self._get_DFP_mask(neighbors)
-                inds, sel_preds, sel_probas = self._prepare_indices_DS(
-                    base_preds, base_probas, ind_disagreement,
-                    ind_ds_classifier)
-                preds_ds = self.classify_with_ds(None, sel_preds, sel_probas,
-                                                 neighbors, distances,
-                                                 DFP_mask)
-                preds[inds] = preds_ds
-
-        return self.classes_.take(preds)
-
-    def predict_proba(self, X):
-        """Estimates the posterior probabilities for sample in X.
-
-        Parameters
-        ----------
-        X : array of shape (n_samples, n_features)
-            The input data.
-
-        Returns
-        -------
-        predicted_proba : array of shape (n_samples, n_classes)
-                          Probabilities estimates for each sample in X.
-        """
-        check_is_fitted(self,
-                        ["DSEL_processed_", "DSEL_data_", "DSEL_target_"])
-        self._check_predict_proba()
-        X = check_array(X, ensure_2d=False)
-        probas = np.zeros((X.shape[0], self.n_classes_))
-        base_preds, base_probas = self._preprocess_predictions(X, True)
-        # predict all agree
-        ind_disagreement, ind_all_agree = self._split_agreement(base_preds)
-        if ind_all_agree.size:
-            probas[ind_all_agree] = base_probas[ind_all_agree].mean(axis=1)
-        # predict with IH
-        if ind_disagreement.size:
-            distances, ind_ds_classifier, neighbors = self._IH_prediction(
-                    X, ind_disagreement, probas, is_proba=True)
-            # Predict with DS - Check if there are still samples to be labeled.
-            if ind_ds_classifier.size:
-                DFP_mask = self._get_DFP_mask(neighbors)
-                inds, sel_preds, sel_probas = self._prepare_indices_DS(
-                    base_preds, base_probas, ind_disagreement,
-                    ind_ds_classifier)
-                probas_ds = self.predict_proba_with_ds(None, sel_preds,
-                                                       sel_probas,
-                                                       neighbors, distances,
-                                                       DFP_mask)
-                probas[inds] = probas_ds
-        return probas
-
-    def _preprocess_predictions(self, X, req_proba):
-        if req_proba:
-            base_probabilities = self._predict_proba_base(X)
-            base_predictions = base_probabilities.argmax(axis=2)
-        else:
-            base_probabilities = None
-            base_predictions = self._predict_base(X)
-        return base_predictions, base_probabilities
-
-    def _split_agreement(self, base_predictions):
-        all_agree_vector = BaseDS._all_classifier_agree(base_predictions)
-        ind_all_agree = np.where(all_agree_vector)[0]
-        ind_disagreement = np.where(~all_agree_vector)[0]
-        return ind_disagreement, ind_all_agree
-
-    def _IH_prediction(self, X, ind_disagree, predicted_proba, is_proba=False):
-        X_DS = X[ind_disagree, :]
-        distances, region_competence = self._get_region_competence(X_DS)
-        if self.with_IH:
-            ind_hard, ind_easy = self._split_easy_samples(region_competence)
-            distances, region_competence = self._predict_easy_samples(
-                X_DS, distances, ind_disagree, ind_easy,
-                region_competence, predicted_proba, is_proba)
-        else:
-            # IH was not considered. So all samples go to predict with DS
-            ind_hard = np.arange(ind_disagree.size)
-        return distances, ind_hard, region_competence
-
-    def _split_easy_samples(self, neighbors):
-        hardness = hardness_region_competence(neighbors,
-                                              self.DSEL_target_,
-                                              self.safe_k)
-        # Get the index associated with the easy and hard samples.
-        # easy samples are classified by the knn.
-        easy_samples_mask = hardness < self.IH_rate
-        ind_knn_classifier = np.where(easy_samples_mask)[0]
-        ind_ds_classifier = np.where(~easy_samples_mask)[0]
-        return ind_ds_classifier, ind_knn_classifier
-
-    def _predict_easy_samples(self, X_DS, distances, ind_disagreement,
-                              ind_easy, neighbors, predictions, is_proba):
-        if ind_easy.size:
-            # Accessing which samples in the original array.
-            ind_knn_original_matrix = ind_disagreement[ind_easy]
-
-            if is_proba:
-                predictions[ind_knn_original_matrix] = \
-                    self.roc_algorithm_.predict_proba(
-                        X_DS[ind_easy])
-            else:
-                y_neighbors = self.DSEL_target_[neighbors[ind_easy,
-                                                :self.safe_k]]
-                predictions_knn, _ = mode(y_neighbors, axis=1)
-                predictions[ind_knn_original_matrix] = predictions_knn.reshape(
-                    -1, )
-            neighbors = np.delete(neighbors, ind_easy, axis=0)
-            distances = np.delete(distances, ind_easy, axis=0)
-        return distances, neighbors
-
-    def _prepare_indices_DS(self, base_predictions, base_probabilities,
-                            ind_disagreement, ind_ds_classifier):
-        # Get the real indices_ of the samples that will be classified
-        # using a DS algorithm.
-        ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
-        if base_probabilities is not None:
-            selected_probas = base_probabilities[
-                ind_ds_original_matrix]
-        else:
-            selected_probas = None
-        selected_preds = base_predictions[ind_ds_original_matrix]
-        return ind_ds_original_matrix, selected_preds, selected_probas
-
-    def _get_DFP_mask(self, neighbors):
-        if self.DFP:
-            DFP_mask = frienemy_pruning_preprocessed(neighbors,
-                                                     self.DSEL_target_,
-                                                     self.DSEL_processed_)
-        else:
-            DFP_mask = np.ones((neighbors.shape[0], self.n_classifiers_))
-        return DFP_mask
 
     def _preprocess_dsel(self):
         """Compute the prediction of each base classifier for

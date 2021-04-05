@@ -195,8 +195,8 @@ def test_IH_is_used(example_estimate_competence, create_pool_classifiers):
 
     ds_test.DSEL_processed_ = dsel_processed
 
-    ds_test._get_region_competence = MagicMock(return_value=(distances,
-                                                             neighbors))
+    ds_test.get_competence_region = MagicMock(return_value=(distances,
+                                                            neighbors))
     predicted = ds_test.predict(query)
 
     assert np.array_equal(predicted, expected)
@@ -239,8 +239,8 @@ def test_predict_proba_IH_knn(index,
     neighbors = neighbors[index, :]
     distances = distances[index, :]
 
-    ds_test._get_region_competence = MagicMock(return_value=(distances,
-                                                             neighbors))
+    ds_test.get_competence_region = MagicMock(return_value=(distances,
+                                                            neighbors))
 
     ds_test.roc_algorithm_.predict_proba = MagicMock(
         return_value=np.atleast_2d([0.45, 0.55]))
@@ -263,8 +263,8 @@ def test_predict_proba_instance_called(index,
     neighbors = neighbors[index, :]
     distances = distances[index, :]
 
-    ds_test._get_region_competence = MagicMock(return_value=(distances,
-                                                             neighbors))
+    ds_test.get_competence_region = MagicMock(return_value=(distances,
+                                                            neighbors))
 
     ds_test.predict_proba_with_ds = MagicMock(
         return_value=np.atleast_2d([0.25, 0.75]))

@@ -72,8 +72,6 @@ def test_select_batch_samples():
 
 def test_classify_with_ds_batch_samples():
     n_samples = 10
-    # Passing 10 samples for classification automatically
-    query = np.ones((n_samples, 2))
 
     # simulated predictions of the pool of classifiers
     predictions = np.tile(np.array([0, 1, 0]), (n_samples, 1))
@@ -84,12 +82,11 @@ def test_classify_with_ds_batch_samples():
         return_value=(np.ones((n_samples, 3))))
     desmi_test.select = MagicMock(
         return_value=np.tile(np.array([[0, 2]]), (n_samples, 1)))
-    result = desmi_test.classify_with_ds(query, predictions)
+    result = desmi_test.classify_with_ds(predictions)
     assert np.allclose(result, np.zeros(10))
 
 
 def test_predict_proba_with_ds_soft(create_pool_classifiers):
-    query = np.array([-1, 1])
     expected = np.array([0.61, 0.39])
     DFP_mask = np.ones((1, 6))
     predictions = np.array([[0, 1, 0, 0, 1, 0]])
@@ -102,14 +99,13 @@ def test_predict_proba_with_ds_soft(create_pool_classifiers):
     desmi_test.estimate_competence = MagicMock(return_value=np.ones(6))
     desmi_test.select = MagicMock(return_value=selected_indices)
 
-    predicted_proba = desmi_test.predict_proba_with_ds(query, predictions,
+    predicted_proba = desmi_test.predict_proba_with_ds(predictions,
                                                        probabilities,
                                                        DFP_mask=DFP_mask)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
 
 
 def test_predict_proba_with_ds_hard(create_pool_classifiers):
-    query = np.array([-1, 1])
     expected = np.array([0.666, 0.333])
     DFP_mask = np.ones((1, 6))
     predictions = np.array([[0, 1, 0, 0, 1, 0]])
@@ -122,7 +118,7 @@ def test_predict_proba_with_ds_hard(create_pool_classifiers):
     desmi_test.estimate_competence = MagicMock(return_value=np.ones(6))
     desmi_test.select = MagicMock(return_value=selected_indices)
 
-    predicted_proba = desmi_test.predict_proba_with_ds(query, predictions,
+    predicted_proba = desmi_test.predict_proba_with_ds(predictions,
                                                        probabilities,
                                                        DFP_mask=DFP_mask)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()

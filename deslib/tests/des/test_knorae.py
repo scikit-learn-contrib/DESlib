@@ -14,7 +14,6 @@ def test_estimate_competence_batch(example_estimate_competence,
                                    create_pool_classifiers):
     X, y, neighbors, distances, _, _ = example_estimate_competence
 
-    query = np.ones((3, 2))
     expected = np.array([[1.0, 0.0, 1.0],
                          [2.0, 0.0, 2.0],
                          [0.0, 3.0, 0.0]])
@@ -22,7 +21,7 @@ def test_estimate_competence_batch(example_estimate_competence,
     knora_e_test = KNORAE(create_pool_classifiers)
     knora_e_test.fit(X, y)
 
-    competences = knora_e_test.estimate_competence(query, neighbors,
+    competences = knora_e_test.estimate_competence(neighbors,
                                                    distances=distances)
     assert np.allclose(competences, expected)
 
@@ -34,14 +33,11 @@ def test_select(index, expected, create_pool_classifiers,
                 example_estimate_competence):
     X, y, neighbors, distances, _, _ = example_estimate_competence
 
-    query = np.atleast_2d([1, 1])
-
     knora_e_test = KNORAE(create_pool_classifiers)
     knora_e_test.fit(X, y)
     neighbors = neighbors[index, :].reshape(1, -1)
     distances = distances[index, :].reshape(1, -1)
-    competences = knora_e_test.estimate_competence(query,
-                                                   neighbors,
+    competences = knora_e_test.estimate_competence(neighbors,
                                                    distances=distances)
     selected = knora_e_test.select(competences)
 

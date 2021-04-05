@@ -1,6 +1,7 @@
+from unittest.mock import MagicMock
+
 import numpy as np
 import pytest
-from unittest.mock import MagicMock
 from sklearn.linear_model import Perceptron
 from sklearn.utils.estimator_checks import check_estimator
 
@@ -30,7 +31,7 @@ def test_estimate_competence_all_ones(index, example_all_ones):
     expected = [1.0, 1.0, 1.0]
     predictions = np.array([0, 1, 0])
 
-    competences = a_posteriori_test.estimate_competence(query, neighbors,
+    competences = a_posteriori_test.estimate_competence(neighbors,
                                                         distances,
                                                         predictions=np.array(
                                                             predictions))
@@ -54,7 +55,7 @@ def test_estimate_competence_kuncheva_ex(example_kuncheva):
 
     predictions = np.array([[1]])
 
-    competences = a_posteriori_test.estimate_competence(query, neighbors,
+    competences = a_posteriori_test.estimate_competence(neighbors,
                                                         distances,
                                                         predictions=np.array(
                                                             predictions))
@@ -83,7 +84,7 @@ def test_estimate_competence_kuncheva_ex_batch(example_kuncheva):
     distances = example_kuncheva['distances']
 
     predictions = [1]
-    competences = a_posteriori_test.estimate_competence(query, neighbors,
+    competences = a_posteriori_test.estimate_competence(neighbors,
                                                         distances,
                                                         predictions=np.array(
                                                             predictions))
@@ -111,7 +112,7 @@ def test_estimate_competence_diff_target(index, example_all_ones):
     expected = [0.0, 0.0, 0.0]
 
     predictions = np.array([0, 1, 0])
-    competences = a_posteriori_test.estimate_competence(query, neighbors,
+    competences = a_posteriori_test.estimate_competence(neighbors,
                                                         distances,
                                                         predictions=np.array(
                                                             predictions))

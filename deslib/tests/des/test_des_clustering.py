@@ -71,19 +71,18 @@ def test_fit_heterogeneous_clusters(example_estimate_competence,
 
 def test_estimate_competence(create_pool_classifiers,
                              example_estimate_competence):
-    query = np.atleast_2d([1, 1])
     clustering_test = DESClustering(create_pool_classifiers * 2,
                                     clustering=KMeans(n_clusters=2),
                                     pct_accuracy=0.5, pct_diversity=0.33)
 
     X, y = example_estimate_competence[0:2]
     clustering_test.fit(X, y)
-    competences = clustering_test.estimate_competence(query, 0)
+    competences = clustering_test.estimate_competence(0)
 
     assert np.array_equal(competences,
                           clustering_test.performance_cluster_[0, :])
 
-    competences = clustering_test.estimate_competence(query, 1)
+    competences = clustering_test.estimate_competence(1)
     assert np.array_equal(competences,
                           clustering_test.performance_cluster_[1, :])
 
@@ -130,8 +129,7 @@ def test_classify_instance(create_pool_classifiers):
     for clf in clustering_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
 
-    predicted = clustering_test.classify_with_ds(query,
-                                                 np.atleast_2d(predictions))
+    predicted = clustering_test.classify_with_ds(np.atleast_2d(predictions))
     assert predicted == 0
 
 

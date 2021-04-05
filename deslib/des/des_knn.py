@@ -164,7 +164,7 @@ class DESKNN(BaseDS):
         self._set_diversity_func()
         return self
 
-    def estimate_competence(self, query, neighbors, distances=None,
+    def estimate_competence(self, competence_region, distances=None,
                             predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}`
         for the classification of the query sample.
@@ -179,15 +179,11 @@ class DESKNN(BaseDS):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The query sample.
-
-        neighbors : array of shape (n_samples, n_neighbors)
+        competence_region : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 
         distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test
-            sample.
+                        Distances from the k nearest neighbors to the query
 
 
         predictions : array of shape (n_samples, n_classifiers)
@@ -211,14 +207,14 @@ class DESKNN(BaseDS):
                     all test examples.
 
         """
-        accuracy = np.mean(self.DSEL_processed_[neighbors, :], axis=1)
+        accuracy = np.mean(self.DSEL_processed_[competence_region, :], axis=1)
 
-        predicted_matrix = self.BKS_DSEL_[neighbors, :]
-        targets = self.DSEL_target_[neighbors]
+        predicted_matrix = self.BKS_DSEL_[competence_region, :]
+        targets = self.DSEL_target_[competence_region]
 
         # TODO: optimize this part with numpy instead of for loops
-        diversity = np.zeros((neighbors.shape[0], self.n_classifiers_))
-        for sample_idx in range(neighbors.shape[0]):
+        diversity = np.zeros((competence_region.shape[0], self.n_classifiers_))
+        for sample_idx in range(competence_region.shape[0]):
             this_diversity = compute_pairwise_diversity(targets[sample_idx, :],
                                                         predicted_matrix[
                                                         sample_idx, :, :],
@@ -274,15 +270,12 @@ class DESKNN(BaseDS):
 
         return selected_classifiers
 
-    def classify_with_ds(self, query, predictions, probabilities=None,
+    def classify_with_ds(self, predictions, probabilities=None,
                          neighbors=None, distances=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples
-
         predictions : array of shape (n_samples, n_classifiers)
                       Predictions of the base classifiers for all test examples
 
@@ -294,8 +287,7 @@ class DESKNN(BaseDS):
             Indices of the k nearest neighbors according for each test sample.
 
         distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test
-            sample.
+                        Distances from the k nearest neighbors to the query
 
         DFP_mask : array of shape (n_samples, n_classifiers)
             Mask containing 1 for the selected base classifier and 0 otherwise.
@@ -314,20 +306,17 @@ class DESKNN(BaseDS):
         predicted_label : array of shape (n_samples)
                           Predicted class label for each test example.
         """
-        proba = self.predict_proba_with_ds(query, predictions, probabilities,
+        proba = self.predict_proba_with_ds(predictions, probabilities,
                                            neighbors, distances, DFP_mask)
         predicted_label = proba.argmax(axis=1)
         return predicted_label
 
-    def predict_proba_with_ds(self, query, predictions, probabilities,
+    def predict_proba_with_ds(self, predictions, probabilities,
                               neighbors=None, distances=None, DFP_mask=None):
         """Predicts the posterior probabilities.
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples.
 
@@ -336,10 +325,10 @@ class DESKNN(BaseDS):
             examples.
 
         neighbors : array of shape (n_samples, n_neighbors)
-            Indices of the k nearest neighbors according for each test sample
+            Indices of the k nearest neighbors.
 
         distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test sample
+            Distances from the k nearest neighbors to the query.
 
         DFP_mask : array of shape (n_samples, n_classifiers)
             Mask containing 1 for the selected base classifier and 0 otherwise.
@@ -357,8 +346,7 @@ class DESKNN(BaseDS):
         predicted_proba : array = [n_samples, n_classes]
                           Probability estimates for all test examples.
         """
-        accuracy, diversity = self.estimate_competence(query,
-                                                       neighbors,
+        accuracy, diversity = self.estimate_competence(neighbors,
                                                        distances=distances,
                                                        predictions=predictions)
         if self.DFP:

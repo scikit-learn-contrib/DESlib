@@ -219,7 +219,7 @@ class KNOP(BaseDES):
                                              return_distance=True)
         return dists, np.atleast_2d(idx)
 
-    def estimate_competence_from_proba(self, query, probabilities,
+    def estimate_competence_from_proba(self, probabilities,
                                        neighbors=None, distances=None):
 
         """The competence of the base classifiers is simply estimated as
@@ -232,15 +232,11 @@ class KNOP(BaseDES):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
         neighbors : array of shape (n_samples, n_neighbors)
-            Indices of the k nearest neighbors according for each test sample
+            Indices of the k nearest neighbors.
 
         distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test
-            sample.
+                        Distances from the k nearest neighbors to the query.
 
         probabilities : array of shape (n_samples, n_classifiers, n_classes)
             Probabilities estimates obtained by each each base classifier
