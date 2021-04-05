@@ -63,26 +63,104 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 'Using knn_classifier="faiss" requires that the FAISS library '
                 'be installed.Please check the Installation Guide.')
 
-    @abstractmethod
-    def select(self, competences):
-        """Select the most competent classifier for
-        the classification of the query sample x.
-        The most competent classifier (dcs) or an ensemble
-        with the most competent classifiers (des) is returned
+    def fit(self, X, y):
+        """Prepare the DS model by setting the KNN algorithm and
+        pre-processing the information required to apply the DS
+        methods
 
         Parameters
         ----------
-        competences : array of shape (n_samples, n_classifiers)
-                      The estimated competence level of each base classifier
-                      for test example
+        X : array of shape (n_samples, n_features)
+            The input data.
+
+        y : array of shape (n_samples)
+            class labels of each example in X.
 
         Returns
         -------
-        selected_classifiers : array containing the selected base classifiers
-                               for each test sample
-
+        self
         """
-        pass
+        self.random_state_ = check_random_state(self.random_state)
+
+        # Check if the length of X and y are consistent.
+        X, y = check_X_y(X, y)
+
+        # Check if the pool of classifiers is None.
+        # If yes, use a BaggingClassifier for the pool.
+        if self.pool_classifiers is None:
+            if len(X) < 2:
+                raise ValueError('More than one sample is needed '
+                                 'if the pool of classifiers is not informed.')
+
+            # Split the dataset into training (for the base classifier) and
+            # DSEL (for DS)
+            X_train, X_dsel, y_train, y_dsel = train_test_split(
+                X, y, test_size=self.DSEL_perc,
+                random_state=self.random_state_)
+
+            self.pool_classifiers_ = BaggingClassifier(
+                random_state=self.random_state_, n_jobs=self.n_jobs)
+            self.pool_classifiers_.fit(X_train, y_train)
+
+        else:
+            self._check_base_classifier_fitted()
+            self.pool_classifiers_ = self.pool_classifiers
+            X_dsel = X
+            y_dsel = y
+
+        self.n_classifiers_ = len(self.pool_classifiers_)
+
+        # check if the input parameters are correct. Raise an error if the
+        # generated_pool is not fitted or k < 1
+        self._validate_parameters()
+
+        # Check label encoder on the pool of classifiers
+        self._check_label_encoder()
+
+        self._setup_label_encoder(y)
+        y_dsel = self.enc_.transform(y_dsel)
+        self._set_dsel(X_dsel, y_dsel)
+
+        # validate the value of k
+        self._validate_k()
+        self._set_region_of_competence_algorithm()
+        self.roc_algorithm_.fit(X_dsel, y_dsel)
+
+        # validate the IH
+        if self.with_IH:
+            self._validate_ih()
+        return self
+
+    def get_competence_region(self, query, k=None):
+        """Compute the region of competence of the query sample
+        using the data belonging to DSEL.
+
+        Parameters
+        ----------
+        query : array of shape (n_samples, n_features)
+                The test examples.
+
+        k : int (Default = self.k)
+            The number of neighbors used to in the region of competence.
+
+        Returns
+        -------
+        dists : array of shape (n_samples, k)
+                The distances between the query and each sample in the region
+                of competence. The vector is ordered in an ascending fashion.
+
+        idx : array of shape (n_samples, k)
+              Indices of the instances belonging to the region of competence of
+              the given query sample.
+        """
+        if k is None:
+            k = self.k_
+
+        dists, idx = self.roc_algorithm_.kneighbors(query,
+                                                    n_neighbors=k,
+                                                    return_distance=True)
+
+        return np.atleast_2d(dists), np.atleast_2d(idx)
 
     @abstractmethod
     def estimate_competence(self, competence_region, distances=None,
@@ -109,6 +187,27 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         -------
         competences : array (n_classifiers) containing the competence level
                       estimated for each base classifier
+        """
+        pass
+
+    @abstractmethod
+    def select(self, competences):
+        """Select the most competent classifier for
+        the classification of the query sample x.
+        The most competent classifier (dcs) or an ensemble
+        with the most competent classifiers (des) is returned
+
+        Parameters
+        ----------
+        competences : array of shape (n_samples, n_classifiers)
+                      The estimated competence level of each base classifier
+                      for test example
+
+        Returns
+        -------
+        selected_classifiers : array containing the selected base classifiers
+                               for each test sample
+
         """
         pass
 
@@ -173,204 +272,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             Posterior probabilities estimates for each test example.
         """
         pass
-
-    def fit(self, X, y):
-        """Prepare the DS model by setting the KNN algorithm and
-        pre-processing the information required to apply the DS
-        methods
-
-        Parameters
-        ----------
-        X : array of shape (n_samples, n_features)
-            The input data.
-
-        y : array of shape (n_samples)
-            class labels of each example in X.
-
-        Returns
-        -------
-        self
-        """
-        self.random_state_ = check_random_state(self.random_state)
-
-        # Check if the length of X and y are consistent.
-        X, y = check_X_y(X, y)
-
-        # Check if the pool of classifiers is None.
-        # If yes, use a BaggingClassifier for the pool.
-        if self.pool_classifiers is None:
-            if len(X) < 2:
-                raise ValueError('More than one sample is needed '
-                                 'if the pool of classifiers is not informed.')
-
-            # Split the dataset into training (for the base classifier) and
-            # DSEL (for DS)
-            X_train, X_dsel, y_train, y_dsel = train_test_split(
-                X, y, test_size=self.DSEL_perc,
-                random_state=self.random_state_)
-
-            self.pool_classifiers_ = BaggingClassifier(
-                random_state=self.random_state_, n_jobs=self.n_jobs)
-            self.pool_classifiers_.fit(X_train, y_train)
-
-        else:
-            self._check_base_classifier_fitted()
-            self.pool_classifiers_ = self.pool_classifiers
-            X_dsel = X
-            y_dsel = y
-
-        self.n_classifiers_ = len(self.pool_classifiers_)
-
-        # check if the input parameters are correct. Raise an error if the
-        # generated_pool is not fitted or k < 1
-        self._validate_parameters()
-
-        # Check label encoder on the pool of classifiers
-        self.check_label_encoder()
-
-        self._setup_label_encoder(y)
-        y_dsel = self.enc_.transform(y_dsel)
-        self._set_dsel(X_dsel, y_dsel)
-
-        # validate the value of k
-        self._validate_k()
-        self._set_region_of_competence_algorithm()
-        self.roc_algorithm_.fit(X_dsel, y_dsel)
-
-        # validate the IH
-        if self.with_IH:
-            self._validate_ih()
-        return self
-
-    def check_label_encoder(self):
-        # Check if base classifiers are not using LabelEncoder (the case for
-        # scikit-learn's ensembles):
-        if isinstance(self.pool_classifiers_, BaseEnsemble):
-            if np.array_equal(self.pool_classifiers_.classes_,
-                              self.pool_classifiers_[0].classes_):
-                self.base_already_encoded_ = False
-            else:
-                self.base_already_encoded_ = True
-        else:
-            self.base_already_encoded_ = False
-
-    def _compute_highest_possible_IH(self):
-        highest_IH = (self.safe_k - math.ceil(
-            self.safe_k / self.n_classes_)) / self.safe_k
-        return highest_IH
-
-    def _validate_ih(self):
-        highest_IH = self._compute_highest_possible_IH()
-        if self.IH_rate > highest_IH:
-            warnings.warn("IH_rate is bigger than the highest possible IH.",
-                          category=RuntimeWarning)
-
-    def _validate_k(self):
-
-        # validate safe_k
-        if self.k is None:
-            self.k_ = self.n_samples_
-        elif self.k > self.n_samples_:
-            msg = "k is bigger than DSEL size. Using All DSEL examples " \
-                  "for competence estimation."
-            warnings.warn(msg, category=RuntimeWarning)
-            self.k_ = self.n_samples_ - 1
-        else:
-            self.k_ = self.k
-
-        # Validate safe_k
-        if self.with_IH and self.safe_k is None:
-            self.safe_k = self.k
-
-    def _setup_label_encoder(self, y):
-        self.enc_ = LabelEncoder()
-        self.enc_.fit(y)
-        self.classes_ = self.enc_.classes_
-
-    def _encode_base_labels(self, y):
-        if self.base_already_encoded_:
-            return y
-        else:
-            return self.enc_.transform(y)
-
-    def _set_dsel(self, X, y):
-        """Pre-Process the input X and y data into the dynamic selection
-        dataset(DSEL) and get information about the structure of the data
-        (e.g., n_classes, n_samples, classes)
-
-        Parameters
-        ----------
-        X : array of shape (n_samples, n_features)
-            The Input data.
-
-        y : array of shape (n_samples)
-            class labels of each sample in X.
-        """
-        self.DSEL_data_ = X
-        self.DSEL_target_ = y
-        self.n_classes_ = self.classes_.size
-        self.n_features_ = X.shape[1]
-        self.n_samples_ = self.DSEL_target_.size
-        self.BKS_DSEL_ = self._predict_base(self.DSEL_data_)
-        self.DSEL_processed_ = self.BKS_DSEL_ == y[:, np.newaxis]
-
-    def _set_region_of_competence_algorithm(self):
-        if self.knn_classifier is None or self.knn_classifier in ['knn',
-                                                                  'sklearn']:
-            knn_class = functools.partial(KNeighborsClassifier,
-                                          n_jobs=self.n_jobs,
-                                          algorithm="auto")
-        elif self.knn_classifier == 'faiss':
-            knn_class = functools.partial(
-                faiss_knn_wrapper.FaissKNNClassifier,
-                n_jobs=self.n_jobs, algorithm="brute")
-        elif callable(self.knn_classifier):
-            knn_class = self.knn_classifier
-        else:
-            raise ValueError('"knn_classifier" should be one of the following '
-                             '["knn", "faiss", None] or an estimator class.')
-
-        if self.knne:
-            self.knn_class_ = functools.partial(
-                KNNE,
-                knn_classifier=knn_class,
-                n_jobs=self.n_jobs,
-                algorithm="auto")
-        else:
-            self.knn_class_ = knn_class
-
-        self.roc_algorithm_ = self.knn_class_(n_neighbors=self.k)
-
-    def get_competence_region(self, query, k=None):
-        """Compute the region of competence of the query sample
-        using the data belonging to DSEL.
-
-        Parameters
-        ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
-        k : int (Default = self.k)
-            The number of neighbors used to in the region of competence.
-
-        Returns
-        -------
-        dists : array of shape (n_samples, k)
-                The distances between the query and each sample in the region
-                of competence. The vector is ordered in an ascending fashion.
-
-        idx : array of shape (n_samples, k)
-              Indices of the instances belonging to the region of competence of
-              the given query sample.
-        """
-        if k is None:
-            k = self.k_
-
-        dists, idx = self.roc_algorithm_.kneighbors(query,
-                                                    n_neighbors=k,
-                                                    return_distance=True)
-
-        return np.atleast_2d(dists), np.atleast_2d(idx)
 
     def predict(self, X):
         """Predict the class label for each sample in X.
@@ -534,6 +435,104 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         else:
             DFP_mask = np.ones((neighbors.shape[0], self.n_classifiers_))
         return DFP_mask
+
+    def _check_label_encoder(self):
+        # Check if base classifiers are not using LabelEncoder (the case for
+        # scikit-learn's ensembles):
+        if isinstance(self.pool_classifiers_, BaseEnsemble):
+            if np.array_equal(self.pool_classifiers_.classes_,
+                              self.pool_classifiers_[0].classes_):
+                self.base_already_encoded_ = False
+            else:
+                self.base_already_encoded_ = True
+        else:
+            self.base_already_encoded_ = False
+
+    def _compute_highest_possible_IH(self):
+        highest_IH = (self.safe_k - math.ceil(
+            self.safe_k / self.n_classes_)) / self.safe_k
+        return highest_IH
+
+    def _validate_ih(self):
+        highest_IH = self._compute_highest_possible_IH()
+        if self.IH_rate > highest_IH:
+            warnings.warn("IH_rate is bigger than the highest possible IH.",
+                          category=RuntimeWarning)
+
+    def _validate_k(self):
+        # validate safe_k
+        if self.k is None:
+            self.k_ = self.n_samples_
+        elif self.k > self.n_samples_:
+            msg = "k is bigger than DSEL size. Using All DSEL examples " \
+                  "for competence estimation."
+            warnings.warn(msg, category=RuntimeWarning)
+            self.k_ = self.n_samples_ - 1
+        else:
+            self.k_ = self.k
+
+        # Validate safe_k
+        if self.with_IH and self.safe_k is None:
+            self.safe_k = self.k
+
+    def _setup_label_encoder(self, y):
+        self.enc_ = LabelEncoder()
+        self.enc_.fit(y)
+        self.classes_ = self.enc_.classes_
+
+    def _encode_base_labels(self, y):
+        if self.base_already_encoded_:
+            return y
+        else:
+            return self.enc_.transform(y)
+
+    def _set_dsel(self, X, y):
+        """Pre-Process the input X and y data into the dynamic selection
+        dataset(DSEL) and get information about the structure of the data
+        (e.g., n_classes, n_samples, classes)
+
+        Parameters
+        ----------
+        X : array of shape (n_samples, n_features)
+            The Input data.
+
+        y : array of shape (n_samples)
+            class labels of each sample in X.
+        """
+        self.DSEL_data_ = X
+        self.DSEL_target_ = y
+        self.n_classes_ = self.classes_.size
+        self.n_features_ = X.shape[1]
+        self.n_samples_ = self.DSEL_target_.size
+        self.BKS_DSEL_ = self._predict_base(self.DSEL_data_)
+        self.DSEL_processed_ = self.BKS_DSEL_ == y[:, np.newaxis]
+
+    def _set_region_of_competence_algorithm(self):
+        if self.knn_classifier is None or self.knn_classifier in ['knn',
+                                                                  'sklearn']:
+            knn_class = functools.partial(KNeighborsClassifier,
+                                          n_jobs=self.n_jobs,
+                                          algorithm="auto")
+        elif self.knn_classifier == 'faiss':
+            knn_class = functools.partial(
+                faiss_knn_wrapper.FaissKNNClassifier,
+                n_jobs=self.n_jobs, algorithm="brute")
+        elif callable(self.knn_classifier):
+            knn_class = self.knn_classifier
+        else:
+            raise ValueError('"knn_classifier" should be one of the following '
+                             '["knn", "faiss", None] or an estimator class.')
+
+        if self.knne:
+            self.knn_class_ = functools.partial(
+                KNNE,
+                knn_classifier=knn_class,
+                n_jobs=self.n_jobs,
+                algorithm="auto")
+        else:
+            self.knn_class_ = knn_class
+
+        self.roc_algorithm_ = self.knn_class_(n_neighbors=self.k)
 
     def _preprocess_dsel(self):
         """Compute the prediction of each base classifier for
