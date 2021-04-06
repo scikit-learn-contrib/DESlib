@@ -425,3 +425,34 @@ def test_meta_no_pool_of_classifiers():
     meta_des = METADES(random_state=rng, DSEL_perc=0.5)
     meta_des.fit(X_train, y_train)
     assert np.isclose(meta_des.score(X_test, y_test), 0.8936170212765957)
+
+
+def test_ola_subspaces():
+    rng = np.random.RandomState(123456)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
+        None, rng)
+    # split the data into training and test data
+    pool = BaggingClassifier(LogisticRegression(),
+                             bootstrap_features=True,
+                             max_features=0.5,
+                             random_state=rng).fit(X_train, y_train)
+
+    ola = OLA(pool)
+    ola.fit(X_dsel, y_dsel)
+    assert np.isclose(ola.score(X_test, y_test),
+                      0.9680851063829787)
+
+
+def test_knorae_subspaces():
+    rng = np.random.RandomState(123456)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
+        None, rng)
+    # split the data into training and test data
+    pool = BaggingClassifier(LogisticRegression(),
+                             max_features=0.5,
+                             random_state=rng).fit(X_train, y_train)
+
+    knorae = KNORAE(pool)
+    knorae.fit(X_dsel, y_dsel)
+    assert np.isclose(knorae.score(X_test, y_test),
+                      0.9787234042553191)
