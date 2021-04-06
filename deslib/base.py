@@ -93,13 +93,14 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             X_dsel = X
             y_dsel = y
 
+        self.n_classifiers_ = len(self.pool_classifiers_)
         # allow base models with feature subspaces.
         if hasattr(self.pool_classifiers_, "estimators_features_"):
             self.estimator_features_ = self.pool_classifiers_.estimators_features_
         else:
-            self.estimator_features_ = np.arange(X.shape[1])
-
-        self.n_classifiers_ = len(self.pool_classifiers_)
+            indices = np.arange(X.shape[1])
+            self.estimator_features_ = np.tile(indices,
+                                               (self.n_classifiers_, 1))
 
         # check if the input parameters are correct.
         self._setup_label_encoder(y)
@@ -108,7 +109,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self._set_region_of_competence_algorithm()
         self._validate_parameters()
 
-        # TODO: PRocess
         self.roc_algorithm_.fit(X_dsel, y_dsel)
         self.BKS_DSEL_ = self._predict_base(self.DSEL_data_)
         self.DSEL_processed_ = self.BKS_DSEL_ == y_dsel[:, np.newaxis]
@@ -270,9 +270,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         predicted_labels : array of shape (n_samples)
                            Predicted class label for each sample in X.
         """
-        check_is_fitted(self,
-                        ["DSEL_processed_", "DSEL_data_", "DSEL_target_"])
-        X = check_array(X)
+        X = self._check_predict(X)
         preds = np.empty(X.shape[0], dtype=np.intp)
         need_proba = self.needs_proba or self.voting == 'soft'
 
@@ -299,6 +297,17 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         return self.classes_.take(preds)
 
+    def _check_predict(self, X):
+        check_is_fitted(self,
+                        ["DSEL_processed_", "DSEL_data_", "DSEL_target_"])
+        X = check_array(X)
+        if self.n_features_ != X.shape[1]:
+            raise ValueError("Number of features of the model must "
+                             "match the input. Model n_features is {0} and "
+                             "input n_features is {1}."
+                             "".format(self.n_features_, X.shape[1]))
+        return X
+
     def predict_proba(self, X):
         """Estimates the posterior probabilities for sample in X.
 
@@ -312,10 +321,9 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         predicted_proba : array of shape (n_samples, n_classes)
                           Probabilities estimates for each sample in X.
         """
-        check_is_fitted(self,
-                        ["DSEL_processed_", "DSEL_data_", "DSEL_target_"])
+        X = self._check_predict(X)
+
         self._check_predict_proba()
-        X = check_array(X, ensure_2d=False)
         probas = np.zeros((X.shape[0], self.n_classes_))
         base_preds, base_probas = self._preprocess_predictions(X, True)
         # predict all agree
@@ -570,7 +578,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                                dtype=np.intp)
 
         for index, clf in enumerate(self.pool_classifiers_):
-            labels = clf.predict(X)
+            labels = clf.predict(X[:, self.estimator_features_[index]])
             predictions[:, index] = self._encode_base_labels(labels)
         return predictions
 
@@ -589,12 +597,13 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                         Probabilities estimates of each base classifier for all
                         test samples.
         """
-        probabilities = np.zeros(
+        probas = np.zeros(
             (X.shape[0], self.n_classifiers_, self.n_classes_))
 
         for index, clf in enumerate(self.pool_classifiers_):
-            probabilities[:, index] = clf.predict_proba(X)
-        return probabilities
+            probas[:, index] = clf.predict_proba(
+                X[:, self.estimator_features_[index]])
+        return probas
 
     @staticmethod
     def _all_classifier_agree(predictions):
