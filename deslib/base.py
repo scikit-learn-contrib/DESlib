@@ -96,7 +96,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self.n_classifiers_ = len(self.pool_classifiers_)
         # allow base models with feature subspaces.
         if hasattr(self.pool_classifiers_, "estimators_features_"):
-            self.estimator_features_ = self.pool_classifiers_.estimators_features_
+            self.estimator_features_ = \
+                self.pool_classifiers_.estimators_features_
         else:
             indices = np.arange(X.shape[1])
             self.estimator_features_ = np.tile(indices,
@@ -196,7 +197,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         pass
 
     @abstractmethod
-    def classify_with_ds(self,predictions, probabilities=None,
+    def classify_with_ds(self, predictions, probabilities=None,
                          neighbors=None, distances=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
         Returns the predicted label.
