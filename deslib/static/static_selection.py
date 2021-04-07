@@ -128,14 +128,13 @@ class StaticSelection(BaseStaticEnsemble):
         predicted_labels : array of shape (n_samples)
                            Predicted class for each sample in X.
         """
+        self._check_is_fitted()
         X = check_array(X)
         if self.n_features_ != X.shape[1]:
             raise ValueError("Number of features of the model must "
                              "match the input. Model n_features is {0} and "
                              "input n_features is {1}."
                              "".format(self.n_features_, X.shape[1]))
-
-        self._check_is_fitted()
 
         votes = np.zeros((X.shape[0], self.n_classifiers_ensemble_))
         for idx, clf in enumerate(self.ensemble_):
