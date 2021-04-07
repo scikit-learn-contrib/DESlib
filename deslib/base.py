@@ -97,7 +97,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         # allow base models with feature subspaces.
         if hasattr(self.pool_classifiers_, "estimators_features_"):
             self.estimator_features_ = \
-                self.pool_classifiers_.estimators_features_
+                np.array(self.pool_classifiers_.estimators_features_)
         else:
             indices = np.arange(X.shape[1])
             self.estimator_features_ = np.tile(indices,
