@@ -244,7 +244,9 @@ def predict_proba_ensemble(classifier_ensemble, X, estimator_features=None):
     predicted_proba : array of shape (n_samples, n_classes)
         Posterior probabilities estimates for each samples in X.
     """
-    ensemble_proba = _get_ensemble_probabilities(classifier_ensemble, X)
+    ensemble_proba = _get_ensemble_probabilities(classifier_ensemble,
+                                                 X,
+                                                 estimator_features)
     n_classifiers = ensemble_proba.shape[1]
     predicted_proba = np.sum(ensemble_proba, axis=1) / n_classifiers
     return predicted_proba
