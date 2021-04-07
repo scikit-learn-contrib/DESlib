@@ -142,12 +142,18 @@ class SingleBest(BaseStaticEnsemble):
 
         """
         self._check_is_fitted()
-
         if "predict_proba" not in dir(self.best_clf_):
             raise ValueError(
                 "Base classifier must support the predict_proba function.")
+        X = check_array(X)
+        if self.n_features_ != X.shape[1]:
+            raise ValueError("Number of features of the model must "
+                             "match the input. Model n_features is {0} and "
+                             "input n_features is {1}."
+                             "".format(self.n_features_, X.shape[1]))
 
-        predicted_proba = self.best_clf_.predict_proba(X)
+        predicted_proba = self.best_clf_.predict_proba(
+            X[:, self.estimator_features_[self.best_clf_index_]])
         return predicted_proba
 
     def _check_is_fitted(self):

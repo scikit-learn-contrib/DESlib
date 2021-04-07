@@ -167,8 +167,8 @@ class StaticSelection(BaseStaticEnsemble):
                              "".format(self.n_features_, X.shape[1]))
 
         self._check_predict_proba()
-        proba = predict_proba_ensemble(self.ensemble_, X,
-                                       self.estimator_features_)
+        features = self.estimator_features_[self.clf_indices_]
+        proba = predict_proba_ensemble(self.ensemble_, X, features)
         return proba
 
     def _validate_parameters(self):
