@@ -583,7 +583,7 @@ def test_single_best_subspaces_proba():
 
     single_best = SingleBest(pool)
     single_best.fit(X_dsel, y_dsel)
-    y_pred = single_best.predict_proba(X_dsel).argmax(axis=1)
+    y_pred = single_best.predict_proba(X_test).argmax(axis=1)
 
     assert np.isclose(accuracy_score(y_pred, y_test),
                       0.9627659574468085)
