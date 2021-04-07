@@ -191,7 +191,8 @@ def sum_votes_per_class(predictions, n_classes):
     return votes
 
 
-def _get_ensemble_probabilities(classifier_ensemble, X):
+def _get_ensemble_probabilities(classifier_ensemble, X,
+                                estimator_features=None):
     """Get the probabilities estimate for each base classifier in the ensemble
 
     Parameters
@@ -202,6 +203,9 @@ def _get_ensemble_probabilities(classifier_ensemble, X):
     X : array of shape (n_samples, n_features)
         The input data.
 
+    estimator_features : array of shape (n_classifiers, n_selected_features)
+        Indices containing the features used by each classifier.
+
     Returns
     -------
     list_proba : array of shape (n_samples, n_classifiers, n_classes)
@@ -209,15 +213,18 @@ def _get_ensemble_probabilities(classifier_ensemble, X):
         samples in X.
     """
     list_proba = []
-    for clf in classifier_ensemble:
-        list_proba.append(clf.predict_proba(X))
-
+    if estimator_features is None:
+        for idx, clf in enumerate(classifier_ensemble):
+            list_proba.append(clf.predict_proba(X))
+    else:
+        for idx, clf in enumerate(classifier_ensemble):
+            list_proba.append(clf.predict_proba(X[:, estimator_features[idx]]))
     # transpose the array to have the
     # shape = [n_samples, n_classifiers, n_classes]
     return np.array(list_proba).transpose((1, 0, 2))
 
 
-def predict_proba_ensemble(classifier_ensemble, X):
+def predict_proba_ensemble(classifier_ensemble, X, estimator_features=None):
     """Estimates the posterior probabilities of the give ensemble for each
     sample in X.
 
@@ -228,6 +235,9 @@ def predict_proba_ensemble(classifier_ensemble, X):
 
     X : array of shape (n_samples, n_features)
         The input data.
+
+    estimator_features : array of shape (n_classifiers, n_selected_features)
+        Indices containing the features used by each classifier.
 
     Returns
     -------
