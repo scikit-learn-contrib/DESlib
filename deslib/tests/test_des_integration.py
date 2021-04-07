@@ -8,32 +8,34 @@ from sklearn.datasets import load_breast_cancer
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import BaggingClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
 # DCS techniques
-from deslib.dcs.a_posteriori import APosteriori
-from deslib.dcs.a_priori import APriori
-from deslib.dcs.lca import LCA
-from deslib.dcs.mcb import MCB
-from deslib.dcs.mla import MLA
-from deslib.dcs.ola import OLA
-from deslib.dcs.rank import Rank
+from deslib.dcs import APosteriori
+from deslib.dcs import APriori
+from deslib.dcs import LCA
+from deslib.dcs import MCB
+from deslib.dcs import MLA
+from deslib.dcs import OLA
+from deslib.dcs import Rank
 # DES techniques
-from deslib.des.des_clustering import DESClustering
-from deslib.des.des_knn import DESKNN
-from deslib.des.des_p import DESP
-from deslib.des.knop import KNOP
-from deslib.des.knora_e import KNORAE
-from deslib.des.knora_u import KNORAU
-from deslib.des.meta_des import METADES
-from deslib.des.probabilistic import RRC, MinimumDifference, DESKL
+from deslib.des import DESClustering
+from deslib.des import DESKNN
+from deslib.des import DESP
+from deslib.des import KNOP
+from deslib.des import KNORAE
+from deslib.des import KNORAU
+from deslib.des import METADES
+from deslib.des import RRC, MinimumDifference, DESKL
 # Static techniques
-from deslib.static.oracle import Oracle
-from deslib.static.single_best import SingleBest
-from deslib.static.static_selection import StaticSelection
+from deslib.static import Oracle
+from deslib.static import SingleBest
+from deslib.static import StackedClassifier
+from deslib.static import StaticSelection
 from deslib.util import faiss_knn_wrapper
 
 
@@ -415,10 +417,8 @@ def test_meta_no_pool_of_classifiers():
     X = data.data
     y = data.target
 
-    # split the data into training and test data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33,
                                                         random_state=rng)
-    # Scale the variables to have 0 mean and unit variance
     scalar = StandardScaler()
     X_train = scalar.fit_transform(X_train)
     X_test = scalar.transform(X_test)
@@ -431,7 +431,6 @@ def test_ola_subspaces():
     rng = np.random.RandomState(123456)
     X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
         None, rng)
-    # split the data into training and test data
     pool = BaggingClassifier(LogisticRegression(),
                              bootstrap_features=True,
                              max_features=0.5,
@@ -456,3 +455,135 @@ def test_knorae_subspaces():
     knorae.fit(X_dsel, y_dsel)
     assert np.isclose(knorae.score(X_test, y_test),
                       0.9787234042553191)
+
+
+def test_knorae_subspaces():
+    rng = np.random.RandomState(123456)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
+        None, rng)
+    pool = BaggingClassifier(LogisticRegression(),
+                             max_features=0.5,
+                             random_state=rng).fit(X_train, y_train)
+
+    knorae = KNORAE(pool)
+    knorae.fit(X_dsel, y_dsel)
+    y_pred = knorae.predict_proba(X_test).argmax(axis=1)
+    assert np.isclose(accuracy_score(y_pred, y_test),
+                      0.9787234042553191)
+
+
+def test_oracle_subspaces():
+    rng = np.random.RandomState(123456)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
+        None, rng)
+    pool = BaggingClassifier(LogisticRegression(),
+                             max_features=0.5,
+                             random_state=rng).fit(X_train, y_train)
+
+    oracle = Oracle(pool)
+    oracle.fit(X_dsel, y_dsel)
+    assert np.isclose(oracle.score(X_test, y_test),
+                      0.9946808510638298)
+
+
+def test_oracle_subspaces_proba():
+    rng = np.random.RandomState(123456)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
+        None, rng)
+    pool = BaggingClassifier(LogisticRegression(),
+                             max_features=0.5,
+                             random_state=rng).fit(X_train, y_train)
+
+    oracle = Oracle(pool)
+    oracle.fit(X_dsel, y_dsel)
+    y_pred = oracle.predict_proba(X_test).argmax(axis=1)
+    assert np.isclose(accuracy_score(y_pred, y_test),
+                      0.9946808510638298)
+
+
+def test_static_selection_subspaces():
+    rng = np.random.RandomState(123456)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
+        None, rng)
+    pool = BaggingClassifier(LogisticRegression(),
+                             max_features=0.5,
+                             random_state=rng).fit(X_train, y_train)
+
+    static = StaticSelection(pool)
+    static.fit(X_dsel, y_dsel)
+    assert np.isclose(static.score(X_test, y_test),
+                      0.9840425531914894)
+
+
+def test_static_selection_subspaces_proba():
+    rng = np.random.RandomState(123456)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
+        None, rng)
+    pool = BaggingClassifier(LogisticRegression(),
+                             max_features=0.5,
+                             random_state=rng).fit(X_train, y_train)
+
+    static = StaticSelection(pool)
+    static.fit(X_dsel, y_dsel)
+    y_pred = static.predict_proba(X_test).argmax(axis=1)
+    assert np.isclose(accuracy_score(y_pred, y_test),
+                      0.9840425531914894)
+
+
+def test_stacked_subspaces():
+    rng = np.random.RandomState(123456)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
+        None, rng)
+    pool = BaggingClassifier(LogisticRegression(),
+                             max_features=0.5,
+                             random_state=rng).fit(X_train, y_train)
+
+    stacked = StackedClassifier(pool)
+    stacked.fit(X_dsel, y_dsel)
+    assert np.isclose(stacked.score(X_test, y_test),
+                      0.973404255319149)
+
+
+def test_stacked_subspaces_proba():
+    rng = np.random.RandomState(123456)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
+        None, rng)
+    pool = BaggingClassifier(LogisticRegression(),
+                             max_features=0.5,
+                             random_state=rng).fit(X_train, y_train)
+
+    stacked = StackedClassifier(pool)
+    stacked.fit(X_dsel, y_dsel)
+    y_pred = stacked.predict_proba(X_test).argmax(axis=1)
+    assert np.isclose(accuracy_score(y_pred, y_test),
+                      0.973404255319149)
+
+
+def test_single_best_subspaces():
+    rng = np.random.RandomState(123456)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
+        None, rng)
+    pool = BaggingClassifier(LogisticRegression(),
+                             max_features=0.5,
+                             random_state=rng).fit(X_train, y_train)
+
+    single_best = SingleBest(pool)
+    single_best.fit(X_dsel, y_dsel)
+    assert np.isclose(single_best.score(X_test, y_test),
+                      0.9627659574468085)
+
+
+def test_single_best_subspaces_proba():
+    rng = np.random.RandomState(123456)
+    X_dsel, X_test, X_train, y_dsel, y_test, y_train = load_dataset(
+        None, rng)
+    pool = BaggingClassifier(LogisticRegression(),
+                             max_features=0.5,
+                             random_state=rng).fit(X_train, y_train)
+
+    single_best = SingleBest(pool)
+    single_best.fit(X_dsel, y_dsel)
+    y_pred = single_best.predict_proba(X_dsel, y_dsel).argmax(axis=1)
+
+    assert np.isclose(accuracy_score(y_pred, y_test),
+                      0.9627659574468085)
