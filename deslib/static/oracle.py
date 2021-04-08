@@ -99,21 +99,14 @@ class Oracle(BaseStaticEnsemble):
                              "".format(self.n_features_, X.shape[1]))
 
         y = self.enc_.transform(y)
-        predicted_labels = -np.ones(y.size, dtype=int)
-        # TODO: Vectorize Oracle code.
-        for sample_index, x in enumerate(X):
-            for idx, clf in enumerate(self.pool_classifiers_):
-                # If one base classifier predicts the correct answer, consider
-                # as a correct prediction
-                x_feat = x[self.estimator_features_[idx]].reshape(1, -1)
-                predicted = clf.predict(x_feat)[0]
-                if predicted == y[sample_index]:
-                    predicted = int(predicted)
-                    predicted_labels[sample_index] = predicted
-                    break
-                predicted_labels[sample_index] = predicted
+        preds = [clf.predict(X[:, self.estimator_features_[idx]])
+                 for idx, clf in enumerate(self.pool_classifiers_)]
+        preds = np.asarray(preds).T
+        hit_miss = np.asarray(preds) == y.reshape(-1, 1)
+        idx_sel_classifier = hit_miss.argmax(axis=1)
+        predicted_labels = preds[np.arange(preds.shape[0]), idx_sel_classifier]
 
-        return self.classes_.take(predicted_labels)
+        return self.classes_.take(predicted_labels.astype(int))
 
     def predict_proba(self, X, y):
         """Estimates the posterior probabilities for each class for each sample
