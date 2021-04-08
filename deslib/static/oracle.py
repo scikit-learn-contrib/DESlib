@@ -15,8 +15,7 @@ class Oracle(BaseStaticEnsemble):
     the correct label if such classifier exists. This method is often used to
     measure the upper-limit performance that can be achieved by a dynamic
     classifier selection technique. It is used as a benchmark by several
-    dynamic selection algorithms
-
+    dynamic selection algorithms.
 
     Parameters
     ----------
@@ -48,7 +47,6 @@ class Oracle(BaseStaticEnsemble):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-
     def __init__(self, pool_classifiers=None, random_state=None, n_jobs=-1):
         super(Oracle, self).__init__(pool_classifiers=pool_classifiers,
                                      random_state=random_state,
@@ -90,7 +88,6 @@ class Oracle(BaseStaticEnsemble):
         predicted_labels : array of shape (n_samples)
                            Predicted class for each sample in X.
         """
-
         X = check_array(X)
         if self.n_features_ != X.shape[1]:
             raise ValueError("Number of features of the model must "
@@ -126,7 +123,7 @@ class Oracle(BaseStaticEnsemble):
 
         Returns
         -------
-        predicted_proba : array of shape (n_samples, n_classes)
+        probas : array of shape (n_samples, n_classes)
             Posterior probabilities estimates for each class.
 
         """
@@ -140,7 +137,7 @@ class Oracle(BaseStaticEnsemble):
         return probas[np.arange(y.size), best_probas_ids, :]
 
     def score(self, X, y, sample_weights=None):
-        """Prepare the labels using the Oracle model.
+        """ Return the mean accuracy on the given test data and labels.
 
         Parameters
         ----------
@@ -150,7 +147,7 @@ class Oracle(BaseStaticEnsemble):
         y : array of shape (n_samples)
             Class labels of each sample in X.
 
-        sample_weight : array-like, shape = [n_samples], optional
+        sample_weight : array-like of shape (n_samples,), default=None
             Sample weights.
 
         Returns
