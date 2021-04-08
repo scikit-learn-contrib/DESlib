@@ -5,11 +5,11 @@
 # License: BSD 3 clause
 
 import numpy as np
-from deslib.util.aggregation import majority_voting_rule
-from deslib.util.aggregation import predict_proba_ensemble
 from sklearn.metrics import check_scoring
 from sklearn.utils.validation import check_is_fitted, check_X_y, check_array
 
+from deslib.util.aggregation import majority_voting_rule
+from deslib.util.aggregation import predict_proba_ensemble
 from .base import BaseStaticEnsemble
 
 
@@ -104,7 +104,8 @@ class StaticSelection(BaseStaticEnsemble):
 
         for clf_idx, clf in enumerate(self.pool_classifiers_):
             scorer = check_scoring(clf, self.scoring)
-            performances[clf_idx] = scorer(clf, X, y_encoded)
+            performances[clf_idx] = scorer(clf, X[:, self.estimator_features_[
+                                                         clf_idx]], y_encoded)
 
         self.clf_indices_ = np.argsort(performances)[::-1][
                             0:self.n_classifiers_ensemble_]
@@ -127,12 +128,18 @@ class StaticSelection(BaseStaticEnsemble):
         predicted_labels : array of shape (n_samples)
                            Predicted class for each sample in X.
         """
-        X = check_array(X)
         self._check_is_fitted()
+        X = check_array(X)
+        if self.n_features_ != X.shape[1]:
+            raise ValueError("Number of features of the model must "
+                             "match the input. Model n_features is {0} and "
+                             "input n_features is {1}."
+                             "".format(self.n_features_, X.shape[1]))
 
         votes = np.zeros((X.shape[0], self.n_classifiers_ensemble_))
-        for clf_index, clf in enumerate(self.ensemble_):
-            votes[:, clf_index] = self._encode_base_labels(clf.predict(X))
+        for idx, clf in enumerate(self.ensemble_):
+            X_space = X[:, self.estimator_features_[self.clf_indices_[idx]]]
+            votes[:, idx] = self._encode_base_labels(clf.predict(X_space))
 
         predicted_labels = majority_voting_rule(votes).astype(int)
 
@@ -152,8 +159,16 @@ class StaticSelection(BaseStaticEnsemble):
                            Probabilities estimates for each sample in X.
          """
         self._check_is_fitted()
+        X = check_array(X)
+        if self.n_features_ != X.shape[1]:
+            raise ValueError("Number of features of the model must "
+                             "match the input. Model n_features is {0} and "
+                             "input n_features is {1}."
+                             "".format(self.n_features_, X.shape[1]))
+
         self._check_predict_proba()
-        proba = predict_proba_ensemble(self.ensemble_, X)
+        features = self.estimator_features_[self.clf_indices_]
+        proba = predict_proba_ensemble(self.ensemble_, X, features)
         return proba
 
     def _validate_parameters(self):

@@ -5,8 +5,9 @@
 # License: BSD 3 clause
 
 import numpy as np
-from deslib.static.base import BaseStaticEnsemble
 from sklearn.utils.validation import check_X_y, check_array
+
+from deslib.static.base import BaseStaticEnsemble
 
 
 class Oracle(BaseStaticEnsemble):
@@ -91,15 +92,21 @@ class Oracle(BaseStaticEnsemble):
         """
 
         X = check_array(X)
+        if self.n_features_ != X.shape[1]:
+            raise ValueError("Number of features of the model must "
+                             "match the input. Model n_features is {0} and "
+                             "input n_features is {1}."
+                             "".format(self.n_features_, X.shape[1]))
+
         y = self.enc_.transform(y)
         predicted_labels = -np.ones(y.size, dtype=int)
-
+        # TODO: Vectorize Oracle code.
         for sample_index, x in enumerate(X):
-
-            for clf in self.pool_classifiers_:
+            for idx, clf in enumerate(self.pool_classifiers_):
                 # If one base classifier predicts the correct answer, consider
                 # as a correct prediction
-                predicted = clf.predict(x.reshape(1, -1))[0]
+                x_feat = x[self.estimator_features_[idx]].reshape(1, -1)
+                predicted = clf.predict(x_feat)[0]
                 if predicted == y[sample_index]:
                     predicted = int(predicted)
                     predicted_labels[sample_index] = predicted
@@ -133,9 +140,10 @@ class Oracle(BaseStaticEnsemble):
         X = check_array(X)
         y = self.enc_.transform(y)
 
-        probas = [clf.predict_proba(X) for clf in self.pool_classifiers_]
+        probas = [clf.predict_proba(X[:, self.estimator_features_[idx]])
+                  for idx, clf in enumerate(self.pool_classifiers_)]
         probas = np.array(probas).transpose((1, 0, 2))
-        best_probas_ids = np.argmax(probas[np.arange(y.size), :,  y], axis=1)
+        best_probas_ids = np.argmax(probas[np.arange(y.size), :, y], axis=1)
         return probas[np.arange(y.size), best_probas_ids, :]
 
     def score(self, X, y, sample_weights=None):
