@@ -148,7 +148,8 @@ class DESP(BaseDES):
             Competence level estimated for each base classifier and test
             example.
         """
-        competences = np.mean(self.DSEL_processed_[competence_region, :], axis=1)
+        competences = np.mean(self.DSEL_processed_[competence_region, :],
+                              axis=1)
 
         return competences
 

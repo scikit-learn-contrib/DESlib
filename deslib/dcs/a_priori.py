@@ -192,8 +192,8 @@ class APriori(BaseDCS):
 
         # Get the ndarray containing the scores obtained for the correct class
         # for each neighbor (and test sample)
-        scores_target_class = self.dsel_scores_[competence_region, :,
-                                                self.DSEL_target_[competence_region]]
+        scores_target_class = self.dsel_scores_[
+            competence_region, :, self.DSEL_target_[competence_region]]
 
         # Multiply the scores obtained for the correct class to the distances
         # of each corresponding neighbor
