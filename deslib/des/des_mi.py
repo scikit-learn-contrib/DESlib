@@ -156,7 +156,8 @@ class DESMI(BaseDS):
         weight = 1. / (1 + np.exp(self.alpha * num))
         weight = normalize(weight, norm='l1')
         correct_num = self.DSEL_processed_[competence_region, :]
-        correct = np.zeros((competence_region.shape[0], self.k_, self.n_classifiers_))
+        correct = np.zeros((competence_region.shape[0], self.k_,
+                            self.n_classifiers_))
         for i in range(self.n_classifiers_):
             correct[:, :, i] = correct_num[:, :, i] * weight
 
