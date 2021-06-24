@@ -114,9 +114,13 @@ class Stats():
 
     def _get_distribution(self, labels=None, ind=None):
         labels = self.predicted_labels if labels is None else labels
+        max_label = max(labels)
         if ind is not None: labels = labels[ind]
-        _, counts = np.unique(labels, return_counts=True)
-        return counts
+        unique_labels, unique_counts = np.unique(labels, return_counts=True)
+        distribution = np.full(max_label+1,0)
+        for i,l in enumerate(unique_labels):
+            distribution[l] = unique_counts[i]
+        return distribution
 
     def _get_n_right_clf_stats(self):
         n_right_clf_by_query = []
