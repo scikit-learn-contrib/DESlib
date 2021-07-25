@@ -14,7 +14,6 @@ def test_check_estimator():
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_estimate_competence_all_ones(index, example_all_ones):
     _, y, neighbors, distances, dsel_processed, dsel_scores = example_all_ones
-    query = np.atleast_2d([1, 1])
 
     mla_test = MLA()
     mla_test.n_classifiers_ = 3
@@ -31,8 +30,7 @@ def test_estimate_competence_all_ones(index, example_all_ones):
 
     predictions = np.array([[0, 1, 0]])
 
-    competences = mla_test.estimate_competence(query,
-                                               neighbors,
+    competences = mla_test.estimate_competence(neighbors,
                                                distances=distances,
                                                predictions=predictions)
 
@@ -43,7 +41,6 @@ def test_estimate_competence_batch(example_estimate_competence):
 
     _, y, neighbors, _, dsel_processed, _ = example_estimate_competence
 
-    query = np.array([[1, 1], [1, 1], [1, 1]])
     expected = np.array([[0.750,  0.666,  0.750],
                          [0.800,  1.000,  0.800],
                          [1.000,  0.600,  0.500]])
@@ -57,8 +54,7 @@ def test_estimate_competence_batch(example_estimate_competence):
     mla_test.n_classes_ = 2
     predictions = np.array([[0, 1, 0]])
 
-    competences = mla_test.estimate_competence(query,
-                                               neighbors=neighbors,
+    competences = mla_test.estimate_competence(competence_region=neighbors,
                                                distances=distances,
                                                predictions=predictions)
 
@@ -70,8 +66,6 @@ def test_estimate_competence_batch(example_estimate_competence):
 @pytest.mark.parametrize('index', [0, 1, 2])
 def test_estimate_competence_diff_target(index, example_estimate_competence):
     _, _, neighbors, distances, dsel_processed, _ = example_estimate_competence
-
-    query = np.atleast_2d([1, 1])
 
     mla_test = MLA()
     mla_test.n_classifiers_ = 3
@@ -86,8 +80,7 @@ def test_estimate_competence_diff_target(index, example_estimate_competence):
 
     predictions = np.array([[0, 1, 0]])
 
-    competences = mla_test.estimate_competence(query,
-                                               neighbors,
+    competences = mla_test.estimate_competence(neighbors,
                                                distances=distances,
                                                predictions=predictions)
 
@@ -96,7 +89,6 @@ def test_estimate_competence_diff_target(index, example_estimate_competence):
 
 # Testing example from kuncheva's book (combining pattern classifiers)
 def test_estimate_competence_kuncheva_ex(example_kuncheva):
-    query = np.atleast_2d([1, 1])
     example_kuncheva = example_kuncheva
 
     mla_test = MLA(k=example_kuncheva['k'])
@@ -114,8 +106,7 @@ def test_estimate_competence_kuncheva_ex(example_kuncheva):
     distances = example_kuncheva['distances'].reshape(1, -1)
 
     predictions = np.array([[1, 1]])
-    competences = mla_test.estimate_competence(query,
-                                               neighbors,
+    competences = mla_test.estimate_competence(neighbors,
                                                distances=distances,
                                                predictions=predictions)
 

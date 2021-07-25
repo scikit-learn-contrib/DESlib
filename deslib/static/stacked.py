@@ -1,7 +1,8 @@
 import numpy as np
-from deslib.static.base import BaseStaticEnsemble
 from sklearn.linear_model import LogisticRegression
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+
+from deslib.static.base import BaseStaticEnsemble
 
 
 class StackedClassifier(BaseStaticEnsemble):
@@ -104,8 +105,14 @@ class StackedClassifier(BaseStaticEnsemble):
         predicted_labels : array of shape (n_samples)
                            Predicted class for each sample in X.
         """
-        X = check_array(X)
         check_is_fitted(self, "meta_classifier_")
+        X = check_array(X)
+        if self.n_features_ != X.shape[1]:
+            raise ValueError("Number of features of the model must "
+                             "match the input. Model n_features is {0} and "
+                             "input n_features is {1}."
+                             "".format(self.n_features_, X.shape[1]))
+
         base_preds = self._predict_proba_base(X)
         X_meta = self._connect_input(X, base_preds)
         preds = self.meta_classifier_.predict(X_meta)
@@ -125,8 +132,13 @@ class StackedClassifier(BaseStaticEnsemble):
         predicted_labels : array of shape (n_samples)
                            Predicted class for each sample in X.
         """
-        X = check_array(X)
         check_is_fitted(self, "meta_classifier_")
+        X = check_array(X)
+        if self.n_features_ != X.shape[1]:
+            raise ValueError("Number of features of the model must "
+                             "match the input. Model n_features is {0} and "
+                             "input n_features is {1}."
+                             "".format(self.n_features_, X.shape[1]))
 
         # Check if the meta-classifier can output probabilities
         if not hasattr(self.meta_classifier_, "predict_proba"):
@@ -167,7 +179,8 @@ class StackedClassifier(BaseStaticEnsemble):
             (X.shape[0], self.n_classifiers_, self.n_classes_))
 
         for index, clf in enumerate(self.pool_classifiers_):
-            probas[:, index] = clf.predict_proba(X)
+            probas[:, index] = clf.predict_proba(
+                X[:, self.estimator_features_[index]])
 
         probas = probas.reshape(X.shape[0],
                                 self.n_classifiers_ * self.n_classes_)

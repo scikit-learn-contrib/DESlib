@@ -118,7 +118,7 @@ class DESMI(BaseDS):
         self.pct_accuracy = pct_accuracy
         self.voting = voting
 
-    def estimate_competence(self, query, neighbors, distances=None,
+    def estimate_competence(self, competence_region, distances=None,
                             predictions=None):
         """estimate the competence level of each base classifier :math:`c_{i}`
         for the classification of the query sample. Returns a ndarray
@@ -133,15 +133,11 @@ class DESMI(BaseDS):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The query sample.
-
-        neighbors : array of shape (n_samples, n_neighbors)
+        competence_region : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 
         distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test
-            sample.
+            Distances from the k nearest neighbors to the query.
 
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples.
@@ -155,12 +151,13 @@ class DESMI(BaseDS):
         """
         # calculate the weight
         class_frequency = np.bincount(self.DSEL_target_)
-        targets = self.DSEL_target_[neighbors]  # [n_samples, K_neighbors]
+        targets = self.DSEL_target_[competence_region]
         num = class_frequency[targets]
         weight = 1. / (1 + np.exp(self.alpha * num))
         weight = normalize(weight, norm='l1')
-        correct_num = self.DSEL_processed_[neighbors, :]
-        correct = np.zeros((query.shape[0], self.k_, self.n_classifiers_))
+        correct_num = self.DSEL_processed_[competence_region, :]
+        correct = np.zeros((competence_region.shape[0], self.k_,
+                            self.n_classifiers_))
         for i in range(self.n_classifiers_):
             correct[:, :, i] = correct_num[:, :, i] * weight
 
@@ -199,15 +196,12 @@ class DESMI(BaseDS):
 
         return selected_classifiers
 
-    def classify_with_ds(self, query, predictions, probabilities=None,
+    def classify_with_ds(self, predictions, probabilities=None,
                          neighbors=None, distances=None, DFP_mask=None):
         """Predicts the label of the corresponding query sample.
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples
-
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples.
 
@@ -219,8 +213,7 @@ class DESMI(BaseDS):
             Indices of the k nearest neighbors according for each test sample.
 
         distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test
-            sample.
+                        Distances from the k nearest neighbors to the query
 
         DFP_mask : array of shape (n_samples, n_classifiers)
             Mask containing 1 for the selected base classifier and 0 otherwise.
@@ -235,21 +228,19 @@ class DESMI(BaseDS):
         predicted_label : array of shape (n_samples)
                           Predicted class label for each test example.
         """
-        proba = self.predict_proba_with_ds(query, predictions, probabilities,
+        proba = self.predict_proba_with_ds(predictions, probabilities,
                                            neighbors, distances, DFP_mask)
         predicted_label = proba.argmax(axis=1)
         return predicted_label
 
-    def predict_proba_with_ds(self, query, predictions, probabilities,
-                              neighbors=None, distances=None, DFP_mask=None):
+    def predict_proba_with_ds(self, predictions, probabilities,
+                              competence_region=None, distances=None,
+                              DFP_mask=None):
         """Predicts the posterior probabilities of the corresponding
         query sample.
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples.
 
@@ -257,11 +248,11 @@ class DESMI(BaseDS):
             Probabilities estimates of each base classifier for all test
             examples.
 
-        neighbors : array of shape (n_samples, n_neighbors)
+        competence_region : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 
         distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test
+            Distances from the k nearest neighbors to each test
             sample.
 
         DFP_mask : array of shape (n_samples, n_classifiers)
@@ -272,9 +263,9 @@ class DESMI(BaseDS):
         predicted_proba : array = [n_samples, n_classes]
                           Probability estimates for all test examples.
         """
-        accuracy = self.estimate_competence(query,
-                                            neighbors=neighbors,
-                                            distances=distances)
+        accuracy = self.estimate_competence(
+            competence_region=competence_region,
+            distances=distances)
 
         if self.DFP:
             accuracy = accuracy * DFP_mask

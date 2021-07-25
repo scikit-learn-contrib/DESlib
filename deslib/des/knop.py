@@ -152,7 +152,7 @@ class KNOP(BaseDES):
             raise ValueError(
                 "Error. KNOP  does not accept one class datasets!")
         self._check_predict_proba()
-        self.dsel_scores_ = self._preprocess_dsel_scores()
+        self.dsel_scores_ = self._predict_proba_base(self.DSEL_data_)
         # Reshape DSEL_scores as a 2-D array for nearest neighbor calculations
         dsel_output_profiles = self.dsel_scores_.reshape(self.n_samples_,
                                                          self.n_classifiers_ *
@@ -219,7 +219,7 @@ class KNOP(BaseDES):
                                              return_distance=True)
         return dists, np.atleast_2d(idx)
 
-    def estimate_competence_from_proba(self, query, probabilities,
+    def estimate_competence_from_proba(self, probabilities,
                                        neighbors=None, distances=None):
 
         """The competence of the base classifiers is simply estimated as
@@ -232,15 +232,11 @@ class KNOP(BaseDES):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
         neighbors : array of shape (n_samples, n_neighbors)
-            Indices of the k nearest neighbors according for each test sample
+            Indices of the k nearest neighbors.
 
         distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test
-            sample.
+                        Distances from the k nearest neighbors to the query.
 
         probabilities : array of shape (n_samples, n_classifiers, n_classes)
             Probabilities estimates obtained by each each base classifier

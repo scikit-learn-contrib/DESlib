@@ -16,7 +16,6 @@ def test_check_estimator():
                                              (2, [1.0, 1.0, 1.0])])
 def test_estimate_competence_all_ones(index, expected, example_all_ones):
     X, y, neighbors, distances, dsel_processed, dsel_scores = example_all_ones
-    query = np.array([1, 1])
 
     a_priori_test = APriori()
 
@@ -28,14 +27,12 @@ def test_estimate_competence_all_ones(index, expected, example_all_ones):
     neighbors = neighbors[index, :].reshape(1, -1)
     distances = distances[index, :].reshape(1, -1)
 
-    competences = a_priori_test.estimate_competence(query.reshape(1, -1),
-                                                    neighbors, distances)
+    competences = a_priori_test.estimate_competence(neighbors, distances)
     assert np.isclose(competences, expected).all()
 
 
 # Testing example from kuncheva's book (combining pattern classifiers)
 def test_estimate_competence_kuncheva_ex(example_kuncheva):
-    query = np.array([1, 1])
     a_priori_test = APriori(k=example_kuncheva['k'])
     test_example = example_kuncheva
     a_priori_test.DSEL_processed_ = test_example['dsel_processed']
@@ -46,16 +43,13 @@ def test_estimate_competence_kuncheva_ex(example_kuncheva):
     neighbors = test_example['neighbors'].reshape(1, -1)
     distances = test_example['distances'].reshape(1, -1)
 
-    competences = a_priori_test.estimate_competence(query.reshape(1, -1),
-                                                    neighbors, distances)
+    competences = a_priori_test.estimate_competence(neighbors, distances)
     assert np.isclose(competences, 0.70, atol=0.01)
 
 
 # Test the estimate competence method receiving n samples as input
 def test_estimate_competence_batch(example_estimate_competence):
     _, y, nn, _, dsel_processed, dsel_scores = example_estimate_competence
-
-    query = np.ones((3, 2))
     expected = np.array([[0.333333, 0.50000, 0.40000],
                          [0.666666, 0.50000, 0.60000],
                          [0.000000, 0.50000, 0.20000]])
@@ -71,7 +65,7 @@ def test_estimate_competence_batch(example_estimate_competence):
     nn = nn[:, 0:3]
     distances = np.ones((3, 3))
 
-    competences = a_priori_test.estimate_competence(query, nn,
+    competences = a_priori_test.estimate_competence(nn,
                                                     distances)
     assert np.allclose(competences, expected, atol=0.01)
 

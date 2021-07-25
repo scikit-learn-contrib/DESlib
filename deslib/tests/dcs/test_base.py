@@ -153,7 +153,7 @@ def test_classify_instance(create_pool_classifiers):
     predictions = []
     for clf in dcs_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    predicted_label = dcs_test.classify_with_ds(query, np.array(predictions))
+    predicted_label = dcs_test.classify_with_ds(np.array(predictions))
     assert predicted_label == expected
 
 
@@ -175,8 +175,7 @@ def test_classify_instance_batch(create_pool_classifiers):
     predictions = []
     for clf in dcs_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    predicted_label = dcs_test.classify_with_ds(query,
-                                                np.tile(predictions, (3, 1)))
+    predicted_label = dcs_test.classify_with_ds(np.tile(predictions, (3, 1)))
     assert np.array_equal(predicted_label, expected)
 
 
@@ -192,7 +191,7 @@ def test_classify_instance_all(competences, expected, create_pool_classifiers):
     predictions = []
     for clf in dcs_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    predicted_label = dcs_test.classify_with_ds(query, np.array(predictions))
+    predicted_label = dcs_test.classify_with_ds(np.array(predictions))
     assert predicted_label == expected
 
 
@@ -209,8 +208,8 @@ def test_classify_instance_all_batch(create_pool_classifiers):
     predictions = []
     for clf in dcs_test.pool_classifiers:
         predictions.append(clf.predict(query)[0])
-    predicted_label = dcs_test.classify_with_ds(query, np.tile(predictions,
-                                                               (n_samples, 1)))
+    predicted_label = dcs_test.classify_with_ds(np.tile(predictions,
+                                                        (n_samples, 1)))
     assert np.array_equal(predicted_label, expected)
 
 
@@ -237,7 +236,7 @@ def test_predict_proba_instance(create_pool_classifiers):
     probabilities = np.array(probabilities)
     probabilities = np.expand_dims(probabilities, axis=0)
 
-    predicted_proba = dcs_test.predict_proba_with_ds(query, predictions,
+    predicted_proba = dcs_test.predict_proba_with_ds(predictions,
                                                      probabilities)
     assert np.array_equal(predicted_proba, expected)
 
@@ -261,30 +260,10 @@ def test_predict_proba_instance_all(competences, expected,
         predictions.append(clf.predict(query)[0])
         probabilities.append(clf.predict_proba(query)[0])
 
-    query = np.atleast_2d(query)
     predictions = np.atleast_2d(predictions)
     probabilities = np.array(probabilities)
     probabilities = np.expand_dims(probabilities, axis=0)
 
-    predicted_proba = dcs_test.predict_proba_with_ds(query, predictions,
+    predicted_proba = dcs_test.predict_proba_with_ds(predictions,
                                                      probabilities)
     assert np.isclose(predicted_proba, expected).all()
-
-
-def test_classify_with_ds_diff_sizes():
-    query = np.ones((10, 2))
-    predictions = np.ones((5, 3))
-    dcs_test = BaseDCS()
-
-    with pytest.raises(ValueError):
-        dcs_test.classify_with_ds(query, predictions)
-
-
-def test_proba_with_ds_diff_sizes():
-    query = np.ones((10, 2))
-    predictions = np.ones((5, 3))
-    probabilities = np.ones((5, 3, 2))
-    dcs_test = BaseDCS()
-
-    with pytest.raises(ValueError):
-        dcs_test.predict_proba_with_ds(query, predictions, probabilities)

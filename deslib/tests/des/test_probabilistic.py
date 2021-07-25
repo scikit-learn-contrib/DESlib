@@ -122,9 +122,9 @@ def test_estimate_competence_batch():
     probabilistic_test.C_src_ = np.array(
         [[0.5, 0.2, 0.8], [1.0, 1.0, 1.0], [1.0, 0.6, 0.3]])
     expected = np.tile([0.665, 0.458, 0.855], (n_samples, 1))
-    competence = probabilistic_test.estimate_competence(query,
-                                                        neighbors=neighbors,
-                                                        distances=distances)
+    competence = probabilistic_test.estimate_competence(
+        competence_region=neighbors,
+        distances=distances)
     assert np.allclose(competence, expected, atol=0.01)
 
 
@@ -139,9 +139,9 @@ def test_estimate_competence_zeros(example_estimate_competence):
     distances = distances[0, 0:3].reshape(1, -1)
     neighbors = np.array([[0, 2, 1]])
     probabilistic_test.C_src_ = np.zeros((3, 3))
-    competence = probabilistic_test.estimate_competence(query,
-                                                        neighbors=neighbors,
-                                                        distances=distances)
+    competence = probabilistic_test.estimate_competence(
+        competence_region=neighbors,
+        distances=distances)
     assert np.sum(competence) == 0.0
 
 
@@ -156,7 +156,7 @@ def test_estimate_competence_ones(example_estimate_competence):
     distances = distances[0, 0:3].reshape(1, -1)
     neighbors = np.array([[0, 2, 1]])
     probabilistic_test.C_src_ = np.ones((3, 3))
-    competence = probabilistic_test.estimate_competence(query, neighbors,
+    competence = probabilistic_test.estimate_competence(neighbors,
                                                         distances)
     assert (competence == 1.0).all()
 

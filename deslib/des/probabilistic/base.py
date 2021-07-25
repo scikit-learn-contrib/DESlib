@@ -74,7 +74,7 @@ class BaseProbabilistic(BaseDES):
 
         self._check_predict_proba()
 
-        self.dsel_scores_ = self._preprocess_dsel_scores()
+        self.dsel_scores_ = self._predict_proba_base(self.DSEL_data_)
 
         # Pre process the source of competence for the entire DSEL,
         # making the method faster during generalization.
@@ -92,10 +92,7 @@ class BaseProbabilistic(BaseDES):
             )
         super(BaseProbabilistic, self)._validate_parameters()
 
-    def estimate_competence(self,
-                            query,
-                            neighbors,
-                            distances,
+    def estimate_competence(self, competence_region, distances,
                             predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}`
         using the source of competence :math:`C_{src}` and the potential
@@ -108,15 +105,11 @@ class BaseProbabilistic(BaseDES):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
-        neighbors : array of shape (n_samples, n_neighbors)
+        competence_region : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 
         distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test
-            sample.
+            Distances from the k nearest neighbors to the query.
 
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for all test examples.
@@ -131,7 +124,8 @@ class BaseProbabilistic(BaseDES):
         potential_dists[potential_dists == 0] = 1e-20
         sum_potential = np.sum(potential_dists, axis=1)
 
-        competences = np.einsum('ijk,ij->ik', self.C_src_[neighbors, :],
+        competences = np.einsum('ijk,ij->ik',
+                                self.C_src_[competence_region, :],
                                 potential_dists)
         competences = competences / sum_potential.reshape(-1, 1)
 

@@ -144,8 +144,7 @@ def test_estimate_competence(example_estimate_competence,
     probabilities = np.array(probabilities).transpose((1, 0, 2))
 
     expected = np.array([[0.8, 0.0, 0.8]])
-    competences = meta_test.estimate_competence_from_proba(query,
-                                                           nn[0, :],
+    competences = meta_test.estimate_competence_from_proba(nn[0, :],
                                                            probabilities)
     assert np.array_equal(competences, expected)
 
