@@ -121,6 +121,7 @@ class MultiDatasets(BaseDS):
         # steps. First step is to collect the samples with disagreement
         # between base classifiers
         ind_disagreement = np.where(~all_agree_vector)[0]
+        ind_disagreement = np.asarray(range(len(merged_base_predictions)))
         if ind_disagreement.size:
             merged_left_base_predictions = []
             merged_competences = []
@@ -209,6 +210,7 @@ class MultiDatasets(BaseDS):
         self.stats.bases_labels = merged_base_predictions
         self.stats.agree_ind = ind_all_agree
         self.stats.predicted_labels = predicted_labels
+        self.stats.k = self.k
 
         return self.classes_.take(predicted_labels)
 

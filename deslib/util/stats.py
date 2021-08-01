@@ -30,6 +30,7 @@ class Stats():
         if self.n_disagree > 0:
             lines.extend(self._get_disagree_lines())
             lines.extend(self._get_competences_lines())
+            lines.extend(self._get_competences_reliability_lines())
         return lines
 
     def _get_general_lines(self):
@@ -96,18 +97,77 @@ class Stats():
         return lines
 
     def _get_competences_lines(self):
-        competences_mean, competences_mean_by_clf, n_even_max_competence = \
+        mean, mean_by_clf, var, var_by_clf, n_even_max = \
             self._get_competences_stats()
 
         lines = [
             "--- Competences",
             "Mean:",
-            round(competences_mean, 3),
+            round(mean, 3),
             "Mean by classifier:",
-            np.round(competences_mean_by_clf, 3),
+            np.round(mean_by_clf, 3),
+            "Var:",
+            round(var, 3),
+            "Var by classifier:",
+            np.round(var_by_clf, 3),
             "Even max competences times, \nratio on disagreements:",
-            n_even_max_competence,
-            round(n_even_max_competence / self.n_disagree, 3),
+            n_even_max,
+            round(n_even_max / self.n_disagree, 3),
+        ]
+
+        return lines
+
+    def _get_competences_reliability_lines(self):
+        true_labels_by_base = np.tile(self.true_labels,(self.n_bases,1))
+        correct_bases_bln_array = np.equal(
+            self.bases_labels.T,true_labels_by_base)
+        n_queries = self.bases_labels.shape[0]
+        n_correct_labels_by_base = np.sum(correct_bases_bln_array,axis=1)
+        acc_by_base = np.round(n_correct_labels_by_base/n_queries,3)
+
+        comp = self.competences/self.k
+        n_incorrect_labels_by_base = \
+            len(self.predicted_labels)-n_correct_labels_by_base
+
+        correct_comp = comp.T*correct_bases_bln_array
+        correct_comp_by_base = np.sum(correct_comp,axis=1)
+        correct_comp_by_base /= n_correct_labels_by_base
+        mean_correct_comp_by_base = np.round(correct_comp_by_base,3)
+        mean = mean_correct_comp_by_base
+        mean = np.repeat(mean,n_queries).reshape(self.n_bases,-1)
+        correct_comp_by_base = np.sum((correct_comp-mean)**2,axis=1)
+        correct_comp_by_base /= n_correct_labels_by_base
+        std_correct_comp_by_base = np.round(np.sqrt(correct_comp_by_base),3)
+
+        incorrect_comp = comp.T*~correct_bases_bln_array
+        incorrect_comp_by_base = np.sum(incorrect_comp,axis=1)
+        incorrect_comp_by_base /= n_incorrect_labels_by_base
+        mean_incorrect_comp_by_base = np.round(incorrect_comp_by_base,3)
+        mean = mean_incorrect_comp_by_base
+        mean = np.repeat(mean,n_queries).reshape(self.n_bases,-1)
+        incorrect_comp_by_base = np.sum((incorrect_comp-mean)**2,axis=1)
+        incorrect_comp_by_base /= n_incorrect_labels_by_base
+        std_incorrect_comp_by_base = np.round(
+            np.sqrt(incorrect_comp_by_base),3)
+
+        lines = [
+            "--- Competence reliability",
+            "Acc:",
+            round(np.mean(acc_by_base),3),
+            "(by base):",
+            acc_by_base,
+            "Competence mean & std when well clasified:",
+            round(np.mean(mean_correct_comp_by_base),3),
+            round(np.mean(std_correct_comp_by_base),3),
+            "(by base):",
+            mean_correct_comp_by_base,
+            std_correct_comp_by_base,
+            "Competence mean & std when not well clasified:",
+            round(np.mean(mean_incorrect_comp_by_base),3),
+            round(np.mean(std_incorrect_comp_by_base),3),
+            "(by base):",
+            mean_incorrect_comp_by_base,
+            std_incorrect_comp_by_base,
         ]
 
         return lines
@@ -135,16 +195,18 @@ class Stats():
         return n_right_clf_by_query, n_right_clf_ind
 
     def _get_competences_stats(self):
-        competences_mean = np.mean(self.competences)
-        competences_mean_by_clf = np.mean(self.competences, axis=0)
-        n_even_max_competence = 0
+        mean = np.mean(self.competences)
+        var = np.var(self.competences)
+        mean_by_clf = np.mean(self.competences, axis=0)
+        var_by_clf = np.var(self.competences, axis=0)
+        n_even_max = 0
 
         for c in self.competences:
             max_ = c[np.argmax(c)]
             n_max = np.count_nonzero(c == max_)
-            if n_max > 1: n_even_max_competence += 1
+            if n_max > 1: n_even_max += 1
 
-        return competences_mean, competences_mean_by_clf, n_even_max_competence
+        return mean, mean_by_clf, var, var_by_clf, n_even_max
 
     def _get_score(self, ind):
         true_labels = self.true_labels[ind]
@@ -165,16 +227,16 @@ class MultiStats(Stats):
         return lines
 
     def _get_competences_lines(self):
-        competences_mean, competences_mean_by_clf, n_even_max_competence = \
+        _, mean_by_clf, _, var_by_clf, _ = \
             self._get_competences_stats()
 
-        means = competences_mean_by_clf.reshape(self.n_datasets, -1)
-        competences_mean_by_dataset = np.mean(means, axis=1)
+        means = mean_by_clf.reshape(self.n_datasets, -1)
+        mean_by_dataset = np.mean(means, axis=1)
 
         lines = super()._get_competences_lines()
         lines.extend([
             "Mean by dataset:",
-            np.round(competences_mean_by_dataset, 3),
+            np.round(mean_by_dataset, 3),
         ])
 
         return lines

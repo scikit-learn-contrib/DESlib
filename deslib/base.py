@@ -458,6 +458,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         # steps. First step is to collect the samples with disagreement
         # between base classifiers
         ind_disagreement = np.where(~all_agree_vector)[0]
+        ind_disagreement = np.asarray(range(len(predicted_labels)))
         if ind_disagreement.size:
 
             X_DS = X[ind_disagreement, :]
@@ -557,6 +558,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self.stats.bases_labels = base_predictions
         self.stats.agree_ind = ind_all_agree
         self.stats.predicted_labels = predicted_labels
+        self.stats.k = self.k
 
         return self.classes_.take(predicted_labels)
 
