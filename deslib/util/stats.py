@@ -195,13 +195,14 @@ class Stats():
         return n_right_clf_by_query, n_right_clf_ind
 
     def _get_competences_stats(self):
-        mean = np.mean(self.competences)
-        var = np.var(self.competences)
-        mean_by_clf = np.mean(self.competences, axis=0)
-        var_by_clf = np.var(self.competences, axis=0)
+        comp = self.competences/self.k
+        mean = np.mean(comp)
+        var = np.var(comp)
+        mean_by_clf = np.mean(comp, axis=0)
+        var_by_clf = np.var(comp, axis=0)
         n_even_max = 0
 
-        for c in self.competences:
+        for c in comp:
             max_ = c[np.argmax(c)]
             n_max = np.count_nonzero(c == max_)
             if n_max > 1: n_even_max += 1
