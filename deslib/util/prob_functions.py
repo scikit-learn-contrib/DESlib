@@ -215,7 +215,7 @@ def ccprmod(supports, idx_correct_label, B=20):
         t = range((idx_correct_label[n]) * B, (idx_correct_label[n] + 1) * B)
         bc = betaincj[n, t].reshape(1, len(t))
         bi = betaincj[n, list(set(range(0, (C * B))) - set(t))]
-        bi = npm.transpose(npm.reshape(bi, (B, C - 1), order='F'))
+        bi = np.transpose(np.reshape(bi, (B, C - 1), order='F'))
         C_src[n] = np.sum(np.multiply((bc[0, 1:] - bc[0, 0:-1]),
                                       np.prod((bi[:, 0:-1] + bi[:, 1:]) / 2,
                                               0)))
