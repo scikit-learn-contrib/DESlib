@@ -100,6 +100,6 @@ def kdn_score(X, y, k):
     nbrs = NearestNeighbors(n_neighbors=k + 1, algorithm='kd_tree').fit(X)
     _, indices = nbrs.kneighbors(X)
     neighbors = indices[:, 1:]
-    diff_class = np.matlib.repmat(y, k, 1).transpose() != y[neighbors]
+    diff_class = np.tile(y, (k, 1)).transpose() != y[neighbors]
     score = np.sum(diff_class, axis=1) / k
     return score, neighbors

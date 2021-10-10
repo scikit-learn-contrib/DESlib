@@ -4,7 +4,6 @@
 #
 # License: BSD 3 clause
 import numpy as np
-import numpy.matlib as npm
 from scipy.special import betainc
 from scipy.stats import entropy
 
@@ -196,9 +195,9 @@ def ccprmod(supports, idx_correct_label, B=20):
     N, C = supports.shape
 
     x = np.linspace(0, 1, B)
-    x = np.matlib.repmat(x, N, C)
+    x = np.tile(x, (N, C))
 
-    a = npm.zeros(x.shape)
+    a = np.zeros(x.shape)
 
     for c in range(C):
         a[:, c * B:(c + 1) * B] = C * supports[:, c:c + 1]
@@ -214,9 +213,9 @@ def ccprmod(supports, idx_correct_label, B=20):
     C_src = np.zeros(N)
     for n in range(N):
         t = range((idx_correct_label[n]) * B, (idx_correct_label[n] + 1) * B)
-        bc = betaincj[n, t]
+        bc = betaincj[n, t].reshape(1, len(t))
         bi = betaincj[n, list(set(range(0, (C * B))) - set(t))]
-        bi = npm.transpose(npm.reshape(bi, (B, C - 1), order='F'))
+        bi = np.transpose(np.reshape(bi, (B, C - 1), order='F'))
         C_src[n] = np.sum(np.multiply((bc[0, 1:] - bc[0, 0:-1]),
                                       np.prod((bi[:, 0:-1] + bi[:, 1:]) / 2,
                                               0)))
