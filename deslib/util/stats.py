@@ -13,10 +13,16 @@ class Stats():
         self.log_fname = "log.txt"
 
     def log_stats(self):
-        self.n_queries = len(self.true_labels)
+        bln_mat = np.equal(self.true_labels,self.predicted_labels)
+        self.wrong_true_labels = self.true_labels[~bln_mat]
+        self.wrong_bases_labels = self.bases_labels[~bln_mat]
+        self.wrong_predicted_labels = self.predicted_labels[~bln_mat]
+        self.wrong_competences = self.competences[~bln_mat]
+
+        self.n_queries = len(self.wrong_true_labels)
         self.n_bases = len(self.bases_labels[0])
         self.n_disagree = len(self.disagree_ind)
-        
+
         with open(self.log_fname,'w') as f:
             for line in self._get_all_lines():
                 f.write(str(line))
@@ -44,7 +50,8 @@ class Stats():
     def _get_agree_lines(self):
         n_agree = len(self.agree_ind)
         agree_dis = self._get_distribution(ind=self.agree_ind)
-        agree_score = self._get_score(self.agree_ind)
+        agree_score = self._get_score(
+            self.agree_ind, self.true_labels, self.predicted_labels)
         predicted_dis = self._get_distribution()
         
         lines = [
@@ -64,9 +71,12 @@ class Stats():
 
     def _get_n_right_clf_lines(self):
         n_right_clf_by_query, n_right_clf_ind = \
-            self._get_n_right_clf_stats()
+            self._get_n_right_clf_stats(self.wrong_true_labels,self.wrong_bases_labels)
         n_right_clf_dis = self._get_distribution(n_right_clf_by_query)
-        scores = [self._get_score(n_right_clf_ind[i]) \
+        scores = [self._get_score(
+            n_right_clf_ind[i],
+            self.wrong_true_labels,
+            self.wrong_predicted_labels) \
             for i in range(len(n_right_clf_dis))]
 
         lines = [
@@ -82,8 +92,8 @@ class Stats():
         return lines
 
     def _get_disagree_lines(self):
-        disagree_score = self._get_score(self.disagree_ind)
-
+        disagree_score = self._get_score(
+            self.disagree_ind, self.true_labels, self.predicted_labels)
         lines = [
             "--- Disagreements",
             "Instances, ratio on queries:",
@@ -98,7 +108,7 @@ class Stats():
 
     def _get_competences_lines(self):
         mean, mean_by_clf, var, var_by_clf, n_even_max = \
-            self._get_competences_stats()
+            self._get_competences_stats(self.wrong_competences)
 
         lines = [
             "--- Competences",
@@ -182,37 +192,35 @@ class Stats():
             distribution[l] = unique_counts[i]
         return distribution
 
-    def _get_n_right_clf_stats(self):
+    def _get_n_right_clf_stats(self,true_labels,bases_labels):
         n_right_clf_by_query = []
         n_right_clf_ind = [[] for i in range(self.n_bases + 1)]
 
-        for i,label in enumerate(self.true_labels):
-            row = self.bases_labels[i]
+        for i,label in enumerate(true_labels):
+            row = bases_labels[i]
             n_right_clf = np.count_nonzero(row == label)
             n_right_clf_by_query.append(n_right_clf)
             n_right_clf_ind[n_right_clf].append(i)
 
         return n_right_clf_by_query, n_right_clf_ind
 
-    def _get_competences_stats(self):
-        comp = self.competences/self.k
-        mean = np.mean(comp)
-        var = np.var(comp)
-        mean_by_clf = np.mean(comp, axis=0)
-        var_by_clf = np.var(comp, axis=0)
+    def _get_competences_stats(self, competences):
+        competences = competences/self.k
+        mean = np.mean(competences)
+        var = np.var(competences)
+        mean_by_clf = np.mean(competences, axis=0)
+        var_by_clf = np.var(competences, axis=0)
         n_even_max = 0
 
-        for c in comp:
+        for c in competences:
             max_ = c[np.argmax(c)]
             n_max = np.count_nonzero(c == max_)
             if n_max > 1: n_even_max += 1
 
         return mean, mean_by_clf, var, var_by_clf, n_even_max
 
-    def _get_score(self, ind):
-        true_labels = self.true_labels[ind]
-        labels = self.predicted_labels[ind]
-        matches = np.equal(true_labels, labels)
+    def _get_score(self, ind, true_labels, predicted_labels):
+        matches = np.equal(true_labels[ind], predicted_labels[ind])
         score = np.sum(matches)
         return score
 
@@ -225,21 +233,6 @@ class MultiStats(Stats):
     def _get_all_lines(self):
         lines = super()._get_all_lines()
         lines.extend(self._get_multistats_lines())
-        return lines
-
-    def _get_competences_lines(self):
-        _, mean_by_clf, _, var_by_clf, _ = \
-            self._get_competences_stats()
-
-        means = mean_by_clf.reshape(self.n_datasets, -1)
-        mean_by_dataset = np.mean(means, axis=1)
-
-        lines = super()._get_competences_lines()
-        lines.extend([
-            "Mean by dataset:",
-            np.round(mean_by_dataset, 3),
-        ])
-
         return lines
 
     def _get_multistats_lines(self):
