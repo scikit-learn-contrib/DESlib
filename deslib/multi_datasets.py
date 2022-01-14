@@ -18,7 +18,6 @@ from deslib.util.aggregation import (weighted_majority_voting_rule,
                                      majority_voting_rule,
                                      aggregate_proba_ensemble_weighted)
 from deslib.util.instance_hardness import hardness_region_competence
-from deslib.util.stats import MultiStats
 
 # Créer à partir de KNORA-U
 class MultiDatasets(BaseDS):
@@ -34,9 +33,6 @@ class MultiDatasets(BaseDS):
         """
         super(MultiDatasets, self).__init__(pool_classifiers)
         self.ds_classifier = ds_classifier
-
-    def _set_stats(self):
-        self.stats = MultiStats()
 
     def fit(self, X, y):
         """Prepare the DS models by setting the KNN algorithm and
@@ -171,7 +167,6 @@ class MultiDatasets(BaseDS):
                 # Get the real indices_ of the samples that will be classified
                 # using a DS algorithm.
                 ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
-                self.stats.disagree_ind = ind_ds_original_matrix
 
                 if ds_classifier.needs_proba:
                     selected_probabilities = base_probabilities[
@@ -195,7 +190,6 @@ class MultiDatasets(BaseDS):
             merged_left_base_predictions = np.concatenate(
                 merged_left_base_predictions, axis=1)
             merged_competences = np.concatenate(merged_competences, axis=1)
-            self.stats.competences = merged_competences
 
             if issubclass(type(self.ds_classifier), BaseDCS):
                 pred_ds = self._get_dcs_predicted_label(self.ds_classifier,
@@ -205,12 +199,6 @@ class MultiDatasets(BaseDS):
                     merged_left_base_predictions, merged_competences)
 
             predicted_labels[ind_ds_original_matrix] = pred_ds
-
-        self.stats.n_datasets = n_datasets
-        self.stats.bases_labels = merged_base_predictions
-        self.stats.agree_ind = ind_all_agree
-        self.stats.predicted_labels = predicted_labels
-        self.stats.k = self.k
 
         return self.classes_.take(predicted_labels)
 

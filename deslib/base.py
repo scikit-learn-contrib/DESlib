@@ -24,7 +24,6 @@ from deslib.util import KNNE
 from deslib.util import faiss_knn_wrapper
 from deslib.util.dfp import frienemy_pruning_preprocessed
 from deslib.util.instance_hardness import hardness_region_competence
-from deslib.util.stats import Stats
 
 
 class BaseDS(BaseEstimator, ClassifierMixin):
@@ -57,16 +56,12 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self.DSEL_perc = DSEL_perc
         self.knne = knne
         self.n_jobs = n_jobs
-        self._set_stats()
 
         # Check optional dependency
         if knn_classifier == 'faiss' and not faiss_knn_wrapper.is_available():
             raise ImportError(
                 'Using knn_classifier="faiss" requires that the FAISS library '
                 'be installed.Please check the Installation Guide.')
-
-    def _set_stats(self):
-        self.stats = Stats()
 
     @abstractmethod
     def select(self, competences):
@@ -538,7 +533,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                 # Get the real indices_ of the samples that will be classified
                 # using a DS algorithm.
                 ind_ds_original_matrix = ind_disagreement[ind_ds_classifier]
-                self.stats.disagree_ind = ind_ds_original_matrix
 
                 if self.needs_proba:
                     selected_probabilities = base_probabilities[
@@ -554,11 +548,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
                                                 distances=distances,
                                                 DFP_mask=DFP_mask)
                 predicted_labels[ind_ds_original_matrix] = pred_ds
-
-        self.stats.bases_labels = base_predictions
-        self.stats.agree_ind = ind_all_agree
-        self.stats.predicted_labels = predicted_labels
-        self.stats.k = self.k
 
         return self.classes_.take(predicted_labels)
 

@@ -193,8 +193,6 @@ class BaseDES(BaseDS):
         if self.DFP:
             competences = competences * DFP_mask
 
-        self.stats.competences = competences
-
         if self.mode == "selection":
             # The selected_classifiers matrix is used as a mask to remove
             # the predictions of certain base classifiers.
