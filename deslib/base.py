@@ -453,7 +453,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         # steps. First step is to collect the samples with disagreement
         # between base classifiers
         ind_disagreement = np.where(~all_agree_vector)[0]
-        ind_disagreement = np.asarray(range(len(predicted_labels)))
         if ind_disagreement.size:
 
             X_DS = X[ind_disagreement, :]
@@ -817,10 +816,9 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         ValueError
             If the pool of classifiers is empty.
         """
-        # PATCH: allow 0 or 1 base for the multidatasets model.
-        #if self.n_classifiers_ <= 1:
-        #    raise ValueError("n_classifiers must be greater than one, "
-        #                     "got {}.".format(self.n_classifiers_))
+        if self.n_classifiers_ <= 1:
+            raise ValueError("n_classifiers must be greater than one, "
+                             "got {}.".format(self.n_classifiers_))
 
     def _check_num_features(self, X):
         """ Verify if the number of features (n_features) of X is equals to
