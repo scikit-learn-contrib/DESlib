@@ -342,13 +342,20 @@ class BaseDS(BaseEstimator, ClassifierMixin):
     def _set_region_of_competence_algorithm(self, X):
 
         algorithm = "auto"
-        metric = 'minkowski'
         metric_params = None
 
-        if self.knn_metric == 'mahalanobis':
+        if self.knn_metric == 'minkowski':
+            metric = 'minkowski'
+        elif self.knn_metric == 'cosine':
+            metric = 'euclidean'
+        elif self.knn_metric == 'mahalanobis':
             metric = 'mahalanobis'
             metric_params = {'V': np.cov(X)}
             algorithm = "brute"
+        else:
+            raise ValueError('"knn_metric" should be one of the following '
+                             '["minkowski", "cosine", "mahalanobis"]')
+
 
         if self.knn_classifier is None or self.knn_classifier in ['knn',
                                                                   'sklearn']:
