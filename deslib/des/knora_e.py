@@ -67,6 +67,15 @@ class KNORAE(BaseDES):
 
          - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    knn_metric : {'minkowski', 'cosine', 'mahalanobis'} (Default = 'minkowski')
+        The metric used by the k-NN classifier to estimate distances.
+
+        - 'minkowski' will use minkowski distance.
+
+        - 'cosine' will use the cosine distance.
+
+        - 'mahalanobis' will use the mahalonibis distance.
+
     knne : bool (Default=False)
         Whether to use K-Nearest Neighbor Equality (KNNE) for the region
         of competence estimation.

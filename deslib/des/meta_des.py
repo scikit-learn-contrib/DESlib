@@ -100,6 +100,15 @@ class METADES(BaseDES):
 
          - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    knn_metric : {'minkowski', 'cosine', 'mahalanobis'} (Default = 'minkowski')
+        The metric used by the k-NN classifier to estimate distances.
+
+        - 'minkowski' will use minkowski distance.
+
+        - 'cosine' will use the cosine distance.
+
+        - 'mahalanobis' will use the mahalonibis distance.
+
     knne : bool (Default=False)
         Whether to use K-Nearest Neighbor Equality (KNNE) for the region
         of competence estimation.
@@ -135,7 +144,7 @@ class METADES(BaseDES):
                  Hc=1.0, selection_threshold=0.5, mode='selection',
                  DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
                  random_state=None, knn_classifier='knn', knne=False,
-                 DSEL_perc=0.5, n_jobs=-1):
+                 knn_metric='minkowski', DSEL_perc=0.5, n_jobs=-1):
 
         super(METADES, self).__init__(pool_classifiers=pool_classifiers,
                                       k=k,
@@ -147,6 +156,7 @@ class METADES(BaseDES):
                                       needs_proba=True,
                                       random_state=random_state,
                                       knn_classifier=knn_classifier,
+                                      knn_metric=knn_metric,
                                       knne=knne,
                                       DSEL_perc=DSEL_perc,
                                       n_jobs=n_jobs)
