@@ -316,7 +316,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             class labels of each sample in X.
 
         """
-        if self.knn_metric == 'cosine': X = normalize(X)
         self.roc_algorithm_.fit(X, y)
 
     def _set_dsel(self, X, y):
@@ -346,15 +345,13 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         if self.knn_metric == 'minkowski':
             metric = 'minkowski'
-        elif self.knn_metric == 'cosine':
-            metric = 'euclidean'
         elif self.knn_metric == 'mahalanobis':
             metric = 'mahalanobis'
             metric_params = {'V': np.cov(X)}
             algorithm = "brute"
         else:
             raise ValueError('"knn_metric" should be one of the following '
-                             '["minkowski", "cosine", "mahalanobis"]')
+                             '["minkowski", "mahalanobis"]')
 
 
         if self.knn_classifier is None or self.knn_classifier in ['knn',
