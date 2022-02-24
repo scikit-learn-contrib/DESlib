@@ -16,7 +16,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import BaseEnsemble, BaggingClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import LabelEncoder, normalize
+from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import (check_X_y, check_is_fitted, check_array,
                                       check_random_state)
 
@@ -40,8 +40,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
     @abstractmethod
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, needs_proba=False,
-                 random_state=None, knn_classifier='knn',
-                 knn_metric='minkowski', DSEL_perc=0.5, knne=False, n_jobs=-1):
+                 random_state=None, knn_classifier='knn', DSEL_perc=0.5,
+                 knne=False, n_jobs=-1):
 
         self.pool_classifiers = pool_classifiers
         self.k = k
@@ -52,7 +52,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self.needs_proba = needs_proba
         self.random_state = random_state
         self.knn_classifier = knn_classifier
-        self.knn_metric = knn_metric
         self.DSEL_perc = DSEL_perc
         self.knne = knne
         self.n_jobs = n_jobs
@@ -245,7 +244,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
 
         # validate the value of k
         self._validate_k()
-        self._set_region_of_competence_algorithm(X_dsel)
+        self._set_region_of_competence_algorithm()
         self._fit_region_competence(X_dsel, y_dsel)
 
         # validate the IH
@@ -316,7 +315,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             class labels of each sample in X.
 
         """
-        if self.knn_metric == 'cosine': X = normalize(X)
         self.roc_algorithm_.fit(X, y)
 
     def _set_dsel(self, X, y):
@@ -339,24 +337,13 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self.n_samples_ = self.DSEL_target_.size
         self.DSEL_processed_, self.BKS_DSEL_ = self._preprocess_dsel()
 
-    def _set_region_of_competence_algorithm(self, X):
-
-        algorithm = "auto"
-        metric = 'minkowski'
-        metric_params = None
-
-        if self.knn_metric == 'mahalanobis':
-            metric = 'mahalanobis'
-            metric_params = {'V': np.cov(X)}
-            algorithm = "brute"
+    def _set_region_of_competence_algorithm(self):
 
         if self.knn_classifier is None or self.knn_classifier in ['knn',
                                                                   'sklearn']:
             knn_class = functools.partial(KNeighborsClassifier,
                                           n_jobs=self.n_jobs,
-                                          algorithm=algorithm,
-                                          metric=metric,
-                                          metric_params=metric_params)
+                                          algorithm="auto")
         elif self.knn_classifier == 'faiss':
             knn_class = functools.partial(
                 faiss_knn_wrapper.FaissKNNClassifier,
@@ -453,7 +440,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         # steps. First step is to collect the samples with disagreement
         # between base classifiers
         ind_disagreement = np.where(~all_agree_vector)[0]
-        ind_disagreement = np.asarray(range(len(predicted_labels)))
         if ind_disagreement.size:
 
             X_DS = X[ind_disagreement, :]

@@ -106,8 +106,7 @@ class KNOP(BaseDES):
     """
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, random_state=None,
-                 knn_classifier='knn', knn_metric='minkowski', knne=False,
-                 DSEL_perc=0.5, n_jobs=-1):
+                 knn_classifier='knn', knne=False, DSEL_perc=0.5, n_jobs=-1):
 
         super(KNOP, self).__init__(pool_classifiers, k,
                                    DFP=DFP,
@@ -118,7 +117,6 @@ class KNOP(BaseDES):
                                    needs_proba=True,
                                    random_state=random_state,
                                    knn_classifier=knn_classifier,
-                                   knn_metric=knn_metric,
                                    knne=knne,
                                    DSEL_perc=DSEL_perc,
                                    n_jobs=n_jobs)

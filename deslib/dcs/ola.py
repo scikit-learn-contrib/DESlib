@@ -111,7 +111,7 @@ class OLA(BaseDCS):
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, selection_method='best',
                  diff_thresh=0.1, random_state=None, knn_classifier='knn',
-                 knn_metric='minkowski', knne=False, DSEL_perc=0.5, n_jobs=-1):
+                 knne=False, DSEL_perc=0.5, n_jobs=-1):
         super(OLA, self).__init__(pool_classifiers=pool_classifiers, k=k,
                                   DFP=DFP, with_IH=with_IH, safe_k=safe_k,
                                   IH_rate=IH_rate,
@@ -119,7 +119,6 @@ class OLA(BaseDCS):
                                   diff_thresh=diff_thresh,
                                   random_state=random_state,
                                   knn_classifier=knn_classifier,
-                                  knn_metric=knn_metric,
                                   knne=knne,
                                   DSEL_perc=DSEL_perc, n_jobs=n_jobs)
 

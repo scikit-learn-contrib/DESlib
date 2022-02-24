@@ -105,7 +105,7 @@ class MultiDatasets(BaseDS):
         predicted_labels = np.empty(n_samples, dtype=np.intp)
 
         all_agree_vector = BaseDS._all_classifier_agree(merged_base_predictions)
-        ind_all_agree = np.where(all_agree_vector)[0]   
+        ind_all_agree = np.where(all_agree_vector)[0]
 
         # Since the predictions are always the same, get the predictions of the
         # first base classifier.
@@ -337,7 +337,7 @@ class MultiDatasets(BaseDS):
             DFP_mask = np.ones(
                 (ind_ds_classifier.size, self.n_classifiers_))
 
-    def _get_competences(self, ds_classifier, query, predictions, 
+    def _get_competences(self, ds_classifier, query, predictions,
                         probabilities=None, neighbors=None, distances=None,
                         DFP_mask=None):
         """

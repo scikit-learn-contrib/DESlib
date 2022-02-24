@@ -99,8 +99,7 @@ class KNORAE(BaseDES):
 
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, random_state=None,
-                 knn_classifier='knn', knn_metric='minkowski', knne=False,
-                 DSEL_perc=0.5, n_jobs=-1):
+                 knn_classifier='knn', knne=False, DSEL_perc=0.5, n_jobs=-1):
 
         super(KNORAE, self).__init__(pool_classifiers=pool_classifiers,
                                      k=k,
@@ -110,7 +109,6 @@ class KNORAE(BaseDES):
                                      IH_rate=IH_rate,
                                      random_state=random_state,
                                      knn_classifier=knn_classifier,
-                                     knn_metric=knn_metric,
                                      knne=knne,
                                      DSEL_perc=DSEL_perc,
                                      n_jobs=n_jobs)
