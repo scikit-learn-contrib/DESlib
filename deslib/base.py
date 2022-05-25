@@ -30,7 +30,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
     """Base class for a dynamic classifier selection (dcs) and
        dynamic ensemble selection (des) methods.
 
-    All dcs and des techniques should inherit from this class.
+    All DCS and DES techniques should inherit from this class.
 
     Warning: This class should not be used directly.
     Use derived classes instead.
