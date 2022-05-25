@@ -530,7 +530,6 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             raise ValueError('"knn_metric" should be one of the following '
                              '["minkowski", "mahalanobis"]')
 
-
         if self.knn_classifier is None or self.knn_classifier in ['knn',
                                                                   'sklearn']:
             knn_class = functools.partial(KNeighborsClassifier,
