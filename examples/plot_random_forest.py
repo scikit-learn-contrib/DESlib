@@ -43,37 +43,34 @@ from deslib.static.stacked import StackedClassifier
 rng = np.random.RandomState(42)
 
 # Fetch a classification dataset from OpenML
-data = fetch_openml(name='credit-g', cache=False, as_frame=False)
+data = fetch_openml(name='credit-g', version=1, cache=False, as_frame=False)
 X = data.data
 y = data.target
 # split the data into training and test data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25,
                                                     random_state=rng)
-RF = RandomForestClassifier(random_state=rng)
+
+# Training a random forest to be used as the pool of classifiers.
+# We set the maximum depth of the tree so that it
+# can estimate probabilities
+RF = RandomForestClassifier(random_state=rng, n_estimators=10)
 RF.fit(X_train, y_train)
 
 X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train,
                                                     test_size=0.50,
                                                     random_state=rng)
 
-# Training a random forest to be used as the pool of classifiers.
-# We set the maximum depth of the tree so that it
-# can estimate probabilities
-pool_classifiers = RandomForestClassifier(n_estimators=100, max_depth=5,
-                                          random_state=rng)
-pool_classifiers.fit(X_train, y_train)
-
-stacked = StackedClassifier(pool_classifiers, LogisticRegression())
+stacked = StackedClassifier(RF, LogisticRegression())
 stacked.fit(X_dsel, y_dsel)
 
 # Initialize a DS technique. Here we specify the size of
 # the region of competence (5 neighbors)
-knorau = KNORAU(pool_classifiers, random_state=rng)
-kne = KNORAE(pool_classifiers, k=5, random_state=rng)
-desp = DESP(pool_classifiers, k=5, random_state=rng)
-ola = OLA(pool_classifiers, k=5, random_state=rng)
-mcb = MCB(pool_classifiers, k=5, random_state=rng)
-meta = METADES(pool_classifiers, k=5, random_state=rng)
+knorau = KNORAU(RF, k=5, random_state=rng)
+kne = KNORAE(RF, k=5, random_state=rng)
+desp = DESP(RF, k=5, random_state=rng)
+ola = OLA(RF, k=5, random_state=rng)
+mcb = MCB(RF, k=5, random_state=rng)
+meta = METADES(RF, k=5, random_state=rng)
 
 # Fit the DS techniques
 knorau.fit(X_dsel, y_dsel)

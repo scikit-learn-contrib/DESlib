@@ -5,8 +5,9 @@
 # License: BSD 3 clause
 
 import numpy as np
-from deslib.static.base import BaseStaticEnsemble
 from sklearn.utils.validation import check_X_y, check_array
+
+from deslib.static.base import BaseStaticEnsemble
 
 
 class Oracle(BaseStaticEnsemble):
@@ -14,8 +15,7 @@ class Oracle(BaseStaticEnsemble):
     the correct label if such classifier exists. This method is often used to
     measure the upper-limit performance that can be achieved by a dynamic
     classifier selection technique. It is used as a benchmark by several
-    dynamic selection algorithms
-
+    dynamic selection algorithms.
 
     Parameters
     ----------
@@ -47,7 +47,6 @@ class Oracle(BaseStaticEnsemble):
     Information Fusion, vol. 41, pp. 195 – 216, 2018.
 
     """
-
     def __init__(self, pool_classifiers=None, random_state=None, n_jobs=-1):
         super(Oracle, self).__init__(pool_classifiers=pool_classifiers,
                                      random_state=random_state,
@@ -89,24 +88,22 @@ class Oracle(BaseStaticEnsemble):
         predicted_labels : array of shape (n_samples)
                            Predicted class for each sample in X.
         """
-
         X = check_array(X)
+        if self.n_features_ != X.shape[1]:
+            raise ValueError("Number of features of the model must "
+                             "match the input. Model n_features is {0} and "
+                             "input n_features is {1}."
+                             "".format(self.n_features_, X.shape[1]))
+
         y = self.enc_.transform(y)
-        predicted_labels = -np.ones(y.size, dtype=int)
+        preds = [clf.predict(X[:, self.estimator_features_[idx]])
+                 for idx, clf in enumerate(self.pool_classifiers_)]
+        preds = np.asarray(preds).T
+        hit_miss = np.asarray(preds) == y.reshape(-1, 1)
+        idx_sel_classifier = hit_miss.argmax(axis=1)
+        predicted_labels = preds[np.arange(preds.shape[0]), idx_sel_classifier]
 
-        for sample_index, x in enumerate(X):
-
-            for clf in self.pool_classifiers_:
-                # If one base classifier predicts the correct answer, consider
-                # as a correct prediction
-                predicted = clf.predict(x.reshape(1, -1))[0]
-                if predicted == y[sample_index]:
-                    predicted = int(predicted)
-                    predicted_labels[sample_index] = predicted
-                    break
-                predicted_labels[sample_index] = predicted
-
-        return self.classes_.take(predicted_labels)
+        return self.classes_.take(predicted_labels.astype(int))
 
     def predict_proba(self, X, y):
         """Estimates the posterior probabilities for each class for each sample
@@ -126,20 +123,21 @@ class Oracle(BaseStaticEnsemble):
 
         Returns
         -------
-        predicted_proba : array of shape (n_samples, n_classes)
+        probas : array of shape (n_samples, n_classes)
             Posterior probabilities estimates for each class.
 
         """
         X = check_array(X)
         y = self.enc_.transform(y)
 
-        probas = [clf.predict_proba(X) for clf in self.pool_classifiers_]
+        probas = [clf.predict_proba(X[:, self.estimator_features_[idx]])
+                  for idx, clf in enumerate(self.pool_classifiers_)]
         probas = np.array(probas).transpose((1, 0, 2))
-        best_probas_ids = np.argmax(probas[np.arange(y.size), :,  y], axis=1)
+        best_probas_ids = np.argmax(probas[np.arange(y.size), :, y], axis=1)
         return probas[np.arange(y.size), best_probas_ids, :]
 
     def score(self, X, y, sample_weights=None):
-        """Prepare the labels using the Oracle model.
+        """ Return the mean accuracy on the given test data and labels.
 
         Parameters
         ----------
@@ -149,7 +147,7 @@ class Oracle(BaseStaticEnsemble):
         y : array of shape (n_samples)
             Class labels of each sample in X.
 
-        sample_weight : array-like, shape = [n_samples], optional
+        sample_weight : array-like of shape (n_samples,), default=None
             Sample weights.
 
         Returns

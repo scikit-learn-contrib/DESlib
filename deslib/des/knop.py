@@ -85,6 +85,12 @@ class KNOP(BaseDES):
         Note: This parameter is only used if the pool of classifier is None or
         unfitted.
 
+    voting : {'hard', 'soft'}, default='hard'
+            If 'hard', uses predicted class labels for majority rule voting.
+            Else if 'soft', predicts the class label based on the argmax of
+            the sums of the predicted probabilities, which is recommended for
+            an ensemble of well-calibrated classifiers.
+
     n_jobs : int, default=-1
         The number of parallel jobs to run. None means 1 unless in
         a joblib.parallel_backend context. -1 means using all processors.
@@ -116,7 +122,7 @@ class KNOP(BaseDES):
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, random_state=None,
                  knn_classifier='knn', knn_metric='minkowski', knne=False,
-                 DSEL_perc=0.5, n_jobs=-1):
+                 DSEL_perc=0.5, n_jobs=-1, voting='hard'):
 
         super(KNOP, self).__init__(pool_classifiers, k,
                                    DFP=DFP,
@@ -130,7 +136,8 @@ class KNOP(BaseDES):
                                    knn_metric=knn_metric,
                                    knne=knne,
                                    DSEL_perc=DSEL_perc,
-                                   n_jobs=n_jobs)
+                                   n_jobs=n_jobs,
+                                   voting=voting)
 
     def fit(self, X, y):
         """Train the DS model by setting the KNN algorithm and
@@ -156,7 +163,7 @@ class KNOP(BaseDES):
             raise ValueError(
                 "Error. KNOP  does not accept one class datasets!")
         self._check_predict_proba()
-        self.dsel_scores_ = self._preprocess_dsel_scores()
+        self.dsel_scores_ = self._predict_proba_base(self.DSEL_data_)
         # Reshape DSEL_scores as a 2-D array for nearest neighbor calculations
         dsel_output_profiles = self.dsel_scores_.reshape(self.n_samples_,
                                                          self.n_classifiers_ *
@@ -223,7 +230,7 @@ class KNOP(BaseDES):
                                              return_distance=True)
         return dists, np.atleast_2d(idx)
 
-    def estimate_competence_from_proba(self, query, probabilities,
+    def estimate_competence_from_proba(self, probabilities,
                                        neighbors=None, distances=None):
 
         """The competence of the base classifiers is simply estimated as
@@ -236,15 +243,11 @@ class KNOP(BaseDES):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
         neighbors : array of shape (n_samples, n_neighbors)
-            Indices of the k nearest neighbors according for each test sample
+            Indices of the k nearest neighbors.
 
         distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test
-            sample.
+                        Distances from the k nearest neighbors to the query.
 
         probabilities : array of shape (n_samples, n_classifiers, n_classes)
             Probabilities estimates obtained by each each base classifier

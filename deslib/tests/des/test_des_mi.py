@@ -70,83 +70,72 @@ def test_select_batch_samples():
     assert np.array_equal(np.unique(selected_clf), np.unique(expected))
 
 
-def test_classify_with_ds_single_sample():
-    query = np.ones(2)
-
-    # simulated predictions of the pool of classifiers
-    predictions = np.array([0, 1, 0])
-
-    desmi_test = DESMI(DFP=True)
-    DFP_mask = np.ones((1, 3))
-    desmi_test.estimate_competence = MagicMock(return_value=(np.ones((1, 3))))
-    desmi_test.select = MagicMock(return_value=np.array([[0, 2]]))
-    result = desmi_test.classify_with_ds(query, predictions, DFP_mask=DFP_mask)
-    assert np.allclose(result, 0)
-
-
 def test_classify_with_ds_batch_samples():
     n_samples = 10
-    # Passing 10 samples for classification automatically
-    query = np.ones((n_samples, 2))
 
     # simulated predictions of the pool of classifiers
     predictions = np.tile(np.array([0, 1, 0]), (n_samples, 1))
 
     desmi_test = DESMI()
+    desmi_test.n_classes_ = 2
     desmi_test.estimate_competence = MagicMock(
         return_value=(np.ones((n_samples, 3))))
     desmi_test.select = MagicMock(
         return_value=np.tile(np.array([[0, 2]]), (n_samples, 1)))
-    result = desmi_test.classify_with_ds(query, predictions)
+    result = desmi_test.classify_with_ds(predictions)
     assert np.allclose(result, np.zeros(10))
 
 
-def test_classify_with_ds_diff_sizes():
-    query = np.ones((10, 2))
-    predictions = np.ones((5, 3))
-
-    des_mi = DESMI()
-
-    with pytest.raises(ValueError):
-        des_mi.classify_with_ds(query, predictions)
-
-
-def test_proba_with_ds_diff_sizes():
-    query = np.ones((10, 2))
-    predictions = np.ones((5, 3))
-    probabilities = np.ones((5, 3, 2))
-
-    des_mi = DESMI()
-
-    with pytest.raises(ValueError):
-        des_mi.predict_proba_with_ds(query, predictions, probabilities)
-
-
-def test_predict_proba_with_ds(create_pool_classifiers):
-    query = np.array([-1, 1])
-    pool_classifiers = create_pool_classifiers + create_pool_classifiers
-    desmi_test = DESMI(pool_classifiers, DFP=True)
+def test_predict_proba_with_ds_soft(create_pool_classifiers):
+    expected = np.array([0.61, 0.39])
     DFP_mask = np.ones((1, 6))
+    predictions = np.array([[0, 1, 0, 0, 1, 0]])
+    probabilities = np.array([[[0.5, 0.5], [1, 0], [0.33, 0.67],
+                               [0.5, 0.5], [1, 0], [0.33, 0.67]]])
+    pool_classifiers = create_pool_classifiers + create_pool_classifiers
+    desmi_test = DESMI(pool_classifiers, DFP=True, voting='soft')
+    desmi_test.n_classes_ = 2
     selected_indices = np.array([[0, 1, 5]])
-
     desmi_test.estimate_competence = MagicMock(return_value=np.ones(6))
     desmi_test.select = MagicMock(return_value=selected_indices)
 
-    desmi_test.n_classes = 2
-    expected = np.array([0.61, 0.39])
-
-    predictions = []
-    probabilities = []
-    for clf in desmi_test.pool_classifiers:
-        predictions.append(clf.predict(query)[0])
-        probabilities.append(clf.predict_proba(query)[0])
-
-    query = np.atleast_2d(query)
-    predictions = np.atleast_2d(predictions)
-    probabilities = np.array(probabilities)
-    probabilities = np.expand_dims(probabilities, axis=0)
-
-    predicted_proba = desmi_test.predict_proba_with_ds(query, predictions,
+    predicted_proba = desmi_test.predict_proba_with_ds(predictions,
                                                        probabilities,
                                                        DFP_mask=DFP_mask)
     assert np.isclose(predicted_proba, expected, atol=0.01).all()
+
+
+def test_predict_proba_with_ds_hard(create_pool_classifiers):
+    expected = np.array([0.666, 0.333])
+    DFP_mask = np.ones((1, 6))
+    predictions = np.array([[0, 1, 0, 0, 1, 0]])
+    probabilities = np.array([[[0.5, 0.5], [1, 0], [0.33, 0.67],
+                               [0.5, 0.5], [1, 0], [0.33, 0.67]]])
+    pool_classifiers = create_pool_classifiers + create_pool_classifiers
+    desmi_test = DESMI(pool_classifiers, DFP=True, voting='hard')
+    desmi_test.n_classes_ = 2
+    selected_indices = np.array([[0, 1, 5]])
+    desmi_test.estimate_competence = MagicMock(return_value=np.ones(6))
+    desmi_test.select = MagicMock(return_value=selected_indices)
+
+    predicted_proba = desmi_test.predict_proba_with_ds(predictions,
+                                                       probabilities,
+                                                       DFP_mask=DFP_mask)
+    assert np.isclose(predicted_proba, expected, atol=0.01).all()
+
+
+def test_soft_voting_no_proba(create_X_y):
+    from sklearn.linear_model import Perceptron
+    X, y = create_X_y
+    clf = Perceptron()
+    clf.fit(X, y)
+    with pytest.raises(ValueError):
+        DESMI([clf, clf, clf, clf], voting='soft').fit(X, y)
+
+
+@pytest.mark.parametrize('voting', [None, 'product', 1])
+def test_wrong_voting_value(voting, create_X_y, create_pool_classifiers):
+    X, y = create_X_y
+    pool = create_pool_classifiers
+    with pytest.raises(ValueError):
+        DESMI(pool, voting=voting).fit(X, y)

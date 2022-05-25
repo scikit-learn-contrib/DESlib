@@ -86,12 +86,19 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
             self.pool_classifiers_ = self.pool_classifiers
 
         self.n_classifiers_ = len(self.pool_classifiers_)
+        # allow base models with feature subspaces.
+        if hasattr(self.pool_classifiers_, "estimators_features_"):
+            self.estimator_features_ = \
+                np.array(self.pool_classifiers_.estimators_features_)
+        else:
+            indices = np.arange(X.shape[1])
+            self.estimator_features_ = np.tile(indices,
+                                               (self.n_classifiers_, 1))
 
         self._validate_pool()
         # dealing with label encoder
         self._check_label_encoder()
         self.y_enc_ = self._setup_label_encoder(y)
-
         self.n_classes_ = self.classes_.size
         self.n_features_ = X.shape[1]
 

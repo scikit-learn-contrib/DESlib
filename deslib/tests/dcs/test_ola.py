@@ -19,8 +19,7 @@ def test_estimate_competence_batch(example_estimate_competence):
     ola_test.DSEL_processed_ = dsel_processed
 
     ola_test.DFP_mask = np.ones((3, 3))
-    query = np.array([[1, 1], [1, 1], [1, 1]])
-    competences = ola_test.estimate_competence(query, neighbors,
+    competences = ola_test.estimate_competence(neighbors,
                                                distances=distances)
     assert np.allclose(competences, expected)
 

@@ -177,7 +177,7 @@ def test_deskl():
 def test_kne_proba():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    kne = KNORAE(pool_classifiers, DFP=True)
+    kne = KNORAE(pool_classifiers, DFP=True, voting='soft')
     kne.fit(X_dsel, y_dsel)
     probas = kne.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/kne_proba_DFP.npy')
@@ -187,7 +187,7 @@ def test_kne_proba():
 def test_desp_proba():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    desp = DESP(pool_classifiers, DFP=True)
+    desp = DESP(pool_classifiers, DFP=True, voting='soft')
     desp.fit(X_dsel, y_dsel)
     probas = desp.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/desp_proba_DFP.npy')
@@ -218,7 +218,7 @@ def test_mcb_proba():
 def test_desknn_proba():
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 
-    desknn = DESKNN(pool_classifiers, DFP=True)
+    desknn = DESKNN(pool_classifiers, DFP=True, voting='soft')
     desknn.fit(X_dsel, y_dsel)
     probas = desknn.predict_proba(X_test)
     expected = np.load('deslib/tests/expected_values/desknn_probas_DFP.npy')

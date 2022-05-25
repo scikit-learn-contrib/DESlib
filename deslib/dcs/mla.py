@@ -134,7 +134,7 @@ class MLA(BaseDCS):
                                   DSEL_perc=DSEL_perc,
                                   n_jobs=n_jobs)
 
-    def estimate_competence(self, query, neighbors, distances,
+    def estimate_competence(self, competence_region, distances,
                             predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the Modified Local
@@ -158,14 +158,11 @@ class MLA(BaseDCS):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-            The test examples.
-
-        neighbors : array of shape (n_samples, n_neighbors)
-            Indices of the k nearest neighbors according for each test sample
+        competence_region : array of shape (n_samples, n_neighbors)
+            Indices of the k nearest neighbors.
 
         distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test sample
+            Distances from the k nearest neighbors to the query.
 
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for the test examples.
@@ -185,7 +182,8 @@ class MLA(BaseDCS):
         # Expanding the dimensions of the predictions and target arrays in
         # order to compare both.
         predictions_3d = np.expand_dims(predictions, axis=1)
-        target_3d = np.expand_dims(self.DSEL_target_[neighbors], axis=2)
+        target_3d = np.expand_dims(self.DSEL_target_[competence_region],
+                                   axis=2)
         # Create a mask to remove the neighbors belonging to a different class
         # than the predicted by the base classifier
         mask = (predictions_3d != target_3d)
@@ -197,7 +195,8 @@ class MLA(BaseDCS):
 
         # Multiply the pre-processed correct predictions by the base
         # classifiers to the distance array
-        proc_norm = self.DSEL_processed_[neighbors, :] * dists_normalized
+        proc_norm = \
+            self.DSEL_processed_[competence_region, :] * dists_normalized
 
         # Create masked arrays to remove samples with different label in the
         # calculations

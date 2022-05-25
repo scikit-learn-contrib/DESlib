@@ -148,7 +148,7 @@ class MCB(BaseDCS):
 
         self.similarity_threshold = similarity_threshold
 
-    def estimate_competence(self, query, neighbors, distances=None,
+    def estimate_competence(self, competence_region, distances=None,
                             predictions=None):
         """estimate the competence of each base classifier :math:`c_{i}` for
         the classification of the query sample using the Multiple Classifier
@@ -181,14 +181,11 @@ class MCB(BaseDCS):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-            The test examples.
-
-        neighbors : array of shape (n_samples, n_neighbors)
-            Indices of the k nearest neighbors according for each test sample
+        competence_region : array of shape (n_samples, n_neighbors)
+            Indices of the k nearest neighbors.
 
         distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test sample
+            Distances from the k nearest neighbors to the query.
 
         predictions : array of shape (n_samples, n_classifiers)
             Predictions of the base classifiers for the test examples.
@@ -203,10 +200,8 @@ class MCB(BaseDCS):
         # Use the pre-compute decisions to transform the query to the BKS space
         BKS_query = predictions
 
-        T = (self.BKS_DSEL_[neighbors] == BKS_query.reshape(BKS_query.shape[0],
-                                                            -1,
-                                                            BKS_query.shape[
-                                                                1]))
+        T = (self.BKS_DSEL_[competence_region] == BKS_query.reshape(
+            BKS_query.shape[0], -1, BKS_query.shape[1]))
         S = np.sum(T, axis=2) / self.n_classifiers_
 
         # get a mask with the neighbors that will be considered for the
@@ -219,10 +214,10 @@ class MCB(BaseDCS):
                                  self.n_classifiers_, axis=2)
 
         # Use the masked array mean to take into account the removed neighbors
-        processed_pred = np.ma.MaskedArray(self.DSEL_processed_[neighbors, :],
-                                           mask=~boolean_mask)
-        competences = np.ma.mean(processed_pred, axis=1)
+        processed_pred = np.ma.MaskedArray(
+            self.DSEL_processed_[competence_region, :], mask=~boolean_mask)
 
+        competences = np.ma.mean(processed_pred, axis=1)
         return competences
 
     def _validate_parameters(self):

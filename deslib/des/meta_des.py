@@ -7,8 +7,9 @@
 import warnings
 
 import numpy as np
-from deslib.des.base import BaseDES
 from sklearn.naive_bayes import MultinomialNB
+
+from deslib.des.base import BaseDES
 
 
 class METADES(BaseDES):
@@ -118,6 +119,12 @@ class METADES(BaseDES):
         Note: This parameter is only used if the pool of classifier is None or
         unfitted.
 
+    voting : {'hard', 'soft'}, default='hard'
+            If 'hard', uses predicted class labels for majority rule voting.
+            Else if 'soft', predicts the class label based on the argmax of
+            the sums of the predicted probabilities, which is recommended for
+            an ensemble of well-calibrated classifiers.
+
     n_jobs : int, default=-1
         The number of parallel jobs to run. None means 1 unless in
         a joblib.parallel_backend context. -1 means using all processors.
@@ -144,7 +151,7 @@ class METADES(BaseDES):
                  Hc=1.0, selection_threshold=0.5, mode='selection',
                  DFP=False, with_IH=False, safe_k=None, IH_rate=0.30,
                  random_state=None, knn_classifier='knn', knne=False,
-                 knn_metric='minkowski', DSEL_perc=0.5, n_jobs=-1):
+                 knn_metric='minkowski', DSEL_perc=0.5, n_jobs=-1, voting='hard'):
 
         super(METADES, self).__init__(pool_classifiers=pool_classifiers,
                                       k=k,
@@ -159,7 +166,8 @@ class METADES(BaseDES):
                                       knn_metric=knn_metric,
                                       knne=knne,
                                       DSEL_perc=DSEL_perc,
-                                      n_jobs=n_jobs)
+                                      n_jobs=n_jobs,
+                                      voting=voting)
 
         self.meta_classifier = meta_classifier
         self.Kp = Kp
@@ -198,7 +206,7 @@ class METADES(BaseDES):
         # Check if the base classifier is able to estimate probabilities
         self._check_predict_proba()
 
-        self.dsel_scores_ = self._preprocess_dsel_scores()
+        self.dsel_scores_ = self._predict_proba_base(self.DSEL_data_)
 
         # Reshape DSEL_scores as a 2-D array for nearest neighbor calculations
         dsel_output_profiles = self.dsel_scores_.reshape(self.n_samples_,
@@ -340,7 +348,7 @@ class METADES(BaseDES):
         # Get the region of competence using the feature space and
         # the decision space. Use K + 1 to later remove itself
         # from the set.
-        _, idx_neighbors = self._get_region_competence(
+        _, idx_neighbors = self.get_competence_region(
             self.DSEL_data_[indices_selected, :], self.k_ + 1)
         _, idx_neighbors_op = self._get_similar_out_profiles(
             self.dsel_scores_[indices_selected], self.Kp_ + 1)
@@ -446,7 +454,7 @@ class METADES(BaseDES):
 
         return selected_classifiers
 
-    def estimate_competence_from_proba(self, query, neighbors, probabilities,
+    def estimate_competence_from_proba(self, neighbors, probabilities,
                                        distances=None):
         """Estimate the competence of each base classifier :math:`c_i`
         the classification of the query sample. This method received an array
@@ -459,15 +467,11 @@ class METADES(BaseDES):
 
         Parameters
         ----------
-        query : array of shape (n_samples, n_features)
-                The test examples.
-
         neighbors : array of shape (n_samples, n_neighbors)
             Indices of the k nearest neighbors according for each test sample.
 
         distances : array of shape (n_samples, n_neighbors)
-            Distances of the k nearest neighbors according for each test
-            sample.
+            Distances from the k nearest neighbors to the query.
 
         probabilities : array of shape (n_samples, n_classifiers, n_classes)
             Probabilities estimates obtained by each each base classifier for
