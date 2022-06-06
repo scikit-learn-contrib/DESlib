@@ -110,6 +110,9 @@ class METADES(BaseDES):
 
         - 'mahalanobis' will use the mahalonibis distance.
 
+        Note: This parameter only affects the neighborhood search applied in
+        the feature space.
+
     knne : bool (Default=False)
         Whether to use K-Nearest Neighbor Equality (KNNE) for the region
         of competence estimation.
@@ -249,6 +252,9 @@ class METADES(BaseDES):
 
         """
         self.op_knn_ = self.knn_class_(self.Kp_)
+        # guarantees that minkowski metric is used in this case. It is a
+        # requirement for dealing with the decision space.
+        self.op_knn_.metric = 'minkowski'
 
         if self.n_classes_ == 2:
             # Get only the scores for one class since they are complementary
