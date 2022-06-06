@@ -87,7 +87,7 @@ def setup_classifiers():
 
 @pytest.mark.parametrize('metric', [
     ['minkowski', 0.9],
-    ['mahalanobis', 0.8909090909090909]
+    ['mahalanobis', 0.9]
 ])
 def test_knorau(metric):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
@@ -98,7 +98,7 @@ def test_knorau(metric):
 
 @pytest.mark.parametrize('metric', [
     ['minkowski', 0.9],
-    ['mahalanobis', 0.8696969696969697]
+    ['mahalanobis', 0.896969696969697]
 ])
 def test_knorae(metric):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
@@ -120,7 +120,7 @@ def test_desp(metric):
 
 @pytest.mark.parametrize('metric', [
     ['minkowski', 0.8818181818181818],
-    ['mahalanobis', 0.8727272727272727]
+    ['mahalanobis', 0.8636363636363636]
 ])
 def test_ola(metric):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
@@ -130,48 +130,13 @@ def test_ola(metric):
 
 
 @pytest.mark.parametrize('metric', [
-    ['minkowski', 0.8878787878787879],
-    ['mahalanobis', 0.9]
-])
-def test_lca(metric):
-    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-    technique = LCA(pool_classifiers, knn_metric=metric[0])
-    technique.fit(X_dsel, y_dsel)
-    assert np.isclose(technique.score(X_test, y_test), metric[1])
-
-
-@pytest.mark.parametrize('metric', [
-    ['minkowski', 0.8878787878787879],
-    ['mahalanobis', 0.9]
-])
-def test_mla(metric):
-    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-    technique = MLA(pool_classifiers, knn_metric=metric[0])
-    technique.fit(X_dsel, y_dsel)
-    assert np.isclose(technique.score(X_test, y_test), metric[1])
-
-
-@pytest.mark.parametrize('metric', [
     ['minkowski', 0.8666666666666667],
-    ['mahalanobis', 0.8666666666666667]
+    ['mahalanobis', 0.8484848484848485]
 ])
 def test_mcb(metric):
     rng = np.random.RandomState(123456)
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     technique = MCB(pool_classifiers, random_state=rng, knn_metric=metric[0])
-    technique.fit(X_dsel, y_dsel)
-    assert np.isclose(technique.score(X_test, y_test), metric[1])
-
-
-@pytest.mark.parametrize('metric', [
-    ['minkowski', 0.8666666666666667],
-    ['mahalanobis', 0.8333333333333334]
-])
-def test_apriori(metric):
-    rng = np.random.RandomState(123456)
-    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-    technique = APriori(pool_classifiers, random_state=rng,
-                        knn_metric=metric[0])
     technique.fit(X_dsel, y_dsel)
     assert np.isclose(technique.score(X_test, y_test), metric[1])
 
@@ -189,7 +154,7 @@ def test_rank(metric):
 
 @pytest.mark.parametrize('metric', [
     ['minkowski', 0.9121212121212121],
-    ['mahalanobis', 0.8757575757575757]
+    ['mahalanobis', 0.8333333333333334]
 ])
 def test_aposteriori(metric):
     rng = np.random.RandomState(123456)
@@ -224,7 +189,7 @@ def test_knop(metric):
 
 @pytest.mark.parametrize('metric', [
     ['minkowski', 0.896969696969697],
-    ['mahalanobis', 0.906060606060606]
+    ['mahalanobis', 0.8939393939393939]
 ])
 def test_desknn(metric):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
@@ -235,7 +200,7 @@ def test_desknn(metric):
 
 @pytest.mark.parametrize('metric', [
     ['minkowski', 0.9030303030303031],
-    ['mahalanobis', 0.8939393939393939]
+    ['mahalanobis', 0.906060606060606]
 ])
 def test_deskl(metric):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
