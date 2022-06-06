@@ -25,7 +25,8 @@ class BaseProbabilistic(BaseDES):
     def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, mode='selection', voting='hard',
                  selection_threshold=None, random_state=None,
-                 knn_classifier='knn', DSEL_perc=0.5, n_jobs=-1):
+                 knn_classifier='knn', knn_metric='minkowski',
+                 DSEL_perc=0.5, n_jobs=-1):
 
         super(BaseProbabilistic, self).__init__(
             pool_classifiers=pool_classifiers,
@@ -37,6 +38,7 @@ class BaseProbabilistic(BaseDES):
             mode=mode,
             random_state=random_state,
             knn_classifier=knn_classifier,
+            knn_metric=knn_metric,
             DSEL_perc=DSEL_perc,
             n_jobs=n_jobs,
             voting=voting)

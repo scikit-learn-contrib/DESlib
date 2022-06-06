@@ -69,6 +69,15 @@ class DESP(BaseDES):
 
          - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    knn_metric : {'minkowski', 'cosine', 'mahalanobis'} (Default = 'minkowski')
+        The metric used by the k-NN classifier to estimate distances.
+
+        - 'minkowski' will use minkowski distance.
+
+        - 'cosine' will use the cosine distance.
+
+        - 'mahalanobis' will use the mahalonibis distance.
+
     knne : bool (Default=False)
         Whether to use K-Nearest Neighbor Equality (KNNE) for the region
         of competence estimation.
@@ -106,8 +115,9 @@ class DESP(BaseDES):
 
     def __init__(self, pool_classifiers=None, k=7, DFP=False, with_IH=False,
                  safe_k=None, IH_rate=0.30, mode='selection',
-                 random_state=None, knn_classifier='knn', knne=False,
-                 DSEL_perc=0.5, n_jobs=-1, voting='hard'):
+                 random_state=None, knn_classifier='knn',
+                 knn_metric='minkowski', knne=False, DSEL_perc=0.5, n_jobs=-1,
+                 voting='hard'):
 
         super(DESP, self).__init__(pool_classifiers=pool_classifiers,
                                    k=k,
@@ -118,6 +128,7 @@ class DESP(BaseDES):
                                    mode=mode,
                                    random_state=random_state,
                                    knn_classifier=knn_classifier,
+                                   knn_metric=knn_metric,
                                    knne=knne,
                                    DSEL_perc=DSEL_perc,
                                    n_jobs=n_jobs,

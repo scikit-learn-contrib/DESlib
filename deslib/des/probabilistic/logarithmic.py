@@ -57,6 +57,15 @@ class Logarithmic(BaseProbabilistic):
 
          - None, will use sklearn :class:`KNeighborsClassifier`.
 
+    knn_metric : {'minkowski', 'cosine', 'mahalanobis'} (Default = 'minkowski')
+        The metric used by the k-NN classifier to estimate distances.
+
+        - 'minkowski' will use minkowski distance.
+
+        - 'cosine' will use the cosine distance.
+
+        - 'mahalanobis' will use the mahalonibis distance.
+
     DSEL_perc : float (Default = 0.5)
         Percentage of the input data used to fit DSEL.
         Note: This parameter is only used if the pool of classifier is None or
@@ -86,9 +95,10 @@ class Logarithmic(BaseProbabilistic):
     """
 
     def __init__(self, pool_classifiers=None, k=None, DFP=False, with_IH=False,
-                 safe_k=None, IH_rate=0.30, mode='selection', voting='hard',
-                 random_state=None, knn_classifier='knn', DSEL_perc=0.5,
-                 n_jobs=-1):
+                 safe_k=None, IH_rate=0.30, mode='selection',
+                 random_state=None, knn_classifier='knn',
+                 knn_metric='minkowski', DSEL_perc=0.5, n_jobs=-1,
+                 voting='hard'):
         super(Logarithmic, self).__init__(pool_classifiers=pool_classifiers,
                                           k=k,
                                           DFP=DFP,
@@ -98,6 +108,7 @@ class Logarithmic(BaseProbabilistic):
                                           mode=mode,
                                           random_state=random_state,
                                           knn_classifier=knn_classifier,
+                                          knn_metric=knn_metric,
                                           DSEL_perc=DSEL_perc,
                                           n_jobs=n_jobs,
                                           voting=voting)
