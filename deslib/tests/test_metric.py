@@ -163,7 +163,7 @@ def test_aposteriori(metric):
 
 @pytest.mark.parametrize('metric', [
     ['minkowski', 0.9030303030303031],
-    ['mahalanobis', 0.896969696969697]
+    ['mahalanobis', 0.9030303030303031]
 ])
 def test_meta(metric):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()

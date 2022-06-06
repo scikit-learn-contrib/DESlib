@@ -124,7 +124,6 @@ class KNOP(BaseDES):
                                    needs_proba=True,
                                    random_state=random_state,
                                    knn_classifier=knn_classifier,
-                                   knn_metric=knn_metric,
                                    knne=knne,
                                    DSEL_perc=DSEL_perc,
                                    n_jobs=n_jobs,

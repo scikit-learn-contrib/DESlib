@@ -255,6 +255,7 @@ class METADES(BaseDES):
         # guarantees that minkowski metric is used in this case. It is a
         # requirement for dealing with the decision space.
         self.op_knn_.metric = 'minkowski'
+        self.op_knn_.metric_params = None
 
         if self.n_classes_ == 2:
             # Get only the scores for one class since they are complementary
