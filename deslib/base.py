@@ -524,7 +524,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             metric = 'minkowski'
         elif self.knn_metric == 'mahalanobis':
             metric = 'mahalanobis'
-            metric_params = {'V': np.cov(X)}
+            metric_params = {'VI': np.cov(X)}
             algorithm = "auto"
         else:
             raise ValueError('"knn_metric" should be one of the following '
