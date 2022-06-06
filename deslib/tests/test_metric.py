@@ -8,17 +8,13 @@ from sklearn.preprocessing import StandardScaler
 from deslib.base import BaseDS
 # DCS techniques
 from deslib.dcs.a_posteriori import APosteriori
-from deslib.dcs.a_priori import APriori
-from deslib.dcs.lca import LCA
 from deslib.dcs.mcb import MCB
-from deslib.dcs.mla import MLA
 from deslib.dcs.ola import OLA
 from deslib.dcs.rank import Rank
 from deslib.des import DESKL
 # DES techniques
 from deslib.des.des_knn import DESKNN
 from deslib.des.des_p import DESP
-from deslib.des.knop import KNOP
 from deslib.des.knora_e import KNORAE
 from deslib.des.knora_u import KNORAU
 from deslib.des.meta_des import METADES
@@ -172,17 +168,6 @@ def test_aposteriori(metric):
 def test_meta(metric):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
     technique = METADES(pool_classifiers, knn_metric=metric[0])
-    technique.fit(X_dsel, y_dsel)
-    assert np.isclose(technique.score(X_test, y_test), metric[1])
-
-
-@pytest.mark.parametrize('metric', [
-    ['minkowski', 0.896969696969697],
-    ['mahalanobis', 0.9030303030303031]
-])
-def test_knop(metric):
-    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-    technique = KNOP(pool_classifiers, knn_metric=metric[0])
     technique.fit(X_dsel, y_dsel)
     assert np.isclose(technique.score(X_test, y_test), metric[1])
 
