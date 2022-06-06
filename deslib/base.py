@@ -83,7 +83,14 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self
         """
         self.random_state_ = check_random_state(self.random_state)
-        X, y = check_X_y(X, y)
+        X, y = self._validate_data(
+            X,
+            y,
+            accept_sparse="csr",
+            dtype=np.float64,
+            order="C",
+            accept_large_sparse=False,
+        )
 
         # Check if the pool of classifiers is None.
         # If yes, use a BaggingClassifier for the pool.
