@@ -162,7 +162,7 @@ def test_aposteriori(metric):
 
 
 @pytest.mark.parametrize('metric', [
-    ['minkowski', 0.9030303030303031],
+    ['minkowski', 0.9],
     ['mahalanobis', 0.906060606060606]
 ])
 def test_meta(metric):
