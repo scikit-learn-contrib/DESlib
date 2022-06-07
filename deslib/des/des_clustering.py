@@ -149,8 +149,7 @@ class DESClustering(BaseDS):
         if self.clustering is None:
             if self.n_samples_ >= self.n_clusters:
                 self.clustering_ = KMeans(n_clusters=self.n_clusters,
-                                          random_state=self.random_state,
-                                          n_jobs=self.n_jobs)
+                                          random_state=self.random_state)
             else:
                 warnings.warn("n_clusters is bigger than DSEL size. "
                               "Using All DSEL examples as cluster centroids.",

@@ -136,8 +136,8 @@ def test_aposteriori():
     assert np.isclose(a_posteriori.score(X_test, y_test), 0.90000000000000002)
 
 
-@pytest.mark.parametrize('knne, expected', [(False, 0.9151515151515152),
-                                            (True, 0.8757575757575757)])
+@pytest.mark.parametrize('knne, expected', [(False, 0.9090909090909091),
+                                            (True, 0.8606060606060606)])
 def test_meta(knne, expected):
     pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
 

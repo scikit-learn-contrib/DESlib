@@ -83,7 +83,14 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self
         """
         self.random_state_ = check_random_state(self.random_state)
-        X, y = check_X_y(X, y)
+        X, y = self._validate_data(
+            X,
+            y,
+            accept_sparse="csr",
+            dtype=np.float64,
+            order="C",
+            accept_large_sparse=False,
+        )
 
         # Check if the pool of classifiers is None.
         # If yes, use a BaggingClassifier for the pool.
@@ -524,7 +531,7 @@ class BaseDS(BaseEstimator, ClassifierMixin):
             metric = 'minkowski'
         elif self.knn_metric == 'mahalanobis':
             metric = 'mahalanobis'
-            metric_params = {'V': np.cov(X)}
+            metric_params = {'VI': np.cov(X)}
             algorithm = "auto"
         else:
             raise ValueError('"knn_metric" should be one of the following '

@@ -424,7 +424,7 @@ def test_meta_no_pool_of_classifiers():
     X_test = scalar.transform(X_test)
     meta_des = METADES(random_state=rng, DSEL_perc=0.5)
     meta_des.fit(X_train, y_train)
-    assert np.isclose(meta_des.score(X_test, y_test), 0.8936170212765957)
+    assert np.isclose(meta_des.score(X_test, y_test), 0.898936170212766)
 
 
 def test_ola_subspaces():

@@ -68,7 +68,14 @@ class Oracle(BaseStaticEnsemble):
         self : object
             Returns self.
         """
-        X, y = check_X_y(X, y)
+        X, y = self._validate_data(
+            X,
+            y,
+            accept_sparse="csr",
+            dtype=np.float64,
+            order="C",
+            accept_large_sparse=False,
+        )
         super(Oracle, self).fit(X, y)
         return self
 
