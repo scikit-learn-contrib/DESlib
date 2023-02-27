@@ -44,7 +44,8 @@ Multiple Classifier Systems (2003): 159-159.
 """
 
 
-def _process_predictions(y: np.array, y_pred1: np.array, y_pred2: np.array) -> np.array:
+def _process_predictions(y: np.array, y_pred1: np.array,
+                         y_pred2: np.array) -> np.array:
     """Pre-process the predictions of a pair of base classifiers for the
     computation of the diversity measures
 
@@ -80,7 +81,10 @@ def _process_predictions(y: np.array, y_pred1: np.array, y_pred2: np.array) -> n
     if n_samples == 0:
         raise ValueError("Need at least one sample.")
     if n_samples != len(y_pred1) or n_samples != len(y):
-        raise ValueError("Inconsistent number of samples between class labels and predictions.")
+        raise ValueError(
+            "Inconsistent number of samples between "
+            "class labels and predictions."
+        )
 
     classifier_1_votes = y != y_pred1
     classifier_2_votes = y != y_pred2
@@ -104,7 +108,8 @@ def _process_predictions(y: np.array, y_pred1: np.array, y_pred2: np.array) -> n
     return N00, N10, N01, N11
 
 
-def double_fault(y: np.array, y_pred1: np.array, y_pred2: np.array) -> np.array:
+def double_fault(y: np.array, y_pred1: np.array,
+                 y_pred2: np.array) -> np.array:
     """Calculates the double fault (df) measure. This measure represents the
     probability that both classifiers makes the wrong prediction. A lower value
     of df means the base classifiers are less likely to make the same error.
@@ -138,7 +143,7 @@ def double_fault(y: np.array, y_pred1: np.array, y_pred2: np.array) -> np.array:
 
 
 def negative_double_fault(
-    y: np.array, y_pred1: np.array, y_pred2: np.array
+        y: np.array, y_pred1: np.array, y_pred2: np.array
 ) -> np.array:
     """The negative of the double fault measure. This measure should be
     maximized for a higher diversity.
@@ -197,7 +202,8 @@ def Q_statistic(y: np.array, y_pred1: np.array, y_pred2: np.array) -> np.array:
     return Q
 
 
-def ratio_errors(y: np.array, y_pred1: np.array, y_pred2: np.array) -> np.array:
+def ratio_errors(y: np.array, y_pred1: np.array,
+                 y_pred2: np.array) -> np.array:
     """Calculates Ratio of errors diversity measure between a pair of
     classifiers. A higher value means that the base classifiers are less likely
     to make the same errors. The ratio must be maximized for a higher diversity
@@ -232,7 +238,8 @@ def ratio_errors(y: np.array, y_pred1: np.array, y_pred2: np.array) -> np.array:
     return ratio
 
 
-def disagreement_measure(y: np.array, y_pred1: np.array, y_pred2: np.array) -> np.array:
+def disagreement_measure(y: np.array, y_pred1: np.array,
+                         y_pred2: np.array) -> np.array:
     """Calculates the disagreement measure between a pair of classifiers. This
     measure is calculated by the frequency that only one classifier makes the
     correct prediction.
@@ -258,7 +265,8 @@ def disagreement_measure(y: np.array, y_pred1: np.array, y_pred2: np.array) -> n
     return disagreement
 
 
-def agreement_measure(y: np.array, y_pred1: np.array, y_pred2: np.array) -> np.array:
+def agreement_measure(y: np.array, y_pred1: np.array,
+                      y_pred2: np.array) -> np.array:
     """Calculates the agreement measure between a pair of classifiers. This
     measure is calculated by the frequency that both classifiers either
     obtained the correct or incorrect prediction for any given sample
@@ -285,7 +293,7 @@ def agreement_measure(y: np.array, y_pred1: np.array, y_pred2: np.array) -> np.a
 
 
 def correlation_coefficient(
-    y: np.array, y_pred1: np.array, y_pred2: np.array
+        y: np.array, y_pred1: np.array, y_pred2: np.array
 ) -> np.array:
     """Calculates the correlation  between two classifiers using oracle
     outputs. Coefficient is a value in a range [-1, 1].
@@ -314,7 +322,8 @@ def correlation_coefficient(
 
 
 def compute_pairwise_diversity(
-    targets: np.array, prediction_matrix: np.array, diversity_func: np.array
+        targets: np.array, prediction_matrix: np.array,
+        diversity_func: np.array
 ) -> np.array:
     """Computes the pairwise diversity matrix.
 
@@ -351,4 +360,3 @@ def compute_pairwise_diversity(
             diversity[clf_index2] += this_diversity
 
     return diversity
-

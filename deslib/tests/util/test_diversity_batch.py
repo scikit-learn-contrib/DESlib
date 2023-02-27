@@ -62,10 +62,10 @@ def test_process_predictions_ones_zeros(example_diversity_ones_zeros):
     y, y_pred_ones, y_pred_zeros = example_diversity_ones_zeros
     N00, N10, N01, N11 = _process_predictions(y, y_pred_ones, y_pred_zeros)
     assert (
-            (N00 == np.full((5,), 0.0)).all()
-            and (N11 == np.full((5,), 0.0)).all()
-            and (N01 == np.full((5,), 9.0 / 15.0)).all()
-            and (N10 == np.full((5,), 6.0 / 15.0)).all()
+            (N00 == np.full((5,), 0.0)).all() and
+            (N11 == np.full((5,), 0.0)).all() and
+            (N01 == np.full((5,), 9.0 / 15.0)).all() and
+            (N10 == np.full((5,), 6.0 / 15.0)).all()
     )
 
 
