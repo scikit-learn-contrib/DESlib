@@ -319,7 +319,7 @@ class DESMI(BaseDS):
             raise ValueError("The value of alpha should be higher than 0"
                              "alpha = {}".format(self.alpha))
 
-        if not isinstance(self.alpha, np.float):
+        if not isinstance(self.alpha, float):
             raise TypeError("parameter alpha should be a float!")
 
         if self.pct_accuracy <= 0. or self.pct_accuracy > 1:

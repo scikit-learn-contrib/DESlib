@@ -88,7 +88,7 @@ def test_label_encoder_base_ensemble():
     from sklearn.ensemble import RandomForestClassifier
     X, y = make_classification()
     y[y == 1] = 2
-    y = y.astype(np.float)
+    y = y.astype(float)
     pool = RandomForestClassifier().fit(X, y)
     sb = SingleBest(pool)
     sb.fit(X, y)

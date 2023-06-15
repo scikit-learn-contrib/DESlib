@@ -116,7 +116,7 @@ class BaseDCS(BaseDS):
             # best_competence = np.max(competences)
             diff = best_competence.reshape(-1, 1) - competences
             # TODO: Improve this part of the code
-            selected_classifiers = np.zeros(diff.shape[0], dtype=np.int)
+            selected_classifiers = np.zeros(diff.shape[0], dtype=int)
             for row in range(diff.shape[0]):
                 diff_list = list(diff[row, :])
                 indices = [idx for idx, _ in enumerate(diff_list) if
@@ -130,7 +130,7 @@ class BaseDCS(BaseDS):
         elif self.selection_method == 'random':
             # TODO: Improve this part of the code
             rng = check_random_state(copy(self.random_state))
-            selected_classifiers = np.zeros(competences.shape[0], dtype=np.int)
+            selected_classifiers = np.zeros(competences.shape[0], dtype=int)
             best_competence = competences[
                 np.arange(competences.shape[0]), best_index]
             for row in range(competences.shape[0]):

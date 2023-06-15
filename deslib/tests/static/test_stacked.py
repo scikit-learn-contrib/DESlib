@@ -53,7 +53,7 @@ def test_label_encoder_base_ensemble():
     from sklearn.ensemble import RandomForestClassifier
     X, y = make_classification()
     y[y == 1] = 2
-    y = y.astype(np.float)
+    y = y.astype(float)
     pool = RandomForestClassifier().fit(X, y)
     st = StackedClassifier(pool)
     st.fit(X, y)

@@ -251,7 +251,7 @@ class KNOP(BaseDES):
         """
         _, idx_neighbors = self._get_similar_out_profiles(probabilities)
         competences = np.sum(self.DSEL_processed_[idx_neighbors, :], axis=1,
-                             dtype=np.float)
+                             dtype=float)
 
         return competences
 
