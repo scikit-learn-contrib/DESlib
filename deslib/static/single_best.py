@@ -130,7 +130,7 @@ class SingleBest(BaseStaticEnsemble):
             X[:, self.estimator_features_[self.best_clf_index_]])
 
         predictions = self._encode_base_labels(predictions)
-        return self.classes_.take(predictions.astype(np.int))
+        return self.classes_.take(predictions.astype(int))
 
     def predict_proba(self, X):
         """Estimates the posterior probabilities for each class for each sample

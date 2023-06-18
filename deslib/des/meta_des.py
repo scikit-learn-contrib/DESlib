@@ -374,7 +374,7 @@ class METADES(BaseDES):
                                                          idx_neighbors_op)
         meta_feature_target = self.DSEL_processed_[indices_selected, :]
         meta_feature_target = meta_feature_target.reshape(-1, )
-        meta_feature_target.astype(np.int)
+        meta_feature_target.astype(int)
 
         return meta_feature_vector, meta_feature_target
 

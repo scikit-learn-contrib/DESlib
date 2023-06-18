@@ -154,7 +154,7 @@ class KNORAU(BaseDES):
 
         """
         competences = np.sum(self.DSEL_processed_[competence_region, :],
-                             axis=1, dtype=np.float)
+                             axis=1, dtype=float)
 
         return competences
 

@@ -249,7 +249,7 @@ def min_difference(supports, idx_correct_label):
     """
     n_samples = len(idx_correct_label)
     # Boolean mask for the correct class
-    mask = np.zeros(supports.shape, dtype=np.bool)
+    mask = np.zeros(supports.shape, dtype=bool)
     mask[np.arange(n_samples), idx_correct_label] = True
     # Get supports for the correct class
     supports_correct = supports[mask]

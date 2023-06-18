@@ -155,7 +155,7 @@ def get_weighted_votes(votes, weights, labels_set=None):
             'same. weights = {} '
             'while votes = {}'.format(weights.shape, votes.shape))
     if labels_set is None:
-        labels_set = np.unique(votes.astype(np.int))
+        labels_set = np.unique(votes.astype(int))
 
     n_samples = votes.shape[0]
     w_votes = np.zeros((len(labels_set), n_samples))
@@ -185,7 +185,7 @@ def sum_votes_per_class(predictions, n_classes):
     summed_votes : array of shape (n_samples, n_classes)
         Summation of votes for each class
     """
-    votes = np.zeros((predictions.shape[0], n_classes), dtype=np.int)
+    votes = np.zeros((predictions.shape[0], n_classes), dtype=int)
     for label in range(n_classes):
         votes[:, label] = np.sum(predictions == label, axis=1)
     return votes
