@@ -141,6 +141,6 @@ class BaseStaticEnsemble(BaseEstimator, ClassifierMixin):
         ValueError
             If the pool of classifiers is empty or just a single model.
         """
-        if self.n_classifiers_ <= 1:
-            raise ValueError("n_classifiers must be greater than one, "
-                             "got {}.".format(len(self.pool_classifiers)))
+        #if self.n_classifiers_ <= 1:
+        #    raise ValueError("n_classifiers must be greater than one, "
+        #                     "got {}.".format(len(self.pool_classifiers)))
