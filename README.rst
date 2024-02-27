@@ -24,8 +24,8 @@
 DESlib
 ========
 
-DESlib is an easy-to-use ensemble learning library focused on the implementation of the state-of-the-art techniques for dynamic classifier and ensemble selection.
-The library is is based on scikit-learn_, using the same method signatures: **fit**, **predict**, **predict_proba** and **score**.
+DESlib is an easy-to-use ensemble learning library focused on the implementation of state-of-the-art techniques for dynamic classifier and ensemble selection.
+The library is based on scikit-learn_, using the same method signatures: **fit**, **predict**, **predict_proba** and **score**.
 All dynamic selection techniques were implemented according to the definitions from [1]_.
 
 Dynamic Selection:
