@@ -549,8 +549,8 @@ class METADES(BaseDES):
         if self.Kp is not None:
             if not isinstance(self.Kp, int):
                 raise TypeError("parameter Kp should be an integer.")
-            if self.Kp <= 1:
-                raise ValueError("parameter Kp must be higher than 1."
+            if self.Kp <= 0:
+                raise ValueError("parameter Kp must be equal orhigher than 1."
                                  "input Kp is {} .".format(self.Kp))
         else:
             raise ValueError("Parameter Kp is 'None'.")
