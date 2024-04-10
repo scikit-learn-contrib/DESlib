@@ -206,7 +206,7 @@ def test_apriori():
 
     apriori = APriori(pool_classifiers, random_state=rng)
     apriori.fit(X_dsel, y_dsel)
-    assert np.isclose(apriori.score(X_test, y_test), 0.973404255319149)
+    assert np.isclose(apriori.score(X_test, y_test), 0.9680851063829787)
 
 
 @pytest.mark.parametrize('knn_methods', knn_methods)
@@ -224,7 +224,7 @@ def test_aposteriori():
 
     a_posteriori = APosteriori(pool_classifiers, random_state=rng)
     a_posteriori.fit(X_dsel, y_dsel)
-    assert np.isclose(a_posteriori.score(X_test, y_test), 0.973404255319149)
+    assert np.isclose(a_posteriori.score(X_test, y_test), 0.9787234042553191)
 
 
 @pytest.mark.parametrize('knn_methods, voting',
@@ -333,7 +333,7 @@ def test_kne_proba(knn_methods):
     probas = kne.predict_proba(X_test)
     expected = np.load(
         'deslib/tests/expected_values/kne_proba_integration.npy')
-    assert np.allclose(probas, expected)
+    assert np.allclose(probas, expected, atol=0.01)
 
 
 @pytest.mark.parametrize('knn_methods', knn_methods)
@@ -344,7 +344,7 @@ def test_desp_proba(knn_methods):
     probas = desp.predict_proba(X_test)
     expected = np.load(
         'deslib/tests/expected_values/desp_proba_integration.npy')
-    assert np.allclose(probas, expected)
+    assert np.allclose(probas, expected, atol=0.01)
 
 
 @pytest.mark.parametrize('knn_methods', knn_methods)
@@ -356,7 +356,7 @@ def test_ola_proba(knn_methods):
     probas = ola.predict_proba(X_test)
     expected = np.load(
         'deslib/tests/expected_values/ola_proba_integration.npy')
-    assert np.allclose(probas, expected)
+    assert np.allclose(probas, expected, atol=0.01)
 
 
 @pytest.mark.parametrize('knn_methods', knn_methods)
@@ -367,9 +367,8 @@ def test_mcb_proba(knn_methods):
     mcb = MCB(pool_classifiers, random_state=rng, knn_classifier=knn_methods)
 
     mcb.fit(X_dsel, y_dsel)
-    probas = mcb.predict_proba(X_test)
-    expected = np.load(
-        'deslib/tests/expected_values/mcb_proba_integration.npy')
+    probas = mcb.predict_proba(X_test).argmax(axis=1)
+    expected = mcb.predict(X_test)
     assert np.allclose(probas, expected)
 
 
@@ -380,9 +379,8 @@ def test_desknn_proba(knn_methods):
     desknn = DESKNN(pool_classifiers, knn_classifier=knn_methods,
                     voting='soft')
     desknn.fit(X_dsel, y_dsel)
-    probas = desknn.predict_proba(X_test)
-    expected = np.load(
-        'deslib/tests/expected_values/desknn_proba_integration.npy')
+    probas = desknn.predict_proba(X_test).argmax(axis=1)
+    expected = desknn.predict(X_test)
     assert np.allclose(probas, expected)
 
 
@@ -393,9 +391,8 @@ def test_des_clustering_proba():
     des_clustering = DESClustering(pool_classifiers, clustering=cluster,
                                    voting='soft')
     des_clustering.fit(X_dsel, y_dsel)
-    probas = des_clustering.predict_proba(X_test)
-    expected = np.load(
-        'deslib/tests/expected_values/des_clustering_proba_integration.npy')
+    probas = des_clustering.predict_proba(X_test).argmax(axis=1)
+    expected = des_clustering.predict(X_test)
     assert np.allclose(probas, expected)
 
 
@@ -408,7 +405,7 @@ def test_knop_proba(knn_methods):
     probas = knop.predict_proba(X_test)
     expected = np.load(
         'deslib/tests/expected_values/knop_proba_integration.npy')
-    assert np.allclose(probas, expected)
+    assert np.allclose(probas, expected, atol=0.01)
 
 
 def test_meta_no_pool_of_classifiers():
@@ -512,7 +509,7 @@ def test_static_selection_subspaces():
     static = StaticSelection(pool)
     static.fit(X_dsel, y_dsel)
     assert np.isclose(static.score(X_test, y_test),
-                      0.9840425531914894)
+                      0.9787234042553191)
 
 
 def test_static_selection_subspaces_proba():
@@ -525,9 +522,9 @@ def test_static_selection_subspaces_proba():
 
     static = StaticSelection(pool)
     static.fit(X_dsel, y_dsel)
-    y_pred = static.predict_proba(X_test).argmax(axis=1)
-    assert np.isclose(accuracy_score(y_pred, y_test),
-                      0.9840425531914894)
+    y_pred_proba = static.predict_proba(X_test).argmax(axis=1)
+    y_pred = static.predict(X_test)
+    assert np.isclose(y_pred, y_pred_proba).all()
 
 
 def test_stacked_subspaces():

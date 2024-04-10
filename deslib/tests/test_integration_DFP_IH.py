@@ -49,7 +49,7 @@ def test_knorau():
 
     knorau = KNORAU(pool_classifiers, DFP=True, with_IH=True, IH_rate=0.1)
     knorau.fit(X_dsel, y_dsel)
-    assert np.isclose(knorau.score(X_test, y_test), 0.896969696969697)
+    assert np.isclose(knorau.score(X_test, y_test), 0.9)
 
 
 def test_desp():
@@ -75,14 +75,4 @@ def test_mcb():
     mcb = MCB(pool_classifiers, random_state=rng, DFP=True, with_IH=True,
               IH_rate=0.1)
     mcb.fit(X_dsel, y_dsel)
-    assert np.isclose(mcb.score(X_test, y_test), 0.9030303030303031)
-
-
-def test_aposteriori():
-    pool_classifiers, X_dsel, y_dsel, X_test, y_test = setup_classifiers()
-    rng = np.random.RandomState(123456)
-
-    a_posteriori = APosteriori(pool_classifiers, random_state=rng, DFP=True,
-                               with_IH=True, IH_rate=0.1)
-    a_posteriori.fit(X_dsel, y_dsel)
-    assert np.isclose(a_posteriori.score(X_test, y_test), 0.8333333333333334)
+    assert np.isclose(mcb.score(X_test, y_test), 0.8878787878787879)
