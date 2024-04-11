@@ -1,26 +1,38 @@
-|Docs|_ |CircleCI|_ |BSD|_ |PythonVersion|_ |PyPi|_ |PythonVersion|_ |Downloads|_
+.. -*- mode: rst -*-
+
+.. _scikit-learn-contrib: https://github.com/scikit-learn-contrib
+
+|Docs|_ |CircleCI|_ |BSD|_ |PyPi|_ |PythonVersion|_ |Downloads|_ |Wheel|_ |Black|_
 
 .. |Docs| image:: https://readthedocs.org/projects/deslib/badge/?version=latest
-    _Docs: http://deslib.readthedocs.io/en/latest/?badge=latest
+..    _Docs: http://deslib.readthedocs.io/en/latest/?badge=latest
 
 .. |CircleCI| image:: https://circleci.com/gh/scikit-learn-contrib/DESlib.svg?style=shield
-    _CircleCI: https://circleci.com/gh/scikit-learn-contrib/DESlib
+..    _CircleCI: https://circleci.com/gh/scikit-learn-contrib/DESlib
 
 .. |BSD| image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
-    _BSD: https://opensource.org/licenses/BSD-3-Clause
+..    _BSD: https://opensource.org/licenses/BSD-3-Clause
 
 .. |PyPi| image:: https://badge.fury.io/py/DESlib.svg
-    _PyPi: https://pypi.org/project/DESlib/
+..    _PyPi: https://pypi.org/project/DESlib/
 
 .. |PythonVersion| image:: https://img.shields.io/pypi/pyversions/deslib.svg
-   _PythonVersion: https://pypi.org/project/DESlib/
+..   _PythonVersion: https://pypi.org/project/DESlib/
 
 .. |Downloads| image:: https://img.shields.io/pypi/dm/deslib.svg
-   _Downloads: https://pypistats.org/packages/deslib
+..   _Downloads: https://pypistats.org/packages/deslib
 
 .. |Wheel| image:: https://img.shields.io/pypi/wheel/deslib.svg
-   _Wheel: https://img.shields.io/pypi/wheel/deslib.svg
+..   _Wheel: https://img.shields.io/pypi/wheel/deslib.svg
 
+.. |Black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+.. _Black: :target: https://github.com/psf/black
+
+
+.. |PythonMinVersion| replace:: 3.7
+.. |NumPyMinVersion| replace:: 1.17.3
+.. |SciPyMinVersion| replace:: 1.5.0
+.. |ScikitLearnMinVersion| replace:: 1.0.2
 
 DESlib
 ========
@@ -63,11 +75,12 @@ Latest version (under development):
 Dependencies:
 -------------
 
-DESlib is tested to work with Python >= 3.6. The dependency requirements are:
+The dependency requirements are:
 
-* scipy(>=1.4.0)
-* numpy(>=1.17.0)
-* scikit-learn(>=1.0.2)
+- Python (>= |PythonMinVersion|)
+- NumPy (>= |NumPyMinVersion|)
+- SciPy (>= |SciPyMinVersion|)
+- Scikit-learn (>= |ScikitLearnMinVersion|)
 
 These dependencies are automatically installed using the pip commands above.
 
