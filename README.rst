@@ -1,24 +1,25 @@
-.. image:: https://readthedocs.org/projects/deslib/badge/?version=latest
-    :target: http://deslib.readthedocs.io/en/latest/?badge=latest
-    :alt: Documentation Status
+|Docs|_ |CircleCI|_ |BSD|_ |PythonVersion|_ |PyPi|_ |PythonVersion|_ |Downloads|_
 
-.. image:: https://circleci.com/gh/scikit-learn-contrib/DESlib.svg?style=shield
-    :target: https://circleci.com/gh/scikit-learn-contrib/DESlib
+.. |Docs| image:: https://readthedocs.org/projects/deslib/badge/?version=latest
+    _Docs: http://deslib.readthedocs.io/en/latest/?badge=latest
 
-.. image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
-    :target: https://opensource.org/licenses/BSD-3-Clause
+.. |CircleCI| image:: https://circleci.com/gh/scikit-learn-contrib/DESlib.svg?style=shield
+    _CircleCI: https://circleci.com/gh/scikit-learn-contrib/DESlib
 
-.. image:: https://badge.fury.io/py/DESlib.svg
-    :target: https://badge.fury.io/py/DESlib
+.. |BSD| image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
+    _BSD: https://opensource.org/licenses/BSD-3-Clause
 
-.. image:: https://img.shields.io/pypi/pyversions/deslib
-   :alt: PyPI - Python Version
+.. |PyPi| image:: https://badge.fury.io/py/DESlib.svg
+    _PyPi: https://pypi.org/project/DESlib/
 
-.. image:: https://img.shields.io/pypi/dm/deslib
-   :alt: PyPI - Downloads
+.. |PythonVersion| image:: https://img.shields.io/pypi/pyversions/deslib.svg
+   _PythonVersion: https://pypi.org/project/DESlib/
 
-.. image:: https://img.shields.io/pypi/wheel/deslib
-   :alt: PyPI - Wheel
+.. |Downloads| image:: https://img.shields.io/pypi/dm/deslib.svg
+   _Downloads: https://pypistats.org/packages/deslib
+
+.. |Wheel| image:: https://img.shields.io/pypi/wheel/deslib.svg
+   _Wheel: https://img.shields.io/pypi/wheel/deslib.svg
 
 
 DESlib
