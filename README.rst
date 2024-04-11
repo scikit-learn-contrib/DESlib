@@ -5,21 +5,21 @@
 .. image:: https://circleci.com/gh/scikit-learn-contrib/DESlib.svg?style=shield
     :target: https://circleci.com/gh/scikit-learn-contrib/DESlib
 
-.. image:: https://travis-ci.org/scikit-learn-contrib/DESlib.svg?branch=master
-    :target: https://travis-ci.org/scikit-learn-contrib/DESlib
-
-.. image:: https://codecov.io/gh/scikit-learn-contrib/DESlib/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/scikit-learn-contrib/DESlib
-    
-.. image:: https://api.codacy.com/project/badge/Grade/59500eecc5524c59b9eb2284b43ae3e6
-   :alt: Codacy Badge
-   :target: https://app.codacy.com/app/Menelau/DESlib?
-
 .. image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
     :target: https://opensource.org/licenses/BSD-3-Clause
 
-.. image:: https://badges.gitter.im/DESlib/gitter.png
-    :target: https://gitter.im/deslib/Lobby
+.. image:: https://badge.fury.io/py/DESlib.svg
+    :target: https://badge.fury.io/py/DESlib
+
+.. image:: https://img.shields.io/pypi/pyversions/deslib
+   :alt: PyPI - Python Version
+
+.. image:: https://img.shields.io/pypi/dm/deslib
+   :alt: PyPI - Downloads
+
+.. image:: https://img.shields.io/pypi/wheel/deslib
+   :alt: PyPI - Wheel
+
 
 DESlib
 ========
@@ -62,11 +62,11 @@ Latest version (under development):
 Dependencies:
 -------------
 
-DESlib is tested to work with Python 3.5, 3.6 and 3.7. The dependency requirements are:
+DESlib is tested to work with Python >= 3.6. The dependency requirements are:
 
 * scipy(>=1.4.0)
 * numpy(>=1.17.0)
-* scikit-learn(>=0.20.0)
+* scikit-learn(>=1.0.2)
 
 These dependencies are automatically installed using the pip commands above.
 
@@ -142,7 +142,7 @@ The following techniques are also available for all methods:
  * For all DS techniques, Dynamic Frienemy Pruning (DFP) [13]_ can be used.
  * For all DS techniques, Instance Hardness (IH) can be used to classify easy samples with a KNN and hard samples using the DS technique. More details on IH and Dynamic Selection can be found in [14]_.
 
-As an optional requirement, the fast KNN implementation from FAISS_ can be used to speed-up the computation of the region of competence.
+As an optional requirement, the fast KNN implementation from FAISS_ can be used to speed-up the computation of the region of competence on GPU.
 
 Citation
 ---------
