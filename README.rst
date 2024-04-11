@@ -1,25 +1,38 @@
-.. image:: https://readthedocs.org/projects/deslib/badge/?version=latest
-    :target: http://deslib.readthedocs.io/en/latest/?badge=latest
-    :alt: Documentation Status
+.. -*- mode: rst -*-
 
-.. image:: https://circleci.com/gh/scikit-learn-contrib/DESlib.svg?style=shield
-    :target: https://circleci.com/gh/scikit-learn-contrib/DESlib
+.. _scikit-learn-contrib: https://github.com/scikit-learn-contrib
 
-.. image:: https://travis-ci.org/scikit-learn-contrib/DESlib.svg?branch=master
-    :target: https://travis-ci.org/scikit-learn-contrib/DESlib
+|Docs|_ |CircleCI|_ |BSD|_ |PyPi|_ |PythonVersion|_ |Downloads|_ |Wheel|_ |Black|_
 
-.. image:: https://codecov.io/gh/scikit-learn-contrib/DESlib/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/scikit-learn-contrib/DESlib
-    
-.. image:: https://api.codacy.com/project/badge/Grade/59500eecc5524c59b9eb2284b43ae3e6
-   :alt: Codacy Badge
-   :target: https://app.codacy.com/app/Menelau/DESlib?
+.. |Docs| image:: https://readthedocs.org/projects/deslib/badge/?version=latest
+..    _Docs: http://deslib.readthedocs.io/en/latest/?badge=latest
 
-.. image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
-    :target: https://opensource.org/licenses/BSD-3-Clause
+.. |CircleCI| image:: https://circleci.com/gh/scikit-learn-contrib/DESlib.svg?style=shield
+..    _CircleCI: https://circleci.com/gh/scikit-learn-contrib/DESlib
 
-.. image:: https://badges.gitter.im/DESlib/gitter.png
-    :target: https://gitter.im/deslib/Lobby
+.. |BSD| image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
+..    _BSD: https://opensource.org/licenses/BSD-3-Clause
+
+.. |PyPi| image:: https://badge.fury.io/py/DESlib.svg
+..    _PyPi: https://pypi.org/project/DESlib/
+
+.. |PythonVersion| image:: https://img.shields.io/pypi/pyversions/deslib.svg
+..   _PythonVersion: https://pypi.org/project/DESlib/
+
+.. |Downloads| image:: https://img.shields.io/pypi/dm/deslib.svg
+..   _Downloads: https://pypistats.org/packages/deslib
+
+.. |Wheel| image:: https://img.shields.io/pypi/wheel/deslib.svg
+..   _Wheel: https://img.shields.io/pypi/wheel/deslib.svg
+
+.. |Black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+.. _Black: :target: https://github.com/psf/black
+
+
+.. |PythonMinVersion| replace:: 3.7
+.. |NumPyMinVersion| replace:: 1.17.3
+.. |SciPyMinVersion| replace:: 1.5.0
+.. |ScikitLearnMinVersion| replace:: 1.0.2
 
 DESlib
 ========
@@ -62,11 +75,12 @@ Latest version (under development):
 Dependencies:
 -------------
 
-DESlib is tested to work with Python 3.5, 3.6 and 3.7. The dependency requirements are:
+The dependency requirements are:
 
-* scipy(>=1.4.0)
-* numpy(>=1.17.0)
-* scikit-learn(>=0.20.0)
+- Python (>= |PythonMinVersion|)
+- NumPy (>= |NumPyMinVersion|)
+- SciPy (>= |SciPyMinVersion|)
+- Scikit-learn (>= |ScikitLearnMinVersion|)
 
 These dependencies are automatically installed using the pip commands above.
 
@@ -142,7 +156,7 @@ The following techniques are also available for all methods:
  * For all DS techniques, Dynamic Frienemy Pruning (DFP) [13]_ can be used.
  * For all DS techniques, Instance Hardness (IH) can be used to classify easy samples with a KNN and hard samples using the DS technique. More details on IH and Dynamic Selection can be found in [14]_.
 
-As an optional requirement, the fast KNN implementation from FAISS_ can be used to speed-up the computation of the region of competence.
+As an optional requirement, the fast KNN implementation from FAISS_ can be used to speed-up the computation of the region of competence on GPU.
 
 Citation
 ---------
