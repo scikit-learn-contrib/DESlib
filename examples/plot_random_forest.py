@@ -43,7 +43,8 @@ from deslib.static.stacked import StackedClassifier
 rng = np.random.RandomState(42)
 
 # Fetch a classification dataset from OpenML
-data = fetch_openml(name='credit-g', version=1, cache=False, as_frame=False)
+data = fetch_openml(name='phoneme', version=1,
+                    cache=False, as_frame=False)
 X = data.data
 y = data.target
 # split the data into training and test data
@@ -57,7 +58,7 @@ RF = RandomForestClassifier(random_state=rng, n_estimators=10)
 RF.fit(X_train, y_train)
 
 X_train, X_dsel, y_train, y_dsel = train_test_split(X_train, y_train,
-                                                    test_size=0.50,
+                                                    test_size=0.750,
                                                     random_state=rng)
 
 stacked = StackedClassifier(RF, LogisticRegression())

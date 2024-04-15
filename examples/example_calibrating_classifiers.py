@@ -93,7 +93,7 @@ mcb = MCB(pool_classifiers, random_state=rng)
 # DS methods.
 calibrated_pool = []
 for clf in pool_classifiers:
-    calibrated = CalibratedClassifierCV(base_estimator=clf, cv='prefit')
+    calibrated = CalibratedClassifierCV(estimator=clf, cv='prefit')
     calibrated.fit(X_dsel, y_dsel)
     calibrated_pool.append(calibrated)
 
