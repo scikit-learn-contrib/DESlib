@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.linear_model import LogisticRegression
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.validation import check_X_y, check_array, check_is_fitted, validate_data
 
 from deslib.static.base import BaseStaticEnsemble
 
@@ -70,7 +70,8 @@ class StackedClassifier(BaseStaticEnsemble):
             class labels of each example in X.
 
         """
-        X, y = self._validate_data(
+        X, y = validate_data(
+            self,
             X,
             y,
             accept_sparse="csr",

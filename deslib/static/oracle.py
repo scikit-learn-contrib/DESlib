@@ -5,7 +5,7 @@
 # License: BSD 3 clause
 
 import numpy as np
-from sklearn.utils.validation import check_X_y, check_array
+from sklearn.utils.validation import check_X_y, check_array, validate_data
 
 from deslib.static.base import BaseStaticEnsemble
 
@@ -68,7 +68,8 @@ class Oracle(BaseStaticEnsemble):
         self : object
             Returns self.
         """
-        X, y = self._validate_data(
+        X, y = validate_data(
+            self,
             X,
             y,
             accept_sparse="csr",

@@ -18,7 +18,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder, normalize
 from sklearn.utils.validation import (check_X_y, check_is_fitted, check_array,
-                                      check_random_state)
+                                      check_random_state, validate_data)
 
 from deslib.util import KNNE
 from deslib.util import faiss_knn_wrapper
@@ -83,7 +83,8 @@ class BaseDS(BaseEstimator, ClassifierMixin):
         self
         """
         self.random_state_ = check_random_state(self.random_state)
-        X, y = self._validate_data(
+        X, y = validate_data(
+            self,
             X,
             y,
             accept_sparse="csr",

@@ -6,7 +6,7 @@
 
 import numpy as np
 from sklearn.metrics import check_scoring
-from sklearn.utils.validation import check_is_fitted, check_X_y, check_array
+from sklearn.utils.validation import check_is_fitted, check_X_y, check_array, validate_data
 
 from deslib.util.aggregation import majority_voting_rule
 from deslib.util.aggregation import predict_proba_ensemble
@@ -86,7 +86,8 @@ class StaticSelection(BaseStaticEnsemble):
         self : object
             Returns self.
         """
-        X, y = self._validate_data(
+        X, y = validate_data(
+            self,
             X,
             y,
             accept_sparse="csr",
